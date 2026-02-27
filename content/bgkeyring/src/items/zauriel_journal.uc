@@ -23,13 +23,11 @@
  *	Last Modified: 2006-02-27
  */
 
-void ZaurielJournal shape#(0x44E) ()
-{
+void ZaurielJournal shape#(0x44E) () {
 	var quality = get_item_quality();
-	
+
 	//This basically alternated book text with remarks from party members.
-	if (event == DOUBLECLICK)
-	{
+	if (event == DOUBLECLICK) {
 		//Play book sound:
 		UI_play_sound_effect2(SOUND_BOOK, item);
 		//Start book mode for current item:
@@ -37,8 +35,7 @@ void ZaurielJournal shape#(0x44E) ()
 		//Get journal's quality:
 		quality = get_item_quality();
 		//Display text based on book's quality:
-		if (quality == 1)
-		{
+		if (quality == 1) {
 			UI_close_gumps();
 			gflags[READ_ZAURIEL_JOURNAL] = true;
 			say("~~ ~~Zauriel's Journal~~",
@@ -49,9 +46,7 @@ void ZaurielJournal shape#(0x44E) ()
 			say("April 8",
 				"~~    YES! Another victory! I have now learned the secret art of shapeshifting from that FOOL Erethian! I can now become a dragon! YES! HAHA! Lord British is doomed! Mwahahaha!!!*April 9",
 				"~~    My supply of reagents is growing steadily, as well as my army of undead creatures and golems. Soon, my associates and I will be able to crush the ENTIRE ARMY of Lord British and then I will crush him with my bare fists! Mwahaha!!*");
-		}
-		else if (quality == 2)
-		{
+		} else if (quality == 2) {
 			say("June 12",
 				"~~    My head was extremely sore yesterday and, from what I can gather, for at least a month since. I haven't written any entries in my journal throughout this period, and I think it is a good time to start again. My memories of the last few years seem to be fading quickly, as if some sort of veil is standing before my eyes. I was able to puzzle together what had happened to me during this time, and most of which was not good.",
 				"~~    I was apparently on a quest to overthrow the good Lord British, and had conspired with a set of... unsavory characters, to say the least. What had possessed me to make such an attempt at the life of a just leader? I know not, but it seems to have passed. I have arranged for a meeting with my former 'associates' tomorrow, and I intend to dissolve my partnership with them, as well as invalidate the plans I had laid. I don't expect that it will end well...*June 13",
@@ -60,10 +55,7 @@ void ZaurielJournal shape#(0x44E) ()
 				"~~    I have made my mind: I shall try to discover what is happening to Britannia, or more precisely, to the Ether. I will go to the Lycaeum first thing in the morning; if only I knew where the nearest moongate is located...*");
 			say("August 28",
 				"~~    I have finally found the moongate! I wonder how many people get lost here in Yew trying to find it?");
-		}
-		
-		else if (quality == 3)
-		{
+		} else if (quality == 3) {
 			say("December 21",
 				"~~    My time in the Lycaeum has been well spent. I have a much better idea of what may be happening in Britannia. My magical skills have also vastly improved in this period of time; it is a good thing that I shall no longer be dependent on the moongates for travel. It is time to go to the mainland and try to search for more answers.*");
 			say("December 22",
@@ -93,61 +85,50 @@ void ZaurielJournal shape#(0x44E) ()
 				"~~August 31",
 				"~~    Today I shall make the final preparations to cure my daughter. Many mighty spells I, Lord Zauriel, shall weave to take effect upon my demise, using my very essence to heal my daughter's damaged mind. And it could not have been in a better time, for the Avatar shall be returning to Britannia any moment now, even as I have foreseen. All I have to do now is to wait 'distracted' and 'weakened' until that inept mage attacks and kidnaps my beloved daughter, thus setting in motion the events that will result in my well deserved death.*");
 		}
-		
+
 		//Allow for a remark by an NPC:
 		script item call ZaurielJournal;
-	}
-	
-	else if (event == SCRIPTED)
-	{
+	} else if (event == SCRIPTED) {
 		//Get a random party member:
 		var npc = randomPartyMember();
 		var npc_num = npc->get_npc_number();
 		var npc_face;
-		if ((npc_num == AVATAR) && UI_is_pc_female())
+		if ((npc_num == AVATAR) && UI_is_pc_female()) {
 			//If it is avatar and female, set correct face:
 			npc_face = 1;
-		else
+		} else {
 			npc_face = 0;
+		}
 		//Show the NPC's face
 		npc->show_npc_face(npc_face);
-		
+
 		//Use the book's quality to determine the remark:
-		if (quality == 1)
-		{
+		if (quality == 1) {
 			say("@There are pages and pages of this drivel. The man seems to be totally insane, even to the point of including maniacal laughter in writing...");
 			say("@Maybe we should skip ahead a little bit...@");
-		}
-		else if (quality == 2)
-		{
+		} else if (quality == 2) {
 			var msg;
-			if (npc_num == AVATAR)
+			if (npc_num == AVATAR) {
 				msg = "Iolo, Shamino, Dupre and myself";
-			
-			else if (npc_num == IOLO)
+			} else if (npc_num == IOLO) {
 				msg = "the Avatar, Shamino, Dupre and myself";
-			
-			else if (npc_num == SHAMINO)
+			} else if (npc_num == SHAMINO) {
 				msg = "the Avatar, Iolo, Dupre and myself";
-			
-			else if (npc_num == DUPRE)
+			} else if (npc_num == DUPRE) {
 				msg = "the Avatar, Iolo, Shamino and myself";
-			
-			else
+			} else {
 				msg = "the Avatar, Iolo, Shamino and Dupre";
-			
+			}
 			say("@Zauriel also developed a strong interest in ", msg,
 			    " while in the Lycaeum. He seems to be completely obsessed...@");
-		}
-		else if (quality == 3)
-		{
+		} else if (quality == 3) {
 			say("@Several of the next pages include detailed accounts of everything we did ever since thou didst return to Britannia, Avatar!");
 			say("@It is unnerving to think that he knew all of this years before the events actually happened.");
 			say("@But why, oh why, did he not write the things thou woudst do -after- he died?@");
 			set_item_quality(1);
 			return;
 		}
-		
+
 		//Increase the journal's quality:
 		set_item_quality(quality + 1);
 		//Return to the function for more book text:

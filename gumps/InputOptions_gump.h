@@ -1,5 +1,5 @@
 /*
-Copyright (C) 2001-2022 The Exult Team
+Copyright (C) 2001-2024 The Exult Team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -20,40 +20,44 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define INPUTOPTIONS_GUMP_H
 
 #include "Modal_gump.h"
-#include <string>
+
 #include <array>
 #include <memory>
+#include <string>
 
 class Gump_button;
+class Font;
 
 class InputOptions_gump : public Modal_gump {
 private:
-	int doubleclick;
-	int rightclick_close;
-	int right_pathfind;
+	int  doubleclick;
+	int  rightclick_close;
+	int  right_pathfind;
 	bool scroll_mouse;
-	int mouse3rd;
-	int fastmouse;
+	int  mouse3rd;
+	int  fastmouse;
 	bool item_menu;
-	int dpad_location;
+	int  dpad_location;
 	bool touch_pathfind;
 
 	enum button_ids {
-	    id_first = 0,
-	    id_ok = id_first,
-	    id_cancel,
-	    id_help,
-	    id_doubleclick,
-	    id_rightclick_close,
-	    id_right_pathfind,
-	    id_scroll_mouse,
-	    id_mouse3rd,
-	    id_fastmouse,
-	    id_item_menu,
-	    id_dpad_location,
-	    id_touch_pathfind,
-	    id_count
+		id_first = 0,
+		id_ok    = id_first,
+		id_help,
+		id_cancel,
+		id_first_setting,
+		id_doubleclick = id_first_setting,
+		id_rightclick_close,
+		id_right_pathfind,
+		id_scroll_mouse,
+		id_mouse3rd,
+		id_fastmouse,
+		id_item_menu,
+		id_dpad_location,
+		id_touch_pathfind,
+		id_count
 	};
+
 	std::array<std::unique_ptr<Gump_button>, id_count> buttons;
 
 public:
@@ -62,10 +66,6 @@ public:
 	// Paint it and its contents.
 	void paint() override;
 	void close() override;
-
-	// Handle events:
-	bool mouse_down(int mx, int my, int button) override;
-	bool mouse_up(int mx, int my, int button) override;
 
 	void build_buttons();
 
@@ -109,5 +109,7 @@ public:
 	void toggle_touch_pathfind(int state) {
 		touch_pathfind = state;
 	}
+
+	Gump_button* on_button(int mx, int my) override;
 };
 #endif

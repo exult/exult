@@ -3,38 +3,42 @@
 # It may require a little tweaking. (paths)
 
 # Where is Ultima 7 installed
-U7PATH=C:/Ultima7
+U7PATH:=C:/Ultima7
 
 # Base of the exult source
-SRC=../..
+SRC:=../..
 
-srcdir=.
+srcdir:=.
 
-UCCDIR=$(SRC)
-UCC=$(UCCDIR)/ucc.exe
+UCCDIR:=$(SRC)
+UCC:=$(UCCDIR)/ucc.exe
 
-EXPACKDIR=$(SRC)
-EXPACK=$(EXPACKDIR)/expack.exe
+EXPACKDIR:=$(SRC)
+EXPACK:=$(EXPACKDIR)/expack.exe
 
-islefaqdir=$(U7PATH)/forgeofvirtue/mods
+islefaqdir:=$(U7PATH)/forgeofvirtue/mods
 
-USECODE_OBJECTS = \
-	src/usecode.uc	
+USECODE_OBJECTS :=	\
+	src/usecode.uc
 
-FACES_VGA_OBJECTS = \
+FACES_VGA_OBJECTS :=	\
 	src/graphics/faces.in	\
-	src/graphics/faces/dominus.shp	
+	src/graphics/faces/colourless.shp	\
+	src/graphics/faces/dominus.shp	\
+	src/graphics/faces/drcode.shp	\
+	src/graphics/faces/fingolfin.shp	\
+	src/graphics/faces/wjp.shp
 
-SHAPES_VGA_OBJECTS = \
+SHAPES_VGA_OBJECTS :=	\
 	src/graphics/shapes.in	\
-	src/graphics/shapes/penguin.shp	
+	src/graphics/shapes/penguin.shp
 
-CLEANFILES = \
+CLEANFILES :=	\
 	patch/usecode	\
 	patch/faces.vga	\
 	patch/faces_vga.h	\
 	patch/shapes.vga	\
-	patch/shapes_vga.h	
+	patch/shapes_vga.h
 
 all: patch/usecode patch/faces.vga patch/shapes.vga
 
@@ -45,15 +49,22 @@ install: all
 	cp patch/usecode $(islefaqdir)/islefaq/patch/usecode
 	cp patch/faces.vga $(islefaqdir)/islefaq/patch/faces.vga
 	cp patch/shapes.vga $(islefaqdir)/islefaq/patch/shapes.vga
+	cp patch/equip.dat $(islefaqdir)/islefaq/patch/equip.dat
 	cp patch/initgame.dat $(islefaqdir)/islefaq/patch/initgame.dat
+	cp patch/minimaps.vga $(islefaqdir)/islefaq/patch/minimaps.vga
+	cp patch/occlude.dat $(islefaqdir)/islefaq/patch/occlude.dat
 	cp patch/ready.dat $(islefaqdir)/islefaq/patch/ready.dat
 	cp patch/shpdims.dat $(islefaqdir)/islefaq/patch/shpdims.dat
+	cp patch/textmsg.txt $(islefaqdir)/islefaq/patch/textmsg.txt
 	cp patch/tfa.dat $(islefaqdir)/islefaq/patch/tfa.dat
 	cp patch/u7ifix0d $(islefaqdir)/islefaq/patch/u7ifix0d
 	cp patch/u7ifix64 $(islefaqdir)/islefaq/patch/u7ifix64
 	cp patch/u7ifix65 $(islefaqdir)/islefaq/patch/u7ifix65
 	cp patch/u7map $(islefaqdir)/islefaq/patch/u7map
+	cp patch/wgtvol.dat $(islefaqdir)/islefaq/patch/wgtvol.dat
 	cp patch/wihh.dat $(islefaqdir)/islefaq/patch/wihh.dat
+	cp README $(islefaqdir)/islefaq/Readme.txt
+	cp ./../../COPYING $(islefaqdir)/islefaq/License.txt
 
 uninstall:
 	rm -f $(islefaqdir)/islefaq.cfg

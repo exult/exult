@@ -21,16 +21,17 @@
  */
 
 //create the wool beside the Avatar
-void finishShearing object#() ()
-{
+void finishShearing object#() () {
 	var wool = UI_create_new_object(SHAPE_WOOL);
 
-	wool->set_item_frame(1);	//vertical bale
+	//vertical bale
+	wool->set_item_frame(1);
 	wool->set_item_flag(TEMPORARY);
 
-	var target_pos = get_object_position();	//place the new bale next to the sheep
-	target_pos[X] = target_pos[X] + 1;
-	target_pos[Y] = target_pos[Y] + 1;
+	//place the new bale next to the sheep
+	struct<Position> target_pos = get_object_position();
+	target_pos.x += 1;
+	target_pos.y += 1;
 
 	//Todo: stick it in the players inventory if it can't be placed here
 	UI_update_last_created(target_pos);
@@ -43,10 +44,8 @@ void finishShearing object#() ()
 }
 
 //Shear that sheep!
-void shearSheep ()
-{
-	script AVATAR
-	{
+void shearSheep () {
+	script AVATAR {
 		nohalt;
 		//paralyze the avatar so the player can't move during sequence
 		call freeze;
@@ -54,8 +53,7 @@ void shearSheep ()
 		face directionFromAvatar(item);
 		say("@Easy now...@");
 
-		repeat 6
-		{
+		repeat 6 {
 			actor frame standing;
 			actor frame reach_1h;
 			sfx SOUND_SHEARING;
@@ -64,11 +62,11 @@ void shearSheep ()
 		};
 		actor frame standing;
 
-		call unfreeze;	//unparalyze again
+		//unparalyze again
+		call unfreeze;
 	}
 
-	script item
-	{
+	script item {
 		nohalt;
 		call freeze;
 		wait 20;
@@ -76,12 +74,12 @@ void shearSheep ()
 		wait 20;
 		say "@Baa-aa-aa!@";
 		call unfreeze;
-		call finishShearing;	//Create the wool
+		//Create the wool
+		call finishShearing;
 	}
 
 	//our resident sheep expert
-	if (inParty(KATRINA))
-	{
+	if (inParty(KATRINA)) {
 		var barks = [
 			"@Thou art doing it all wrong!@",
 			"@Nay, work thy way forwards!@",
@@ -92,20 +90,17 @@ void shearSheep ()
 }
 
 //Organise everything for shearing, and go to the sheep
-void startShearing (var sheep)
-{
+void startShearing (var sheep) {
 	UI_close_gumps();
 
 	//The sheep is already sheared
-	if (sheep->get_item_flag(SHEARED))
-	{
+	if (sheep->get_item_flag(SHEARED)) {
 		randomPartySay("@Thou hast sheared that sheep already! Give the poor thing a chance to grow it back.@");
 		return;
 	}
 
 	//make sure the shears are readied first
-	if (!AVATAR->is_readied(BG_WEAPON_HAND, SHAPE_SHEARS, FRAME_ANY))
-	{
+	if (!AVATAR->is_readied(BG_WEAPON_HAND, SHAPE_SHEARS, FRAME_ANY)) {
 		randomPartySay("@Thou must have the shears in thy hand.@");
 		return;
 	}
@@ -116,7 +111,10 @@ void startShearing (var sheep)
 	//doesn't stop the GRAZE schedule from making the sheep
 	//wander off, so we actually have to paralyze them to keep
 	//them still.
-	script sheep { nohalt; call freeze; }
+	script sheep {
+		nohalt;
+		call freeze;
+	}
 
 	//Get in behind the sheep (oh, the jokes never cease)
 	var sheep_offsetx = [0, -1, 1];

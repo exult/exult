@@ -11,7 +11,8 @@ libpathfinder_la_SOURCES =	\
 	PathFinder.h		\
 	Zombie.cc		\
 	Zombie.h		\
-	path.cc
+	path.cc		\
+	path.h
 endif
 
 CLEANFILES = *~

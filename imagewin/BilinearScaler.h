@@ -22,20 +22,17 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "ArbScaler.h"
 
-namespace Pentagram {
+namespace Pentagram { namespace BilinearScaler {
+	class Scaler : public ArbScaler {
+	public:
+		Scaler();
+		virtual bool ScaleArbitrary() const;    //< supports arbitrary scaling of any degree
 
-class BilinearScaler : public ArbScaler {
-public:
-	BilinearScaler();
+		const char* ScalerName() const override;         //< Name Of the Scaler (1 word)
+		const char* ScalerDesc() const override;         //< Desciption of the Scaler
+		const char* ScalerCopyright() const override;    //< Scaler Copyright info
+	};
 
-	virtual       uint32    ScaleBits() const;          //< bits for supported integer scaling
-	virtual       bool      ScaleArbitrary() const;     //< supports arbitrary scaling of any degree
-
-	const char     *ScalerName() const override;         //< Name Of the Scaler (1 word)
-	const char     *ScalerDesc() const override;         //< Desciption of the Scaler
-	const char     *ScalerCopyright() const override;    //< Scaler Copyright info
-};
-
-}
+}}    // namespace Pentagram::BilinearScaler
 
 #endif

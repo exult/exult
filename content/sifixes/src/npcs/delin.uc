@@ -14,7 +14,7 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
- 
+
 /*  There is a very minor flag, only checked by Delin, that allows you to
  *  ask him about Batlin. It looks like it should have been set by Jendon
  *  per the flag order but that bit was removed sometime during SI's dev.
@@ -24,10 +24,9 @@
  *  2016-07-11 Written by Knight Captain
  */
 
-void Delin object#(0x42F) ()
-{
-	if (event == STARTED_TALKING && gflags[ASKED_JENDON_DAEMON_ARTIFACTS])
+void Delin object#(0x42F) () {
+	if (event == STARTED_TALKING && gflags[ASKED_JENDON_DAEMON_ARTIFACTS]) {
 		gflags[ASK_DELIN_ABOUT_BATLIN] = true;
-
+	}
 	Delin.original();
 }

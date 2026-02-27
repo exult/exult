@@ -18,45 +18,46 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
 #ifdef HAVE_CONFIG_H
-#  include <config.h>
+#	include <config.h>
 #endif
 
-
-#include <cstdio>
 #include "Configuration.h"
+#include "utils.h"
+
+#include <cassert>
+#include <cstdio>
+#include <cstring>
 #include <iostream>
 #include <string>
-#include <cstring>
-#include <cassert>
-#include "common_types.h"
-#include "utils.h"
 
 using std::string;
 
-using std::cout;
 using std::cerr;
+using std::cout;
 using std::endl;
 
-Configuration *config;
+Configuration* config;
 
-void    dump_stringvec(std::vector<std::string> &vs, int expect = -2) {
-	size_t  n;
+void dump_stringvec(std::vector<std::string>& vs, int expect = -2) {
+	size_t n;
 	cout << "vs is " << vs.size() << " entries" << endl;
-	for (n = 0; n < vs.size(); n++)
+	for (n = 0; n < vs.size(); n++) {
 		cout << n << " : " << vs[n] << endl;
-	if (expect == -2)
+	}
+	if (expect == -2) {
 		return;
+	}
 	assert(static_cast<int>(vs.size()) == expect);
 }
 
-void    test1() {
+void test1() {
 	cerr << "Reading config file: ./config.xml" << endl;
 
 	config->read_config_file("./config.xml");
 
 	cerr << "Config file read." << endl;
 
-	int n;
+	int         n;
 	std::string r;
 
 	cerr << "Dumping config to stdout." << endl;
@@ -101,11 +102,11 @@ void    test1() {
 	dump_stringvec(vs, 0);
 
 	config->clear();
-	//cout << endl << config->dump() << endl;
+	// cout << endl << config->dump() << endl;
 	assert(config->dump() == "<config>\n</config>\n");
 
 	Configuration config_slash(string(""), string("root"));
-	//cout << endl << config_slash.dump() << endl;
+	// cout << endl << config_slash.dump() << endl;
 	assert(config_slash.dump() == "<root>\n</root>\n");
 
 	config->clear("foo");
@@ -114,15 +115,15 @@ void    test1() {
 	Configuration confnew("./config.xml", "config");
 
 	Configuration::KeyTypeList ktl;
-	const string basekey("config/audio");
+	const string               basekey("config/audio");
 	confnew.getsubkeys(ktl, basekey);
 
 	cout << endl;
 
-	for (const auto& i : ktl)
+	for (const auto& i : ktl) {
 		cout << "Key:\t" << i.first << endl << "Value:\t" << i.second << endl;
+	}
 	assert(ktl.size() == 7);
-
 }
 
 void test2() {
@@ -131,14 +132,16 @@ void test2() {
 	config->dump(cout, "\t") << endl;
 }
 
-int main(int argc, char *argv[]) {
+int main(int argc, char* argv[]) {
 	config = new Configuration();
 
 	cerr << "Starting tests..." << endl;
 	test1();
-	if (argc > 1)
-		if (strcmp(argv[1], "--exult-cfg") == 0)
+	if (argc > 1) {
+		if (strcmp(argv[1], "--exult-cfg") == 0) {
 			test2();
+		}
+	}
 
 	return 0;
 }

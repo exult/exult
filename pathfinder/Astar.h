@@ -20,29 +20,29 @@
 #define ASTAR_H
 
 #include "PathFinder.h"
+
 #include <vector>
 
-
-class   Astar: public PathFinder {
-	std::vector<Tile_coord> path;       // Coords. to goal.
-	int pathlen = 0;            // Length of path.
-	int dir = 0;                // 1 or -1.
-	int stop = 0;               // Index to stop at.
-	int next_index = 0;         // Index of next tile to return.
+class Astar : public PathFinder {
+	std::vector<Tile_coord> path;              // Coords. to goal.
+	int                     dir        = 0;    // 1 or -1.
+	int                     stop       = 0;    // Index to stop at.
+	int                     next_index = 0;    // Index of next tile to return.
 public:
 	// Find a path from sx,sy,sz to dx,dy,dz
 	// Return false if no path can be traced.
 	// Return true if path found
-	bool NewPath(Tile_coord const &s, Tile_coord const &d,
-	            Pathfinder_client *client) override;
+	bool NewPath(const Tile_coord& s, const Tile_coord& d, const Pathfinder_client* client) override;
 
 	// Retrieve the coordinates of the next step on the path
-	bool GetNextStep(Tile_coord &n, bool &done) override;
+	bool GetNextStep(Tile_coord& n, bool& done) override;
 	// Set to retrieve in opposite order.
 	bool set_backwards() override;
-	bool following_smart_path() override { // Astar?
+
+	bool following_smart_path() override {    // Astar?
 		return true;
 	}
+
 	int get_num_steps() override;    // # of steps left to take.
 };
 

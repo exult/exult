@@ -1,0 +1,22 @@
+{
+  "name": "exult-studio",
+  "version-semver": "1.11.0-git",
+  "$Comment": "Only specifying package versions if there is a problem with the latest just use latest of all of them",
+  "dependencies": [
+    "libpng",
+    "zlib",
+    "libxml2",
+    "glib",
+    "pango",
+    "harfbuzz",
+    "cairo",
+    "atk",
+    "gtk3",
+    "freetype",
+    "icu",
+    "gdk-pixbuf",
+    "getopt-win32",
+    "dirent"
+  ],
+  "builtin-baseline": "2041718d8942de33c7d10e9e2fbf22b5e24d352e"
+}

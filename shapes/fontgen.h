@@ -28,11 +28,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 class Shape;
 
-bool Gen_font_shape(Shape *shape, const char *fontfile,
-                    int nframes, int pixels_ht,
-                    unsigned char fg, unsigned char bg,
-                    int shadow = -1);
+bool Gen_font_shape(
+		Shape* shape, const char* fontfile, int nframes, int pixels_ht, unsigned char fg, unsigned char bg, int shadow = -1);
 
-#endif  /* HAVE_FREETYPE2 */
-#endif  /* INCL_FONTGEN */
-
+#endif /* HAVE_FREETYPE2 */
+#endif /* INCL_FONTGEN */

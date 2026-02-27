@@ -20,15 +20,16 @@
  */
 
 #ifndef IREGOBJS_H
-#define IREGOBJS_H  1
+#define IREGOBJS_H 1
 
 #include "common_types.h"
 #include "objs.h"
 
 #ifdef _MSC_VER
-#  include <intrin0.h>
+#	include <intrin.h>
+
 inline uint8 rotl8(uint8 val, size_t shift) {
-	return _rotl8(val, shift);
+	return _rotl8(val, static_cast<uint8>(shift));
 }
 #else
 inline uint8 rotl8(uint8 val, size_t shift) {
@@ -46,73 +47,91 @@ inline uint8 nibble_swap(uint8 val) {
  *  A moveable game object (from 'ireg' files):
  */
 class Ireg_game_object : public Game_object {
-	Container_game_object *owner = nullptr;   // Container this is in, or 0.
+	Container_game_object* owner = nullptr;    // Container this is in, or 0.
 protected:
-	unsigned flags: 32;     // 32 flags used in 'usecode'.
-	unsigned flags2: 32;    // Another 32 flags used in 'usecode'.
-	int lowlift = -1;
-	int highshape = -1;
+	unsigned flags  : 32;    // 32 flags used in 'usecode'.
+	unsigned flags2 : 32;    // Another 32 flags used in 'usecode'.
+	int      lowlift   = -1;
+	int      highshape = -1;
+
 public:
-	Ireg_game_object(int shapenum, int framenum, unsigned int tilex,
-	                 unsigned int tiley, unsigned int lft = 0)
-		: Game_object(shapenum, framenum, tilex, tiley, lft),
-		  flags(0), flags2(0)
-	{  }
+	Ireg_game_object(int shapenum, int framenum, unsigned int tilex, unsigned int tiley, unsigned int lft = 0)
+			: Game_object(shapenum, framenum, tilex, tiley, lft), flags(0), flags2(0) {}
+
 	// Create fake entry.
-	Ireg_game_object() : flags(0), flags2(0)
-	{  }
+	Ireg_game_object() : flags(0), flags2(0) {}
+
 	~Ireg_game_object() override = default;
-	void set_flags(uint32 f) {  // For initialization.
+
+	void set_flags(uint32 f) {    // For initialization.
 		flags = f;
 	}
+
 	// Render.
 	void paint() override;
-	void paint_terrain() override {  }
+
+	void paint_terrain() override {}
+
 	// Move to new abs. location.
 	void move(int newtx, int newty, int newlift, int newmap = -1) override;
-	void move(Tile_coord const &t, int newmap = -1) {
+
+	void move(const Tile_coord& t, int newmap = -1) {
 		move(t.tx, t.ty, t.tz, newmap);
 	}
+
 	// Remove/delete this object.
-	void remove_this(Game_object_shared *keep = nullptr) override;
-	Container_game_object *get_owner() const override {
+	void remove_this(Game_object_shared* keep = nullptr) override;
+
+	Container_game_object* get_owner() const override {
 		return owner;
 	}
-	void set_owner(Container_game_object *o) override {
+
+	void set_owner(Container_game_object* o) override {
 		owner = o;
 	}
-	bool is_dragable() const override;// Can this be dragged?
+
+	bool is_dragable() const override;    // Can this be dragged?
+
 	void set_flag(int flag) override {
-		if (flag >= 0 && flag < 32)
+		if (flag >= 0 && flag < 32) {
 			flags |= (static_cast<uint32>(1) << flag);
-		else if (flag >= 32 && flag < 64)
+		} else if (flag >= 32 && flag < 64) {
 			flags2 |= (static_cast<uint32>(1) << (flag - 32));
+		}
 	}
+
 	void clear_flag(int flag) override {
-		if (flag >= 0 && flag < 32)
+		if (flag >= 0 && flag < 32) {
 			flags &= ~(static_cast<uint32>(1) << flag);
-		else if (flag >= 32 && flag < 64)
+		} else if (flag >= 32 && flag < 64) {
 			flags2 &= ~(static_cast<uint32>(1) << (flag - 32));
+		}
 	}
+
 	bool get_flag(int flag) const override {
-		if (flag >= 0 && flag < 32)
+		if (flag >= 0 && flag < 32) {
 			return flags & (static_cast<uint32>(1) << flag);
-		else if (flag >= 32 && flag < 64)
+		} else if (flag >= 32 && flag < 64) {
 			return flags2 & (static_cast<uint32>(1) << (flag - 32));
+		}
 		return false;
 	}
+
 	void set_flag_recursively(int flag) override {
 		set_flag(flag);
 	}
+
 	uint32 get_flags() const {
 		return flags;
 	}
+
 	uint32 get_flags2() const {
 		return flags2;
 	}
 
 	// Write common IREG data.
-	unsigned char *write_common_ireg(int norm_len, unsigned char *buf);
+	unsigned char* write_common_ireg(int norm_len, unsigned char* buf);
+
 	int get_common_ireg_size() const {
 		if (get_shapenum() >= 1024 || get_framenum() >= 64) {
 			return 7;
@@ -122,23 +141,29 @@ public:
 		}
 		return 5;
 	}
+
 	// Write out to IREG file.
-	void write_ireg(ODataSource *out) override;
+	void write_ireg(ODataSource* out) override;
 	// Get size of IREG. Returns -1 if can't write to buffer
 	int get_ireg_size() override;
+
 	virtual int get_high_shape() const {
 		return highshape;
 	}
+
 	virtual void set_high_shape(int s) {
 		highshape = s;
 	}
+
 	virtual int get_low_lift() const {
 		return lowlift;
 	}
+
 	virtual void set_low_lift(int l) {
 		lowlift = l;
 	}
 };
+
 using Ireg_game_object_shared = std::shared_ptr<Ireg_game_object>;
 
 #endif

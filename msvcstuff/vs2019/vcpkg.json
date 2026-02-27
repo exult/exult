@@ -1,0 +1,16 @@
+{
+  "name": "exult",
+  "version-semver": "1.11.0-git",
+  "$Comment": "Not specifying versions of the dependencies, just use latest of all of them",
+  "dependencies": [
+    "libpng",
+    "sdl3",
+    "zlib",
+    "libogg",
+    "libvorbis",
+    "libmt32emu",
+    "fluidsynth",
+    "dirent"
+  ],
+  "builtin-baseline": "2041718d8942de33c7d10e9e2fbf22b5e24d352e"
+}

@@ -19,23 +19,24 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #ifndef SIGN_GUMP_H
 #define SIGN_GUMP_H
 
-#include <string>
 #include "Gump.h"
+
+#include <string>
 
 /*
  *  A sign showing runes.
  */
 class Sign_gump : public Gump {
 protected:
-	std::string *lines;         // Lines of text.
-	int num_lines;
-	bool serpentine;
+	std::string* lines;    // Lines of text.
+	int          num_lines;
+	bool         serpentine;
 
 public:
 	Sign_gump(int shapenum, int nlines);
 	~Sign_gump() override;
 	// Set a line of text.
-	void add_text(int line, const std::string &txt);
+	void add_text(int line, const std::string& txt);
 	// Paint it and its contents.
 	void paint() override;
 };

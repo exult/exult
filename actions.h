@@ -1,7 +1,7 @@
 /*
  *  actions.h - Action controllers for actors.
  *
- *  Copyright (C) 2000-2022  The Exult Team
+ *  Copyright (C) 2000-2025  The Exult Team
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -19,11 +19,13 @@
  */
 
 #ifndef ACTIONS_H
-#define ACTIONS_H   1
+#define ACTIONS_H 1
 
 #include "ignore_unused_variable_warning.h"
 #include "tiles.h"
+
 #include <memory>
+#include <vector>
 
 class Actor;
 class Game_object;
@@ -38,50 +40,59 @@ using Game_object_weak = std::weak_ptr<Game_object>;
  *  This class controls the current actions of an actor:
  */
 class Actor_action {
-	static long seqcnt;     // Sequence # to check for deletion.
+	static long seqcnt;    // Sequence # to check for deletion.
 protected:
-	bool get_party = false;         // At each step (of the Avatar), have
+	bool get_party = false;    // At each step (of the Avatar), have
 	//   the party follow.
-	long seq;           // 'unique' sequence #.
+	long seq;    // 'unique' sequence #.
 public:
 	Actor_action() {
 		seq = ++seqcnt;
 	}
+
 	virtual ~Actor_action() = default;
+
 	void set_get_party(bool tf = true) {
 		ignore_unused_variable_warning(tf);
 		get_party = true;
 	}
-	int handle_event_safely(Actor *actor, bool &deleted);
+
+	int handle_event_safely(Actor* actor, bool& deleted);
 	// Handle time event.
-	virtual int handle_event(Actor *actor) = 0;
-	virtual void stop(Actor *actor) { // Stop moving.
+	virtual int handle_event(Actor* actor) = 0;
+
+	virtual void stop(Actor* actor) {    // Stop moving.
 		ignore_unused_variable_warning(actor);
 	}
+
 	// Set simple path to destination.
-	virtual Actor_action *walk_to_tile(Actor *npc, Tile_coord const &src,
-	                                   Tile_coord const &dest, int dist = 0, bool ignnpc = false);
+	virtual Actor_action* walk_to_tile(
+			Actor* npc, const Tile_coord& src, const Tile_coord& dest, int dist = 0, bool ignnpc = false);
 	// Set action to walk to dest, then
 	//   exec. another action when there.
-	static Actor_action *create_action_sequence(Actor *actor,
-	        Tile_coord const &dest, Actor_action *when_there,
-	        bool from_off_screen = false, bool persistant = false);
+	static Actor_action* create_action_sequence(
+			Actor* actor, const Tile_coord& dest, Actor_action* when_there, bool from_off_screen = false, bool persistant = false);
+
 	// Get destination, or ret. 0.
-	virtual bool get_dest(Tile_coord &dest) const {
+	virtual bool get_dest(Tile_coord& dest) const {
 		ignore_unused_variable_warning(dest);
 		return false;
 	}
+
 	// Check for Astar.
 	virtual bool following_smart_path() const {
 		return false;
 	}
-	virtual If_else_path_actor_action *as_usecode_path() {
+
+	virtual If_else_path_actor_action* as_usecode_path() {
 		return nullptr;
 	}
+
 	virtual int get_speed() const {
 		return 0;
 	}
-	virtual Actor_action *kill() {
+
+	virtual Actor_action* kill() {
 		delete this;
 		return nullptr;
 	}
@@ -93,7 +104,7 @@ public:
 class Null_action : public Actor_action {
 public:
 	Null_action() = default;
-	int handle_event(Actor *actor) override;
+	int handle_event(Actor* actor) override;
 };
 
 /*
@@ -101,43 +112,49 @@ public:
  */
 class Path_walking_actor_action : public Actor_action {
 protected:
-	bool reached_end = false;       // Reached end of path.
-	PathFinder *path;               // Allocated pathfinder.
-	bool deleted = false;           // True if the action has been killed.
+	bool        reached_end = false;    // Reached end of path.
+	PathFinder* path;                   // Allocated pathfinder.
+	bool        deleted = false;        // True if the action has been killed.
 private:
-	int original_dir;       // From src. to dest. (0-7).
-	int speed = 0;          // Time between frames.
-	bool from_offscreen = false;        // Walking from offscreen.
-	Actor_action *subseq = nullptr;     // For opening doors.
-	unsigned char blocked = 0;          // Blocked-tile retries.
-	unsigned char max_blocked;          // Try this many times.
-	unsigned char blocked_frame = 0;    // Frame for blocked tile.
-	unsigned char persistence;
-	Tile_coord blocked_tile;    // Tile to retry.
-	void set_subseq(Actor_action *sub) {
+	int              original_dir;                // From src. to dest. (0-7).
+	int              speed          = 0;          // Time between frames.
+	bool             from_offscreen = false;      // Walking from offscreen.
+	Actor_action*    subseq         = nullptr;    // For opening doors.
+	Game_object_weak door_obj;                    // Store the door object
+	bool             handling_door          = false;
+	bool             door_sequence_complete = false;
+	unsigned char    blocked                = 0;    // Blocked-tile retries.
+	unsigned char    max_blocked;                   // Try this many times.
+	unsigned char    blocked_frame = 0;             // Frame for blocked tile.
+	unsigned char    persistence;
+	Tile_coord       blocked_tile;    // Tile to retry.
+
+	void set_subseq(Actor_action* sub) {
 		delete subseq;
 		subseq = sub;
 	}
+
 public:
-	Path_walking_actor_action(PathFinder *p = nullptr, int maxblk = 3, int pers = 0);
+	Path_walking_actor_action(PathFinder* p = nullptr, int maxblk = 3, int pers = 0);
 	~Path_walking_actor_action() override;
-	static Path_walking_actor_action *create_path(Tile_coord const &src,
-	        Tile_coord const &dest, Pathfinder_client &cost);
+	static Path_walking_actor_action* create_path(const Tile_coord& src, const Tile_coord& dest, const Pathfinder_client& cost);
 	// Handle time event.
-	int handle_event(Actor *actor) override;
-	bool open_door(Actor *actor, Game_object *door);
-	void stop(Actor *actor) override;// Stop moving.
+	int  handle_event(Actor* actor) override;
+	bool open_door(Actor* actor, Game_object* door);
+	void stop(Actor* actor) override;    // Stop moving.
 	// Set simple path to destination.
-	Actor_action *walk_to_tile(Actor *npc, Tile_coord const &src,
-	                           Tile_coord const &dest, int dist = 0, bool ignnpc = false) override;
+	Actor_action* walk_to_tile(
+			Actor* npc, const Tile_coord& src, const Tile_coord& dest, int dist = 0, bool ignnpc = false) override;
 	// Get destination, or ret. 0.
-	bool get_dest(Tile_coord &dest) const override;
+	bool get_dest(Tile_coord& dest) const override;
 	// Check for Astar.
 	bool following_smart_path() const override;
+
 	int get_speed() const override {
 		return speed;
 	}
-	Actor_action *kill() override {
+
+	Actor_action* kill() override {
 		deleted = true;
 		return this;
 	}
@@ -148,19 +165,17 @@ public:
  *  moved.
  */
 class Approach_actor_action : public Path_walking_actor_action {
-	Game_object_weak dest_obj;      // Destination object.
-	int goal_dist;          // Stop if within this distance.
-	Tile_coord orig_dest_pos;   // Dest_obj's pos. when we start.
-	int cur_step;           // Count steps.
-	int check_step;         // Check at this step.
-	bool for_projectile;        // Check for proj. path.
+	Game_object_weak dest_obj;          // Destination object.
+	int              goal_dist;         // Stop if within this distance.
+	Tile_coord       orig_dest_pos;     // Dest_obj's pos. when we start.
+	int              cur_step;          // Count steps.
+	int              check_step;        // Check at this step.
+	bool             for_projectile;    // Check for proj. path.
 public:
-	Approach_actor_action(PathFinder *p, Game_object *d,
-	                      int gdist = -1, bool for_proj = false);
-	static Approach_actor_action *create_path(Tile_coord const &src,
-	        Game_object *dest, int gdist, Pathfinder_client &cost);
+	Approach_actor_action(PathFinder* p, Game_object* d, int gdist = -1, bool for_proj = false);
+	static Approach_actor_action* create_path(const Tile_coord& src, Game_object* dest, int gdist, Pathfinder_client& cost);
 	// Handle time event.
-	int handle_event(Actor *actor) override;
+	int handle_event(Actor* actor) override;
 };
 
 /*
@@ -168,22 +183,26 @@ public:
  *  failed.
  */
 class If_else_path_actor_action : public Path_walking_actor_action {
-	bool succeeded, failed, done;
+	bool          succeeded, failed, done;
 	Actor_action *success, *failure;
+
 public:
-	If_else_path_actor_action(Actor *actor, Tile_coord const &dest,
-	                          Actor_action *s, Actor_action *f = nullptr);
+	If_else_path_actor_action(Actor* actor, const Tile_coord& dest, Actor_action* s, Actor_action* f = nullptr);
 	~If_else_path_actor_action() override;
-	void set_failure(Actor_action *f);
-	bool done_and_failed() const {      // Happens if no path found in ctor.
+	void set_failure(Actor_action* f);
+
+	bool done_and_failed() const {    // Happens if no path found in ctor.
 		return done && failed;
 	}
+
 	bool is_done() const {
 		return done;
 	}
+
 	// Handle time event.
-	int handle_event(Actor *actor) override;
-	If_else_path_actor_action *as_usecode_path() override {
+	int handle_event(Actor* actor) override;
+
+	If_else_path_actor_action* as_usecode_path() override {
 		return this;
 	}
 };
@@ -192,12 +211,12 @@ public:
  *  Just move (i.e. teleport) to a desired location.
  */
 class Move_actor_action : public Actor_action {
-	Tile_coord dest;        // Where to go.
+	Tile_coord dest;    // Where to go.
 public:
-	Move_actor_action(Tile_coord const &d) : dest(d)
-	{  }
+	Move_actor_action(const Tile_coord& d) : dest(d) {}
+
 	// Handle time event.
-	int handle_event(Actor *actor) override;
+	int handle_event(Actor* actor) override;
 };
 
 /*
@@ -205,34 +224,45 @@ public:
  */
 class Activate_actor_action : public Actor_action {
 	Game_object_weak obj;
+
 public:
-	Activate_actor_action(Game_object *o);
+	Activate_actor_action(Game_object* o);
 	// Handle time event.
-	int handle_event(Actor *actor) override;
+	int handle_event(Actor* actor) override;
 };
 
 /*
  *  Go through a series of frames.
  */
 class Frames_actor_action : public Actor_action {
-	signed char *frames;        // List to go through (a -1 means to
+	std::vector<signed char> frames;    // List to go through (a -1 means to
 	//   leave frame alone.)
-	int cnt;            // Size of list.
-	int index;          // Index for next.
-	int speed;          // Frame delay in 1/1000 secs.
-	Game_object_weak obj;       // Object to animate
-    bool use_actor;
+	size_t           index;    // Index for next.
+	int              speed;    // Frame delay in 1/1000 secs.
+	Game_object_weak obj;      // Object to animate
+	bool             use_actor;
+	int              sound_id = -1;     // Sound effect to play (-1 = none)
+	int              volume   = 255;    // Volume (0-255)
+	int              repeat   = 0;      // Repeat count
+	Game_object_weak sound_src;         // Optional custom sound source
+	bool             sound_played = false;
+
 public:
-	Frames_actor_action(signed char *f, int c, int spd = 200, Game_object *o = nullptr);
-	Frames_actor_action(signed char f, int spd = 200, Game_object *o = nullptr);
-	~Frames_actor_action() override {
-		delete [] frames;
-	}
+	Frames_actor_action(
+			const signed char* f, int c, int spd = 200, Game_object* o = nullptr, int sfx = -1, int vol = 255, int rep = 0,
+			Game_object* src = nullptr);
+
+	Frames_actor_action(
+			signed char f, int spd = 200, Game_object* o = nullptr, int sfx = -1, int vol = 255, int rep = 0,
+			Game_object* src = nullptr);
+
 	// Handle time event.
-	int handle_event(Actor *actor) override;
-	int get_index() const {
+	int handle_event(Actor* actor) override;
+
+	size_t get_index() const {
 		return index;
 	}
+
 	int get_speed() const override {
 		return speed;
 	}
@@ -242,40 +272,42 @@ public:
  *  Call a usecode function.
  */
 class Usecode_actor_action : public Actor_action {
-	int fun;            // Fun. #.
-	Game_object_weak item;      // Call it on this item.
-	int eventid;
+	int              fun;     // Fun. #.
+	Game_object_weak item;    // Call it on this item.
+	int              eventid;
+
 public:
-	Usecode_actor_action(int f, Game_object *i, int ev);
+	Usecode_actor_action(int f, Game_object* i, int ev);
 	// Handle time event.
-	int handle_event(Actor *actor) override;
+	int handle_event(Actor* actor) override;
 };
 
 /*
  *  Do a sequence of actions.
  */
 class Sequence_actor_action : public Actor_action {
-	Actor_action **actions;     // List of actions, ending with null.
-	int index;          // Index into list.
-	int speed;          // Frame delay in 1/1000 secs. between
-	//   actions.
+	Actor_action** actions;    // List of actions, ending with null.
+	int            index;      // Index into list.
+	int            speed;      // Frame delay in 1/1000 secs. between
+							   //   actions.
 public:
 	// Create with allocated list.
-	Sequence_actor_action(Actor_action **act, int spd = 100)
-		: actions(act), index(0), speed(spd)
-	{  }
+	Sequence_actor_action(Actor_action** act, int spd = 100) : actions(act), index(0), speed(spd) {}
+
 	// Create with up to 4.
-	Sequence_actor_action(Actor_action *a0, Actor_action *a1,
-	                      Actor_action *a2 = nullptr, Actor_action *a3 = nullptr);
+	Sequence_actor_action(Actor_action* a0, Actor_action* a1, Actor_action* a2 = nullptr, Actor_action* a3 = nullptr);
+
 	int get_speed() const override {
 		return speed;
 	}
+
 	void set_speed(int spd) {
 		speed = spd;
 	}
+
 	~Sequence_actor_action() override;
 	// Handle time event.
-	int handle_event(Actor *actor) override;
+	int handle_event(Actor* actor) override;
 };
 
 //
@@ -287,14 +319,15 @@ public:
  */
 class Object_animate_actor_action : public Actor_action {
 	Game_object_weak obj;
-	int nframes;            // # of frames.
-	int cycles;         // # of cycles to do.
-	int speed;          // Time between frames.
+	int              nframes;    // # of frames.
+	int              cycles;     // # of cycles to do.
+	int              speed;      // Time between frames.
 public:
-	Object_animate_actor_action(Game_object *o, int cy, int spd);
-	Object_animate_actor_action(Game_object *o, int nframes, int cy, int spd);
+	Object_animate_actor_action(Game_object* o, int cy, int spd);
+	Object_animate_actor_action(Game_object* o, int nframes, int cy, int spd);
 	// Handle time event.
-	int handle_event(Actor *actor) override;
+	int handle_event(Actor* actor) override;
+
 	int get_speed() const override {
 		return speed;
 	}
@@ -305,56 +338,170 @@ public:
  */
 
 class Pickup_actor_action : public Actor_action {
-	Game_object_weak obj;       // What to pick up/put down.
-	int pickup;         // 1 to pick up, 0 to put down.
-	int speed;          // Time between frames.
-	int cnt;            // 0, 1, 2.
-	Tile_coord objpos;      // Where to put it.
-	int dir;            // Direction to face.
-	bool temp;          // True to make object temporary on drop.
-	bool to_del;		// Delete after picking up object.
+	Game_object_weak obj;         // What to pick up/put down.
+	int              pickup;      // 1 to pick up, 0 to put down.
+	int              speed;       // Time between frames.
+	int              cnt;         // 0, 1, 2.
+	Tile_coord       objpos;      // Where to put it.
+	int              dir;         // Direction to face.
+	bool             temp;        // True to make object temporary on drop.
+	bool             to_del;      // Delete after picking up object.
+	int              sound_id;    // ID of sound effect to play
+	int              volume;      // Volume (0-256)
+	int              repeat;      // Repeat count
+	bool             play_sfx;    // Whether to play a sound effect
 public:
 	// To pick up an object:
-	Pickup_actor_action(Game_object *o, int spd, bool del = false);
-	// To put down an object:
-	Pickup_actor_action(Game_object *o, Tile_coord const &opos, int spd, bool t = false);
-	int handle_event(Actor *actor) override;
+	Pickup_actor_action(Game_object* o, int spd = 250, bool del = false, int sfx = -1, int vol = 255, int rep = 0);
+	// Put down an object:
+	Pickup_actor_action(
+			Game_object* o, const Tile_coord& opos, int spd = 250, bool t = false, int sfx = -1, int vol = 255, int rep = 0);
+	int handle_event(Actor* actor) override;
+
 	int get_speed() const override {
 		return speed;
 	}
-};
 
+	void stop(Actor* actor) override {
+		ignore_unused_variable_warning(actor);
+	}
+};
 
 /*
  *  Action to turn towards an object or spot.
  */
 
 class Face_pos_actor_action : public Actor_action {
-	int speed;          // Time between frames.
-	Tile_coord pos;         // Where to put it.
+	int        speed;    // Time between frames.
+	Tile_coord pos;      // Where to put it.
 public:
-	Face_pos_actor_action(Tile_coord const &p, int spd);
+	Face_pos_actor_action(const Tile_coord& p, int spd);
 	// To pick up an object:
-	Face_pos_actor_action(Game_object *o, int spd);
-	int handle_event(Actor *actor) override;
+	Face_pos_actor_action(Game_object* o, int spd);
+	int handle_event(Actor* actor) override;
+
 	int get_speed() const override {
 		return speed;
 	}
 };
-
 
 /*
  *  Action to modify another actor.
  */
 
 class Change_actor_action : public Actor_action {
-	Game_object_weak obj;       // What to modify.
-	int shnum, frnum, qual; // New shape, frame and quality.
+	Game_object_weak obj;                   // What to modify.
+	int              shnum, frnum, qual;    // New shape, frame and quality.
 public:
-	Change_actor_action(Game_object *o, int sh, int fr, int ql);
-	int handle_event(Actor *actor) override;
+	Change_actor_action(Game_object* o, int sh, int fr, int ql);
+	int handle_event(Actor* actor) override;
 };
 
+/*
+ *  Action to play an effect.
+ */
 
-#endif  /* INCL_ACTIONS */
+class Effect_actor_action : public Actor_action {
+private:
+	int              effect_type;       // Type of effect
+	Game_object_weak object;            // Object to attach effect to
+	int              deltax, deltay;    // Offsets
+	int              delay;             // Delay before starting
+	int              starting_frame;    // Starting frame
+	int              repetitions;       // Repetitions
 
+public:
+	Effect_actor_action(int type, Game_object* obj, int dx = 0, int dy = 0, int d = 0, int frm = 0, int reps = 0);
+
+	int handle_event(Actor* actor) override;
+
+	int get_speed() const override {
+		return 0;
+	}
+
+	void stop(Actor* actor) override {
+		ignore_unused_variable_warning(actor);
+	}
+};
+
+/*
+ *  Action to play a sound effect.
+ */
+
+class Play_sfx_actor_action : public Actor_action {
+private:
+	int              sound_id;    // ID of sound effect to play
+	Game_object_weak object;      // Object that is the source of sound
+	int              volume;      // Volume (0-256)
+	int              repeat;      // Repeat count (0 = once)
+
+public:
+	Play_sfx_actor_action(int sfx_id, Game_object* obj, int vol = 255, int rep = 0);
+
+	int handle_event(Actor* actor) override;
+
+	int get_speed() const override {
+		return 0;
+	}
+
+	void stop(Actor* actor) override {
+		ignore_unused_variable_warning(actor);
+	}
+};
+
+/*
+ *  Action that groups multiple actions to execute simultaneously in one frame.
+ */
+
+class Group_actor_action : public Actor_action {
+private:
+	std::vector<Actor_action*> actions;          // Actions to execute together
+	int                        max_delay = 0;    // Use max delay of all actions
+
+public:
+	// Constructor takes a vector of actions (takes ownership)
+	Group_actor_action(std::vector<Actor_action*>&& acts) : actions(std::move(acts)), max_delay(0) {}
+
+	// Constructors for convenience with 2-5 actions
+	Group_actor_action(Actor_action* a1, Actor_action* a2) {
+		actions.push_back(a1);
+		actions.push_back(a2);
+	}
+
+	Group_actor_action(Actor_action* a1, Actor_action* a2, Actor_action* a3) {
+		actions.push_back(a1);
+		actions.push_back(a2);
+		actions.push_back(a3);
+	}
+
+	Group_actor_action(Actor_action* a1, Actor_action* a2, Actor_action* a3, Actor_action* a4) {
+		actions.push_back(a1);
+		actions.push_back(a2);
+		actions.push_back(a3);
+		actions.push_back(a4);
+	}
+
+	Group_actor_action(Actor_action* a1, Actor_action* a2, Actor_action* a3, Actor_action* a4, Actor_action* a5) {
+		actions.push_back(a1);
+		actions.push_back(a2);
+		actions.push_back(a3);
+		actions.push_back(a4);
+		actions.push_back(a5);
+	}
+
+	~Group_actor_action() override {
+		for (auto* act : actions) {
+			delete act;
+		}
+	}
+
+	int handle_event(Actor* actor) override;
+
+	int get_speed() const override {
+		return max_delay;
+	}
+
+	void stop(Actor* actor) override;
+};
+
+#endif /* INCL_ACTIONS */

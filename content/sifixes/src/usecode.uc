@@ -18,7 +18,9 @@
  */
 
 // Tells the compiler the game type
-#game "serpentisle" // Tells the compiler the game type
+#game "serpentisle"
+// Want to enforce braces around all statements
+#strictbraces "true"
 
 // Starts autonumbering at function number 0xC00.
 // I leave function numbers in the range 0xA00 to
@@ -31,12 +33,18 @@
 #include "header/constants.uc"
 // SI Global Flags
 #include "header/si/si_gflags.uc"
+// Standard structure definitions
+#include "header/si/si_structs.uc"
 // Calls defined in SI Usecode
 #include "header/si/si_externals.uc"
 // SI Shapes
 #include "header/si/si_shapes.uc"
 // SI NPCs
 #include "header/si/si_npcs.uc"
+// SI Faces
+#include "header/si/si_faces.uc"
+// SI Sprites
+#include "header/si/si_sprites.uc"
 
 // New functions
 #include "header/functions.uc"
@@ -119,12 +127,16 @@
 #include "npcs/mwaerno.uc"
 // Brings the automatons in Skullcrusher to life
 #include "npcs/skullcrusher_automatons.uc"
+// Fixing wrong book quoting from automaton guard.
+#include "npcs/spinebreaker_automatons.uc"
 
 // For curing Cantra, from exult/content/si; modified to allow companions
 // to thank you (and rejoin) after you cure them but before Xenka returns
 #include "items/bucket_cure.uc"
 // Fixes Shrine of Order issues
 #include "items/hourglass.uc"
+// Fixes the missing face for Smith in the Dream Realm.
+#include "items/nightmare.uc"
 // Can no longer get to Test of Purity from SS
 #include "items/pillar.uc"
 // Iolo, Shamino and Dupre refuse blue potions in Spinebreaker mountains
@@ -146,6 +158,8 @@
 #include "cutscenes/fawn_trial.uc"
 // Prevents deletion of the training pikeman egg
 #include "cutscenes/monitor_banquet.uc"
+// Fix invisible party members not joining back.
+#include "cutscenes/moonshade_banquet.uc"
 // Absolutely force companions to be there and force-kills them after
 #include "cutscenes/wall_of_lights.uc"
 // Fixes gang planck blocking check
@@ -154,3 +168,5 @@
 #include "misc/list_field.uc"
 // Allows Hound of Doskar to track Anti-Shamino with Beatrix' Book.
 #include "npcs/hound.uc"
+// Fixes Topo's schedule to let him be at the inn when he is eating.
+#include "npcs/topo.uc"

@@ -18,7 +18,7 @@ confregress_SOURCES =	\
 
 confregress_LDADD =	\
 	libconf.la	\
-	../files/libu7file.la	\
+	$(top_builddir)/files/libu7file.la	\
 	$(SYSLIBS)
 
 EXTRA_DIST = 		\

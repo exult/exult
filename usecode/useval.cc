@@ -20,31 +20,31 @@
  */
 
 #ifdef HAVE_CONFIG_H
-#  include <config.h>
+#	include <config.h>
 #endif
 
-#include <fstream>
+#include "useval.h"
+
+#include "databuf.h"
+#include "gamewin.h"
+#include "ios_state.hpp"
+#include "ucmachine.h"
+#include "ucsymtbl.h"
+
+#include <cstdio>
+#include <cstdlib>
 #include <cstring>
+#include <functional>
 #include <iomanip>
 #include <iostream>
-#include <cstdlib>
-#include <cstdio>
-#include <functional>
 #include <limits>
-#include "useval.h"
-#include "utils.h"
-#include "ucsymtbl.h"
-#include "gamewin.h"
-#include "ucmachine.h"
-#include "databuf.h"
-#include "ios_state.hpp"
 
 using std::hex;
 using std::ostream;
 using std::setfill;
 using std::setw;
-using std::strlen;
 using std::string;
+using std::strlen;
 
 /*
  *  Destructor
@@ -63,10 +63,10 @@ Usecode_value::~Usecode_value() {
  *  Warning: is left undefined after this.
  */
 
-void Usecode_value::steal_array(Usecode_value &v2) {
+void Usecode_value::steal_array(Usecode_value& v2) {
 	destroy();
 	undefined = false;
-	type = array_type;
+	type      = array_type;
 	if (v2.type == array_type) {
 		// Swipe array.
 		construct(arrayval, std::move(v2.arrayval));
@@ -82,10 +82,8 @@ void Usecode_value::steal_array(Usecode_value &v2) {
  *  Output: Always true.
  */
 
-int Usecode_value::resize(
-    int new_size
-) {
-	if (type != array_type) { // Turn it into an array.
+int Usecode_value::resize(int new_size) {
+	if (type != array_type) {    // Turn it into an array.
 		Usecode_value elem(*this);
 		*this = Usecode_value(new_size, &elem);
 		return 1;
@@ -100,11 +98,10 @@ int Usecode_value::resize(
  *  Output: 1 if they match, else 0.
  */
 
-bool Usecode_value::operator==(
-    const Usecode_value &v2
-) const {
-	if (&v2 == this)
-		return true;        // Same object.
+bool Usecode_value::operator==(const Usecode_value& v2) const {
+	if (&v2 == this) {
+		return true;    // Same object.
+	}
 	switch (type) {
 	case int_type:
 		switch (v2.type) {
@@ -168,14 +165,15 @@ bool Usecode_value::operator==(
  *  Output: Index if found, else -1.
  */
 
-int Usecode_value::find_elem(
-    const Usecode_value &val
-) {
-	if (type != array_type)
-		return -1;        // Not an array.
-	for (size_t i = 0; i < arrayval.size(); i++)
-		if (arrayval[i] == val)
+int Usecode_value::find_elem(const Usecode_value& val) {
+	if (type != array_type) {
+		return -1;    // Not an array.
+	}
+	for (size_t i = 0; i < arrayval.size(); i++) {
+		if (arrayval[i] == val) {
 			return i;
+		}
+	}
 	return -1;
 }
 
@@ -185,17 +183,16 @@ int Usecode_value::find_elem(
  *  Output: This.
  */
 
-Usecode_value &Usecode_value::concat(
-    Usecode_value &val2     // Concat. val2 onto end.
+Usecode_value& Usecode_value::concat(Usecode_value& val2    // Concat. val2 onto end.
 ) {
-	if (type != array_type) {   // Not an array?  Create one.
+	if (type != array_type) {    // Not an array?  Create one.
 		// Current value becomes 1st elem.
 		Usecode_value tmp(1, this);
 		*this = std::move(tmp);
 	}
-	if (val2.type != array_type) {  // Appending a single value?
+	if (val2.type != array_type) {    // Appending a single value?
 		arrayval.push_back(val2);
-	} else {            // Appending an array.
+	} else {    // Appending an array.
 		arrayval.insert(arrayval.end(), val2.arrayval.cbegin(), val2.arrayval.cend());
 	}
 	return *this;
@@ -205,10 +202,7 @@ Usecode_value &Usecode_value::concat(
  *  Append a list of integer values.
  */
 
-void Usecode_value::append(
-    int *vals,
-    int cnt
-) {
+void Usecode_value::append(int* vals, int cnt) {
 	assert(type == array_type);
 	arrayval.insert(arrayval.end(), vals, vals + cnt);
 }
@@ -220,12 +214,9 @@ void Usecode_value::append(
  *  Output: # elements added.
  */
 
-int Usecode_value::add_values(
-    int index,
-    Usecode_value &val2
-) {
+int Usecode_value::add_values(int index, Usecode_value& val2) {
 	const int size = get_array_size();
-	if (!val2.is_array()) {     // Simple case?
+	if (!val2.is_array()) {    // Simple case?
 		if (index >= size) {
 			arrayval.push_back(val2);
 		} else {
@@ -239,16 +230,14 @@ int Usecode_value::add_values(
 		arrayval.resize(index + size2);
 	}
 	std::copy(val2.arrayval.cbegin(), val2.arrayval.cend(), arrayval.begin() + index);
-	return size2;         // Return # added.
+	return size2;    // Return # added.
 }
 
 /*
  *  Print in ASCII.
  */
 
-void Usecode_value::print(
-    ostream &out, bool shortformat
-) const {
+void Usecode_value::print(ostream& out, bool shortformat) const {
 	auto print_array = [&out, shortformat](auto begin, auto count) {
 		auto end = begin;
 		if (shortformat && count > 2) {
@@ -263,12 +252,13 @@ void Usecode_value::print(
 			}
 			elem->print(out);
 		}
-		if (shortformat && count > 2)
+		if (shortformat && count > 2) {
 			out << ", ... (size " << count << ")";
+		}
 		out << " ]";
 	};
 	const boost::io::ios_flags_saver flags(out);
-	const boost::io::ios_fill_saver fill(out);
+	const boost::io::ios_fill_saver  fill(out);
 	switch (type) {
 	case int_type:
 		out << hex << setfill('0') << setw(4);
@@ -287,10 +277,11 @@ void Usecode_value::print(
 	case class_sym_type:
 		// TODO: Implement this.
 		out << "->";
-		if (clssym)
+		if (clssym) {
 			out << clssym->get_name();
-		else
+		} else {
 			out << "null obj?";
+		}
 		break;
 	case class_obj_type:
 		print_array(clsrefval.elems, clsrefval.cnt);
@@ -300,8 +291,8 @@ void Usecode_value::print(
 	}
 }
 
-Usecode_value& Usecode_value::operator+=(const Usecode_value &v2) {
-	Usecode_value &v1 = *this;
+Usecode_value& Usecode_value::operator+=(const Usecode_value& v2) {
+	Usecode_value& v1 = *this;
 
 	if (v1.is_undefined()) {
 		v1 = v2;
@@ -334,25 +325,26 @@ Usecode_value& Usecode_value::operator+=(const Usecode_value &v2) {
 
 template <typename T, template <typename> class Op>
 struct safe_divide : Op<T> {
-	T operator()(const T &x, const T &y) const {
+	T operator()(const T& x, const T& y) const {
 		// Watch for division by zero. Originals do this, but they return
 		// 32768 in all cases.
-		if (y == 0)
+		if (y == 0) {
 			return x < 0 ? std::numeric_limits<T>::min() : std::numeric_limits<T>::max();
-		else
+		} else {
 			return Op<T>::operator()(x, y);
+		}
 	}
 };
 
 template <typename Op>
-Usecode_value& Usecode_value::operate(const Usecode_value &v2) {
-	Op op;
-	Usecode_value &v1 = *this;
+Usecode_value& Usecode_value::operate(const Usecode_value& v2) {
+	Op             op;
+	Usecode_value& v1 = *this;
 
-	if (v1.is_undefined())
+	if (v1.is_undefined()) {
 		// Seems correct.
 		v1 = op(0, v2.need_int_value());
-	else if (v2.is_undefined()) {
+	} else if (v2.is_undefined()) {
 		// Just return zero
 		v1 = Usecode_value(0);
 	} else if (v1.get_type() == Usecode_value::int_type) {
@@ -379,20 +371,20 @@ Usecode_value& Usecode_value::operate(const Usecode_value &v2) {
 	return v1;
 }
 
-Usecode_value& Usecode_value::operator-=(const Usecode_value &v2) {
-	return operate<std::minus<long> >(v2);
+Usecode_value& Usecode_value::operator-=(const Usecode_value& v2) {
+	return operate<std::minus<long>>(v2);
 }
 
-Usecode_value& Usecode_value::operator*=(const Usecode_value &v2) {
-	return operate<std::multiplies<long> >(v2);
+Usecode_value& Usecode_value::operator*=(const Usecode_value& v2) {
+	return operate<std::multiplies<long>>(v2);
 }
 
-Usecode_value& Usecode_value::operator/=(const Usecode_value &v2) {
-	return operate<safe_divide<long, std::divides> >(v2);
+Usecode_value& Usecode_value::operator/=(const Usecode_value& v2) {
+	return operate<safe_divide<long, std::divides>>(v2);
 }
 
-Usecode_value& Usecode_value::operator%=(const Usecode_value &v2) {
-	return operate<safe_divide<long, std::modulus> >(v2);
+Usecode_value& Usecode_value::operator%=(const Usecode_value& v2) {
+	return operate<safe_divide<long, std::modulus>>(v2);
 }
 
 /*
@@ -401,9 +393,7 @@ Usecode_value& Usecode_value::operator%=(const Usecode_value &v2) {
  *  Output: # bytes stored, or -1 if error.
  */
 
-bool Usecode_value::save(
-    ODataSource *out
-) {
+bool Usecode_value::save(ODataSource* out) {
 	out->write1(static_cast<int>(type));
 	switch (type) {
 	case int_type:
@@ -414,8 +404,8 @@ bool Usecode_value::save(
 		out->write4(0);
 		break;
 	case class_sym_type: {
-		const char *classname = clssym->get_name();
-		const int len = std::strlen(classname);
+		const char* classname = clssym->get_name();
+		const int   len       = std::strlen(classname);
 		out->write2(len);
 		out->write(classname, len);
 		break;
@@ -426,10 +416,11 @@ bool Usecode_value::save(
 		break;
 	}
 	case array_type:
-		out->write2(arrayval.size()); // first length, then length Usecode_values
+		out->write2(arrayval.size());    // first length, then length Usecode_values
 		for (auto& elem : arrayval) {
-			if (!elem.save(out))
+			if (!elem.save(out)) {
 				return false;
+			}
 		}
 		break;
 	case class_obj_type: {
@@ -437,10 +428,11 @@ bool Usecode_value::save(
 		// instance points to the same array.
 		// Need to serialize this properly.
 		const int len = clsrefval.cnt;
-		out->write2(len); // first length, then length Usecode_values
+		out->write2(len);    // first length, then length Usecode_values
 		for (int i = 0; i < len; i++) {
-			if (!clsrefval.elems[i].save(out))
+			if (!clsrefval.elems[i].save(out)) {
 				return false;
+			}
 		}
 		break;
 	}
@@ -456,11 +448,9 @@ bool Usecode_value::save(
  *  Output: False if error.
  */
 
-bool Usecode_value::restore(
-    IDataSource *in
-) {
+bool Usecode_value::restore(IDataSource* in) {
 	undefined = false;
-	type = static_cast<Val_type>(in->read1());
+	type      = static_cast<Val_type>(in->read1());
 	switch (type) {
 	case int_type:
 		intval = in->read4();
@@ -468,16 +458,16 @@ bool Usecode_value::restore(
 	case pointer_type:
 		// TODO: proper deserialization.
 		in->read4();
-		construct(ptrval); //DON'T dereference this pointer!
+		construct(ptrval);    // DON'T dereference this pointer!
 		// Maybe add a new type "serialized_pointer" to prevent "accidents"?
 		return true;
 	case class_sym_type: {
 		const int len = in->read2();
-		char *nm = new char[len + 1];
+		char*     nm  = new char[len + 1];
 		in->read(nm, len);
-		nm[len] = 0;
-		Game_window *gwin = Game_window::get_instance();
-		clssym = gwin->get_usecode()->get_class(nm);
+		nm[len]           = 0;
+		Game_window* gwin = Game_window::get_instance();
+		clssym            = gwin->get_usecode()->get_class(nm);
 		return true;
 	}
 	case string_type: {
@@ -500,12 +490,14 @@ bool Usecode_value::restore(
 		// This will duplicate the instance variables, and they will no
 		// longer point to the same instance.
 		// Need to deserialize this properly.
-		const int len = in->read2();
-		clsrefval.cnt = len;  // Stores class, class vars.
+		const int len   = in->read2();
+		clsrefval.cnt   = len;    // Stores class, class vars.
 		clsrefval.elems = new Usecode_value[clsrefval.cnt];
-		for (int i = 0; i < len; i++)
-			if (!clsrefval.elems[i].restore(in))
+		for (int i = 0; i < len; i++) {
+			if (!clsrefval.elems[i].restore(in)) {
 				return false;
+			}
+		}
 		return true;
 	}
 	default:
@@ -513,8 +505,7 @@ bool Usecode_value::restore(
 	}
 }
 
-
-ostream &operator<<(ostream &out, Usecode_value &val) {
+ostream& operator<<(ostream& out, Usecode_value& val) {
 	val.print(out, true);
 	return out;
 }
@@ -522,16 +513,16 @@ ostream &operator<<(ostream &out, Usecode_value &val) {
 /*
  *  Create/delete class objects.
  */
-void Usecode_value::class_new(Usecode_class_symbol *cls, int nvars) {
+void Usecode_value::class_new(Usecode_class_symbol* cls, int nvars) {
 	assert(type == int_type);
-	type = class_obj_type;
-	clsrefval.cnt = nvars + 1;    // Stores class, class vars.
-	clsrefval.elems = new Usecode_value[clsrefval.cnt];
+	type               = class_obj_type;
+	clsrefval.cnt      = nvars + 1;    // Stores class, class vars.
+	clsrefval.elems    = new Usecode_value[clsrefval.cnt];
 	clsrefval.elems[0] = Usecode_value(cls);
 }
 
 void Usecode_value::class_delete() {
 	assert(type == class_obj_type);
-	delete [] clsrefval.elems;
+	delete[] clsrefval.elems;
 	*this = Usecode_value(0);
 }

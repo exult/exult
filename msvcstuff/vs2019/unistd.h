@@ -3,4 +3,6 @@
 #ifndef UNISTD_H
 #define UNISTD_H
 
-#endif UNISTD_H
+// Empty till something from here is needed
+
+#endif    // UNISTD_H

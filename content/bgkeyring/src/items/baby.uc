@@ -22,33 +22,32 @@
 
 /* Baby: reimplemented so you can finally stick Lady Tory's baby in a cradle */
 const int FRAME_RIKY			= 2;
-void Baby shape#(0x2DA) ()
-{
-	if (event != DOUBLECLICK) return;
+void Baby shape#(0x2DA) () {
+	if (event != DOUBLECLICK) {
+		return;
+	}
 
 	//Added in gflags check - this one is set to true when Lady Tory
 	//has thanked you for returning the child.
-	if (get_item_frame() == FRAME_RIKY && !gflags[RESCUED_RIKY])
-	{
-		if (gflags[HEARD_ABOUT_RIKY])	//heard about Riky
+	if (get_item_frame() == FRAME_RIKY && !gflags[RESCUED_RIKY]) {
+		if (gflags[HEARD_ABOUT_RIKY]) {
+			//heard about Riky
 			randomPartySay("@Praise All! The child is still alive. He must be returned to Lady Tory immediately!@");
-		else
+		} else {
 			randomPartySay("@Praise All! The child is still alive. We must find who his parents are, and return him to his home!@");
-	}
-	else
-	{
-		var target = UI_click_on_item();
+		}
+	} else {
+		struct<ObjPos> target = UI_click_on_item();
 		var target_shape = target->get_item_shape();
-		//used on full cradle
-		if (target_shape == SHAPE_FULL_CRADLE)
+		if (target_shape == SHAPE_FULL_CRADLE) {
+			//used on full cradle
 			randomPartySay("@Pardon me my friend, dost thou not think that would be a little crowded?@");
-		//used on empty cradle
-		else if (target_shape == SHAPE_EMPTY_CRADLE)
-		{
+		} else if (target_shape == SHAPE_EMPTY_CRADLE) {
+			//used on empty cradle
 			target->set_item_shape(SHAPE_FULL_CRADLE);
 			remove_item();
-		}
-		else
+		} else {
 			flashBlocked(60);
+		}
 	}
 }

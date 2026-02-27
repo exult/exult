@@ -1,0 +1,146 @@
+name: snapshots-android
+
+on: [workflow_call]
+
+jobs:
+  snapshots-android:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/setup-java@v4
+        with:
+          java-version: 17
+          distribution: "temurin"
+      - name: Activity check
+        id: activity_check
+        shell: bash
+        run: |
+          DATEUTC=$((curl -sL -H "Authorization: Bearer ${{ github.token }}" https://api.github.com/repos/exult/exult/commits | jq -r '.[0].commit.committer.date') || date --utc -Iminutes)
+          TIMESTAMP=$(date --utc -d "$DATEUTC" +%s)
+          DAYS=$(( ($(date --utc -d "0:00" +%s) - $TIMESTAMP) / 86400 ))
+          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+            echo repo_alive=true >> $GITHUB_OUTPUT
+            echo event is workflow_dispatch. Force building snapshot not doing activity check
+           else
+            if [ $DAYS -gt 0 ]; then
+              echo repo_alive=false >> $GITHUB_OUTPUT
+              echo No activity in 24 hours before midnight UTC not building snapshot. Last activity at $DATEUTC.
+              mkdir -p android-snapshot
+              echo "No activity" >> android-snapshot/Android-not-built
+           else
+              echo repo_alive=true >> $GITHUB_OUTPUT
+            fi
+          fi
+      - name: Setup Android SDK
+        if: ${{ steps.activity_check.outputs.repo_alive == 'true' }}
+        uses: android-actions/setup-android@v3
+      - name: Setup Gradle
+        if: ${{ steps.activity_check.outputs.repo_alive == 'true' }}
+        uses: gradle/actions/setup-gradle@v3
+        with:
+          gradle-version: 8.11.1
+          cache-disabled: true
+      - name: Install dependencies
+        if: ${{ steps.activity_check.outputs.repo_alive == 'true' }}
+        run: |
+          if ! apt-fast -- help &> /dev/null; then
+            sudo add-apt-repository -u -y ppa:apt-fast/stable
+            sudo apt-get update
+            echo debconf apt-fast/maxdownloads string 16 | sudo debconf-set-selections
+            echo debconf apt-fast/dlflag boolean true | sudo debconf-set-selections
+            echo debconf apt-fast/aptmanager string apt-get | sudo debconf-set-selections
+            DEBIAN_FRONTEND=noninteractive sudo apt install -y apt-fast
+          else
+            sudo apt-fast update
+          fi
+          sudo apt-fast install -y autoconf-archive ninja-build
+      - name: Checkout code
+        if: ${{ steps.activity_check.outputs.repo_alive == 'true' }}
+        uses: actions/checkout@v4
+      - name: Pre debug build clean
+        if: ${{ steps.activity_check.outputs.repo_alive == 'true' }}
+        run: |
+          sdkmanager --uninstall emulator
+          rm -r -f /tmp/* || true
+          rm -r -f /var/cache/* || true
+      - name: Run autoreconf
+        if: ${{ steps.activity_check.outputs.repo_alive == 'true' }}
+        run: |
+          mkdir ./../build
+          autoreconf -v -i
+      - name: Configure debug
+        if: ${{ steps.activity_check.outputs.repo_alive == 'true' }}
+        run: |
+          cd ./../build
+          ./../exult/configure --enable-data --enable-android-apk=debug \
+            --disable-exult --disable-tools --disable-timidity-midi --disable-alsa \
+            --disable-fluidsynth --disable-mt32emu --disable-all-hq-scalers \
+            --disable-nxbr --disable-zip-support
+      - name: Build debug
+        if: ${{ steps.activity_check.outputs.repo_alive == 'true' }}
+        run: |
+          cd ./../build/files && make -j2
+          cd ./../data && make -j2
+          cd ./../android && make -j2
+      - name: Save debug artifact
+        if: ${{ steps.activity_check.outputs.repo_alive == 'true' }}
+        run: |
+          mkdir -p android-snapshot
+          cp ./../build/android/app/build/outputs/apk/debug/app-debug.apk ./android-snapshot/exult-snapshot-debug.apk
+      - name: Pre release build clean
+        if: ${{ steps.activity_check.outputs.repo_alive == 'true' }}
+        run: |
+          df -h
+          rm -r -f ./../build/android/app/build
+          rm -r -f ./../build/android/app/.cxx
+          rm -r -f /tmp/* || true
+          rm -r -f /var/cache/* || true
+          df -h
+      - name: Configure release
+        if: ${{ steps.activity_check.outputs.repo_alive == 'true' }}
+        run: |
+          cd ./../build
+          ./../exult/configure --enable-data --enable-android-apk=release \
+            --disable-exult --disable-tools --disable-timidity-midi --disable-alsa \
+            --disable-fluidsynth --disable-mt32emu --disable-all-hq-scalers \
+            --disable-nxbr --disable-zip-support
+      - name: Build release
+        if: ${{ steps.activity_check.outputs.repo_alive == 'true' }}
+        run: |
+          cd ./../build/files && make clean && make -j2
+          cd ./../data && make clean && make -j2
+          cd ./../android && make clean && make -j2
+          $ANDROID_SDK_ROOT/build-tools/34.0.0/zipalign -v -p 4 ./app/build/outputs/apk/release/app-release-unsigned.apk ./app/build/outputs/apk/release/app-release-unsigned-aligned.apk
+      - name: Post Release Build Cleanup
+        if: ${{ steps.activity_check.outputs.repo_alive == 'true' }}
+        run: |
+          df -h
+          cd ../build/files && make clean
+          cd ../data && make clean
+          cd ../android && make clean
+          rm app/build/outputs/apk/release/app-release-unsigned.apk
+          rm -r -f app/.cxx
+          rm -r -f app/build/generated
+          rm -r -f app/build/intermediates
+          rm -r -f /tmp/* || true
+          rm -r -f /var/cache/* || true
+          rm -r -f sdl-src
+          df -h
+          
+      - name: Sign APK
+        if: ${{ steps.activity_check.outputs.repo_alive == 'true' }}
+        uses: noriban/sign-android-release@v5.1
+        id: sign_app
+        with:
+          releaseDirectory: ./../build/android/app/build/outputs/apk/release
+          signingKeyBase64: ${{ secrets.ANDROID_SIGNING_KEY }}
+          alias: ${{ secrets.ANDROID_KEY_ALIAS }}
+          keyStorePassword: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          keyPassword: ${{ secrets.ANDROID_KEY_PASSWORD }}
+      - name: Save release artifact
+        if: ${{ steps.activity_check.outputs.repo_alive == 'true' }}
+        run: cp ${{steps.sign_app.outputs.signedReleaseFile}} ./android-snapshot/exult-snapshot-signed.apk
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: "android snapshot"
+          path: android-snapshot

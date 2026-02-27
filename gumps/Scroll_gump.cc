@@ -1,5 +1,5 @@
 /*
-Copyright (C) 2000-2022 The Exult Team
+Copyright (C) 2000-2025 The Exult Team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -17,30 +17,26 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
 #ifdef HAVE_CONFIG_H
-#  include <config.h>
+#	include <config.h>
 #endif
+
+#include "Scroll_gump.h"
 
 #include "game.h"
 #include "gamewin.h"
-#include "Scroll_gump.h"
-
 
 /*
  *  Create scroll display.
  */
 
-Scroll_gump::Scroll_gump(
-    int fnt, int gump
-) : Text_gump(gump < 0 ? game->get_shape("gumps/scroll") : gump, fnt) {
-}
+Scroll_gump::Scroll_gump(int fnt, int gump) : Text_gump(gump < 0 ? game->get_shape("gumps/scroll") : gump, fnt) {}
 
 /*
  *  Paint scroll.  Updates curend.
  */
 
-void Scroll_gump::paint(
-) {
+void Scroll_gump::paint() {
 	// Paint the gump itself.
 	paint_shape(x, y);
-	curend = paint_page(TileRect(52, 30, 142, 118), curtop);
+	curend = paint_page(TileRect(51, 31, 142, 118), curtop);
 }

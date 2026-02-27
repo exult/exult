@@ -23,11 +23,12 @@
 #ifndef U7OBJ_H
 #define U7OBJ_H
 
+#include "span.h"
+
 #include <memory>
 #include <string>
 #include <utility>
 #include <vector>
-#include "common_types.h"
 
 /**
  *  This structure condenses a file name and an object number in
@@ -41,13 +42,14 @@ struct File_spec {
 	/// given index inside the file.
 	int index{-1};
 	File_spec() = default;
+
 	/// Constructs a File_spec from a c-string.
-	File_spec(const char *n, int i = -1)
-		: name(n), index(i) {}
+	File_spec(const char* n, int i = -1) : name(n), index(i) {}
+
 	/// Constructs a File_spec from a string.
-	File_spec(std::string n, int i = -1)
-		: name(std::move(n)), index(i) {}
-	bool operator<(const File_spec &other) const {
+	File_spec(std::string n, int i = -1) : name(std::move(n)), index(i) {}
+
+	bool operator<(const File_spec& other) const {
 		const int cmp = name.compare(other.name);
 		return cmp < 0 || (cmp == 0 && index < other.index);
 	}
@@ -57,7 +59,7 @@ struct File_spec {
  *  This class loads a file of undefined type and retrieves
  *  a given object contained in said file.
  */
-class U7object {
+class U7object final {
 protected:
 	/// Name of desired file.
 	File_spec identifier;
@@ -68,24 +70,27 @@ public:
 	/// Setups to load an object from a buffer or file.
 	/// @param spec Specification of the data source.
 	/// @param objnum   Index of object in the data object.
-	/// @param p    Optional, defaults to false. If true, indicates
 	/// the object comes from the patch dir.
-	U7object(File_spec spec, int objnum)
-		: identifier(std::move(spec)), objnumber(objnum)
-	{  }
-	virtual ~U7object() noexcept = default;
-	U7object(const U7object&) = delete;
-	U7object& operator=(const U7object&) = delete;
-	U7object(U7object&&) = default;
-	U7object& operator=(U7object&&) = default;
+	U7object(File_spec spec, int objnum) : identifier(std::move(spec)), objnumber(objnum) {}
+
+	~U7object() noexcept                 = default;
+	U7object(const U7object&)            = default;
+	U7object& operator=(const U7object&) = default;
+	U7object(U7object&&)                 = default;
+	U7object& operator=(U7object&&)      = default;
 
 	File_spec get_identifier() const {
 		return identifier;
 	}
+
+	void set_identifier(File_spec spec) {
+		identifier = std::move(spec);
+	}
+
 	// TODO: This may need to be overriden by U7multiobject, in case the
 	// patching files have more objects than the base.
-	size_t number_of_objects();
-	virtual std::unique_ptr<unsigned char[]> retrieve(std::size_t &len) const;
+	size_t                           number_of_objects();
+	std::unique_ptr<unsigned char[]> retrieve(std::size_t& len, bool nullterminate = false) const;
 };
 
 /**
@@ -99,27 +104,27 @@ public:
  *  An 'object' it loads may be an object in a file or an object
  *  in a buffer.
  */
-class U7multiobject final : public U7object {
+class U7multiobject final {
 private:
 	std::unique_ptr<unsigned char[]> buffer;
-	size_t length;
-	void set_object(const std::vector<U7object> &objects);
+	size_t                           length;
+	U7object                         object;
+
+	void set_object(tcb::span<U7object> objects);
 
 public:
-	U7multiobject(const File_spec &file0, int objnum);
-	U7multiobject(const File_spec &file0, const File_spec &file1, int objnum);
-	U7multiobject(const File_spec &file0, const File_spec &file1,
-	              const File_spec &file2, int objnum);
-	U7multiobject(const File_spec &file0, const File_spec &file1,
-	              const File_spec &file2, const File_spec &file3, int objnum);
-	U7multiobject(const std::vector<File_spec> &files, int objnum);
-	~U7multiobject() noexcept final = default;
-	U7multiobject(const U7multiobject&) = delete;
-	U7multiobject& operator=(const U7multiobject&) = delete;
-	U7multiobject(U7multiobject&&) = default;
+	U7multiobject(const File_spec& file0, int objnum);
+	U7multiobject(const File_spec& file0, const File_spec& file1, int objnum);
+	U7multiobject(const File_spec& file0, const File_spec& file1, const File_spec& file2, int objnum);
+	U7multiobject(const File_spec& file0, const File_spec& file1, const File_spec& file2, const File_spec& file3, int objnum);
+	U7multiobject(const std::vector<File_spec>& files, int objnum);
+	~U7multiobject() noexcept = default;
+	U7multiobject(const U7multiobject&);
+	U7multiobject& operator=(const U7multiobject&);
+	U7multiobject(U7multiobject&&)            = default;
 	U7multiobject& operator=(U7multiobject&&) = default;
 
-	std::unique_ptr<unsigned char[]> retrieve(std::size_t &len) const final;
+	std::unique_ptr<unsigned char[]> retrieve(std::size_t& len, bool nullterminate = false) const;
 };
 
 #endif

@@ -1,5 +1,5 @@
 plugins {
-    id 'com.android.application'
+    id('com.android.application')
 }
 
 def getGitCommitId() {
@@ -13,8 +13,9 @@ android {
 
     defaultConfig {
         applicationId "info.exult"
+        namespace 'info.exult'
         minSdkVersion 28 // could lower to 18 if we locally implement glob()
-        targetSdkVersion 30
+        targetSdkVersion @ANDROID_SDK_VERSION@
         versionCode 1
         versionName "@VERSION@ (" + getGitCommitId() + ")"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
@@ -24,12 +25,23 @@ android {
                 arguments "-DANDROID_STL=c++_shared", "-DEXULT_SOURCE_DIR=" + project.getProperty('EXULT_SOURCE_DIR'), "-DSDL_SOURCE_DIR=" + project.getProperty('SDL_SOURCE_DIR'), "-DEXULT_VERSION=@PACKAGE_VERSION@"
             }
         }
+        ndk {
+            @ANDROID_ARCHITECTURE@
+        }
     }
 
     buildTypes {
         release {
             minifyEnabled false
             zipAlignEnabled true
+        }
+        debug {
+            externalNativeBuild {
+                cmake {
+                    arguments.add("-DEXULT_ANDROID_DEBUG=@EXULT_ANDROID_DEBUG@")
+                    arguments.add("-DEXULT_ANDROID_OPT=@EXULT_ANDROID_OPT@")
+                }
+            }
         }
     }
     externalNativeBuild {
@@ -45,15 +57,17 @@ android {
 }
 
 dependencies {
-    implementation "androidx.viewpager2:viewpager2:1.0.0"
-    implementation 'androidx.fragment:fragment-ktx:1.3.6'
-    implementation 'androidx.appcompat:appcompat:1.2.0'
-    implementation 'com.google.android.material:material:1.4.0'
-    implementation 'androidx.constraintlayout:constraintlayout:2.0.4'
-    implementation 'com.sprylab.xar:xar:0.9.9'
-    implementation 'org.apache.commons:commons-compress:1.20'
-    implementation 'commons-io:commons-io:2.8.0'
+    implementation 'androidx.core:core:1.13.1'
+    implementation 'androidx.activity:activity:1.9.3'
+    implementation 'androidx.viewpager2:viewpager2:1.0.0'
+    implementation 'androidx.fragment:fragment-ktx:1.8.5'
+    implementation 'androidx.appcompat:appcompat:1.7.0'
+    implementation 'com.google.android.material:material:1.12.0'
+    implementation 'androidx.constraintlayout:constraintlayout:2.2.0'
+    implementation 'com.sprylab.xar:xar:0.9.11'
+    implementation 'org.apache.commons:commons-compress:1.27.1'
+    implementation 'commons-io:commons-io:2.18.0'
     testImplementation 'junit:junit:4.+'
-    androidTestImplementation 'androidx.test.ext:junit:1.1.2'
-    androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'
+    androidTestImplementation 'androidx.test.ext:junit:1.2.1'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.6.1'
 }

@@ -22,8 +22,7 @@
 
 extern void healByAmount 0x976 (var target, var amount);
 
-enum potions
-{
+enum potions {
 	SLEEP_POTION = 0,
 	HEALING_POTION = 1,
 	CURING_POTION = 2,
@@ -36,90 +35,65 @@ enum potions
 	WARMTH_POTION = 9
 };
 
-void Potion shape#(0x154) ()
-{
+void Potion shape#(0x154) () {
 	var itemframe;
-	var target;
+	struct<ObjPos> target;
 
-	if (event == DOUBLECLICK)
-	{
+	if (event == DOUBLECLICK) {
 		itemframe = get_item_frame();
 		target = UI_click_on_item();
 
 		UI_play_sound_effect2(0x24, item);
-		if (target->is_npc())
-		{
+		if (target->is_npc()) {
 			UI_play_sound_effect(0x39);
-			if (itemframe == SLEEP_POTION)
-			{
+			if (itemframe == SLEEP_POTION) {
 				var npcnum = target->get_npc_number();
 				if ((getAvatarLocationID() == SPINEBREAKER_MOUNTAINS) &&
-				    ((npcnum == IOLO) || (npcnum == SHAMINO) || (npcnum == DUPRE)))
-				{
+				    ((npcnum == IOLO) || (npcnum == SHAMINO) || (npcnum == DUPRE))) {
 					npcnum.say("@But we are so close to Batlin now, Avatar! I don't want to miss all the action!@");
 					abort;
 				}
 				target->set_item_flag(ASLEEP);
-			}
-
-			else if (itemframe == HEALING_POTION)
+			} else if (itemframe == HEALING_POTION) {
 				healByAmount(target, UI_die_roll(3, 12));
-
-			else if (itemframe == CURING_POTION)
-			{
+			} else if (itemframe == CURING_POTION) {
 				target->clear_item_flag(POISONED);
 				target->clear_item_flag(PARALYZED);
 				target->clear_item_flag(ASLEEP);
 				target->clear_item_flag(CHARMED);
 				target->clear_item_flag(CURSED);
-			}
-
-			else if (itemframe == POISION_POTION)
+			} else if (itemframe == POISION_POTION) {
 				target->set_item_flag(POISONED);
-
-			else if (itemframe == AWAKENING_POTION)
+			} else if (itemframe == AWAKENING_POTION) {
 				target->clear_item_flag(ASLEEP);
-
-			else if (itemframe == PROTECTION_POTION)
+			} else if (itemframe == PROTECTION_POTION) {
 				target->set_item_flag(PROTECTION);
-
-			else if (itemframe == LIGHT_POTION)
+			} else if (itemframe == LIGHT_POTION) {
 				UI_cause_light(200);
-
-			else if (itemframe == INVISIBILITY_POTION)
+			} else if (itemframe == INVISIBILITY_POTION) {
 				target->set_item_flag(INVISIBLE);
-
-			else if (itemframe == MANA_POTION)
-			{
-				if (target == AVATAR->get_npc_object())
-				{
+			} else if (itemframe == MANA_POTION) {
+				if (target == AVATAR->get_npc_object()) {
 					var mana = AVATAR->get_npc_prop(MANA);
 					var recover = UI_get_random(10);
-					if ((mana + recover) > 31)
+					if ((mana + recover) > 31) {
 						recover = (31 - mana);
-
+					}
 					AVATAR->set_npc_prop(MANA, recover);
 				}
-			}
-
-			else if (itemframe == WARMTH_POTION)
+			} else if (itemframe == WARMTH_POTION) {
 				target->set_temperature(0);
-
-			else if (itemframe >= 10)
-			{
+			} else if (itemframe >= 10) {
 				partyUtters(1, "@What is this!@", 0, false);
 				abort;
 			}
 			remove_item();
 			abort;
-		}
-		else
-		{
-			var pos = [target[X + 1], target[Y + 1], target[Z + 1]];
+		} else {
+			struct<Position> pos = [target.x, target.y, target.z];
 			partyUtters(1, "@Please, " + getPoliteTitle() + ", waste them not!@", 0, false);
 			var spill = UI_create_new_object(SHAPE_SPILL);
-			if (spill)
-			{
+			if (spill) {
 				spill->set_item_flag(TEMPORARY);
 				spill->set_item_frame(UI_die_roll(4, 23));
 				UI_update_last_created(pos);

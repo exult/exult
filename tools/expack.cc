@@ -17,25 +17,25 @@
  */
 
 #ifdef HAVE_CONFIG_H
-#  include <config.h>
+#	include <config.h>
 #endif
 
-#include <unistd.h>
-#include <fstream>
-#include <cstdlib>
-#include <iostream>
-#include <iomanip>
-#include <vector>
-#include <string>
-#include <limits>
-#include "U7fileman.h"
-#include "U7file.h"
-#include "U7obj.h"
 #include "Flex.h"
-#include "utils.h"
-#include "databuf.h"
+#include "U7file.h"
+#include "U7fileman.h"
+#include "U7obj.h"
 #include "crc.h"
+#include "databuf.h"
 #include "exceptions.h"
+
+#include <unistd.h>
+
+#include <cstdlib>
+#include <fstream>
+#include <iostream>
+#include <limits>
+#include <string>
+#include <vector>
 
 using std::atoi;
 using std::cerr;
@@ -45,65 +45,73 @@ using std::exit;
 using std::ifstream;
 using std::ofstream;
 using std::size_t;
-using std::vector;
 using std::string;
+using std::vector;
 
-enum Arch_mode { NOMODE, LIST, EXTRACT, CREATE, ADD, RESPONSE };
-
+enum Arch_mode {
+	NOMODE,
+	LIST,
+	EXTRACT,
+	CREATE,
+	ADD,
+	RESPONSE
+};
 
 /*
  *  Parse a number, and quit with an error msg. if not found.
  */
 
-bool is_text_file(const string &fname) {
+bool is_text_file(const string& fname) {
 	const size_t len = fname.size();
 
 	// only if the filename is greater than 4 chars
-	return len > 4 && fname[len - 4] == '.' &&
-	        (fname[len - 3] == 't' || fname[len - 3] == 'T') &&
-	        (fname[len - 2] == 'x' || fname[len - 2] == 'X') &&
-	        (fname[len - 1] == 't' || fname[len - 1] == 'T');
+	return len > 4 && fname[len - 4] == '.' && (fname[len - 3] == 't' || fname[len - 3] == 'T')
+		   && (fname[len - 2] == 'x' || fname[len - 2] == 'X') && (fname[len - 1] == 't' || fname[len - 1] == 'T');
 }
 
-bool is_null_entry(const string &fname) {
+bool is_null_entry(const string& fname) {
 	const size_t len = fname.size();
 
-	return len >= 4 && fname[len - 4] == 'N' && fname[len - 3] == 'U' &&
-	        fname[len - 2] == 'L' && fname[len - 1] == 'L';
+	return len >= 4 && fname[len - 4] == 'N' && fname[len - 3] == 'U' && fname[len - 2] == 'L' && fname[len - 1] == 'L';
 }
 
-void set_mode(Arch_mode &mode, Arch_mode new_mode) {
+void set_mode(Arch_mode& mode, Arch_mode new_mode) {
 	if (mode != NOMODE) {
 		cerr << "Error: cannot specify multiple modes" << endl;
 		exit(1);
-	} else
+	} else {
 		mode = new_mode;
+	}
 }
 
 // Converts all .'s to _'s
-void make_header_name(string &filename) {
+void make_header_name(string& filename) {
 	size_t i = filename.size();
 
-	while (i--)
-		if (filename[i] == '.')
+	while (i--) {
+		if (filename[i] == '.') {
 			filename[i] = '_';
-		else if (filename[i] == '/' || filename[i] == '\\' || filename[i] == ':')
+		} else if (filename[i] == '/' || filename[i] == '\\' || filename[i] == ':') {
 			break;
+		}
+	}
 }
 
 // Makes a name uppercase
-void make_uppercase(string &name) {
-	for (auto& chr : name)
+void make_uppercase(string& name) {
+	for (auto& chr : name) {
 		chr = static_cast<char>(std::toupper(static_cast<unsigned char>(chr)));
+	}
 }
 
 // strips a path from a filename
-void strip_path(string &filename) {
+void strip_path(string& filename) {
 	int i = static_cast<int>(filename.size());
 
 	while (i--) {
-		if (filename[i] == '\\' || filename[i] == '/' || filename[i] == ':')
+		if (filename[i] == '\\' || filename[i] == '/' || filename[i] == ':') {
 			break;
+		}
 	}
 
 	// Has a path
@@ -112,9 +120,10 @@ void strip_path(string &filename) {
 	}
 }
 
-long get_file_size(string &fname) {
-	if (is_null_entry(fname))
-		return 0; // an empty entry
+long get_file_size(string& fname) {
+	if (is_null_entry(fname)) {
+		return 0;    // an empty entry
+	}
 
 	try {
 		auto pFin = U7open_in(fname.c_str(), is_text_file(fname));
@@ -127,37 +136,36 @@ long get_file_size(string &fname) {
 		// http://cpp.indi.frih.net/blog/2014/09/how-to-read-an-entire-file-into-memory-in-cpp/
 		fin.ignore(std::numeric_limits<std::streamsize>::max());
 		return fin.gcount();
-	} catch (const std::exception &err) {
+	} catch (const std::exception& err) {
 		cerr << err.what() << endl;
 		return 0;
 	}
 }
 
-bool Write_Object(U7object &obj, const char *fname) {
+bool Write_Object(U7object& obj, const char* fname) {
 	try {
 		auto pOut = U7open_out(fname, false);
 		if (!pOut) {
 			cerr << "Failed to open " << fname << endl;
 			return false;
 		}
-		auto& out = *pOut;
+		auto&  out = *pOut;
 		size_t l;
-		auto n = obj.retrieve(l);
+		auto   n = obj.retrieve(l);
 		if (!n) {
 			return false;
 		}
 		out.write(reinterpret_cast<char*>(n.get()), l);
-	} catch (const std::exception &err) {
+	} catch (const std::exception& err) {
 		cerr << err.what() << endl;
 		return false;
 	}
 	return true;
 }
 
-
 // This getline() accepts any kind of endline on any platform
 // (So it will accept windows linefeeds in linux, and vice versa)
-void getline(ifstream &file, string &buf) {
+void getline(ifstream& file, string& buf) {
 	buf.clear();
 	char c;
 	file.get(c);
@@ -167,18 +175,17 @@ void getline(ifstream &file, string &buf) {
 		file.get(c);
 	}
 
-	while (file.peek() < ' ' && file.peek() != '\t' && file.good())
+	while (file.peek() < ' ' && file.peek() != '\t' && file.good()) {
 		file.get(c);
+	}
 }
 
-
-int main(int argc, char **argv)
-{
-	Arch_mode mode = NOMODE;
-	string fname;
-	string hname;
-	string hprefix;
-	vector<string>  file_names;
+int main(int argc, char** argv) {
+	Arch_mode      mode = NOMODE;
+	string         fname;
+	string         hname;
+	string         hprefix;
+	vector<string> file_names;
 	file_names.reserve(1200);
 
 	if (argc > 2) {
@@ -190,14 +197,14 @@ int main(int argc, char **argv)
 				string path_prefix;
 
 				std::unique_ptr<std::istream> pRespfile;
-				const size_t slash = fname.rfind('/');
+				const size_t                  slash = fname.rfind('/');
 				if (slash != string::npos) {
 					path_prefix = fname.substr(0, slash + 1);
 				}
 				set_mode(mode, RESPONSE);
 				try {
 					pRespfile = U7open_in(fname.c_str(), true);
-				} catch (const file_open_exception &e) {
+				} catch (const file_open_exception& e) {
 					cerr << e.what() << endl;
 					exit(1);
 				}
@@ -219,36 +226,40 @@ int main(int argc, char **argv)
 				strip_path(hprefix);
 				make_uppercase(hprefix);
 
-				unsigned int shnum = 0;
-				int linenum = 2;
+				unsigned int shnum   = 0;
+				int          linenum = 2;
 				while (respfile.good()) {
 					getline(respfile, temp);
 					if (!temp.empty()) {
-						const char *ptr = temp.c_str();
+						const char* ptr = temp.c_str();
 						if (*ptr == ':') {
 							ptr++;
 							// Shape # specified.
-							char *eptr;
+							char*      eptr;
 							const long num = strtol(ptr, &eptr, 0);
 							if (eptr == ptr) {
-								cerr << "Line " << linenum << ": shapenumber not found. The correct format of a line with specified shape is ':shapenum:filename'." << endl;
+								cerr << "Line " << linenum
+									 << ": shapenumber not found. The correct "
+										"format of a line with specified shape "
+										"is ':shapenum:filename'."
+									 << endl;
 								exit(1);
 							}
 							shnum = static_cast<unsigned int>(num);
-							ptr = eptr;
+							ptr   = eptr;
 							assert(*ptr == ':');
 							ptr++;
 						}
 						const string temp2 = path_prefix + ptr;
-						if (shnum >= file_names.size())
+						if (shnum >= file_names.size()) {
 							file_names.resize(shnum + 1);
+						}
 						file_names[shnum] = temp2;
 						shnum++;
 						linenum++;
 					}
 				}
-			}
-			break;
+			} break;
 			case 'l':
 				set_mode(mode, LIST);
 				break;
@@ -274,51 +285,48 @@ int main(int argc, char **argv)
 
 	switch (mode) {
 	case LIST: {
-		if (argc != 3)
+		if (argc != 3) {
 			break;
-		U7FileManager *fm = U7FileManager::get_ptr();
-		U7file *f = fm->get_file_object(fname);
-		const size_t count = f->number_of_objects();
+		}
+		U7FileManager* fm    = U7FileManager::get_ptr();
+		U7file*        f     = fm->get_file_object(fname);
+		const size_t   count = f->number_of_objects();
 		cout << "Archive: " << fname << endl;
 		cout << "Type: " << f->get_archive_type() << endl;
 		cout << "Size: " << count << endl;
 		cout << "-------------------------" << endl;
 		for (size_t i = 0; i < count; i++) {
 			size_t len;
-			auto buf = f->retrieve(static_cast<uint32>(i), len);
+			auto   buf = f->retrieve(static_cast<uint32>(i), len);
 			cout << i << "\t" << len << endl;
 		}
-	}
-	break;
+	} break;
 	case EXTRACT: {
 		constexpr const char ext[] = "u7o";
 		if (argc == 4) {
-			U7object f(fname, atoi(argv[3]));
+			U7object            f(fname, atoi(argv[3]));
 			const unsigned long nobjs = f.number_of_objects();
-			const unsigned long n = strtoul(argv[3], nullptr, 0);
+			const unsigned long n     = strtoul(argv[3], nullptr, 0);
 			if (n >= nobjs) {
-				cerr << "Obj. #(" << n <<
-				     ") is too large.  ";
-				cerr << "Flex size is " <<
-				     nobjs << '.' << endl;
+				cerr << "Obj. #(" << n << ") is too large.  ";
+				cerr << "Flex size is " << nobjs << '.' << endl;
 				exit(1);
 			}
 			char outfile[32];
-			snprintf(outfile, 32, "%05lu.%s", n, ext);
-			Write_Object(f, outfile);   // may throw!
+			snprintf(outfile, sizeof(outfile), "%05lu.%s", n, ext);
+			Write_Object(f, outfile);    // may throw!
 		} else {
-			U7FileManager *fm = U7FileManager::get_ptr();
-			U7file *f = fm->get_file_object(fname);
-			const int count = static_cast<int>(f->number_of_objects());
+			U7FileManager* fm    = U7FileManager::get_ptr();
+			U7file*        f     = fm->get_file_object(fname);
+			const int      count = static_cast<int>(f->number_of_objects());
 			for (int index = 0; index < count; index++) {
 				U7object o(fname, index);
-				char outfile[32];
-				snprintf(outfile, 32, "%05d.%s", index, ext);
+				char     outfile[32];
+				snprintf(outfile, sizeof(outfile), "%05d.%s", index, ext);
 				Write_Object(o, outfile);
 			}
 		}
-	}
-	break;
+	} break;
 	case RESPONSE:
 	case CREATE:
 		try {
@@ -334,7 +342,7 @@ int main(int argc, char **argv)
 			}
 			try {
 				pHeader = U7open_out(hname.c_str(), true);
-			} catch (const file_open_exception &e) {
+			} catch (const file_open_exception& e) {
 				cerr << e.what() << endl;
 				exit(1);
 			}
@@ -383,17 +391,14 @@ int main(int argc, char **argv)
 
 			header << std::endl << "#endif" << std::endl << std::endl;
 
-		} catch (const file_open_exception &e) {
+		} catch (const file_open_exception& e) {
 			cerr << e.what() << endl;
 			exit(1);
 		}
-	break;
+		break;
 	default:
-		cout << "Usage:" << endl
-		     << argv[0] << " -[l|x|c] file [index]" << endl
-		     << argv[0] << " -i indexfile" << endl;
+		cout << "Usage:" << endl << argv[0] << " -[l|x|c] file [index]" << endl << argv[0] << " -i indexfile" << endl;
 		break;
 	}
 	return 0;
 }
-

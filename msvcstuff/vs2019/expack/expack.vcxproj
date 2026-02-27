@@ -43,14 +43,14 @@
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v142</PlatformToolset>
-    <CharacterSet>Unicode</CharacterSet>
+    <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v142</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
-    <CharacterSet>Unicode</CharacterSet>
+    <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -72,28 +72,56 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <PostBuildEventUseInBuild>false</PostBuildEventUseInBuild>
-    <OutDir>$(SolutionDir)..\..\</OutDir>
+    <PostBuildEventUseInBuild>true</PostBuildEventUseInBuild>
+    <IntDir>$(SolutionDir)$(Configuration)\$(ProjectName)\</IntDir>
+    <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <PostBuildEventUseInBuild>false</PostBuildEventUseInBuild>
-    <OutDir>$(SolutionDir)..\..</OutDir>
+    <PostBuildEventUseInBuild>true</PostBuildEventUseInBuild>
+    <IntDir>$(SolutionDir)$(Configuration)\$(ProjectName)\</IntDir>
+    <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <PostBuildEventUseInBuild>false</PostBuildEventUseInBuild>
-    <OutDir>$(SolutionDir)..\..\</OutDir>
+    <PostBuildEventUseInBuild>true</PostBuildEventUseInBuild>
+    <IntDir>$(SolutionDir)$(Configuration)\$(ProjectName)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <PostBuildEventUseInBuild>false</PostBuildEventUseInBuild>
-    <OutDir>$(SolutionDir)..\..</OutDir>
+    <PostBuildEventUseInBuild>true</PostBuildEventUseInBuild>
+    <IntDir>$(SolutionDir)$(Configuration)\$(ProjectName)\</IntDir>
+  </PropertyGroup>
+  <PropertyGroup Label="Vcpkg">
+    <VcpkgEnabled>true</VcpkgEnabled>
+    <VcpkgEnableManifest>true</VcpkgEnableManifest>
+    <VcpkgApplocalDeps>true</VcpkgApplocalDeps>
+    <VcpkgManifestInstall>true</VcpkgManifestInstall>
+  </PropertyGroup>
+  <PropertyGroup Label="Vcpkg" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <VcpkgTriplet>x64-windows</VcpkgTriplet>
+    <VcpkgHostTriplet>x64-windows</VcpkgHostTriplet>
+    <VcpkgAdditionalInstallOptions> --x-abi-tools-use-exact-versions --keep-going</VcpkgAdditionalInstallOptions>
+  </PropertyGroup>
+  <PropertyGroup Label="Vcpkg" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <VcpkgTriplet>x64-windows</VcpkgTriplet>
+    <VcpkgHostTriplet>x64-windows</VcpkgHostTriplet>
+    <VcpkgAdditionalInstallOptions>--x-abi-tools-use-exact-versions</VcpkgAdditionalInstallOptions>
+  </PropertyGroup>
+  <PropertyGroup Label="Vcpkg" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <VcpkgTriplet>x86-windows</VcpkgTriplet>
+    <VcpkgHostTriplet>x86-windows</VcpkgHostTriplet>
+    <VcpkgAdditionalInstallOptions>--x-abi-tools-use-exact-versions</VcpkgAdditionalInstallOptions>
+  </PropertyGroup>
+  <PropertyGroup Label="Vcpkg" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <VcpkgTriplet>x86-windows</VcpkgTriplet>
+    <VcpkgHostTriplet>x86-windows</VcpkgHostTriplet>
+    <VcpkgAdditionalInstallOptions>--x-abi-tools-use-exact-versions</VcpkgAdditionalInstallOptions>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
-      <SDLCheck>true</SDLCheck>
+      <SDLCheck>false</SDLCheck>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp17</LanguageStandard>
@@ -103,6 +131,11 @@
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>$(SolutionDir)msvc_include.h</PrecompiledHeaderFile>
       <DisableSpecificWarnings>4244</DisableSpecificWarnings>
+      <AdditionalOptions>/Zc:__cplusplus %(AdditionalOptions)</AdditionalOptions>
+      <UseStandardPreprocessor>true</UseStandardPreprocessor>
+      <BasicRuntimeChecks>Default</BasicRuntimeChecks>
+      <BufferSecurityCheck>false</BufferSecurityCheck>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -112,13 +145,17 @@
     <PreBuildEvent />
     <CustomBuildStep />
     <CustomBuildStep />
+    <PostBuildEvent>
+      <Command>copy "$(TargetPath)" "$(solutiondir)..\..\"</Command>
+      <Message>Copy expack to exult directory</Message>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <SDLCheck>true</SDLCheck>
+      <SDLCheck>false</SDLCheck>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp17</LanguageStandard>
@@ -127,6 +164,10 @@
       <ForcedIncludeFiles>$(SolutionDir)msvc_include.h</ForcedIncludeFiles>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>$(SolutionDir)msvc_include.h</PrecompiledHeaderFile>
+      <AdditionalOptions>/Zc:__cplusplus %(AdditionalOptions)</AdditionalOptions>
+      <UseStandardPreprocessor>true</UseStandardPreprocessor>
+      <BufferSecurityCheck>false</BufferSecurityCheck>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -138,17 +179,28 @@
     <PreBuildEvent />
     <CustomBuildStep />
     <CustomBuildStep />
+    <PostBuildEvent>
+      <Command>copy "$(TargetPath)" "$(solutiondir)..\..\"</Command>
+      <Message>Copy expack to exult directory</Message>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
-      <SDLCheck>true</SDLCheck>
+      <SDLCheck>false</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <LanguageStandard_C>stdc11</LanguageStandard_C>
       <AdditionalIncludeDirectories>$(SolutionDir);$(SolutionDir)../..;$(SolutionDir)../../files;$(SolutionDir)..\..\Gumps;$(SolutionDir)..\..\conf;$(SolutionDir)..\..\filc;$(SolutionDir)..\..\imagewin;$(SolutionDir)..\..\objs;$(SolutionDir)..\..\pathfinder;$(SolutionDir)..\..\shapes;$(SolutionDir)..\..\usecode;$(SolutionDir)..\..\Audio;$(SolutionDir)..\..\Audio\MIDI_drivers;$(SolutionDir)..\..\data;$(SolutionDir)..\..\server;$(SolutionDir)..\..\Headers;$(SolutionDir)..\..\tools;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <ForcedIncludeFiles>$(SolutionDir)msvc_include.h</ForcedIncludeFiles>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>$(SolutionDir)msvc_include.h</PrecompiledHeaderFile>
+      <AdditionalOptions>/Zc:__cplusplus %(AdditionalOptions)</AdditionalOptions>
+      <UseStandardPreprocessor>true</UseStandardPreprocessor>
+      <BasicRuntimeChecks>Default</BasicRuntimeChecks>
+      <BufferSecurityCheck>false</BufferSecurityCheck>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -158,19 +210,29 @@
     <PreBuildEvent />
     <CustomBuildStep />
     <CustomBuildStep />
+    <PostBuildEvent>
+      <Command>copy "$(TargetPath)" "$(solutiondir)..\..\"</Command>
+      <Message>Copy expack to exult directory</Message>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <SDLCheck>true</SDLCheck>
+      <SDLCheck>false</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <LanguageStandard_C>stdc11</LanguageStandard_C>
       <AdditionalIncludeDirectories>$(SolutionDir);$(SolutionDir)../..;$(SolutionDir)../../files;$(SolutionDir)..\..\Gumps;$(SolutionDir)..\..\conf;$(SolutionDir)..\..\filc;$(SolutionDir)..\..\imagewin;$(SolutionDir)..\..\objs;$(SolutionDir)..\..\pathfinder;$(SolutionDir)..\..\shapes;$(SolutionDir)..\..\usecode;$(SolutionDir)..\..\Audio;$(SolutionDir)..\..\Audio\MIDI_drivers;$(SolutionDir)..\..\data;$(SolutionDir)..\..\server;$(SolutionDir)..\..\Headers;$(SolutionDir)..\..\tools;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <ForcedIncludeFiles>$(SolutionDir)msvc_include.h</ForcedIncludeFiles>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>$(SolutionDir)msvc_include.h</PrecompiledHeaderFile>
+      <AdditionalOptions>/Zc:__cplusplus %(AdditionalOptions)</AdditionalOptions>
+      <UseStandardPreprocessor>true</UseStandardPreprocessor>
+      <BufferSecurityCheck>false</BufferSecurityCheck>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -182,12 +244,17 @@
     <PreBuildEvent />
     <CustomBuildStep />
     <CustomBuildStep />
+    <PostBuildEvent>
+      <Command>copy "$(TargetPath)" "$(solutiondir)..\..\"</Command>
+      <Message>Copy expack to exult directory</Message>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\files\crc.cc" />
     <ClCompile Include="..\..\..\files\Flat.cc" />
     <ClCompile Include="..\..\..\files\Flex.cc" />
     <ClCompile Include="..\..\..\files\IFF.cc" />
+    <ClCompile Include="..\..\..\files\listfiles.cc" />
     <ClCompile Include="..\..\..\files\Table.cc" />
     <ClCompile Include="..\..\..\files\U7file.cc" />
     <ClCompile Include="..\..\..\files\U7fileman.cc" />
@@ -197,6 +264,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\files\crc.h" />
+    <ClInclude Include="..\..\..\files\endianio.h" />
     <ClInclude Include="..\..\..\files\Flat.h" />
     <ClInclude Include="..\..\..\files\Flex.h" />
     <ClInclude Include="..\..\..\files\IFF.h" />

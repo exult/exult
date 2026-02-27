@@ -28,20 +28,19 @@
 
 /*
 	Third circle Spells
-	
-	extern void spellCurse (var target);
-	extern void spellHeal (var target);
-	extern void spellParalyze (var target);
+
+	extern void spellCurse (struct<ObjPos> target);
+	extern void spellHeal (struct<ObjPos> target);
+	extern void spellParalyze (struct<ObjPos> target);
 	extern void spellPeer ();
-	extern void spellPoison (var target);
+	extern void spellPoison (struct<ObjPos> target);
 	extern void spellProtectAll ();
-	extern void spellSleep (var target);
+	extern void spellSleep (struct<ObjPos> target);
 	extern void spellSwarm ();
-	extern void spellRemoveCurse (var target);
+	extern void spellRemoveCurse (struct<ObjPos> target);
 */
 
-enum third_circle_spells
-{
+enum third_circle_spells {
 	SPELL_CURSE						= 0,
 	SPELL_HEAL						= 1,
 	SPELL_PARALYZE					= 2,
@@ -53,240 +52,268 @@ enum third_circle_spells
 	SPELL_REMOVE_CURSE				= 8
 };
 
-void spellCurse (var target)
-{
-	if (event == DOUBLECLICK)
-	{
+void spellCurse (struct<ObjPos> target) {
+	if (event == DOUBLECLICK) {
 		halt_scheduled();
-		//var target = UI_click_on_item();
+		//struct<ObjPos> target = UI_click_on_item();
 		var dir = direction_from(target);
 		item_say("@Des Sanct@");
-		if (inMagicStorm() && (target[X] != 0))
-		{
+		if (inMagicStorm() && (target.obj != 0)) {
 			set_to_attack(target, SHAPE_CURSE);
-			script item
-			{	nohalt;						face dir;
-				sfx 67;						actor frame raise_1h;
-				actor frame cast_out;			actor frame strike_2h;
-				attack;}
-		}
-		else
-		{
-			script item
-			{	nohalt;						face dir;
-				actor frame raise_1h;		actor frame cast_out;
-				actor frame strike_2h;		call spellFails;}
+			script item {
+				nohalt;
+				face dir;
+				sfx 67;
+				actor frame raise_1h;
+				actor frame cast_out;
+				actor frame strike_2h;
+				attack;
+			}
+		} else {
+			script item {
+				nohalt;
+				face dir;
+				actor frame raise_1h;
+				actor frame cast_out;
+				actor frame strike_2h;
+				call spellFails;
+			}
 		}
 	}
 }
 
-void spellHeal (var target)
-{
-	if (event == DOUBLECLICK)
-	{
-		//var target = UI_click_on_item();
+void spellHeal (struct<ObjPos> target) {
+	if (event == DOUBLECLICK) {
+		//struct<ObjPos> target = UI_click_on_item();
 		var dir = direction_from(target);
 		halt_scheduled();
 		item_say("@Mani@");
-		if (inMagicStorm() && target->is_npc())
-		{
-			script item
-			{	nohalt;						face dir;
-				actor frame kneeling;			sfx 64;
-				actor frame standing;			actor frame reach_1h;
-				actor frame raise_1h;		actor frame strike_1h;}
-				
-			script target after 5 ticks
-			{	nohalt;						call spellHealEffect;}
-		}
-		else
-		{
-			script item
-			{	nohalt;						face dir;
-				actor frame kneeling;			actor frame standing;
-				actor frame reach_1h;		actor frame raise_1h;
-				actor frame strike_1h;		call spellFails;}
+		if (inMagicStorm() && target->is_npc()) {
+			script item {
+				nohalt;
+				face dir;
+				actor frame kneeling;
+				sfx 64;
+				actor frame standing;
+				actor frame reach_1h;
+				actor frame raise_1h;
+				actor frame strike_1h;
+			}
+
+			script target after 5 ticks {
+				nohalt;
+				call spellHealEffect;
+			}
+		} else {
+			script item {
+				nohalt;
+				face dir;
+				actor frame kneeling;
+				actor frame standing;
+				actor frame reach_1h;
+				actor frame raise_1h;
+				actor frame strike_1h;
+				call spellFails;
+			}
 		}
 	}
 }
 
-void spellParalyze (var target)
-{
-	if ((event == DOUBLECLICK) || (event == WEAPON))
-	{
-		//var target = UI_click_on_item();
+void spellParalyze (struct<ObjPos> target) {
+	if ((event == DOUBLECLICK) || (event == WEAPON)) {
+		//struct<ObjPos> target = UI_click_on_item();
 		var dir = direction_from(target);
 		halt_scheduled();
 		item_say("@An Por@");
-		if (inMagicStorm() && (target[X] != 0))
-		{
+		if (inMagicStorm() && (target.obj != 0)) {
 			set_to_attack(target, SHAPE_PARALYZE);
-			script item
-			{	nohalt;						face dir;
-				actor frame raise_1h;		actor frame strike_1h;
-				actor frame strike_1h;		attack;
-				actor frame standing;}
-		}
-		else
-		{
-			script item
-			{	nohalt;						face dir;
-				actor frame raise_1h;		actor frame strike_1h;
-				call spellFails;}
+			script item {
+				nohalt;
+				face dir;
+				actor frame raise_1h;
+				actor frame strike_1h;
+				actor frame strike_1h;
+				attack;
+				actor frame standing;
+			}
+		} else {
+			script item {
+				nohalt;
+				face dir;
+				actor frame raise_1h;
+				actor frame strike_1h;
+				call spellFails;
+			}
 		}
 	}
 }
 
-void spellPeer ()
-{
-	if (event == DOUBLECLICK)
-	{
+void spellPeer () {
+	if (event == DOUBLECLICK) {
 		halt_scheduled();
 		item_say("@Vas Wis@");
-		if (inMagicStorm())
-		{
-			script item
-			{	nohalt;						sfx 67;
-				actor frame cast_up;			actor frame cast_out;
-				actor frame cast_up;			call spellShowMap;}
-		}
-		else
-		{
-			script item
-			{	nohalt;						actor frame cast_up;
-				actor frame cast_out;			actor frame cast_up;
-				call spellFails;}
+		if (inMagicStorm()) {
+			script item {
+				nohalt;
+				sfx 67;
+				actor frame cast_up;
+				actor frame cast_out;
+				actor frame cast_up;
+				call spellShowMap;
+			}
+		} else {
+			script item {
+				nohalt;
+				actor frame cast_up;
+				actor frame cast_out;
+				actor frame cast_up;
+				call spellFails;
+			}
 		}
 	}
 }
 
-void spellPoison (var target)
-{
-	if (event == DOUBLECLICK)
-	{
-		//var target = UI_click_on_item();
+void spellPoison (struct<ObjPos> target) {
+	if (event == DOUBLECLICK) {
+		//struct<ObjPos> target = UI_click_on_item();
 		var dir = direction_from(target);
 		item_say("@In Nox@");
-		if (inMagicStorm() && (target[X] != 0))
-		{
+		if (inMagicStorm() && (target.obj != 0)) {
 			set_to_attack(target, SHAPE_POISON);
-			script item
-			{	nohalt;						face dir;
-				sfx 110;					actor frame raise_1h;
-				actor frame strike_1h;		actor frame strike_1h;
-				attack;						actor frame standing;}
-		}
-		else
-		{
-			script item
-			{	nohalt;						face dir;
-				actor frame raise_1h;		actor frame strike_1h;
-				call spellFails;}
+			script item {
+				nohalt;
+				face dir;
+				sfx 110;
+				actor frame raise_1h;
+				actor frame strike_1h;
+				actor frame strike_1h;
+				attack;
+				actor frame standing;
+			}
+		} else {
+			script item {
+				nohalt;
+				face dir;
+				actor frame raise_1h;
+				actor frame strike_1h;
+				call spellFails;
+			}
 		}
 	}
 }
 
-void spellProtectAll ()
-{
-	if (event == DOUBLECLICK)
-	{
+void spellProtectAll () {
+	if (event == DOUBLECLICK) {
 		item_say("@Vas Uus Sanct@");
-		if (inMagicStorm())
-		{
+		if (inMagicStorm()) {
 			halt_scheduled();
-			script item
-			{	nohalt;						actor frame cast_up;
-				actor frame cast_out;			actor frame cast_up;
-				actor frame strike_2h;		call spellProtectAllEffect;}
-		}
-		else
-		{
-			script item
-			{	nohalt;						actor frame cast_up;
-				actor frame cast_out;			actor frame cast_up;
-				actor frame strike_2h;		call spellFails;}
+			script item {
+				nohalt;
+				actor frame cast_up;
+				actor frame cast_out;
+				actor frame cast_up;
+				actor frame strike_2h;
+				call spellProtectAllEffect;
+			}
+		} else {
+			script item {
+				nohalt;
+				actor frame cast_up;
+				actor frame cast_out;
+				actor frame cast_up;
+				actor frame strike_2h;
+				call spellFails;
+			}
 		}
 	}
 }
 
-void spellSleep (var target)
-{
-	if (event == DOUBLECLICK)
-	{
-		//var target = UI_click_on_item();
+void spellSleep (struct<ObjPos> target) {
+	if (event == DOUBLECLICK) {
+		//struct<ObjPos> target = UI_click_on_item();
 		var dir = direction_from(target);
 		halt_scheduled();
 		item_say("@In Zu@");
-		if (inMagicStorm() && (target[X] != 0))
-		{
+		if (inMagicStorm() && (target.obj != 0)) {
 			set_to_attack(target, SHAPE_SPELL_SLEEP);
-			script item
-			{	nohalt;						face dir;
-				actor frame raise_1h;		actor frame strike_1h;
-				actor frame strike_1h;		attack;
-				actor frame standing;}
-		}
-		else
-		{
-			script item
-			{	nohalt;						face dir;
-				actor frame raise_1h;		actor frame strike_1h;
-				call spellFails;}
+			script item {
+				nohalt;
+				face dir;
+				actor frame raise_1h;
+				actor frame strike_1h;
+				actor frame strike_1h;
+				attack;
+				actor frame standing;
+			}
+		} else {
+			script item {
+				nohalt;
+				face dir;
+				actor frame raise_1h;
+				actor frame strike_1h;
+				call spellFails;
+			}
 		}
 	}
 }
 
-void spellSwarm ()
-{
-	if (event == DOUBLECLICK)
-	{
+void spellSwarm () {
+	if (event == DOUBLECLICK) {
 		halt_scheduled();
 		item_say("@Kal Bet Xen@");
-		if (inMagicStorm())
-		{
-			script item
-			{	nohalt;						actor frame cast_up;
-				actor frame cast_out;			actor frame strike_2h;
-				sfx 65;						call spellSwarmEffect;}
-		}
-		else
-		{
-			script item
-			{	nohalt;						actor frame cast_up;
-				actor frame cast_out;			actor frame strike_2h;
-				call spellFails;}
+		if (inMagicStorm()) {
+			script item {
+				nohalt;
+				actor frame cast_up;
+				actor frame cast_out;
+				actor frame strike_2h;
+				sfx 65;
+				call spellSwarmEffect;
+			}
+		} else {
+			script item {
+				nohalt;
+				actor frame cast_up;
+				actor frame cast_out;
+				actor frame strike_2h;
+				call spellFails;
+			}
 		}
 	}
 }
 
-void spellRemoveCurse (var target)
-{
-	if (event == DOUBLECLICK)
-	{
+void spellRemoveCurse (struct<ObjPos> target) {
+	if (event == DOUBLECLICK) {
 		halt_scheduled();
-		//var target = UI_click_on_item();
+		//struct<ObjPos> target = UI_click_on_item();
 		var dir = direction_from(target);
 		item_say("@An Des Sanct@");
-		if (inMagicStorm() && target->is_npc())
-		{
-			script item
-			{	nohalt;						face dir;
-				sfx 109;					actor frame raise_1h;
-				actor frame cast_out;			actor frame strike_2h;}
+		if (inMagicStorm() && target->is_npc()) {
+			script item {
+				nohalt;
+				face dir;
+				sfx 109;
+				actor frame raise_1h;
+				actor frame cast_out;
+				actor frame strike_2h;
+			}
 
-			script target after 5 ticks
-			{	nohalt;
+			script target after 5 ticks {
+				nohalt;
 				call spellClearFlag, CURSED;
-				call spellClearFlag, PARALYZED;}
-			
-			obj_sprite_effect(13, -2, -2, 0, 0, 0, -1);
-		}
-		else
-		{
-			script item
-			{	nohalt;						face dir;
-				actor frame raise_1h;		actor frame cast_out;
-				actor frame strike_2h;		call spellFails;}
+				call spellClearFlag, PARALYZED;
+			}
+
+			obj_sprite_effect(ANIMATION_GREEN_BUBBLES, -2, -2, 0, 0, 0, -1);
+		} else {
+			script item {
+				nohalt;
+				face dir;
+				actor frame raise_1h;
+				actor frame cast_out;
+				actor frame strike_2h;
+				call spellFails;
+			}
 		}
 	}
 }

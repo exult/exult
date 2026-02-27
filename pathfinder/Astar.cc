@@ -17,31 +17,27 @@
  */
 
 #ifdef HAVE_CONFIG_H
-#  include <config.h>
+#	include <config.h>
 #endif
 
-
 #include "Astar.h"
+
+#include "path.h"
 
 /*
  *  Find path from source to destination.
  *
  *  Output: true if successful, else false.
  */
-bool Astar::NewPath(Tile_coord const &s, Tile_coord const &d, Pathfinder_client *client) {
-	extern Tile_coord *Find_path(Tile_coord const &, Tile_coord const &,
-	                             Pathfinder_client * client, int & plen);
-	src = s;            // Store start, destination.
-	dest = d;
-	path.clear();       // Clear out old path, if there.
-	Tile_coord *t = Find_path(s, d, client, pathlen);
-	const bool success = (t != nullptr);
-	for (int i = 0; i < pathlen; i++)
-		path.push_back(t[i]);
-	delete [] t;    // Discard temporary storage
+bool Astar::NewPath(const Tile_coord& s, const Tile_coord& d, const Pathfinder_client* client) {
+	auto [new_path, success] = Find_path(s, d, client);
+
+	src        = s;    // Store start, destination.
+	dest       = d;
+	path       = std::move(new_path);
 	next_index = 0;
-	dir = 1;
-	stop = pathlen;
+	dir        = 1;
+	stop       = path.size();
 	return success;
 }
 
@@ -50,7 +46,7 @@ bool Astar::NewPath(Tile_coord const &s, Tile_coord const &d, Pathfinder_client 
  *
  *  Output: false if all done.
  */
-bool Astar::GetNextStep(Tile_coord &n, bool &done) {
+bool Astar::GetNextStep(Tile_coord& n, bool& done) {
 	if (next_index == stop) {
 		done = true;
 		return false;
@@ -66,18 +62,16 @@ bool Astar::GetNextStep(Tile_coord &n, bool &done) {
  *
  *  Output: true always (we succeeded).
  */
-bool Astar::set_backwards(
-) {
-	dir = -1;
-	stop = -1;
-	next_index = pathlen - 1;
+bool Astar::set_backwards() {
+	dir        = -1;
+	stop       = -1;
+	next_index = path.size() - 1;
 	return true;
 }
 
 /*
  *  Get # steps left.
  */
-int Astar::get_num_steps(
-) {
+int Astar::get_num_steps() {
 	return (stop - next_index) * dir;
 }

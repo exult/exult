@@ -21,10 +21,11 @@
 #ifndef FLAT_H
 #define FLAT_H
 
-#include <string>
 #include "U7file.h"
 #include "common_types.h"
 #include "exceptions.h"
+
+#include <string>
 
 class DataSource;
 
@@ -42,22 +43,21 @@ protected:
 public:
 	/// Basic constructor.
 	/// @param spec File name and object index pair.
-	explicit Flat(const File_spec &spec)
-		: U7file(spec)
-	{  }
+	explicit Flat(const File_spec& spec) : U7file(spec) {}
 
 	size_t number_of_objects() override {
 		return 1;
 	}
-	const char *get_archive_type() override {
+
+	const char* get_archive_type() override {
 		return "FLAT";
 	}
 
-	static bool is_flat(IDataSource *in);
+	static bool is_flat(IDataSource* in);
 	static bool is_flat(const std::string& fname);
 };
 
-using FlatFile = U7DataFile<Flat>;
+using FlatFile   = U7DataFile<Flat>;
 using FlatBuffer = U7DataBuffer<Flat>;
 
 #endif

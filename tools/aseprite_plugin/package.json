@@ -1,0 +1,41 @@
+{
+  "name": "exult-shp",
+  "displayName": "Ultima VII SHP Format",
+  "description": "Import and export Ultima VII SHP files",
+  "version": "1.13.1git",
+  "author": {
+    "name": "The Exult Team"
+  },
+  "contributors": [],
+  "publisher": "The Exult Team",
+  "license": "GPL-2.0",
+  "categories": [
+    "Scripts"
+  ],
+  "contributes": {
+    "scripts": [
+        { "path": "./main.lua" }
+    ],
+    "formats": [
+      {
+        "id": "shp",
+        "extensions": ["shp"]
+      }
+    ],
+    "commands": [
+      {
+        "id": "ImportSHP",
+        "title": "Import SHP File"
+      },
+      {
+        "id": "ExportSHP",
+        "title": "Export SHP File"
+      },
+      {
+        "id": "OpenSHP",
+        "title": "Ultima VII SHP",
+        "file_format": "shp"
+      }
+    ]
+  }
+}

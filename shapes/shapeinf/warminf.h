@@ -5,7 +5,7 @@
  **/
 
 #ifndef INCL_WARMINF_H
-#define INCL_WARMINF_H  1
+#define INCL_WARMINF_H 1
 
 /*
 Copyright (C) 2008-2022 The Exult Team
@@ -37,57 +37,67 @@ class Shape_info;
  *  This is meant to be stored in a totally ordered vector.
  */
 class Warmth_info : public Base_info {
-	short   frame;
-	char    warmth;
+	short frame;
+	char  warmth;
+
 public:
 	friend class Shape_info;
 	Warmth_info() = default;
-	Warmth_info(short f, char w, bool p = false, bool m = false,
-	            bool s = false, bool inv = false)
-		: Base_info(m, p, inv, s), frame(f), warmth(w)
-	{  }
-	Warmth_info(const Warmth_info &other)
-		: Base_info(other), frame(other.frame), warmth(other.warmth) {
+
+	Warmth_info(short f, char w, bool p = false, bool m = false, bool s = false, bool inv = false)
+			: Base_info(m, p, inv, s), frame(f), warmth(w) {}
+
+	Warmth_info(const Warmth_info& other) : Base_info(other), frame(other.frame), warmth(other.warmth) {
 		info_flags = other.info_flags;
 	}
+
 	// Read in from file.
-	bool read(std::istream &in, int version, Exult_Game game);
+	bool read(std::istream& in, int version, Exult_Game game);
 	// Write out.
-	void write(std::ostream &out, int shapenum, Exult_Game game);
+	void write(std::ostream& out, int shapenum, Exult_Game game);
+
 	void invalidate() {
 		warmth = 0;
 		set_invalid(true);
 	}
+
 	int get_frame() const {
 		return frame;
 	}
+
 	int get_warmth() const {
 		return warmth;
 	}
+
 	void set_warmth(int f) {
 		if (warmth != f) {
 			set_modified(true);
 			warmth = f;
 		}
 	}
-	bool operator<(const Warmth_info &other) const {
+
+	bool operator<(const Warmth_info& other) const {
 		return static_cast<unsigned short>(frame) < static_cast<unsigned short>(other.frame);
 	}
-	bool operator==(const Warmth_info &other) const {
+
+	bool operator==(const Warmth_info& other) const {
 		return this == &other || (!(*this < other) && !(other < *this));
 	}
-	bool operator!=(const Warmth_info &other) const {
+
+	bool operator!=(const Warmth_info& other) const {
 		return !(*this == other);
 	}
-	Warmth_info &operator=(const Warmth_info &other) {
+
+	Warmth_info& operator=(const Warmth_info& other) {
 		if (this != &other) {
-			frame = other.frame;
-			warmth = other.warmth;
+			frame      = other.frame;
+			warmth     = other.warmth;
 			info_flags = other.info_flags;
 		}
 		return *this;
 	}
-	void set(const Warmth_info &other) {
+
+	void set(const Warmth_info& other) {
 		// Assumes *this == other.
 		// No need to guard against self-assignment.
 		// Do NOT copy modified or static flags.
@@ -95,7 +105,11 @@ public:
 		set_invalid(other.is_invalid());
 		set_warmth(other.warmth);
 	}
-	enum { is_binary = 0, entry_size = 0 };
+
+	enum {
+		is_binary  = 0,
+		entry_size = 0
+	};
 };
 
 #endif

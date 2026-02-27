@@ -1,5 +1,5 @@
 /*
-Copyright (C) 2001-2022 The Exult Team
+Copyright (C) 2001-2025 The Exult Team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -17,93 +17,138 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
 #ifdef HAVE_CONFIG_H
-#  include <config.h>
+#	include <config.h>
 #endif
 
 #include "Gamemenu_gump.h"
+
 #include "AudioOptions_gump.h"
-#include "VideoOptions_gump.h"
+#include "File_gump.h"
 #include "GameDisplayOptions_gump.h"
 #include "GameEngineOptions_gump.h"
-#include "InputOptions_gump.h"
 #include "Gump_button.h"
-#include "Yesno_gump.h"
-#include "gamewin.h"
-#include "Newfile_gump.h"
-#include "File_gump.h"
-#include "mouse.h"
-#include "exult.h"
-#include "exult_flx.h"
-#include "Text_button.h"
-#include "gameclk.h"
 #include "Gump_manager.h"
-#include "ignore_unused_variable_warning.h"
+#include "InputOptions_gump.h"
+#include "Newfile_gump.h"
+#include "Text_button.h"
+#include "VideoOptions_gump.h"
+#include "Yesno_gump.h"
+#include "exult.h"
+#include "gameclk.h"
+#include "gamewin.h"
+#include "items.h"
+#include "mouse.h"
+
 #include <string>
 
 using std::string;
 
-static const int rowy[] = { 4, 17, 30, 43, 56, 69, 82 };
-static const int colx = 31;
+class Strings : public GumpStrings {
+public:
+	static auto LoadSaveGame() {
+		return get_text_msg(0x5E0 - msg_file_start);
+	}
 
-static const char *loadsavetext = "Load/Save Game";
-static const char *videoopttext = "Video Options";
-static const char *audioopttext = "Audio Options";
-static const char *displaytext = "Game Display";
-static const char *enginetext = "Game Engine";
-static const char *inputtext = "Game Input";
-#ifndef __IPHONEOS__
-static const char *quitmenutext = "Quit to Menu";
-static const char *quittext = "Quit";
-#endif
+	static auto VideoOptions() {
+		return get_text_msg(0x5E1 - msg_file_start);
+	}
+
+	static auto AudioOptions() {
+		return get_text_msg(0x5E2 - msg_file_start);
+	}
+
+	static auto GameDisplay() {
+		return get_text_msg(0x5E3 - msg_file_start);
+	}
+
+	static auto GameEngine() {
+		return get_text_msg(0x5E4 - msg_file_start);
+	}
+
+	static auto GameInput() {
+		return get_text_msg(0x5E5 - msg_file_start);
+	}
+
+	static auto Quit() {
+		return get_text_msg(0x5E6 - msg_file_start);
+	}
+};
 
 using Gamemenu_button = CallbackTextButton<Gamemenu_gump>;
 
-Gamemenu_gump::Gamemenu_gump() : Modal_gump(nullptr, EXULT_FLX_GAMEMENU_SHP, SF_EXULT_FLX) {
-	set_object_area(TileRect(0, 0, 0, 0), 8, 95);
+Gamemenu_gump::Gamemenu_gump() : Modal_gump(nullptr, -1) {
+	createButtons();
+}
 
-	int y = 0;
-	if (!gwin->is_in_exult_menu())
-		buttons[id_load_save] = std::make_unique<Gamemenu_button>(this, &Gamemenu_gump::loadsave,
-		        loadsavetext, colx, rowy[y++], 108, 11);
-	buttons[id_video_options] = std::make_unique<Gamemenu_button>(this, &Gamemenu_gump::video_options,
-	        videoopttext, colx, rowy[y++], 108, 11);
-	buttons[id_audio_options] = std::make_unique<Gamemenu_button>(this, &Gamemenu_gump::audio_options,
-	        audioopttext, colx, rowy[y++], 108, 11);
-	buttons[id_game_engine_options] = std::make_unique<Gamemenu_button>(this, &Gamemenu_gump::game_engine_options,
-	        enginetext, colx, rowy[y++], 108, 11);
-	buttons[id_game_display_options] = std::make_unique<Gamemenu_button>(this, &Gamemenu_gump::game_display_options,
-	        displaytext, colx, rowy[y++], 108, 11);
-	buttons[id_input] = std::make_unique<Gamemenu_button>(this, &Gamemenu_gump::input_options,
-	        inputtext, colx, rowy[y++], 108, 11);
-#ifndef __IPHONEOS__
-	if (!gwin->is_in_exult_menu())
-		buttons[id_quit] = std::make_unique<Gamemenu_button>(this, &Gamemenu_gump::quit_exult,
-		        quittext, colx, rowy[y++], 108, 11);
+void Gamemenu_gump::createButtons() {
+	int y                      = 0;
+	int margin                 = 4;
+	int preferred_button_width = 108;
+	// clear the buttons array
+	for (auto& button : buttons) {
+		button.reset();
+	}
+
+	// Resize the gump to default
+	SetProceduralBackground(TileRect(0, 0, 100, yForRow(7)), -1);
+	if (!gwin->is_in_exult_menu()) {
+		buttons[id_load_save] = std::make_unique<Gamemenu_button>(
+				this, &Gamemenu_gump::loadsave, Strings::LoadSaveGame(), margin, yForRow(y++), preferred_button_width, 11);
+	}
+	buttons[id_video_options] = std::make_unique<Gamemenu_button>(
+			this, &Gamemenu_gump::video_options, Strings::VideoOptions(), margin, yForRow(y++), preferred_button_width, 11);
+	buttons[id_audio_options] = std::make_unique<Gamemenu_button>(
+			this, &Gamemenu_gump::audio_options, Strings::AudioOptions(), margin, yForRow(y++), preferred_button_width, 11);
+	buttons[id_game_engine_options] = std::make_unique<Gamemenu_button>(
+			this, &Gamemenu_gump::game_engine_options, Strings::GameEngine(), margin, yForRow(y++), preferred_button_width, 11);
+	buttons[id_game_display_options] = std::make_unique<Gamemenu_button>(
+			this, &Gamemenu_gump::game_display_options, Strings::GameDisplay(), margin, yForRow(y++), preferred_button_width, 11);
+	buttons[id_input] = std::make_unique<Gamemenu_button>(
+			this, &Gamemenu_gump::input_options, Strings::GameInput(), margin, yForRow(y++), preferred_button_width, 11);
+#if !defined(SDL_PLATFORM_IOS) && !defined(ANDROID)
+	if (!gwin->is_in_exult_menu()) {
+		buttons[id_quit] = std::make_unique<Gamemenu_button>(
+				this, &Gamemenu_gump::quit_exult, Strings::Quit(), margin, yForRow(y++), preferred_button_width, 11);
+	}
 #endif
+
+	// Resize to fit the combined height of the buttons
+	SetProceduralBackground(TileRect(0, yForRow(0) - margin, 100, yForRow(y) + margin), -1, true);
+
+	// Resize to fit width of buttons
+	ResizeWidthToFitWidgets(tcb::span(buttons.data(), buttons.size()), margin);
+
+	// Centre all the buttons
+	for (auto& button : buttons) {
+		if (button) {
+			HorizontalArrangeWidgets(tcb::span(&button, 1), 0);
+		}
+	}
 }
 
 //++++++ IMPLEMENT RETURN_TO_MENU!
 void Gamemenu_gump::quit(bool return_to_menu) {
 	ignore_unused_variable_warning(return_to_menu);
-	if (!Yesno_gump::ask("Do you really want to quit?")) {
+	if (!Yesno_gump::ask(Strings::Doyoureallywanttoquit_())) {
 		return;
 	}
 	quitting_time = QUIT_TIME_YES;
-	done = true;
+	done          = true;
 }
 
 //+++++ implement actual functionality and option screens
 void Gamemenu_gump::loadsave() {
-	//File_gump *fileio = new File_gump();
-	auto *fileio = new Newfile_gump();
+	// File_gump *fileio = new File_gump();
+	auto* fileio = new Newfile_gump();
 	gumpman->do_modal_gump(fileio, Mouse::hand);
-	if (fileio->restored_game())
+	if (fileio->restored_game()) {
 		done = true;
+	}
 	delete fileio;
 }
 
 void Gamemenu_gump::video_options() {
-	auto *vid_opts = new VideoOptions_gump();
+	auto* vid_opts = new VideoOptions_gump();
 	gumpman->do_modal_gump(vid_opts, Mouse::hand);
 
 	// resolution could have changed, so recenter & repaint menu.
@@ -116,19 +161,21 @@ void Gamemenu_gump::video_options() {
 }
 
 void Gamemenu_gump::audio_options() {
-	auto *aud_opts = new AudioOptions_gump();
+	auto* aud_opts = new AudioOptions_gump();
 	gumpman->do_modal_gump(aud_opts, Mouse::hand);
 	delete aud_opts;
 }
 
 void Gamemenu_gump::game_display_options() {
-	auto *gp_opts = new GameDisplayOptions_gump();
+	auto* gp_opts = new GameDisplayOptions_gump();
 	gumpman->do_modal_gump(gp_opts, Mouse::hand);
 	delete gp_opts;
+	// Language might have changed so recreate buttons
+	createButtons();
 }
 
 void Gamemenu_gump::game_engine_options() {
-	auto *cbt_opts = new GameEngineOptions_gump();
+	auto* cbt_opts = new GameEngineOptions_gump();
 	gumpman->do_modal_gump(cbt_opts, Mouse::hand);
 	delete cbt_opts;
 }
@@ -139,50 +186,28 @@ void Gamemenu_gump::input_options() {
 }
 
 void Gamemenu_gump::paint() {
-	Gump::paint();
-	for (auto& btn : buttons)
-		if (btn)
+	Modal_gump::paint();
+	for (auto& btn : buttons) {
+		if (btn) {
 			btn->paint();
-	gwin->set_painted();
-}
-
-bool Gamemenu_gump::mouse_down(int mx, int my, int button) {
-	if (button != 1) return false;
-
-	pushed = Gump::on_button(mx, my);
-	// First try checkmark.
-	// Try buttons at bottom.
-	if (!pushed)
-		for (auto& btn : buttons)
-			if (btn && btn->on_button(mx, my)) {
-				pushed = btn.get();
-				break;
-			}
-
-	if (pushed)         // On a button?
-		pushed->push(button);
-
-	return true;
-}
-
-bool Gamemenu_gump::mouse_up(int mx, int my, int button) {
-	if (button != 1) return false;
-
-	if (pushed) {       // Pushing a button?
-		pushed->unpush(button);
-		if (pushed->on_button(mx, my))
-			pushed->activate(1);
-		pushed = nullptr;
+		}
 	}
-
-	return true;
+	gwin->set_painted();
 }
 
 void Gamemenu_gump::do_exult_menu() {
 	// Need to do a very small init of game data... palette, mouse, gumps
 	Gamemenu_gump gmenu;
 	// Does not return until gump can be deleted:
-	Game_window::get_instance()->get_gump_man()->do_modal_gump(&gmenu,
-	        Mouse::hand);
+	Game_window::get_instance()->get_gump_man()->do_modal_gump(&gmenu, Mouse::hand);
 }
 
+Gump_button* Gamemenu_gump::on_button(int mx, int my) {
+	for (auto& btn : buttons) {
+		auto found = btn ? btn->on_button(mx, my) : nullptr;
+		if (found) {
+			return found;
+		}
+	}
+	return Modal_gump::on_button(mx, my);
+}

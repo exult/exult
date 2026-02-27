@@ -19,7 +19,10 @@
 #ifndef CONV_H
 #define CONV_H
 
-extern const int bgconv[];
-extern const int bgconvsong[];
+#include <cstddef>
+
+extern const int    bgconv[];
+const extern size_t bgconv_size;
+extern const int    bgconvsong[];
 
 #endif

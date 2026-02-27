@@ -20,20 +20,18 @@
  *	Last Modified: 2006-03-19
  */
 
-void Anvil shape#(0x3DF) ()
-{
+void Anvil shape#(0x3DF) () {
 	//User doubleclicked the anvil - check if they're carrying a sword,
 	//and if there's a swordblank on top of the anvil. If so, go to
 	//the anvil and use the hammer on the swordblank.
-	if (event == DOUBLECLICK)
-	{
+	if (event == DOUBLECLICK) {
 		if (AVATAR->is_readied(BG_WEAPON_HAND, SHAPE_HAMMER, FRAME_ANY) ||
 			//Also allow Julia's hammer:
-			AVATAR->is_readied(BG_WEAPON_HAND, SHAPE_JULIAS_HAMMER, FRAME_ANY))
-		{
+			AVATAR->is_readied(BG_WEAPON_HAND, SHAPE_JULIAS_HAMMER, FRAME_ANY)) {
 			var swordblank = find_nearest(SHAPE_SWORDBLANK, 3);
-			if (swordblank && onAnvil(swordblank, item))
+			if (swordblank && onAnvil(swordblank, item)) {
 				gotoObject(item, 0, 2, 0, useHammerOnSwordblank, swordblank, SCRIPTED);
+			}
 		}
 	}
 }

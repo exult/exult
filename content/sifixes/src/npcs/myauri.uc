@@ -14,7 +14,7 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
- 
+
 /*  Myauri's MET flag never gets set during conversation with him, so this
  *  bit of code will set it once you start talking to him. He does not seem
  *  to check it either, so the only effect this code has is single-clicking
@@ -23,11 +23,10 @@
  *  2016-07-15 Written by Knight Captain
  */
 
-void Myauri object#(0x492) ()
-{
-	if (event == STARTED_TALKING)
+void Myauri object#(0x492) () {
+	if (event == STARTED_TALKING) {
 		MYAURI->set_item_flag(MET);
-
+	}
 	Myauri.original();
 }
 

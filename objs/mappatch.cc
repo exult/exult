@@ -23,10 +23,11 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
 #ifdef HAVE_CONFIG_H
-#  include <config.h>
+#	include <config.h>
 #endif
 
 #include "mappatch.h"
+
 #include "gamewin.h"
 #include "objs.h"
 
@@ -34,11 +35,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *  Find (first) matching object.
  */
 
-Game_object *Map_patch::find(
-) {
-	Game_object_vector vec;     // Pass mask=0xb0 to get any object.
-	Game_object::find_nearby(vec, spec.loc, spec.shapenum, 0, 0xb0,
-	                         spec.quality, spec.framenum);
+Game_object* Map_patch::find() {
+	Game_object_vector vec;    // Pass mask=0xb0 to get any object.
+	Game_object::find_nearby(vec, spec.loc, spec.shapenum, 0, 0xb0, spec.quality, spec.framenum);
 	return vec.empty() ? nullptr : vec.front();
 }
 
@@ -48,15 +47,15 @@ Game_object *Map_patch::find(
  *  Output: false if no object found.
  */
 
-bool Map_patch_remove::apply(
-) {
-	bool found = false;
-	Game_object *obj;
+bool Map_patch_remove::apply() {
+	bool         found = false;
+	Game_object* obj;
 	while ((obj = find()) != nullptr) {
 		obj->remove_this();
 		found = true;
-		if (!all)       // Just one?
+		if (!all) {    // Just one?
 			return true;
+		}
 	}
 	return found;
 }
@@ -67,20 +66,23 @@ bool Map_patch_remove::apply(
  *  Output: false if no object found.
  */
 
-bool Map_patch_modify::apply(
-) {
-	Game_object *obj = find();
-	if (!obj)
+bool Map_patch_modify::apply() {
+	Game_object* obj = find();
+	if (!obj) {
 		return false;
+	}
 	Game_object_shared keep;
-	obj->remove_this(&keep);        // Remove but don't delete.
-	if (mod.shapenum != c_any_shapenum)
+	obj->remove_this(&keep);    // Remove but don't delete.
+	if (mod.shapenum != c_any_shapenum) {
 		obj->set_shape(mod.shapenum);
-	if (mod.framenum != c_any_framenum)
+	}
+	if (mod.framenum != c_any_framenum) {
 		obj->change_frame(mod.framenum);
-	if (mod.quality != c_any_qual)
+	}
+	if (mod.quality != c_any_qual) {
 		obj->set_quality(mod.quality);
-	obj->set_invalid();     // To add it back correctly.
+	}
+	obj->set_invalid();    // To add it back correctly.
 	obj->move(mod.loc);
 	return true;
 }
@@ -89,9 +91,7 @@ bool Map_patch_modify::apply(
  *  Add a new patch.
  */
 
-void Map_patch_collection::add(
-    std::unique_ptr<Map_patch> p
-) {
+void Map_patch_collection::add(std::unique_ptr<Map_patch> p) {
 	// Get superchunk coords.
 	const int sx = p->spec.loc.tx / c_tiles_per_schunk;
 	const int sy = p->spec.loc.ty / c_tiles_per_schunk;
@@ -104,13 +104,12 @@ void Map_patch_collection::add(
  *  Apply all patches for a superchunk.
  */
 
-void Map_patch_collection::apply(
-    int schunk
-) {
+void Map_patch_collection::apply(int schunk) {
 	auto it1 = patches.find(schunk);
-	if (it1 != patches.end()) { // Found list for superchunk?
-		Map_patch_list &lst = it1->second;
-		for (auto& it2 : lst)
+	if (it1 != patches.end()) {    // Found list for superchunk?
+		Map_patch_list& lst = it1->second;
+		for (auto& it2 : lst) {
 			it2->apply();    // Apply each one in list.
+		}
 	}
 }

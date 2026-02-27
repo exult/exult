@@ -19,14 +19,15 @@
  */
 
 #ifdef HAVE_CONFIG_H
-#  include <config.h>
+#	include <config.h>
 #endif
 
-#include <fstream>
 #include "Flat.h"
+
 #include "databuf.h"
 #include "utils.h"
-#include "ignore_unused_variable_warning.h"
+
+#include <fstream>
 
 using std::ifstream;
 using std::size_t;
@@ -36,7 +37,7 @@ using std::size_t;
  *  @param in   DataSource containing the data we wish to investigate.
  *  @return If the datasource is non-null and good, true; false otherwise.
  */
-bool Flat::is_flat(IDataSource *in) {
+bool Flat::is_flat(IDataSource* in) {
 	return in && in->good();
 }
 

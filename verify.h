@@ -20,6 +20,7 @@
 #define VERIFY_H 1
 
 class BaseGameInfo;
-int verify_files(BaseGameInfo *game);
+// If game is nullptr the current game will be used instead
+int verify_files(BaseGameInfo* game);
 
 #endif    // VERIFY_H

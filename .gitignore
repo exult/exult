@@ -20,6 +20,7 @@ exult.spec
 Exult.suo
 exult*.tar.gz
 conf/confregress
+content/*/build/*
 content/bg/usecode
 content/bgkeyring/data/faces.vga
 content/bgkeyring/data/faces_vga.h
@@ -38,6 +39,8 @@ content/islefaq/patch/shapes.vga
 content/islefaq/patch/shapes_vga.h
 content/islefaq/patch/usecode
 content/si/usecode
+content/sifixes/data/faces.vga
+content/sifixes/data/faces_vga.h
 content/sifixes/data/gumps.vga
 content/sifixes/data/gumps_vga.h
 content/sifixes/data/mainshp.flx
@@ -69,11 +72,11 @@ data/exult_si_flx.h
 /exult
 files/rwregress
 mapedit/exult_studio
-mapedit/u7shp
+tools/gimp_plugin/u7shp
 tools/cmanip
 tools/expack
-tools/gnome_shp_thumbnailer
-tools/gnome_u7shapes.thumbnailer
+tools/exult_shp_thumbnailer
+tools/exult_u7shapes.thumbnailer
 tools/ipack
 tools/mklink
 tools/rip
@@ -82,13 +85,16 @@ tools/splitshp
 tools/textpack
 tools/u7voice2syx
 tools/wuc
-usecode/compiler/ucc
-usecode/compiler/ucparse.output
-usecode/ucxt/data/u7bgintrinsics.data
-usecode/ucxt/data/u7siintrinsics.data
-usecode/ucxt/data/u7sibetaintrinsics.data
-usecode/ucxt/head2data
-usecode/ucxt/src/ucxt
+tools/compiler/ucc
+tools/compiler/ucparse.output
+tools/ucxt/data/u7bgintrinsics.data
+tools/ucxt/data/u7siintrinsics.data
+tools/ucxt/data/u7sibetaintrinsics.data
+tools/ucxt/head2data
+tools/ucxt/src/ucxt
+tools/aseprite_plugin/exult_shp
+tools/mockup/mockup
+tools/smooth/smooth
 
 # Automake/autoconf
 .libs
@@ -172,25 +178,11 @@ TAGS
 .LSOverride
 
 # Icon must end with two \r
-Icon
+Icon?
+![iI]con[_a-zA-Z0-9]
 
 # Thumbnails
 ._*
-
-# Files that might appear in the root of a volume
-.DocumentRevisions-V100
-.fseventsd
-.Spotlight-V100
-.TemporaryItems
-.Trashes
-.VolumeIcon.icns
-
-# Directories potentially created on remote AFP share
-.AppleDB
-.AppleDesktop
-Network Trash Folder
-Temporary Items
-.apdisk
 
 # Files that might appear in the root of a volume
 .DocumentRevisions-V100
@@ -289,6 +281,37 @@ ios/libmt32emu
 ios/libogg
 ios/libvorbis
 project.xcworkspace
+ios/include/fluid_rvoice_dsp_tables.inc.h
+ios/include/fluid_conv_tables.inc.h
 
+#Visual studio garbage
 *.ilk
 *.pdb
+*.iobj
+*.ipdb
+/Exult Source Code.url
+
+docs/xml/*.txt
+docs/xml/*.dat
+docs/xml/*.html
+gitinfo.h
+
+#Android
+android/app/build.gradle
+android/app/src/main/res/drawable/*.png
+
+#files in data that should not be in git
+data/exult_studio.glade
+/data/music
+/data/jmsfx.flx
+/data/sqsfxsi.flx
+/data/sqsfxbg.flx
+/data/jmsisfx.flx
+data/fonts_original.vga
+data/fonts_original_vga.h
+data/fonts_serif.vga
+data/fonts_serif_vga.h
+.github
+.gradle/
+android/app/build/
+android/lib/build/

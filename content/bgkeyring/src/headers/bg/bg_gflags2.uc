@@ -25,8 +25,7 @@
  */
 
 //FoV flags:
-enum fov_flags
-{
+enum fov_flags {
 	TALKED_ABOUT_RUMBLE				= 0x02FE,
 	BANISHED_EXODUS					= 0x030C,
 	SCROLL_OF_INFINITY				= 0x030E,
@@ -49,8 +48,7 @@ enum fov_flags
 };
 
 //Some Cove flags:
-enum cove_flags
-{
+enum cove_flags {
 	MET_JAANA						= 0x0018,
 	ASKED_JAANA_NAME				= 0x00EF,
 	KNOWS_COVE_GOSSIP				= 0x00E4,
@@ -62,23 +60,20 @@ enum cove_flags
 	LOCK_LAKE_BILL_SIGNED			= 0x00DE
 };
 
-enum serpent_hold_flags
-{
+enum serpent_hold_flags {
 	KNOWS_LEIGH_IS_HEALER			= 0x027A,
 	CAN_EXAMINE_STONE_CHIPS			= 0x0259,
 	DOING_STATUE_QUEST				= 0x025E,
 	EXAMINED_CHIPS					= 0x025F
 };
 
-enum terfin_flags
-{
+enum terfin_flags {
 	KNOWNS_ABOUT_CONFLICTS			= 0x0244,
 	KNOWS_SILAMO_UNHAPPY			= 0x023D
 };
 
 //Some metaplot-related flags:
-enum metaplot_flags
-{
+enum metaplot_flags {
 	TALKED_TO_GYPSY					= 256,	//0x100;
 	HAD_FIRST_WISP_TALK				= 336,	//0x150;
 	WISP_OFFERED_TRADE				= 307,	//0x133;
@@ -87,16 +82,14 @@ enum metaplot_flags
 };
 
 //Flags used in the Improved Orb of the Moons:
-enum orb_flags
-{
+enum orb_flags {
 	BROKE_SPHERE					= 4,	//0x0004
 	LEFT_TRINSIC					= 87	//0x0057
 };
 
 //Some Yew flags, used in reimplementation of Perrin and Reyna
 //for the end of the Keyring Quest:
-enum yew_flags
-{
+enum yew_flags {
 	MET_PERRIN						= 0x0145,
 	KNOWS_REYNA_LOVES_ANIMALS		= 0x013B,
 	MET_REYNA						= 0x0146,
@@ -117,8 +110,7 @@ const int INSIDE_GENERATOR			= 0x39;
 
 //Seance flags; I have NO idea why they didn't go with just
 //ONE flag instead...
-enum seance_flags
-{
+enum seance_flags {
 	SEANCE_CAINE					= 0x01B2,
 	SEANCE_FERRYMAN					= 0x01B3,
 	SEANCE_MARKHAM					= 0x01B4,

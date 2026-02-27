@@ -26,19 +26,18 @@
 
 /*
 	Eighth circle Spells
-	
-	extern void spellDeathVortex (var target);
+
+	extern void spellDeathVortex (struct<ObjPos> target);
 	extern void spellInvisibilityAll ();
 	extern void spellMassDeath ();
-	extern void spellResurrect (var target);
+	extern void spellResurrect (struct<ObjPos> target);
 	extern void spellSummon ();
-	extern void spellSwordStrike (var target);
+	extern void spellSwordStrike (struct<ObjPos> target);
 	extern void spellTimeStop ();
 	extern void spellMassResurrect ();
 */
 
-enum eighth_circle_spells
-{
+enum eighth_circle_spells {
 	SPELL_DEATH_VORTEX				= 0,
 	SPELL_INVISIBILITY_ALL			= 1,
 	SPELL_MASS_DEATH				= 2,
@@ -49,276 +48,300 @@ enum eighth_circle_spells
 	SPELL_MASS_RESURRECT			= 7			//Special NPC-only spell
 };
 
-void spellDeathVortex (var target)
-{
-	if (event == DOUBLECLICK)
-	{
-		//var target = UI_click_on_item();
+void spellDeathVortex (struct<ObjPos> target) {
+	if (event == DOUBLECLICK) {
+		//struct<ObjPos> target = UI_click_on_item();
 		var dir = direction_from(target);
 		halt_scheduled();
 		item_say("@Vas Corp Hur@");
-		if (inMagicStorm())
-		{
+		if (inMagicStorm()) {
 			set_to_attack(target, SHAPE_DEATH_VORTEX);
-			script item
-			{	nohalt;						face dir;
-				sfx 65;						actor frame cast_up;
-				actor frame strike_1h;		attack;}
-		}
-		else
-		{
-			script item
-			{	nohalt;						face dir;
-				actor frame cast_up;			actor frame strike_1h;
-				call spellFails;}
-		}
-	}
-}
-
-void spellInvisibilityAll ()
-{
-	if (event == DOUBLECLICK)
-	{
-		halt_scheduled();
-		item_say("@Vas Sact Lor@");
-		if (inMagicStorm())
-		{
-			var pos = get_object_position();
-			UI_sprite_effect(7, (pos[X] - 2), (pos[Y] - 2), 0, 0, 0, -1);
-			script item
-			{	nohalt;						actor frame raise_1h;
-				sfx 67;						actor frame standing;
-				actor frame cast_up;			actor frame standing;
-				actor frame strike_2h;}
-			var targets = getFriendlyTargetList(item, 25);
-			for (npc in targets)
-			{
-				var delay = ((get_distance(npc) / 3) + 5);
-				script npc after delay ticks
-				{	nohalt;			call spellSetFlag, INVISIBLE;}
+			script item {
+				nohalt;
+				face dir;
+				sfx 65;
+				actor frame cast_up;
+				actor frame strike_1h;
+				attack;
+			}
+		} else {
+			script item {
+				nohalt;
+				face dir;
+				actor frame cast_up;
+				actor frame strike_1h;
+				call spellFails;
 			}
 		}
-		else
-		{
-			script item
-			{	nohalt;						actor frame raise_1h;
-				actor frame standing;			actor frame cast_up;
-				actor frame standing;			actor frame strike_2h;
-				call spellFails;}
+	}
+}
+
+void spellInvisibilityAll () {
+	if (event == DOUBLECLICK) {
+		halt_scheduled();
+		item_say("@Vas Sact Lor@");
+		if (inMagicStorm()) {
+			struct<Position> pos = get_object_position();
+			UI_sprite_effect(ANIMATION_TELEPORT, (pos.x - 2), (pos.y - 2), 0, 0, 0, -1);
+			script item {
+				nohalt;
+				actor frame raise_1h;
+				sfx 67;
+				actor frame standing;
+				actor frame cast_up;
+				actor frame standing;
+				actor frame strike_2h;
+			}
+			var targets = getFriendlyTargetList(item, 25);
+			for (npc in targets) {
+				var delay = ((get_distance(npc) / 3) + 5);
+				script npc after delay ticks {
+					nohalt;
+					call spellSetFlag, INVISIBLE;
+				}
+			}
+		} else {
+			script item {
+				nohalt;
+				actor frame raise_1h;
+				actor frame standing;
+				actor frame cast_up;
+				actor frame standing;
+				actor frame strike_2h;
+				call spellFails;
+			}
 		}
 	}
 }
 
-void spellMassDeath ()
-{
-	if (event == DOUBLECLICK)
-	{
+void spellMassDeath () {
+	if (event == DOUBLECLICK) {
 		halt_scheduled();
 		item_say("@Vas Corp@");
-		if (inMagicStorm())
-		{
-			var pos = get_object_position();
-			UI_sprite_effect(7, (pos[X] - 2), (pos[Y] - 2), 0, 0, 0, -1);
-			script item
-			{	nohalt;						sfx 65;
-				actor frame kneeling;			actor frame standing;
-				actor frame cast_up;			actor frame cast_out;
-				sfx 67;}
+		if (inMagicStorm()) {
+			struct<Position> pos = get_object_position();
+			UI_sprite_effect(ANIMATION_TELEPORT, (pos.x - 2), (pos.y - 2), 0, 0, 0, -1);
+			script item {
+				nohalt;
+				sfx 65;
+				actor frame kneeling;
+				actor frame standing;
+				actor frame cast_up;
+				actor frame cast_out;
+				sfx 67;
+			}
 			var nearby_npcs = find_nearby(-1, 25, MASK_NPC);
-			var safenpcs = [UI_get_party_list2(), LORD_BRITISH->get_npc_object(),
-							BATLIN->get_npc_object()];
+			var safenpcs = [
+				UI_get_party_list2(),
+				LORD_BRITISH->get_npc_object(),
+				BATLIN->get_npc_object()
+			];
 			var killed_anyone = false;
-			for (npc in nearby_npcs)
-			{
-				if (!(npc in safenpcs))
-				{
+			for (npc in nearby_npcs) {
+				if (!(npc in safenpcs)) {
 					var delay = ((get_distance(npc) / 3) + 5);
 					npc->halt_scheduled();
-					script npc after delay ticks
-					{	nohalt;					call spellCauseDeath;}
+					script npc after delay ticks {
+						nohalt;
+						call spellCauseDeath;
+					}
 					killed_anyone = true;
 				}
 			}
-			
-			if (killed_anyone == true)
-			{
+
+			if (killed_anyone == true) {
 				var party = UI_get_party_list();
-				for (npc in party)
-				{
+				for (npc in party) {
 					var hps = npc->get_npc_prop(HEALTH);
 					hurtNPC(npc, (hps - 2));
 				}
 			}
-		}
-		else
-		{
-			script item
-			{	nohalt;						actor frame kneeling;
-				actor frame standing;			actor frame cast_up;
-				actor frame cast_out;			call spellFails;}
+		} else {
+			script item {
+				nohalt;
+				actor frame kneeling;
+				actor frame standing;
+				actor frame cast_up;
+				actor frame cast_out;
+				call spellFails;
+			}
 		}
 	}
 }
 
-void spellResurrect (var target)
-{
-	if (event == DOUBLECLICK)
-	{
-		//var target = UI_click_on_item();
+void spellResurrect (struct<ObjPos> target) {
+	if (event == DOUBLECLICK) {
+		//struct<ObjPos> target = UI_click_on_item();
 		var target_shape = target->get_item_shape();
-		var pos = target->get_object_position();
+		struct<Position> pos = target->get_object_position();
 		var dir = direction_from(target);
 		target->halt_scheduled();
 		halt_scheduled();
 		var canresurrect = false;
-		if (target->get_item_shape() in [SHAPE_BODIES_1, SHAPE_BODIES_2, SHAPE_LARGE_BODIES, SHAPE_NEW_BODIES])
-		{
+		if (target->get_item_shape() in [SHAPE_BODIES_1, SHAPE_BODIES_2, SHAPE_LARGE_BODIES, SHAPE_NEW_BODIES]) {
 			var target_quality = target->get_item_quality();
 			var quant = target->get_item_quantity(target_shape);
-			if ((target_quality == 0) && (quant == 0))
+			if ((target_quality == 0) && (quant == 0)) {
 				canresurrect = false;
-
-			else
+			} else {
 				canresurrect = target->resurrect();
-		}
-		else
+			}
+		} else {
 			canresurrect = false;
+		}
 
 		item_say("@In Mani Corp@");
-		if (inMagicStorm() && canresurrect)
-		{
-			script item
-			{	nohalt;						face dir;
-				sfx 64;						actor frame kneeling;
-				actor frame standing;			actor frame cast_up;}
+		if (inMagicStorm() && canresurrect) {
+			script item {
+				nohalt;
+				face dir;
+				sfx 64;
+				actor frame kneeling;
+				actor frame standing;
+				actor frame cast_up;
+			}
 			UI_play_music(15, 0);
-			UI_sprite_effect(17, pos[X], pos[Y], 0, 0, 0, -1);
-			UI_sprite_effect(13, (pos[X] - 2), (pos[Y] - 2), 0, 0, 0, -1);
-		}
-		else
-		{
-			script item
-			{	nohalt;						face dir;
-				actor frame kneeling;			actor frame standing;
-				actor frame cast_up;			call spellFails;}
+			UI_sprite_effect(ANIMATION_LIGHTNING, pos.x, pos.y, 0, 0, 0, -1);
+			UI_sprite_effect(ANIMATION_GREEN_BUBBLES, (pos.x - 2), (pos.y - 2), 0, 0, 0, -1);
+		} else {
+			script item {
+				nohalt;
+				face dir;
+				actor frame kneeling;
+				actor frame standing;
+				actor frame cast_up;
+				call spellFails;
+			}
 		}
 	}
 }
 
-void spellSummon ()
-{
-	if (event == DOUBLECLICK)
-	{
+void spellSummon () {
+	if (event == DOUBLECLICK) {
 		halt_scheduled();
 		item_say("@Kal Vas Xen@");
-		if (inMagicStorm())
-		{
-			script item
-			{	nohalt;						actor frame kneeling;
-				actor frame standing;			actor frame cast_up;
-				actor frame cast_out;			actor frame strike_2h;
-				sfx 65;						call spellSummonEffect;}
-		}
-		else
-		{
-			script item
-			{	nohalt;						actor frame kneeling;
-				actor frame standing;			actor frame cast_up;
-				actor frame cast_out;			actor frame strike_2h;
-				call spellFails;}
+		if (inMagicStorm()) {
+			script item {
+				nohalt;
+				actor frame kneeling;
+				actor frame standing;
+				actor frame cast_up;
+				actor frame cast_out;
+				actor frame strike_2h;
+				sfx 65;
+				call spellSummonEffect;
+			}
+		} else {
+			script item {
+				nohalt;
+				actor frame kneeling;
+				actor frame standing;
+				actor frame cast_up;
+				actor frame cast_out;
+				actor frame strike_2h;
+				call spellFails;
+			}
 		}
 	}
 }
 
-void spellSwordStrike (var target)
-{
-	if ((event == DOUBLECLICK) || (event == WEAPON))
-	{
-		//var target = UI_click_on_item();
+void spellSwordStrike (struct<ObjPos> target) {
+	if ((event == DOUBLECLICK) || (event == WEAPON)) {
+		//struct<ObjPos> target = UI_click_on_item();
 		halt_scheduled();
 		var dir = direction_from(target);
 		item_say("@In Jux Por Ylem@");
-		if (inMagicStorm())
-		{
+		if (inMagicStorm()) {
 			set_to_attack(target, SHAPE_SWORDSTRIKE);
-			script item
-			{	nohalt;						face dir;
-				sfx 65;						actor frame raise_1h;
-				actor frame standing;			actor frame cast_up;
-				actor frame standing;			actor frame strike_1h;
-				actor frame strike_2h;		attack;
-				actor frame standing;}
-		}
-		else
-		{
-			script item
-			{	nohalt;						face dir;
-				actor frame raise_1h;		actor frame standing;
-				actor frame cast_up;			actor frame standing;
-				actor frame strike_2h;		call spellFails;}
+			script item {
+				nohalt;
+				face dir;
+				sfx 65;
+				actor frame raise_1h;
+				actor frame standing;
+				actor frame cast_up;
+				actor frame standing;
+				actor frame strike_1h;
+				actor frame strike_2h;
+				attack;
+				actor frame standing;
+			}
+		} else {
+			script item {
+				nohalt;
+				face dir;
+				actor frame raise_1h;
+				actor frame standing;
+				actor frame cast_up;
+				actor frame standing;
+				actor frame strike_2h;
+				call spellFails;
+			}
 		}
 	}
 }
 
-void spellTimeStop ()
-{
-	if (event == DOUBLECLICK)
-	{
+void spellTimeStop () {
+	if (event == DOUBLECLICK) {
 		halt_scheduled();
 		item_say("@An Tym@");
-		if (inMagicStorm())
-		{
-			script item
-			{	nohalt;						sfx 67;
-				actor frame strike_2h;		actor frame cast_out;
-				call spellStopTime, 100;}
-		}
-		else
-		{
-			script item
-			{	nohalt;						actor frame strike_2h;
-				actor frame cast_out;			call spellFails;}
+		if (inMagicStorm()) {
+			script item {
+				nohalt;
+				sfx 67;
+				actor frame strike_2h;
+				actor frame cast_out;
+				call spellStopTime, 100;
+			}
+		} else {
+			script item {
+				nohalt;
+				actor frame strike_2h;
+				actor frame cast_out;
+				call spellFails;
+			}
 		}
 	}
 }
 
-void spellMassResurrect ()
-{
+void spellMassResurrect () {
 	var bodyshapes = [SHAPE_BODIES_1, SHAPE_BODIES_2, SHAPE_LARGE_BODIES, SHAPE_NEW_BODIES];
 	var bodies = [];
-	for (shnum in bodyshapes)
+	for (shnum in bodyshapes) {
 		bodies = [bodies, find_nearby(shnum, 25, MASK_NONE)];
+	}
 
-	if (event == DOUBLECLICK)
-	{
+	if (event == DOUBLECLICK) {
 		item_say("@Vas Mani Corp Hur@");
 
 		var have_resurrectables = false;
-		for (body in bodies)
-		{
+		for (body in bodies) {
 			var qual = body->get_item_quality();
 			var quant = body->get_item_quantity(1);
-			if ((qual != 0) || (quant != 0))
-			{
+			if ((qual != 0) || (quant != 0)) {
 				have_resurrectables = true;
 				break;
 			}
 		}
 
-		if (inMagicStorm() && have_resurrectables)
-		{
-			script item
-			{	nohalt;						sfx 64;
-				actor frame kneeling;			actor frame standing;
-				actor frame cast_up;			call spellMassResurrectEffect;}
+		if (inMagicStorm() && have_resurrectables) {
+			script item {
+				nohalt;
+				sfx 64;
+				actor frame kneeling;
+				actor frame standing;
+				actor frame cast_up;
+				call spellMassResurrectEffect;
+			}
 			UI_play_music(15, 0);
-		}
-		else
-		{
-			script item
-			{	nohalt;						actor frame kneeling;
-				actor frame standing;			actor frame cast_up;
-				call spellFails;}
+		} else {
+			script item {
+				nohalt;
+				actor frame kneeling;
+				actor frame standing;
+				actor frame cast_up;
+				call spellFails;
+			}
 		}
 	}
 }

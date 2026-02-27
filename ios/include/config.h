@@ -10,16 +10,16 @@
 #define PACKAGE_TARNAME "exult"
 
 /* Package Version */
-#define VERSION "1.9.0git"
+#define VERSION "1.13.1git"
 
 /* Define to the version of this package. */
-#define PACKAGE_VERSION "1.9.0git"
+#define PACKAGE_VERSION "1.13.1git"
 
 /* Define to the full name and version of this package. */
-#define PACKAGE_STRING "Exult 1.9.0git"
+#define PACKAGE_STRING "Exult 1.13.1git"
 
 /* Define to the home page for this package. */
-#define PACKAGE_URL "http://exult.info/"
+#define PACKAGE_URL "https://exult.info/"
 
 /* Define to the address where bug reports for this package should be sent. */
 #define PACKAGE_BUGREPORT ""
@@ -41,35 +41,148 @@
 
 #define USE_FMOPL_MIDI
 
+/* Enable Midi Sfx */
+#define ENABLE_MIDISFX
+
+/* Enable fluidsynth midi */
+#define USE_FLUIDSYNTH_MIDI 1
+
+/* Using FluidSynth */
+#define USING_FLUIDSYNTH 1
+
+/* Enable mt32emu */
 #define USE_MT32EMU_MIDI
 
 #ifndef MT32EMU_CONFIG_H
-#define MT32EMU_CONFIG_H
+#	define MT32EMU_CONFIG_H
+
+#	define MT32EMU_WITH_INTERNAL_RESAMPLER 1
 
 /* MT32EMU Version */
-#define MT32EMU_VERSION_MAJOR 2
-#define MT32EMU_VERSION_MINOR 5
-#define MT32EMU_VERSION_PATCH 3
-#define MT32EMU_VERSION "$(MT32EMU_VERSION_MAJOR).$(MT32EMU_VERSION_MINOR).$(MT32EMU_VERSION_PATCH)" 
+#	define MT32EMU_VERSION_MAJOR 2
+#	define MT32EMU_VERSION_MINOR 7
+#	define MT32EMU_VERSION_PATCH 3
+#	define MT32EMU_VERSION                                                    \
+		"$(MT32EMU_VERSION_MAJOR).$(MT32EMU_VERSION_MINOR).$(MT32EMU_VERSION_" \
+		"PATCH)"
 
 /* Library Exports Configuration
  *
  * This reflects the API types actually provided by the library build.
- * 0: The full-featured C++ API is only available in this build. The client application may ONLY use MT32EMU_API_TYPE 0.
- * 1: The C-compatible API is only available. The library is built as a shared object, only C functions are exported,
- *    and thus the client application may NOT use MT32EMU_API_TYPE 0.
- * 2: The C-compatible API is only available. The library is built as a shared object, only the factory function
- *    is exported, and thus the client application may ONLY use MT32EMU_API_TYPE 2.
- * 3: All the available API types are provided by the library build.
+ * 0: The full-featured C++ API is only available in this build. The client
+ * application may ONLY use MT32EMU_API_TYPE 0. 1: The C-compatible API is only
+ * available. The library is built as a shared object, only C functions are
+ * exported, and thus the client application may NOT use MT32EMU_API_TYPE 0. 2:
+ * The C-compatible API is only available. The library is built as a shared
+ * object, only the factory function is exported, and thus the client
+ * application may ONLY use MT32EMU_API_TYPE 2. 3: All the available API types
+ * are provided by the library build.
  */
-#define MT32EMU_EXPORTS_TYPE  3
+#	define MT32EMU_EXPORTS_TYPE 3
 #endif
 
-/* Enable Midi Sfx */
-/* #undef ENABLE_MIDISFX */
+/* FluidSynth defines */
 
-/* Enable fluidsynth midi */
-/* #undef USE_FLUIDSYNTH_MIDI */
+/* Using FluidSynth CoreAudio */
+#define COREAUDIO_SUPPORT 1
+
+/* OS abstraction to use. */
+#define OSAL_cpp11 1
+
+/* Define to 1 if you have C++ filesystem support */
+#define HAVE_CXX_FILESYSTEM 1
+
+/* Define to 1 if native DLS support is enabled */
+#define ENABLE_NATIVE_DLS 1
+
+/* whether or not we are supporting CoreMIDI */
+#define COREMIDI_SUPPORT 1
+
+/* Soundfont to load automatically in some use cases */
+#define DEFAULT_SOUNDFONT "default.sf2"
+
+/* Define if compiling the mixer with multi-thread support */
+#define ENABLE_MIXER_THREADS 1
+
+/* Define to 1 if you have the <errno.h> header file. */
+#define HAVE_ERRNO_H 1
+
+/* Define to 1 if you have the <fcntl.h> header file. */
+#define HAVE_FCNTL_H 1
+
+/* Define to 1 if you have the <math.h> header file. */
+#define HAVE_MATH_H 1
+
+/* Define to 1 if you have the <limits.h> header file. */
+#define HAVE_LIMITS_H 1
+
+/* Define to 1 if you have the <netinet/in.h> header file. */
+#define HAVE_NETINET_IN_H 1
+
+/* Define to 1 if you have the <netinet/tcp.h> header file. */
+#define HAVE_NETINET_TCP_H 1
+
+/* Define to 1 if you have the <signal.h> header file. */
+#define HAVE_SIGNAL_H 1
+
+/* Define if the compiler supports VLA */
+#define SUPPORTS_VLA 1
+
+/* Define to 1 if you have the sinf() function. */
+#define HAVE_SINF 1
+
+/* Define to 1 if you have the cosf() function. */
+#define HAVE_COSF 1
+
+/* Define to 1 if you have the fabsf() function. */
+#define HAVE_FABSF 1
+
+/* Define to 1 if you have the powf() function. */
+#define HAVE_POWF 1
+
+/* Define to 1 if you have the sqrtf() function. */
+#define HAVE_SQRTF 1
+
+/* Define to 1 if you have the logf() function. */
+#define HAVE_LOGF 1
+
+/* Define to 1 if you have the socklen_t type. */
+#define HAVE_SOCKLEN_T 1
+
+/* Define to 1 if you have the ANSI C header files. */
+#define STDC_HEADERS 1
+
+/* Define to 1 if you have the inet_ntop() function. */
+#define HAVE_INETNTOP 1
+
+/* Define to 1 if you have the <sys/mman.h> header file. */
+#define HAVE_SYS_MMAN_H 1
+
+/* Define to 1 if you have the <stdio.h> header file. */
+#define HAVE_STDIO_H 1
+
+/* Define to 1 if you have the <stdlib.h> header file. */
+#define HAVE_STDLIB_H 1
+
+/* Define to 1 if you have the <stdarg.h> header file. */
+#define HAVE_STDARG_H 1
+
+/* Define to 1 if you have the <pthread.h> header file. */
+#define HAVE_PTHREAD_H 1
+
+/* Define to 1 if you have the <sys/socket.h> header file. */
+#define HAVE_SYS_SOCKET_H 1
+
+/* Define to 1 if you have the <sys/stat.h> header file. */
+#define HAVE_SYS_STAT_H 1
+
+/* Define to 1 if you have the <getopt.h> header file. */
+#define HAVE_GETOPT_H 1
+
+/* Define to 1 if you have the ANSI C header files. */
+#define STDC_HEADERS 1
+
+/* end of FluidSynth defines */
 
 /* Enable timidity midi */
 /*#define USE_TIMIDITY_MIDI 1*/
@@ -110,9 +223,6 @@
 /* Using MacOSX */
 /* #undef MACOSX */
 
-/* Disable SDL parachute */
-/* #undef NO_SDL_PARACHUTE */
-
 /* Doesn't have hash map */
 #define DONT_HAVE_HASH_MAP 1
 
@@ -135,7 +245,7 @@
 #define HAVE_CXX17 1
 
 /* Define to 1 if you have the <dirent.h> header file, and it defines `DIR'.
-   */
+ */
 #define HAVE_DIRENT_H 1
 
 /* Define to 1 if you have the <dlfcn.h> header file. */
@@ -204,7 +314,7 @@
 /* Define to 1 if you have the `pow' function. */
 #define HAVE_POW 1
 
-/* Define to 1 if you have the "SDL.h" header file */
+/* Define to 1 if you have the <SDL3/SDL.h> header file */
 #define HAVE_SDL_H 1
 
 /* Define to 1 if you have the `select' function. */
@@ -253,11 +363,11 @@
 /* #undef HAVE_NDIR_H */
 
 /* Define to 1 if you have the <sys/dir.h> header file, and it defines `DIR'.
-   */
+ */
 /* #undef HAVE_SYS_DIR_H */
 
 /* Define to 1 if you have the <sys/ndir.h> header file, and it defines `DIR'.
-   */
+ */
 /* #undef HAVE_SYS_NDIR_H */
 
 /* Define to 1 if you have the <sys/socket.h> header file. */
@@ -297,9 +407,9 @@
 #define LT_OBJDIR ".libs/"
 
 #ifdef __LP64__
-#define SIZEOF_VOIDP 8
+#	define SIZEOF_VOIDP 8
 #else
-#define SIZEOF_VOIDP 4
+#	define SIZEOF_VOIDP 4
 #endif
 
 /* The size of `int', as computed by sizeof. */

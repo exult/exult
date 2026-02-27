@@ -25,8 +25,7 @@
 //The numbers essentially mean the number of hits it takes to reach that
 //state, except that there is a high chance that the quality will go up
 //and a low chance it will go down with each hit.
-enum swordblank_qualities
-{
+enum swordblank_qualities {
 	SWORDBLANK_READY	= 9,	//At this quality, the swordblank is hardened by
 								//quenching and is ready to be completed by Menion
 	SWORDBLANK_QUENCH	= 8,	//At this quality, the swordblank is ready to be
@@ -39,8 +38,7 @@ enum swordblank_qualities
 
 //These control the chance that the swordblank's quality is improved/reduced
 //with every blow of the hammer.
-enum swordblank_chances
-{
+enum swordblank_chances {
 	//The base % chance a hit will mar the blade (final fail chance = BASE_TEMPER_FAIL_CHANCE - (dexterity / 2)
 	BASE_TEMPER_FAIL_CHANCE = 20,
 	//The base % chance a hit will improve the blade (final succeed chance = BASE_TEMPER_SUCCEED_CHANCE + (strength / 2)

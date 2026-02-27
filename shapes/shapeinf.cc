@@ -6,7 +6,7 @@
 
 /*
 Copyright (C) 1998  Jeffrey S. Freedman
-Copyright (C) 1999-2022 The Exult Team
+Copyright (C) 1999-2025 The Exult Team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -24,52 +24,59 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
 #ifdef HAVE_CONFIG_H
-#  include <config.h>
+#	include <config.h>
 #endif
 
 #include "shapeinf.h"
+
+#include "Configuration.h"
 #include "ammoinf.h"
 #include "aniinf.h"
 #include "armorinf.h"
 #include "bodyinf.h"
 #include "continf.h"
+#include "data_utils.h"
 #include "effhpinf.h"
 #include "expinf.h"
-#include "frnameinf.h"
 #include "frflags.h"
+#include "frnameinf.h"
 #include "frusefun.h"
+#include "ignore_unused_variable_warning.h"
+#include "imagebuf.h"
 #include "lightinf.h"
 #include "monstinf.h"
 #include "npcdollinf.h"
 #include "objdollinf.h"
+#include "ready.h"
 #include "sfxinf.h"
+#include "shapeid.h"
 #include "warminf.h"
 #include "weaponinf.h"
-#include "ready.h"
-#include "data_utils.h"
-#include "ignore_unused_variable_warning.h"
 
-#include "utils.h"
 #include <vector>
-#include <map>
-#include <string>
 
-using std::vector;
 using std::cerr;
 using std::endl;
+using std::vector;
+
+bool Shape_info::allow_enhancements = false;
 
 Shape_info::Shape_info() = default;
 
 /*
  *  Not supported:
  */
-Shape_info::Shape_info(const Shape_info &other) {
+Shape_info::Shape_info(const Shape_info& other) {
 	copy(other);
 }
-Shape_info &Shape_info::operator = (const Shape_info &other) {
-	if (this != &other) copy(other);
+
+Shape_info& Shape_info::operator=(const Shape_info& other) {
+	if (this != &other) {
+		copy(other);
+	}
 	return *this;
 }
+
 /*
  *  Clean up.
  */
@@ -78,7 +85,7 @@ Shape_info::~Shape_info() {
 	delete weapon;
 	delete ammo;
 	delete armor;
-	delete [] weapon_offsets;
+	delete[] weapon_offsets;
 	delete monstinf;
 	delete npcpaperdoll;
 	delete sfxinf;
@@ -96,43 +103,41 @@ Shape_info::~Shape_info() {
  *  Copy.
  */
 
-void Shape_info::copy(
-    const Shape_info &inf2,
-    bool skip_dolls
-) {
+void Shape_info::copy(const Shape_info& inf2, bool skip_dolls) {
 	for (int i = 0; i < 3; ++i) {
-		tfa[i] = inf2.tfa[i];
+		tfa[i]  = inf2.tfa[i];
 		dims[i] = inf2.dims[i];
 	}
-	weight = inf2.weight;
-	volume = inf2.volume;
-	shpdims[0] = inf2.shpdims[0];
-	shpdims[1] = inf2.shpdims[1];
-	ready_type = inf2.ready_type;
-	alt_ready1 = inf2.alt_ready1;
-	alt_ready2 = inf2.alt_ready2;
-	spell_flag = inf2.spell_flag;
+	weight        = inf2.weight;
+	volume        = inf2.volume;
+	shpdims[0]    = inf2.shpdims[0];
+	shpdims[1]    = inf2.shpdims[1];
+	ready_type    = inf2.ready_type;
+	alt_ready1    = inf2.alt_ready1;
+	alt_ready2    = inf2.alt_ready2;
+	spell_flag    = inf2.spell_flag;
 	occludes_flag = inf2.occludes_flag;
 	if (!skip_dolls || gump_shape < 0) {
 		gump_shape = inf2.gump_shape;
-		gump_font = inf2.gump_font;
+		gump_font  = inf2.gump_font;
 	}
-	monster_food = inf2.monster_food;
-	mountain_top = inf2.mountain_top;
-	barge_type = inf2.barge_type;
-	actor_flags = inf2.actor_flags;
-	shape_flags = inf2.shape_flags;
-	field_type = inf2.field_type;
-	modified_flags = inf2.modified_flags;
-	frompatch_flags = inf2.frompatch_flags;
+	monster_food      = inf2.monster_food;
+	mountain_top      = inf2.mountain_top;
+	barge_type        = inf2.barge_type;
+	actor_flags       = inf2.actor_flags;
+	shape_flags       = inf2.shape_flags;
+	field_type        = inf2.field_type;
+	modified_flags    = inf2.modified_flags;
+	frompatch_flags   = inf2.frompatch_flags;
 	have_static_flags = inf2.have_static_flags;
 	// Allocated fields.
-	delete [] weapon_offsets;
+	delete[] weapon_offsets;
 	if (inf2.weapon_offsets) {
 		weapon_offsets = new unsigned char[64];
 		memcpy(weapon_offsets, inf2.weapon_offsets, 64);
-	} else
+	} else {
 		weapon_offsets = nullptr;
+	}
 	delete armor;
 	armor = inf2.armor ? new Armor_info(*inf2.armor) : nullptr;
 	delete ammo;
@@ -143,11 +148,11 @@ void Shape_info::copy(
 	monstinf = inf2.monstinf ? new Monster_info(*inf2.monstinf) : nullptr;
 	if (!skip_dolls || !npcpaperdoll) {
 		delete npcpaperdoll;
-		npcpaperdoll = inf2.npcpaperdoll ?
-		               new Paperdoll_npc(*inf2.npcpaperdoll) : nullptr;
+		npcpaperdoll = inf2.npcpaperdoll ? new Paperdoll_npc(*inf2.npcpaperdoll) : nullptr;
 	}
-	if (!skip_dolls || objpaperdoll.empty())
+	if (!skip_dolls || objpaperdoll.empty()) {
 		copy_vector_info(inf2.objpaperdoll, objpaperdoll);
+	}
 	copy_vector_info(inf2.hpinf, hpinf);
 	copy_vector_info(inf2.frflagsinf, frflagsinf);
 	copy_vector_info(inf2.cntrules, cntrules);
@@ -197,25 +202,23 @@ int Shape_info::get_body_frame() const {
 	return body ? body->bframe : 3;
 }
 
-const Weapon_info *Shape_info::get_weapon_info_safe() const {
+const Weapon_info* Shape_info::get_weapon_info_safe() const {
 	return weapon ? weapon : Weapon_info::get_default();
 }
 
-const Ammo_info *Shape_info::get_ammo_info_safe() const {
+const Ammo_info* Shape_info::get_ammo_info_safe() const {
 	return ammo ? ammo : Ammo_info::get_default();
 }
 
-const Monster_info *Shape_info::get_monster_info_safe() const {
+const Monster_info* Shape_info::get_monster_info_safe() const {
 	return monstinf ? monstinf : Monster_info::get_default();
 }
 
-const Animation_info *Shape_info::get_animation_info_safe(
-    int shnum,
-    int nframes
-) {
+const Animation_info* Shape_info::get_animation_info_safe(int shnum, int nframes) {
 	ignore_unused_variable_warning(shnum);
-	if (!aniinf)
+	if (!aniinf) {
 		aniinf = Animation_info::create_from_tfa(0, nframes);
+	}
 	return aniinf;
 }
 
@@ -223,7 +226,7 @@ bool Shape_info::has_paperdoll_info() const {
 	return !objpaperdoll.empty();
 }
 
-std::vector<Paperdoll_item> &Shape_info::set_paperdoll_info(bool tf) {
+std::vector<Paperdoll_item>& Shape_info::set_paperdoll_info(bool tf) {
 	return set_vector_info(tf, objpaperdoll);
 }
 
@@ -235,7 +238,7 @@ void Shape_info::clear_paperdoll_info() {
 	objpaperdoll.clear();
 }
 
-void Shape_info::add_paperdoll_info(Paperdoll_item &add) {
+void Shape_info::add_paperdoll_info(Paperdoll_item& add) {
 	add_vector_info(add, objpaperdoll);
 }
 
@@ -243,7 +246,7 @@ bool Shape_info::has_content_rules() const {
 	return !cntrules.empty();
 }
 
-std::vector<Content_rules> &Shape_info::set_content_rules(bool tf) {
+std::vector<Content_rules>& Shape_info::set_content_rules(bool tf) {
 	return set_vector_info(tf, cntrules);
 }
 
@@ -255,7 +258,7 @@ void Shape_info::clear_content_rules() {
 	cntrules.clear();
 }
 
-void Shape_info::add_content_rule(Content_rules &add) {
+void Shape_info::add_content_rule(Content_rules& add) {
 	add_vector_info(add, cntrules);
 }
 
@@ -263,7 +266,7 @@ bool Shape_info::has_effective_hp_info() const {
 	return !hpinf.empty();
 }
 
-std::vector<Effective_hp_info> &Shape_info::set_effective_hp_info(bool tf) {
+std::vector<Effective_hp_info>& Shape_info::set_effective_hp_info(bool tf) {
 	return set_vector_info(tf, hpinf);
 }
 
@@ -275,7 +278,7 @@ void Shape_info::clear_effective_hp_info() {
 	hpinf.clear();
 }
 
-void Shape_info::add_effective_hp_info(Effective_hp_info &add) {
+void Shape_info::add_effective_hp_info(Effective_hp_info& add) {
 	add_vector_info(add, hpinf);
 }
 
@@ -283,7 +286,7 @@ bool Shape_info::has_frame_name_info() const {
 	return !nameinf.empty();
 }
 
-std::vector<Frame_name_info> &Shape_info::set_frame_name_info(bool tf) {
+std::vector<Frame_name_info>& Shape_info::set_frame_name_info(bool tf) {
 	return set_vector_info(tf, nameinf);
 }
 
@@ -295,7 +298,7 @@ void Shape_info::clear_frame_name_info() {
 	nameinf.clear();
 }
 
-void Shape_info::add_frame_name_info(Frame_name_info &add) {
+void Shape_info::add_frame_name_info(Frame_name_info& add) {
 	add_vector_info(add, nameinf);
 }
 
@@ -303,7 +306,7 @@ bool Shape_info::has_frame_usecode_info() const {
 	return !frucinf.empty();
 }
 
-std::vector<Frame_usecode_info> &Shape_info::set_frame_usecode_info(bool tf) {
+std::vector<Frame_usecode_info>& Shape_info::set_frame_usecode_info(bool tf) {
 	return set_vector_info(tf, frucinf);
 }
 
@@ -315,7 +318,7 @@ void Shape_info::clear_frame_usecode_info() {
 	frucinf.clear();
 }
 
-void Shape_info::add_frame_usecode_info(Frame_usecode_info &add) {
+void Shape_info::add_frame_usecode_info(Frame_usecode_info& add) {
 	add_vector_info(add, frucinf);
 }
 
@@ -323,7 +326,7 @@ bool Shape_info::has_frame_flags() const {
 	return !frflagsinf.empty();
 }
 
-std::vector<Frame_flags_info> &Shape_info::set_frame_flags(bool tf) {
+std::vector<Frame_flags_info>& Shape_info::set_frame_flags(bool tf) {
 	return set_vector_info(tf, frflagsinf);
 }
 
@@ -335,7 +338,7 @@ void Shape_info::clear_frame_flags() {
 	frflagsinf.clear();
 }
 
-void Shape_info::add_frame_flags(Frame_flags_info &add) {
+void Shape_info::add_frame_flags(Frame_flags_info& add) {
 	add_vector_info(add, frflagsinf);
 }
 
@@ -343,7 +346,7 @@ bool Shape_info::has_light_info() const {
 	return !lightinf.empty();
 }
 
-std::vector<Light_info> &Shape_info::set_light_info(bool tf) {
+std::vector<Light_info>& Shape_info::set_light_info(bool tf) {
 	return set_vector_info(tf, lightinf);
 }
 
@@ -355,7 +358,7 @@ void Shape_info::clear_light_info() {
 	lightinf.clear();
 }
 
-void Shape_info::add_light_info(Light_info &add) {
+void Shape_info::add_light_info(Light_info& add) {
 	add_vector_info(add, lightinf);
 }
 
@@ -363,7 +366,7 @@ bool Shape_info::has_warmth_info() const {
 	return !warminf.empty();
 }
 
-std::vector<Warmth_info> &Shape_info::set_warmth_info(bool tf) {
+std::vector<Warmth_info>& Shape_info::set_warmth_info(bool tf) {
 	return set_vector_info(tf, warminf);
 }
 
@@ -375,90 +378,98 @@ void Shape_info::clear_warmth_info() {
 	warminf.clear();
 }
 
-void Shape_info::add_warmth_info(Warmth_info &add) {
+void Shape_info::add_warmth_info(Warmth_info& add) {
 	add_vector_info(add, warminf);
 }
 
-const Frame_name_info *Shape_info::get_frame_name(int frame, int quality) const {
-	return Search_vector_data_double_wildcards(nameinf,
-	        frame, quality,
-	        &Frame_name_info::frame, &Frame_name_info::quality);
+const Frame_name_info* Shape_info::get_frame_name(int frame, int quality) const {
+	return Search_vector_data_double_wildcards(nameinf, frame, quality, &Frame_name_info::frame, &Frame_name_info::quality);
 }
 
-const Frame_usecode_info *Shape_info::get_frame_usecode(int frame, int quality) const {
-	return Search_vector_data_double_wildcards(frucinf,
-	        frame, quality,
-	        &Frame_usecode_info::frame, &Frame_usecode_info::quality);
+const Frame_usecode_info* Shape_info::get_frame_usecode(int frame, int quality) const {
+	return Search_vector_data_double_wildcards(frucinf, frame, quality, &Frame_usecode_info::frame, &Frame_usecode_info::quality);
 }
 
 int Shape_info::get_effective_hps(int frame, int quality) const {
-	const Effective_hp_info *inf = Search_vector_data_double_wildcards(hpinf,
-	                         frame, quality,
-	                         &Effective_hp_info::frame, &Effective_hp_info::quality);
-	return inf ? inf->hps : 0;  // Default to indestructible.
+	const Effective_hp_info* inf
+			= Search_vector_data_double_wildcards(hpinf, frame, quality, &Effective_hp_info::frame, &Effective_hp_info::quality);
+	return inf ? inf->hps : 0;    // Default to indestructible.
 }
 
 int Shape_info::get_object_flags(int frame, int qual) const {
-	const Frame_flags_info *inf = Search_vector_data_double_wildcards(frflagsinf,
-	                        frame, qual,
-	                        &Frame_flags_info::frame, &Frame_flags_info::quality);
-	return inf ? inf->m_flags : 0;  // Default to no flagss.
+	const Frame_flags_info* inf
+			= Search_vector_data_double_wildcards(frflagsinf, frame, qual, &Frame_flags_info::frame, &Frame_flags_info::quality);
+	return inf ? inf->m_flags : 0;    // Default to no flagss.
 }
 
-const Paperdoll_item *Shape_info::get_item_paperdoll(int frame, int spot) const {
-	if (objpaperdoll.empty())
-		return nullptr;   // No paperdoll.
+const Paperdoll_item* Shape_info::get_item_paperdoll(int frame, int spot) const {
+	if (objpaperdoll.empty()) {
+		return nullptr;    // No paperdoll.
+	}
 	Paperdoll_item inf;
 	inf.world_frame = frame;
-	if (spot == both_hands)
+	if (spot == both_hands) {
 		spot = lhand;
-	else if (spot == lrgloves)
+	} else if (spot == lrgloves) {
 		spot = lfinger;
-	else if (spot == neck)
+	} else if (spot == neck) {
 		spot = amulet;
-	else if (spot == scabbard)
+	} else if (spot == scabbard) {
 		spot = belt;
+	}
 	inf.spot = spot;
 	// Try finding exact match first.
 	auto it = std::lower_bound(objpaperdoll.begin(), objpaperdoll.end(), inf);
-	if (it == objpaperdoll.end())   // Nowhere to be found.
+	if (it == objpaperdoll.end()) {    // Nowhere to be found.
 		return nullptr;
-	else if (*it == inf && !it->is_invalid())   // Have it already.
+	} else if (*it == inf && !it->is_invalid()) {    // Have it already.
 		return &*it;
+	}
 	// Time for wildcard world frame.
 	inf.world_frame = -1;
-	it = std::lower_bound(it, objpaperdoll.end(), inf);
-	if (it == objpaperdoll.end() || *it != inf  // It just isn't there...
-	        || it->is_invalid())   // ... or it is invalid.
+	it              = std::lower_bound(it, objpaperdoll.end(), inf);
+	if (it == objpaperdoll.end() || *it != inf    // It just isn't there...
+		|| it->is_invalid()) {                    // ... or it is invalid.
 		return nullptr;
-	else    // At last!
+	} else {    // At last!
 		return &*it;
+	}
 }
 
 bool Shape_info::is_shape_accepted(int shape) const {
-	const Content_rules *inf = Search_vector_data_single_wildcard(cntrules,
-	                     shape, &Content_rules::shape);
+	const Content_rules* inf = Search_vector_data_single_wildcard(cntrules, shape, &Content_rules::shape);
 #ifdef DEBUG
-	if (inf && !inf->accept)
+	if (inf && !inf->accept) {
 		cerr << "Shape '" << shape << "' was REJECTED" << endl;
+	}
 #endif
 	return inf ? inf->accept : true;    // Default to true.
 }
 
 int Shape_info::get_object_light(int frame) const {
-	if (!is_light_source()) {
-		// Don't bother checking if not a light source.
+	if (!is_light_source() && !allow_enhancements) {
+		// No enhancements and not a light source.
 		return 0;
 	}
-	const Light_info *inf = Search_vector_data_single_wildcard(lightinf,
-	                   (frame & 31), &Light_info::frame);
-	return inf ? inf->light : 1;   // Default to candle-strength.
+	// First honor explicit entries from shape_info.txt %%section light_data,
+	// even if the shape isn't originally set as a light source.
+	const Light_info* inf = Search_vector_data_single_wildcard(lightinf, (frame & 31), &Light_info::frame);
+	if (inf) {
+		return inf->light;
+	}
+
+	// Fall back to default behavior for flagged light sources.
+	if (is_light_source()) {
+		return 1;
+	}
+
+	// Otherwise, no light.
+	return 0;
 }
 
 int Shape_info::get_object_warmth(int frame) const {
-	const Warmth_info *inf = Search_vector_data_single_wildcard(warminf,
-	                   (frame & 31), &Warmth_info::frame);
-	return inf ? inf->warmth : 0;   // Default to no warmth.
+	const Warmth_info* inf = Search_vector_data_single_wildcard(warminf, (frame & 31), &Warmth_info::frame);
+	return inf ? inf->warmth : 0;    // Default to no warmth.
 }
 
 /*
@@ -466,15 +477,15 @@ int Shape_info::get_object_warmth(int frame) const {
  */
 
 void Shape_info::set_3d(
-    int xt, int yt, int zt      // In tiles.
+		int xt, int yt, int zt    // In tiles.
 ) {
-	xt = (xt - 1) & 7;      // Force legal values.
+	xt = (xt - 1) & 7;    // Force legal values.
 	yt = (yt - 1) & 7;
 	zt &= 7;
-	tfa[2] = (tfa[2]&~63) | xt | (yt << 3);
-	tfa[0] = (tfa[0]&~(7 << 5)) | (zt << 5);
-	dims[0] = xt + 1;
-	dims[1] = yt + 1;
+	tfa[2]  = (tfa[2] & ~63) | xt | (yt << 3);
+	tfa[0]  = (tfa[0] & ~(7 << 5)) | (zt << 5);
+	dims[0] = (xt + 1) & 7;
+	dims[1] = (yt + 1) & 7;
 	dims[2] = zt;
 }
 
@@ -483,22 +494,23 @@ void Shape_info::set_3d(
  */
 
 void Shape_info::set_weapon_offset(
-    int frame,          // 0-31.
-    unsigned char x, unsigned char y// 255 means "dont' draw".
+		int           frame,                // 0-31.
+		unsigned char x, unsigned char y    // 255 means "dont' draw".
 ) {
-	if (frame < 0 || frame > 31)
+	if (frame < 0 || frame > 31) {
 		return;
+	}
 	if (x == 255 && y == 255) {
-		if (weapon_offsets) // +++Could delete if all 255's now.
-			weapon_offsets[frame * 2] =
-			    weapon_offsets[frame * 2 + 1] = 255;
+		if (weapon_offsets) {    // +++Could delete if all 255's now.
+			weapon_offsets[frame * 2] = weapon_offsets[frame * 2 + 1] = 255;
+		}
 		return;
 	}
 	if (!weapon_offsets) {
 		weapon_offsets = new unsigned char[64];
 		std::memset(weapon_offsets, 255, 64);
 	}
-	weapon_offsets[frame * 2] = x;
+	weapon_offsets[frame * 2]     = x;
 	weapon_offsets[frame * 2 + 1] = y;
 }
 
@@ -507,14 +519,14 @@ void Shape_info::set_weapon_offset(
  */
 
 int Shape_info::get_rotated_frame(
-    int curframe,
-    int quads           // 1=90, 2=180, 3=270.
+		int curframe,
+		int quads    // 1=90, 2=180, 3=270.
 ) const {
 	// Seat is a special case.
 	if (barge_type == barge_seat) {
-		const int dir = curframe % 4; // Current dir (0-3).
+		const int dir = curframe % 4;    // Current dir (0-3).
 		return (curframe - dir) + (dir + quads) % 4;
-	} else if (is_barge_part())     // Piece of a barge?
+	} else if (is_barge_part()) {    // Piece of a barge?
 		switch (quads) {
 		case 1:
 			return (curframe ^ 32) ^ ((curframe & 32) ? 3 : 1);
@@ -525,7 +537,71 @@ int Shape_info::get_rotated_frame(
 		default:
 			return curframe;
 		}
-	else
+	} else {
 		// Reflect.  Bit 32==horizontal.
 		return curframe ^ ((quads % 2) << 5);
+	}
+}
+
+void Shape_info::paint_bbox(int x, int y, int framenum, Image_buffer* ibuf, int stroke, int mask) const {
+	int xs = get_3d_xtiles(framenum);
+	int ys = get_3d_ytiles(framenum);
+	int zs = get_3d_height();
+
+	/*
+
+  7----5
+  |\   |\
+  | \  | \
+  4----3  \
+   \  \ \  \
+	\  6-\--2
+	 \ |  \ |
+	  \|   \|
+	   1----0
+	*/
+	int verts[][3] = {
+			{  0,   0,  0}, // 0
+			{-xs,   0,  0}, //  1
+			{  0, -ys,  0}, //  2
+			{  0,   0, zs}, //  3
+			{-xs,   0, zs}, //  4
+			{  0, -ys, zs}, // 5
+			{-xs, -ys,  0}, // 6
+			{-xs, -ys, zs}, //  7
+	};
+
+	// line definitions
+	// [0] and [1] are vert indices
+	// [2] is draw mask, 1 is front facing, 2 is back facing, 3 both
+	int lines[][3] = {
+			// Bottom rect
+			{0, 1, 3},
+			{1, 6, 2},
+			{6, 2, 2},
+			{2, 0, 3},
+			// Uprights
+			{0, 3, 1},
+			{1, 4, 3},
+			{6, 7, 2},
+			{2, 5, 3},
+			// Top Rect
+			{3, 4, 1},
+			{4, 7, 3},
+			{7, 5, 3},
+			{5, 3, 1},
+	};
+
+	for (auto& line : lines) {
+		int vx[2];
+		int vy[2];
+
+		for (int i = 0; i < 2; i++) {
+			vx[i] = verts[line[i]][0] * c_tilesize - 1 - verts[line[i]][2] * c_tilesize / 2;
+			vy[i] = verts[line[i]][1] * c_tilesize - 1 - verts[line[i]][2] * c_tilesize / 2;
+		}
+		if (mask & line[2]) {
+			ibuf->draw_line8(stroke, x + vx[0], y + vy[0], x + vx[1], y + vy[1], nullptr);
+		}
+	}
 }

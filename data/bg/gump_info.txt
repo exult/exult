@@ -1,0 +1,216 @@
+#	Gumps information for Black Gate.
+#	Sections: container_area, checkmark_pos, special, snap_zones
+#
+#	container_area: Defines the object placement area within gumps
+#	checkmark_pos: Position of the close button for each gump
+#	special: Gumps that cannot be containers or lack close buttons
+#	snap_zones: Optional guided placement zones for dynamic containers
+#
+
+%%section version
+:1
+%%endsection
+
+%%section container_area
+# Sets the object placement area for each gump.
+# Gump::set_object_area uses this to override the default values defined in the c++ code
+#
+# Format: :gump_shape/x/y/width/height/debug_flags
+#         (debug_flags is optional - omit the field entirely if not needed)
+#
+# gump_shape  = Shape number in gumps.vga
+# x/y         = Top-left corner of the container area (relative to gump origin)
+# width/height= Size of the container area (not bottom-right corner)
+# debug_flags = Optional bitmask for debug visualization (omit field or use 0 for disabled)
+#               0x01 (1)  = Border outline
+#               0x02 (2)  = Major grid lines
+#               0x04 (4)  = Minor grid lines
+#               0x08 (8)  = Snap zone borders
+#               0x10 (16) = Snap zone crosshairs
+#               0x20 (32) = Console logging
+#               0x3F (63) = All features enabled
+
+# box
+:0/46/28/74/32
+
+# crate
+:1/50/20/80/24
+
+# barrel
+:8/32/32/40/40
+
+# bag
+:9/48/20/66/44
+
+# backpack
+:10/36/36/85/40
+
+# basket
+:11/42/32/70/26
+
+# chest
+:22/40/18/60/37
+
+# shipshold
+:26/38/10/82/80
+
+# drawer
+:27/36/12/70/26
+
+# body
+:53/36/46/84/40
+
+%%endsection
+
+%%section checkmark_pos
+# Sets the checkmark position on each gump.
+# Gump::set_object_area uses this to override the default values defined in the c++ code
+# Format:
+# Shape in :Gumps.vga/position X/position Y/checkmark shape
+
+# box
+:0/24/44/2
+
+# crate
+:1/24/52/2
+
+# barrel
+:8/28/112/2
+
+# bag
+:9/24/54/2
+
+# backpack
+:10/24/50/2
+
+# basket
+:11/24/44/2
+
+# chest
+:22/24/34/2
+
+# shipshold
+:26/24/80/2
+
+# drawer
+:27/24/34/2
+
+# body
+:53/24/58/2
+
+# original file gump
+:3/24/138/2
+
+# slider
+:14/22/18/2
+
+# spellbook
+:38/23/42/2
+
+# stats
+:47/22/124/2
+
+# avatar m
+:57/22/124/2
+
+# avatar f
+:58/22/124/2
+
+# Iolo
+:59/22/124/2
+
+# Spark
+:60/22/124/2
+
+# Shamino
+:61/22/124/2
+
+# Dupre
+:62/22/124/2
+
+# Jaana
+:64/22/124/2
+
+# Sentri
+:65/22/124/2
+
+# Julia
+:66/22/124/2
+
+# Katrina
+:67/22/124/2
+
+# Tseramed
+:68/22/124/2
+
+%%endsection
+
+%%section special
+# These are gumps that can neither be gumps nor have checkmark to close them.
+:2
+:4
+:5
+:6
+:7
+:12
+:15
+:16
+:17
+:18
+:19
+:20
+:21
+:23
+:24
+:25
+:28
+:29
+:30
+:31
+:32
+:33
+:34
+:35
+:36
+:37
+:38
+:39
+:40
+:41
+:42
+:44
+:45
+:46
+:48
+:49
+:50
+:51
+:52
+:54
+:55
+:56
+:69
+:70
+:71
+%%endsection
+
+%%section snap_zones
+# Defines guided placement zones for ritual containers.
+# When an item is dropped in a zone, it automatically snaps to the target position.
+#
+# Format: :gump_shape/zone_id/zone_x/zone_y/zone_w/zone_h/snap_x/snap_y/priority/zone_type
+#
+# gump_shape = Shape number in gumps.vga
+# zone_id    = Unique identifier for this zone (descriptive, e.g., "north_candle")
+# zone_x/y   = Top-left corner of detection area (relative to container_area)
+# zone_w/h   = Width/height of detection area (defines the snap zone size)
+# snap_x/y   = Target position where items snap to (relative to container_area)
+# priority   = Selection priority for overlapping zones (higher = checked first)
+# zone_type  = Category label (e.g., "candle", "reagent", "focus") - informational only
+#
+# Example - Pentagram ritual container (uncomment and modify as needed):
+# :111/north_candle/20/0/20/20/30/10/3/candle
+# :111/south_candle/55/110/20/20/65/120/3/candle
+# :111/center_focus/55/55/20/20/65/65/4/focus
+#
+%%endsection

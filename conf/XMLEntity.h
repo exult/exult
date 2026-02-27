@@ -22,48 +22,48 @@
 #include <string>
 #include <vector>
 
-std::string encode_entity(const std::string &s);
+std::string encode_entity(const std::string& s);
 
-class   XMLnode {
+class XMLnode {
 protected:
-	std::string             id;
-	std::string             content;
-	std::vector<XMLnode *>  nodelist;
-	bool                    no_close = false;
+	std::string           id;
+	std::string           content;
+	std::vector<XMLnode*> nodelist;
+	bool                  no_close = false;
 
 public:
 	XMLnode() = default;
-	XMLnode(const std::string &i) : id(i)
-	{  }
-	XMLnode(const XMLnode &) = delete;
-	XMLnode(XMLnode &&) = default;
+
+	XMLnode(const std::string& i) : id(i) {}
+
+	XMLnode(const XMLnode&) = delete;
+	XMLnode(XMLnode&&)      = default;
 	~XMLnode();
 
-	XMLnode &operator=(const XMLnode &) = delete;
-	XMLnode &operator=(XMLnode &&) = default;
-	const std::string &reference(const std::string &, bool &);
-	const XMLnode *subtree(const std::string &) const;
+	XMLnode&           operator=(const XMLnode&) = delete;
+	XMLnode&           operator=(XMLnode&&)      = default;
+	const std::string& reference(const std::string&, bool&);
+	const XMLnode*     subtree(const std::string&) const;
 
-	const std::string &value() const {
+	const std::string& value() const {
 		return content;
 	}
 
-	using KeyType = std::pair<std::string, std::string>;
+	using KeyType     = std::pair<std::string, std::string>;
 	using KeyTypeList = std::vector<KeyType>;
 
-	bool searchpairs(KeyTypeList &ktl, const std::string &basekey, const std::string &currkey, const unsigned int pos);
-	void selectpairs(KeyTypeList &ktl, const std::string &currkey);
+	bool searchpairs(KeyTypeList& ktl, const std::string& basekey, const std::string& currkey, const unsigned int pos);
+	void selectpairs(KeyTypeList& ktl, const std::string& currkey);
 
 	std::string dump(int depth = 0);
-	void dump(std::ostream &o, const std::string &indentstr, const unsigned int depth = 0) const;
+	void        dump(std::ostream& o, const std::string& indentstr, const unsigned int depth = 0) const;
 
-	void    xmlassign(const std::string &key, const std::string &value);
-	void    xmlparse(const std::string &s, std::size_t &pos);
+	void xmlassign(const std::string& key, const std::string& value);
+	void xmlparse(const std::string& s, std::size_t& pos);
 
-	void    listkeys(const std::string &, std::vector<std::string> &, bool longformat = true) const;
+	void listkeys(const std::string&, std::vector<std::string>&, bool longformat = true) const;
 
-	void    remove(const std::string &key, bool valueonly);
-
+	void remove(const std::string& key, bool valueonly);
 };
 
 #endif

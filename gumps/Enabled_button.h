@@ -1,5 +1,5 @@
 /*
-Copyright (C) 2001-2022 The Exult Team
+Copyright (C) 2001-2024 The Exult Team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -20,29 +20,26 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define ENABLED_BUTTON_H
 
 #include "Text_button.h"
+
+#include <array>
 #include <string>
 
 class Enabled_button : public Text_button {
 public:
-	Enabled_button(Gump *par, int selectionnum,
-	               int px, int py, int width, int height = 0)
-		: Text_button(par, "", px, py, width, height) {
-		set_frame(selectionnum);
-		text = selections[selectionnum];
-		init();
-	}
+	Enabled_button(Gump* par, int selectionnum, int px, int py, int width, int height = 0);
 
-	bool push(int button) override;
-	void unpush(int button) override;
-	bool activate(int button = 1) override;
+	bool push(MouseButton button) override;
+	void unpush(MouseButton button) override;
+	bool activate(MouseButton button) override;
 
-	int getselection() const {
+	int getselection() const override {
 		return get_framenum();
 	}
+
 	virtual void toggle(int state) = 0;
 
 protected:
-	static const char *selections[];
+	std::array<const char*, 2> selections;
 };
 
 template <typename Parent>
@@ -52,8 +49,7 @@ public:
 
 	template <typename... Ts>
 	CallbackEnabledButton(Parent* par, CallbackType&& callback, Ts&&... args)
-		: Enabled_button(par, std::forward<Ts>(args)...),
-		  parent(par), on_toggle(std::forward<CallbackType>(callback)) {}
+			: Enabled_button(par, std::forward<Ts>(args)...), parent(par), on_toggle(std::forward<CallbackType>(callback)) {}
 
 	void toggle(int state) override {
 		(parent->*on_toggle)(state);
@@ -61,7 +57,7 @@ public:
 	}
 
 private:
-	Parent* parent;
+	Parent*      parent;
 	CallbackType on_toggle;
 };
 

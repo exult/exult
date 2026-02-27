@@ -20,15 +20,14 @@
 #ifndef USEFUNS_H
 #define USEFUNS_H
 
-const int SpeechUsecode = 0x614;
-const int SleepUsecode = 0x622;
-const int ArrestUsecode = 0x625;
-const int DestroyObjectsUsecode = 0x626;
-const int BargeUsecode = 0x634;
+const int SpeechUsecode             = 0x614;
+const int SleepUsecode              = 0x622;
+const int ArrestUsecode             = 0x625;
+const int DestroyObjectsUsecode     = 0x626;
+const int BargeUsecode              = 0x634;
 const int FailCopyProtectionUsecode = 0x63d;
-const int BaseSpellsUsecode = 0x640;
-const int SummonSpellUsecode = BaseSpellsUsecode + 0x45;
-const int SleepArrowsUsecode = 0x7e1;
+const int BaseSpellsUsecode         = 0x640;
+const int SummonSpellUsecode        = BaseSpellsUsecode + 0x45;
 
 const int SSMazePartyWait = 0x62F;
 

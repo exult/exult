@@ -17,27 +17,30 @@
  */
 
 #ifdef HAVE_CONFIG_H
-#  include <config.h>
+#	include <config.h>
 #endif
 
-#include <cassert>
-#include "common_types.h"
 #include "XMLEntity.h"
+
+#include "common_types.h"
+
+#include <cassert>
 #include <iostream>
 
+using std::endl;
+using std::ostream;
 using std::string;
 using std::vector;
-using std::ostream;
-using std::endl;
 
-static  string  close_tag(const string &s);
+static string close_tag(const string& s);
 
 XMLnode::~XMLnode() {
-	for (auto *node : nodelist)
+	for (auto* node : nodelist) {
 		delete node;
+	}
 }
 
-const string    &XMLnode::reference(const string &h, bool &exists) {
+const string& XMLnode::reference(const string& h, bool& exists) {
 	if (h.find('/') == string::npos) {
 		// Must refer to me.
 		if (id == h) {
@@ -50,11 +53,12 @@ const string    &XMLnode::reference(const string &h, bool &exists) {
 		// down.
 
 		string k;
-		k = h.substr(h.find('/') + 1);
+		k               = h.substr(h.find('/') + 1);
 		const string k2 = k.substr(0, k.find('/'));
-		for (auto *node : nodelist) {
-			if (node->id == k2)
+		for (auto* node : nodelist) {
+			if (node->id == k2) {
 				return node->reference(k, exists);
+			}
 		}
 	}
 
@@ -63,38 +67,38 @@ const string    &XMLnode::reference(const string &h, bool &exists) {
 	return c_empty_string;
 }
 
-
-const XMLnode *XMLnode::subtree(const string &h) const {
+const XMLnode* XMLnode::subtree(const string& h) const {
 	if (h.find('/') == string::npos) {
 		// Must refer to me.
-		if (id == h)
+		if (id == h) {
 			return this;
+		}
 	} else {
 		// Otherwise we want to split the string at the first /
 		// then locate the branch to walk, and pass the rest
 		// down.
 
 		string k;
-		k = h.substr(h.find('/') + 1);
+		k               = h.substr(h.find('/') + 1);
 		const string k2 = k.substr(0, k.find('/'));
-		for (auto *node : nodelist) {
-			if (node->id == k2)
+		for (auto* node : nodelist) {
+			if (node->id == k2) {
 				return node->subtree(k);
+			}
 		}
 	}
 
 	return nullptr;
 }
 
-
-string  XMLnode::dump(int depth) {
+string XMLnode::dump(int depth) {
 	string s(depth, ' ');
 
 	s += "<";
 	s += id;
 	s += ">";
 	if (id[id.length() - 1] != '/') {
-		for (auto *node : nodelist) {
+		for (auto* node : nodelist) {
 			s += "\n";
 			s += node->dump(depth + 2);
 		}
@@ -121,11 +125,12 @@ string  XMLnode::dump(int depth) {
 }
 
 /* Output's a 'nicer' dump of the xmltree, one <tag> value </tag> per line
-    the indent characters are specified by indentstr */
-void XMLnode::dump(ostream &o, const string &indentstr, const unsigned int depth) const {
+	the indent characters are specified by indentstr */
+void XMLnode::dump(ostream& o, const string& indentstr, const unsigned int depth) const {
 	// indent
-	for (unsigned int i = 0; i < depth; i++)
+	for (unsigned int i = 0; i < depth; i++) {
 		o << indentstr;
+	}
 
 	// open tag
 	o << '<' << id << '>';
@@ -137,23 +142,28 @@ void XMLnode::dump(ostream &o, const string &indentstr, const unsigned int depth
 			o << endl;
 
 			// ... then walk through them outputting them all ...
-			for (auto* node : nodelist)
+			for (auto* node : nodelist) {
 				node->dump(o, indentstr, depth + 1);
+			}
 		}
 		// ... else, if we have content in this output it.
-		else if (content.length())
+		else if (content.length()) {
 			o << ' ' << encode_entity(content) << ' ';
+		}
 
 		// not a clue... it's in XMLnode::dump() so there must be a reason...
-		if (id[0] == '?')
+		if (id[0] == '?') {
 			return;
+		}
 
 		// append a closing tag if there is one.
 		if (!no_close) {
 			// if we've got subnodes, we need to reindent
-			if (!nodelist.empty())
-				for (unsigned int i = 0; i < depth; i++)
+			if (!nodelist.empty()) {
+				for (unsigned int i = 0; i < depth; i++) {
 					o << indentstr;
+				}
+			}
 
 			o << "</" << close_tag(id) << '>';
 		}
@@ -162,17 +172,18 @@ void XMLnode::dump(ostream &o, const string &indentstr, const unsigned int depth
 }
 
 // This function does not make sense here. It should be in XMLEntity
-void    XMLnode::xmlassign(const string &key, const string &value) {
+void XMLnode::xmlassign(const string& key, const string& value) {
 	if (key.find('/') == string::npos) {
 		// Must refer to me.
-		if (id == key)
+		if (id == key) {
 			content = value;
-		else
+		} else {
 			CERR("Walking the XML tree failed to create a final node.");
+		}
 		return;
 	}
 	string k;
-	k = key.substr(key.find('/') + 1);
+	k               = key.substr(key.find('/') + 1);
 	const string k2 = k.substr(0, k.find('/'));
 	for (auto* node : nodelist) {
 		if (node->id == k2) {
@@ -182,30 +193,30 @@ void    XMLnode::xmlassign(const string &key, const string &value) {
 	}
 
 	// No match, so create a new node and do recursion
-	auto *t = new XMLnode(k2);
+	auto* t = new XMLnode(k2);
 	nodelist.push_back(t);
 	t->xmlassign(k, value);
 }
 
-
-void XMLnode::remove(const std::string &key, bool valueonly) {
+void XMLnode::remove(const std::string& key, bool valueonly) {
 	if (key.find('/') == string::npos) {
 		// Must refer to me.
 		if (id == key) {
 			content = std::string();
 			if (!valueonly) {
-				for (auto* node : nodelist)
+				for (auto* node : nodelist) {
 					delete node;
+				}
 				nodelist.clear();
 			}
 			return;
 		}
 	} else {
 		string k;
-		k = key.substr(key.find('/') + 1);
+		k               = key.substr(key.find('/') + 1);
 		const string k2 = k.substr(0, k.find('/'));
 		for (auto it = nodelist.begin(); it != nodelist.end(); ++it) {
-			XMLnode *node = (*it);
+			XMLnode* node = (*it);
 			if (node->id == k2) {
 				node->remove(k, valueonly);
 				if (node->content.empty() && node->nodelist.empty()) {
@@ -220,21 +231,21 @@ void XMLnode::remove(const std::string &key, bool valueonly) {
 	CERR("Walking the XML tree failed to find the node.");
 }
 
-
-void    XMLnode::listkeys(const string &key, vector<string> &vs, bool longformat) const {
+void XMLnode::listkeys(const string& key, vector<string>& vs, bool longformat) const {
 	string s(key);
 	s += "/";
 
-	for (auto *node : nodelist) {
-		if (!longformat)
+	for (auto* node : nodelist) {
+		if (!longformat) {
 			vs.push_back(node->id);
-		else
+		} else {
 			vs.push_back(s + node->id);
+		}
 	}
 }
 
-string  encode_entity(const string &s) {
-	string  ret;
+string encode_entity(const string& s) {
+	string ret;
 
 	for (const char ch : s) {
 		switch (ch) {
@@ -260,38 +271,44 @@ string  encode_entity(const string &s) {
 	return ret;
 }
 
-static  string  decode_entity(const string &s, std::size_t &pos) {
-	const std::size_t         old_pos = pos;
-	const string::size_type   entity_name_len = s.find_first_of("; \t\r\n", pos) - pos - 1;
+static string decode_entity(const string& s, std::size_t& pos) {
+	const std::size_t       old_pos         = pos;
+	const string::size_type entity_name_len = s.find_first_of("; \t\r\n", pos) - pos - 1;
 
 	/* Call me paranoid... but I don't think having an end-of-line or similar
-	    inside a &...; expression is 'good', valid though it may be. */
+		inside a &...; expression is 'good', valid though it may be. */
 	assert(s[pos + entity_name_len + 1] == ';');
 
-	const string              entity_name = s.substr(pos + 1, entity_name_len);
+	const string entity_name = s.substr(pos + 1, entity_name_len);
 
 	pos += entity_name_len + 2;
 
 	// std::cout << "DECODE: " << entity_name << endl;
 
-	if (entity_name == "amp")  return string("&");
-	else if (entity_name == "apos") return string("'");
-	else if (entity_name == "quot") return string("\"");
-	else if (entity_name == "lt")   return string("<");
-	else if (entity_name == "gt")   return string(">");
+	if (entity_name == "amp") {
+		return string("&");
+	} else if (entity_name == "apos") {
+		return string("'");
+	} else if (entity_name == "quot") {
+		return string("\"");
+	} else if (entity_name == "lt") {
+		return string("<");
+	} else if (entity_name == "gt") {
+		return string(">");
+	}
 
 	return s.substr(old_pos, entity_name_len + 2);
 }
 
-static  string  close_tag(const string &s) {
-	if (s.find(' ') == string::npos)
+static string close_tag(const string& s) {
+	if (s.find(' ') == string::npos) {
 		return s;
+	}
 
 	return s.substr(0, s.find(' '));
 }
 
-
-static  void    trim(string &s) {
+static void trim(string& s) {
 	// Clean off leading whitespace
 	while (s.length() && s[0] <= 32) {
 		s = s.substr(1);
@@ -302,8 +319,8 @@ static  void    trim(string &s) {
 	}
 }
 
-void    XMLnode::xmlparse(const string &s, std::size_t &pos) {
-	bool    intag = true;
+void XMLnode::xmlparse(const string& s, std::size_t& pos) {
+	bool intag = true;
 
 	id = "";
 	while (pos < s.length()) {
@@ -312,13 +329,14 @@ void    XMLnode::xmlparse(const string &s, std::size_t &pos) {
 			// New tag?
 			if (s[pos + 1] == '/') {
 				// No. Close tag.
-				while (s[pos] != '>')
+				while (s[pos] != '>') {
 					pos++;
+				}
 				++pos;
 				trim(content);
 				return;
 			}
-			auto *t = new XMLnode;
+			auto* t = new XMLnode;
 			++pos;
 			t->xmlparse(s, pos);
 			nodelist.push_back(t);
@@ -329,7 +347,7 @@ void    XMLnode::xmlparse(const string &s, std::size_t &pos) {
 			if (s[pos - 1] == '/') {
 				if (s[pos - 2] == '<') {
 					++pos;
-					return; // An empty tag
+					return;    // An empty tag
 				} else {
 					++pos;
 					no_close = true;
@@ -342,56 +360,59 @@ void    XMLnode::xmlparse(const string &s, std::size_t &pos) {
 			}
 			++pos;
 			intag = false;
-			if (s[pos] < 32)
+			if (s[pos] < 32) {
 				++pos;
+			}
 			break;
 		case '&':
 			content += decode_entity(s, pos);
 			break;
 		default:
-			if (intag)
+			if (intag) {
 				id += s[pos++];
-			else
+			} else {
 				content += s[pos++];
+			}
 		}
 	}
 	trim(content);
 }
 
-/* Returns a list of key->value pairs that are found under the provided 'basekey'.
-    Ignores comments (<!-- ... --> and doesn't return them.
-    Returns true if search is 'finished' */
-bool XMLnode::searchpairs(KeyTypeList &ktl, const string &basekey, const string &currkey, const unsigned int pos) {
+/* Returns a list of key->value pairs that are found under the provided
+   'basekey'. Ignores comments (<!-- ... --> and doesn't return them. Returns
+   true if search is 'finished' */
+bool XMLnode::searchpairs(KeyTypeList& ktl, const string& basekey, const string& currkey, const unsigned int pos) {
 	/* If our 'current key' is longer then the key we're serching for
-	    we've obviously gone too deep in this branch, and we won't find
-	    it here. */
+		we've obviously gone too deep in this branch, and we won't find
+		it here. */
 	if ((currkey.size() <= basekey.size()) && (id[0] != '!')) {
 		/* If we've found it, return every key->value pair under this key,
-		    then return true, since we've found the key we were looking for. */
+			then return true, since we've found the key we were looking for. */
 		if (basekey == currkey + id) {
-			for (auto *node : nodelist)
-				if (node->id[0] != '!')
+			for (auto* node : nodelist) {
+				if (node->id[0] != '!') {
 					node->selectpairs(ktl, "");
+				}
+			}
 			return true;
 		}
 		/* Else, keep searching for the key under it's subnodes */
-		else
-			for (auto* node : nodelist)
-				if (node->searchpairs(ktl, basekey, currkey + id + '/', pos))
+		else {
+			for (auto* node : nodelist) {
+				if (node->searchpairs(ktl, basekey, currkey + id + '/', pos)) {
 					return true;
+				}
+			}
+		}
 	}
 	return false;
 }
 
 /* Just adds every key->value pair under the this node to the ktl */
-void XMLnode::selectpairs(KeyTypeList &ktl, const std::string &currkey) {
+void XMLnode::selectpairs(KeyTypeList& ktl, const std::string& currkey) {
 	ktl.push_back(KeyType(currkey + id, content));
 
-	for (auto* node : nodelist)
+	for (auto* node : nodelist) {
 		node->selectpairs(ktl, currkey + id + '/');
+	}
 }
-
-
-
-
-

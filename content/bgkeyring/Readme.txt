@@ -21,7 +21,7 @@ e-mail: marzojr@yahoo.com
 version: 0.11.25
 
 	This mod (the so called "Keyring Mod") contains a lot of small modifications
-	to the Ultima 7: Black Gate game WITH the Forge of Virtue add-on. There are
+	to the Ultima VII: Black Gate game WITH the Forge of Virtue add-on. There are
 	also a number of not-so-small changes. There is a lot of original usecode
 	and art in the mod too.
 

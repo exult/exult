@@ -21,23 +21,23 @@
  */
 
 //Reimplemented to allow sheep-shearing
-void Shears shape#(0x2BA) ()
-{
-	var target;
+void Shears shape#(0x2BA) () {
+	struct<ObjPos> target;
 	var target_shape;
 
-	if (event != DOUBLECLICK)
+	if (event != DOUBLECLICK) {
 		return;
+	}
 	target = UI_click_on_item();
 	target_shape = target->get_item_shape();
 
-	if (target_shape == SHAPE_CLOTH)
-	{
+	if (target_shape == SHAPE_CLOTH) {
 		target->set_item_shape(SHAPE_BANDAGE);
 		target->set_item_frame(UI_die_roll(0, 2));
-	}
-	else if (target_shape == SHAPE_SHEEP)
-		startShearing(target); //located in sheep.uc
-	else
+	} else if (target_shape == SHAPE_SHEEP) {
+		//located in sheep.uc
+		startShearing(target);
+	} else {
 		randomPartySay("@Might not those come in handy for cutting cloth into bandages?@");
+	}
 }

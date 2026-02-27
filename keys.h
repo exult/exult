@@ -22,36 +22,47 @@
 #ifdef __GNUC__
 #	pragma GCC diagnostic push
 #	pragma GCC diagnostic ignored "-Wold-style-cast"
+#	pragma GCC diagnostic ignored "-Wzero-as-null-pointer-constant"
+#	if !defined(__llvm__) && !defined(__clang__)
+#		pragma GCC diagnostic ignored "-Wuseless-cast"
+#	endif
 #endif    // __GNUC__
-#include <SDL.h>
+#include <SDL3/SDL.h>
 #ifdef __GNUC__
 #	pragma GCC diagnostic pop
 #endif    // __GNUC__
 
 #include "game.h"
 
-#include <vector>
 #include <map>
 #include <string>
+#include <vector>
+
+typedef struct ExultKey {
+	SDL_Keycode key;
+	SDL_Keymod  mod;
+} EXULT_Keysym;
 
 const int c_maxparams = 4;
 
 struct Action;
+
 struct ActionType {
-	const Action *action;
-	int params[c_maxparams];
+	const Action* action;
+	int           params[c_maxparams];
 };
 
-struct ltSDLkeysym {
-	bool operator()(SDL_Keysym k1, SDL_Keysym k2) const {
-		if (k1.sym == k2.sym)
+struct ltExultKey {
+	bool operator()(ExultKey k1, ExultKey k2) const {
+		if (k1.key == k2.key) {
 			return k1.mod < k2.mod;
-		else
-			return k1.sym < k2.sym;
+		} else {
+			return k1.key < k2.key;
+		}
 	}
 };
 
-using KeyMap = std::map<SDL_Keysym, ActionType, ltSDLkeysym>;
+using KeyMap = std::map<ExultKey, ActionType, ltExultKey>;
 
 class KeyBinder {
 private:
@@ -61,16 +72,13 @@ private:
 	std::vector<std::string> cheathelp;
 	std::vector<std::string> mapedithelp;
 	std::vector<std::string> last_created_key;
-	void LoadFromFileInternal(const char *filename);
-	KeyMap::const_iterator TranslateEvent(SDL_Event const &ev) const;
+	void                     LoadFromFileInternal(const char* filename);
+	KeyMap::const_iterator   TranslateEvent(const SDL_Event& ev) const;
+
 public:
 	KeyBinder();
 	/* Add keybinding */
-	void AddKeyBinding(SDL_Keycode key, int mod, const Action *action,
-	                   int nparams, const int *params);
-
-	/* Delete keybinding */
-	void DelKeyBinding(SDL_Keycode sym, int mod);
+	void AddKeyBinding(SDL_Keycode key, SDL_Keymod mod, const Action* action, int nparams, const int* params);
 
 	/* Other methods */
 	void Flush() {
@@ -80,20 +88,22 @@ public:
 		mapedithelp.clear();
 		last_created_key.clear();
 	}
-	bool DoAction(ActionType const &action, bool press) const;
-	bool HandleEvent(SDL_Event const &ev) const;
-	bool IsMotionEvent(SDL_Event const &ev) const;
 
-	void LoadFromFile(const char *filename);
+	bool DoAction(const ActionType& action, bool press) const;
+	bool HandleEvent(const SDL_Event& ev) const;
+	bool IsMotionEvent(const SDL_Event& ev) const;
+
+	void LoadFromFile(const char* filename);
 	void LoadFromPatch();
 	void LoadDefaults();
 	void ShowHelp() const;
 	void ShowCheatHelp() const;
 	void ShowMapeditHelp() const;
 	void ShowBrowserKeys() const;
+
 private:
-	void ParseText(char *text, int len);
-	void ParseLine(char *line);
+	void ParseText(char* text, int len);
+	void ParseLine(char* line, int lineNumber);
 	void FillParseMaps();
 };
 

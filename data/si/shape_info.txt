@@ -12,44 +12,44 @@
 #		:shapenum/spritenum/sfxnum
 #	If a shape is not in the list below, it will use the 'default'
 #	explosion (spritenum 5) with no sound effect (sfxnum -1).
-#   You can leave sfxnum out, in which case there will be no SFX.
+#	You can leave sfxnum out, in which case there will be no SFX.
 #
-#	 Snow tile
+#		Snow tile.
 #
 :32/4/41
 
-#	 Delayed blast
+#		Delayed blast.
 #
 :399/13/65
 
-#	 Death Vortex
+#		Death Vortex
 #
 :639/8/128
 
-#	 Burst Arrow
+#		Burst arrow.
 #
 :554/19/40
 
-#	 Delayed Blast
+#		Delayed blast.
 #
 :621/4/42
 
-#	 Powder Keg
+#		Powder keg.
 #
 :704/4/42
 
-#	 Swordstrike
+#		Swordstrike.
 #
 :287/23/20
 
-#	 Fire Bolt
+#		Fire bolt.
 #
 :856/5/65
 %%endsection
 
 %%section shape_sfx
 #	Format
-#		:shapenum/sfxnum/delay/range/rand
+#		:shapenum/sfxnum/chance/range/rand/extra/volume/framenum
 #	Only the first two parameters are required.
 #	delay is a flag (either 0 or 1) which indicates extra delay
 #	between successive plays. If it is 1 and the shape does *not*
@@ -61,106 +61,114 @@
 #	rand is a flag controlling how range is used: if rand is 1, Exult
 #	will randomly play one sfx in the range; if rand is 0, Exult will
 #	play them sequentially, wrapping back to the first sfx.
+#	extra is basically for the grandfather clock. It is a SFX that will
+#	play every game hour a number of times equal to hour % 12 (or
+#	twelve times for midnight).
+#	Volume is used to control individual sfx volume levels. If no value
+#	is given, 100% volume will be assumed.
+#	framenum sets which frame plays the sfx, -1 is the default and plays
+#	for all frames.
 #
-#	Surf (109)
-:612/109
-:613/109
-:632/109
-:699/109
-:736/109
-:737/109
-:751/109
-:808/109
-:834/109
-:875/109
-:907/109
-:911/109
-:918/109
-:1012/109
-:1020/109
-:1022/109
+#		Surf (109).
+:612/109/0/0/0/-1/20
+:613/109/0/0/0/-1/20
+:632/109/0/0/0/-1/20
+:699/109/0/0/0/-1/20
+:736/109/0/0/0/-1/20
+:737/109/0/0/0/-1/20
+:751/109/0/0/0/-1/20
+:808/109/0/0/0/-1/20
+:834/109/0/0/0/-1/20
+:875/109/0/0/0/-1/20
+:907/109/0/0/0/-1/20
+:911/109/0/0/0/-1/20
+:918/109/0/0/0/-1/20
+:1012/109/0/0/0/-1/20
+:1020/109/0/0/0/-1/20
+:1022/109/0/0/0/-1/20
 
-#	Bubbles (110 to 114)
+#		Bubbles (110 to 114).
 #
-:335/110/100/5/1
+:335/110/100/5/1/-1/50
 #	Doesn't seem to play sounds
-#:780/110/100/5/1
+#:780/110/100/5/1/-1/50
 
-#	Slimes (54 to 58)
+#		Slimes (54 to 58).
 #
 :529/110/100/5/1
 
-#	Fountains
+#		Fountains.
 #
-:153/50
-:326/50
+:153/50/0/0/0/-1/40
+:326/50/0/0/0/-1/40
 
-#	Moongates
+#		Moongates.
 #
-:864/55
+:864/55/0/0/0/-1/80
 
-#	Grandfather clock
+#		Grandfather clock.
 #
 :252/117/100/2/0/16
 :695/117/100/2/0/16
 
-#	Cavern
+#		Cavern.
 #
-:389/103/5
-:391/103/5
+:389/103/5/0/0/0/-1/80
+:391/103/5/0/0/0/-1/80
 
-#	Magic weapons -- apparently not used
+#		Magic weapons -- apparently not used.
 #
-#:547/75
-#:548/75
-#:559/75
-#:562/75
+#:547/75/0/0/0/-1/50
+#:548/75/0/0/0/-1/50
+#:559/75/0/0/0/-1/50
+#:562/75/0/0/0/-1/50
 
-#	Force Wall
+#		Force Wall (only the force wall frames).
 #
-:728/75
+:728/75/0/0/0/-1/80/0
+:748/75/0/0/0/-1/80/10
 
-#	Flaming weapons -- sounds awful, so it is disabled
+#		Flaming weapons -- sounds awful, so it is disabled.
 #
 #:551/45/50/3/1
 #:553/45/50/3/1
 #:630/45/50/3/1
 
-#	Campfire -- sounds awful, so it is disabled
+#		Campfire -- sounds awful, so it is disabled.
 #
 #:289/45/50/3/1
 #:796/45/50/3/1
 #:825/45/50/3/1
 
-#	Burning Urn -- sounds awful, so it is disabled
+#		Burning Urn -- sounds awful, so it is disabled.
 #
 #:992/45/50/3/1
 
-#	Fire Field -- sounds awful, so it is disabled
+#		Fire Field -- sounds awful, so it is disabled.
 #
 #:561/45/50/3/1
 #:895/45/50/3/1
 
-#	Fire elemental -- sounds awful, so it is disabled
+#		Fire elemental -- sounds awful, so it is disabled.
 #
 #:861/45/50/3/1
 
-#	Poison/Sleep Field
+#		Poison/Sleep Field.
 #
-:900/129
-:902/129
+:900/129/71/20/0/0/-1/40
+:902/129/71/20/0/0/-1/40
 
-#	Energy Field
+#		Energy Field.
 #
-:768/71
+:768/71/20/0/0/-1/20
 
-#	Barrier
+#		Barrier
 #
-:301/71
+:301/71/0/0/0/-1/80
 
-#	Pulsating object
+#		Pulsating object.
 #
-:726:26
+:726:26/0/0/0/-1/60
 
 %%endsection
 
@@ -206,11 +214,11 @@
 #
 #	A couple data patches for SI:
 #
-#	Bubbles
+#		Bubbles.
 #
 :335/3/6/1/-1/20/0
 
-#	Grandfather clock
+#		Grandfather clock.
 #
 :695/0/6/4/3
 %%endsection
@@ -223,31 +231,40 @@
 #
 #	'event' is nonzero to receive usecode events, zero otherwise.
 #
-#	Quest items
+#		Quest items.
+#
 :209/1
 
-#	Rings
+#		Rings.
+#
 :296/1
 
-#	Lit torch
+#		Lit torch.
+#
 :701/1
 
-#	Lit light source
+#		Lit light source.
+#
 :338/1
 
-#	Black sword
+#		Black sword.
+#
 :806/1
 
-#	Erinons Axe
+#		Erinons Axe.
+#
 :990/1
 
-#	Belt of Strength
+#		Belt of Strength.
+#
 :996/1
 
-#	Guantlets of Quickness
+#		Guantlets of Quickness.
+#
 :1001/1
 
-#	Helm of Light
+#		Helm of Light.
+#
 :1013/1
 %%endsection
 
@@ -307,7 +324,7 @@
 :522/-1/0/4
 :522/-1/255/4
 
-#		Vertical Door - 270.
+#		Vertical door.
 #
 :270/0/0/6
 :270/1/0/6
@@ -319,7 +336,7 @@
 :270/17/0/6
 :270/18/0/6
 
-#		Horizontal Door - 376.
+#		Horizontal door.
 #
 :376/0/0/6
 :376/1/0/6
@@ -331,7 +348,7 @@
 :376/17/0/6
 :376/18/0/6
 
-#		Vertical Door - 432.
+#		Vertical door.
 #
 :432/0/0/6
 :432/1/0/6
@@ -340,7 +357,7 @@
 :432/5/0/6
 :432/6/0/6
 
-#		Horizontal Door - 433.
+#		Horizontal door.
 #
 :433/0/0/6
 :433/1/0/6
@@ -349,7 +366,7 @@
 :433/5/0/6
 :433/6/0/6
 
-#		Powder keg
+#		Powder keg.
 #
 :704/-1/0/4
 %%endsection
@@ -362,7 +379,7 @@
 #	Format
 #		:shapenum/light
 #
-#	'light' is nonzero for very light objects, zero otherwise.
+#		'light' is nonzero for very light objects, zero otherwise.
 #
 :644/1
 :842/1
@@ -427,26 +444,26 @@
 #	goblin: nonzero if goblin, zero otherwise
 #
 #
-#		Gazer
+#		Gazer.
 #
 :511/0/0/0/0/1/0/0/0
 
-#		Automatons
+#		Automatons.
 #
 :658/1/1/0/0/0/0/0/0
 :734/1/1/0/0/0/0/0/0
 :747/1/1/0/0/0/0/0/0
 :945/1/1/0/0/0/0/0/0
 
-#		Aram Dol
+#		Aram Dol.
 #
 :981/0/0/0/0/1/0/0/0
 
-#		Batlin
+#		Batlin.
 #
 :318/0/0/0/0/0/1/0/0
 
-#		Cyclops
+#		Cyclops.
 #
 :501/0/0/0/0/0/0/1/0
 
@@ -474,9 +491,9 @@
 #	If frame is -1, this entry will be used for all unlisted frames.
 #	The default brightness is zero. A candle is worth 1.
 #
-#		Light.
+#	Light
 #
-198:/-1/3
+:198/-1/3
 
 #		Fire. Has clandle-light strength in originals.
 #
@@ -539,7 +556,7 @@
 #
 :825/-1/7
 
-#		Firedoom staff.
+#	Firedoom staff.
 #
 :926/-1/5
 
@@ -550,6 +567,132 @@
 #		Helm of light, when not being worn.
 #
 :1013/-1/5
+
+#		not original light sources:
+
+#		Flame thrower trap.
+:159/1/3
+:159/2/3
+:159/3/7
+:159/4/5
+:159/5/5
+:159/6/5
+:159/7/5
+:159/8/5
+:159/9/5
+:159/10/5
+:159/11/5
+:159/12/7
+:159/13/3
+:159/14/3
+:159/15/3
+
+#		Laboratory Burner. Unlit burner (frame 0) shouldn't emit light.
+:307/0/0
+
+#		Phoenix egg.
+#
+:649/1/1
+
+#		Stove.
+#
+:664/1/1
+
+#		Baking hearth.
+#
+:831/-1/1
+
+#		Moongate.
+#
+:864/-1/1
+
+#	shapes that might be eligible for lighting:
+
+#		Magic locks on doors (light sources in U6).
+#
+#:270/3/1
+#:270/7/1
+#:270/11/1
+#:270/15/1
+#:270/19/1
+#:270/23/1
+#:376/3/1
+#:376/7/1
+#:376/11/1
+#:376/15/1
+#:376/19/1
+#:376/23/1
+#:432/3/1
+#:432/7/1
+#:432/11/1
+#:432/15/1
+#:433/3/1
+#:433/7/1
+#:433/11/1
+#:433/15/1
+
+#		Ignite spell shape.
+#
+#:280/-1/1
+#:397/-1/1
+
+#		Wall of light.
+#:380/2/1
+#:380/3/2
+#:380/4/3
+#:380/5/4
+#:380/6/5
+#:380/7/5
+#:380/8/5
+#:380/9/5
+#:473/2/1
+#:473/3/2
+#:473/4/3
+#:473/5/4
+#:473/6/5
+#:473/7/5
+#:473/8/5
+#:473/9/5
+#:475/2/1
+#:475/3/2
+#:475/4/3
+#:475/5/4
+#:475/6/5
+#:475/7/5
+#:475/8/5
+#:615/2/1
+#:615/3/2
+#:615/4/3
+#:615/5/4
+#:615/6/5
+#:615/7/5
+#:615/8/5
+#:615/9/5
+
+#		Glimmer spell shape.
+#
+#:566/-1/5
+
+#		Firedoom type spell shape.
+#
+#:676/-1/3
+
+#		Lightning spell shape.
+#
+#:731/-1/1
+#:807/-1/1
+
+#		Fire bolt shape.
+#
+#:856/-1/3
+
+#		Dragon breath spell shape.
+#
+#:857/-1/8
+
+#		Casting frames.
+#
+#:859/-1/2
 %%endsection
 
 %%section warmth_data
@@ -1555,18 +1698,18 @@
 #		neck = 20				Fills cloak, amulet slots
 #		scabbard = 21			Fills belt, back2h_spot and back_shield spots
 #
-#	Bodies.
+#		Bodies.
 #
 :400/3/-1
 :402/3/-1
 :414/3/-1
 
-#	Torch.
+#		Torch.
 #
 :595/8/2
 :701/8/2
 
-#	SHIELDS
+#		SHIELDS.
 #
 :490/8/13
 :543/8/13
@@ -1579,20 +1722,20 @@
 :663/8/13
 :729/8/13
 
-#	Serpent Sceptre
+#		Serpent Sceptre.
 #
 :926/2/-1
 
-#	WEAPONS 1 H
+#		WEAPONS 1 H.
 #
 :592/8/12
 
 
-#	WEAPONS 2H
+#		WEAPONS 2H.
 #
 :598/2/-1
 
-#	Bed roll.
+#		Bed roll.
 #
 :583/1/12
 %%endsection
@@ -1613,19 +1756,19 @@
 #		barge_draftanimal = 5
 #		barge_turtle = 6
 #
-#	Ice raft.
+#		Ice raft.
 #
 :504/1
 
-#	Turtle.
+#		Turtle.
 #
 :215/6
 
-#	Seat.
+#		Seat.
 #
 :292/2
 
-#	Sails.
+#		Sails.
 #
 :251/3
 %%endsection
@@ -1645,15 +1788,15 @@
 #	showing a gump when double-clicked.
 #	reagents: Gives effectivelly infinite reagents.
 #
-#	Ring of Reagents.
+#		Ring of Reagents.
 #
 :296/3/-1/0/0/0/0/0/0/0/0/0/0/0/0/1
 
-#	Swamp boots.
+#		Swamp boots.
 #
 :587/6/-1/0/0/0/0/0/0/0/0/0/0/1/0/0
 
-#	Chest.
+#		Chest.
 #
 :800/-1/249/0/0/0/0/0/0/0/0/0/0/0/1/0
 :800/-1/250/0/0/0/0/0/0/0/0/0/0/0/1/0
@@ -1699,7 +1842,6 @@
 #	flag: If nonzero, the object is on fire.
 #
 #
-
 :177/1
 :184/1
 :198/1
@@ -1758,24 +1900,25 @@
 #		caltrops = 3
 #		campfire = 4
 #
-#	Fire field
+#		Fire field.
 #
 :561/0
 :895/0
 
-#	Sleep field
+#		Sleep field
 #
 :902/1
 
-#	Poison field
+#		Poison field.
 #
 :900/2
 
-#	Caltrops
+#		Caltrops.
 #
 :756/3
 
-#	Campfire
+#		Campfire.
+#
 :825/4
 %%endsection
 
@@ -1791,7 +1934,7 @@
 #	quality: The quality that grants the flag or -1 for all qualities.
 #	type: Nonzero if specifying a function name, zero if specifying a number.
 #
-#	Books.
+#		Books.
 #
 :642/-1/100/0/1592
 :642/-1/101/0/1592
@@ -1873,7 +2016,6 @@
 :642/-1/177/0/1592
 :642/-1/178/0/1592
 :642/-1/179/0/1592
-
 :642/-1/180/0/1595
 :642/-1/181/0/1595
 :642/-1/182/0/1595
@@ -1951,7 +2093,7 @@
 :642/-1/254/0/1595
 :642/-1/255/0/1595
 
-#	Serpentine Books.
+#		Serpentine Books.
 #
 :705/-1/213/0/1578
 :705/-1/214/0/1578
@@ -1996,4 +2138,24 @@
 :705/-1/253/0/1578
 :705/-1/254/0/1578
 :705/-1/255/0/1578
+%%endsection
+
+%%section on_hit_usecode
+#
+#	Usecode function to be called when a weapon hits if it has the 'no damage'
+#	flag set.
+#
+#	Format:
+#		:shapenum/funid
+#
+#	funid: Function id to call, or -1 for none.
+#
+#		Sleep arrows
+#
+:568/2017
+
+#		Serpent arrows (requires modding them to have 'no-damage' flag set)
+#
+:591/2013
+
 %%endsection

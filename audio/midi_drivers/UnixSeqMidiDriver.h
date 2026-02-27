@@ -20,34 +20,44 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #ifndef UNIXSEQMIDIDRIVER_H_INCLUDED
 #define UNIXSEQMIDIDRIVER_H_INCLUDED
 
-#if (defined(UNIX) || defined(__unix__))
-#define USE_UNIX_SEQ_MIDI
+#if !defined(USE_UNIX_SEQ_MIDI) && !defined(ANDROID) && (defined(UNIX) || defined(__unix__) || defined(__unix))
+#	define USE_UNIX_SEQ_MIDI
+#endif
 
-#include "LowLevelMidiDriver.h"
-#include <string>
+#ifdef USE_UNIX_SEQ_MIDI
+#	include "LowLevelMidiDriver.h"
 
-class UnixSeqMidiDriver : public LowLevelMidiDriver
-{
-	const static MidiDriverDesc desc;
-	static MidiDriver *createInstance() {
-		return new UnixSeqMidiDriver();
+#	include <string>
+
+class UnixSeqMidiDriver : public LowLevelMidiDriver {
+	static const MidiDriverDesc desc;
+
+	static std::shared_ptr<MidiDriver> createInstance() {
+		return std::make_shared<UnixSeqMidiDriver>();
 	}
 
-public:	
-	static const MidiDriverDesc* getDesc() { return &desc; }
+public:
+	static const MidiDriverDesc* getDesc() {
+		return &desc;
+	}
+
 	UnixSeqMidiDriver();
 
-protected:
-	int			open() override;
-	void		close() override;
-	void		send(uint32 b) override;
-//	void		yield() override;
-	void		send_sysex(uint8 status, const uint8 *msg,
-								   uint16 length) override;
+	bool isRealMT32Supported() const override {
+		return true;
+	}
 
+protected:
+	int  open() override;
+	void close() override;
+	void send(uint32 b) override;
+	void send_sysex(uint8 status, const uint8* msg, uint16 length) override;
+
+private:
 	std::string devname;
-	bool isOpen;
-	int device, deviceNum;
+	bool        isOpen    = false;
+	int         device    = 0;
+	int         deviceNum = 0;
 };
 
 #endif

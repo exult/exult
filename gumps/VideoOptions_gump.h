@@ -1,5 +1,5 @@
 /*
-Copyright (C) 2001-2022 The Exult Team
+Copyright (C) 2001-2024 The Exult Team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -20,64 +20,66 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define VIDEOOPTIONS_GUMP_H
 
 #include "Modal_gump.h"
+#include "imagewin/imagewin.h"
+
 #include <array>
 #include <memory>
 #include <string>
-#include "imagewin/imagewin.h"
 
 class Gump_button;
 
 class VideoOptions_gump : public Modal_gump {
-	static VideoOptions_gump *video_options_gump;
+	static VideoOptions_gump* video_options_gump;
 
 private:
-	uint32 resolution;
-	int scaling;
-	int scaler;
-	int fullscreen;
-	uint32 game_resolution;
-	std::vector<uint32> resolutions;
-	std::vector<uint32> win_resolutions;
-	std::vector<uint32> game_resolutions;
-	int fill_scaler;
+	uint32                 resolution;
+	int                    scaling;
+	int                    scaler;
+	int                    fullscreen;
+	uint32                 game_resolution;
+	std::vector<uint32>    resolutions;
+	std::vector<uint32>    win_resolutions;
+	std::vector<uint32>    game_resolutions;
+	int                    fill_scaler;
 	Image_window::FillMode fill_mode;
-	bool has_ac;
-	bool share_settings;
+	bool                   has_ac;
+	bool                   share_settings;
 
-	bool o_share_settings;
-	uint32 o_resolution;
-	int o_scaling;
-	int o_scaler;
-	uint32 o_game_resolution;
-	int o_fill_scaler;
+	bool                   o_share_settings;
+	uint32                 o_resolution;
+	int                    o_scaling;
+	int                    o_scaler;
+	uint32                 o_game_resolution;
+	int                    o_fill_scaler;
 	Image_window::FillMode o_fill_mode;
-	bool highdpi;
-	bool o_highdpi;
 
 	Image_window::FillMode startup_fill_mode;
 
 	enum button_ids {
-	    id_first = 0,
-	    id_apply = id_first,
-	    id_help,
-	    id_cancel,
-	    id_fullscreen,
-	    id_share_settings,
-	    id_high_dpi,
-	    id_resolution,  // id_resolution and all past it
-	    id_scaler,      // are deleted by rebuild_buttons
-	    id_scaling,
-	    id_game_resolution,
-	    id_fill_scaler,
-	    id_fill_mode,
-	    id_has_ac,
-	    id_count
+		id_first = 0,
+		id_apply = id_first,
+		id_help,
+		id_cancel,
+		id_first_setting,
+		id_fullscreen = id_first_setting,
+		id_share_settings,
+		id_high_dpi,
+		id_resolution,    // id_resolution and all past it
+		id_scaler,        // are deleted by rebuild_buttons
+		id_scaling,
+		id_game_resolution,
+		id_fill_scaler,
+		id_fill_mode,
+		id_has_ac,
+		id_count
 	};
+
 	std::array<std::unique_ptr<Gump_button>, id_count> buttons;
 
 public:
 	VideoOptions_gump();
-	static VideoOptions_gump *get_instance() {
+
+	static VideoOptions_gump* get_instance() {
 		return video_options_gump;
 	}
 
@@ -85,11 +87,7 @@ public:
 	void paint() override;
 	void close() override;
 
-	// Handle events:
-	bool mouse_down(int mx, int my, int button) override;
-	bool mouse_up(int mx, int my, int button) override;
-
-	void toggle(Gump_button *btn, int state);
+	void toggle(Gump_button* btn, int state);
 	void rebuild_buttons();
 	void rebuild_dynamic_buttons();
 
@@ -101,25 +99,33 @@ public:
 	void set_scaling(int scaleVal) {
 		scaling = scaleVal;
 	}
+
 	void set_scaler(int scalerNum) {
 		scaler = scalerNum;
 	}
+
 	void set_resolution(uint32 Res) {
 		resolution = Res;
 	}
+
 	void set_game_resolution(uint32 gRes) {
 		game_resolution = gRes;
 	}
+
 	void set_fill_scaler(int f_scaler) {
-		fill_scaler = f_scaler;
+		fill_scaler = (f_scaler == Image_window::SDLScaler ? 2 : f_scaler == Image_window::bilinear ? 1 : 0);
 	}
+
 	void set_fill_mode(Image_window::FillMode f_mode) {
 		fill_mode = f_mode;
 	}
 
 	void toggle_resolution(int state) {
-		if (fullscreen) resolution = resolutions[state];
-		else resolution = win_resolutions[state];
+		if (fullscreen) {
+			resolution = resolutions[state];
+		} else {
+			resolution = win_resolutions[state];
+		}
 	}
 
 	void toggle_scaling(int state) {
@@ -132,10 +138,11 @@ public:
 	}
 
 	void toggle_fullscreen(int state) {
-		if (share_settings)
+		if (share_settings) {
 			fullscreen = state;
-		else {
-			load_settings(state); // overwrites old settings
+			rebuild_dynamic_buttons();
+		} else {
+			load_settings(state);    // overwrites old settings
 			rebuild_buttons();
 		}
 	}
@@ -160,17 +167,15 @@ public:
 	}
 
 	void toggle_aspect_correction(int state) {
-		has_ac = state != 0;
-		fill_mode = static_cast<Image_window::FillMode>((fill_mode&~1) | (has_ac ? 1 : 0));
+		has_ac    = state != 0;
+		fill_mode = static_cast<Image_window::FillMode>((fill_mode & ~1) | (has_ac ? 1 : 0));
 	}
 
 	void toggle_share_settings(int state) {
 		share_settings = state;
 	}
 
-	void toggle_high_dpi(int state) {
-		highdpi = state;
-	}
+	Gump_button* on_button(int mx, int my) override;
 };
 
 #endif

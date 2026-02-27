@@ -24,8 +24,12 @@
 #ifdef __GNUC__
 #	pragma GCC diagnostic push
 #	pragma GCC diagnostic ignored "-Wold-style-cast"
+#	pragma GCC diagnostic ignored "-Wzero-as-null-pointer-constant"
+#	if !defined(__llvm__) && !defined(__clang__)
+#		pragma GCC diagnostic ignored "-Wuseless-cast"
+#	endif
 #endif    // __GNUC__
-#include <SDL.h>
+#include <SDL3/SDL.h>
 #ifdef __GNUC__
 #	pragma GCC diagnostic pop
 #endif    // __GNUC__
@@ -34,16 +38,17 @@
  *  Delay between animations.
  */
 
-#define DELAY_TOTAL_MS 10
+#define DELAY_TOTAL_MS  10
 #define DELAY_SINGLE_MS 1
 
-inline void Delay(
-) {
+inline void Delay() {
 	const Uint32 expiration = DELAY_TOTAL_MS + SDL_GetTicks();
 	for (;;) {
 		SDL_PumpEvents();
-		if ((SDL_PeepEvents(nullptr, 0, SDL_PEEKEVENT, SDL_FIRSTEVENT, SDL_LASTEVENT) != 0) ||
-		    (static_cast<Sint32>(SDL_GetTicks()) >= static_cast<Sint32>(expiration))) return;
+		if ((SDL_PeepEvents(nullptr, 0, SDL_PEEKEVENT, SDL_EVENT_FIRST, SDL_EVENT_LAST) != 0)
+			|| (static_cast<Sint32>(SDL_GetTicks()) >= static_cast<Sint32>(expiration))) {
+			return;
+		}
 
 		SDL_Delay(DELAY_SINGLE_MS);
 	}

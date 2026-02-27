@@ -1,5 +1,6 @@
 /*
- *  readnpcs.cc - Read in NPC's from npc.dat & schedule.dat.  Also writes npc.dat back out.
+ *  readnpcs.cc - Read in NPC's from npc.dat & schedule.dat.  Also writes
+ * npc.dat back out.
  *
  *  Copyright (C) 1999  Jeffrey S. Freedman
  *  Copyright (C) 2000-2022  The Exult Team
@@ -20,21 +21,21 @@
  */
 
 #ifdef HAVE_CONFIG_H
-#  include <config.h>
+#	include <config.h>
 #endif
 
-#include <cstring>
-
-#include "gamewin.h"
+#include "databuf.h"
+#include "fnames.h"
 #include "game.h"
+#include "gamewin.h"
+#include "miscinf.h"
 #include "monsters.h"
+#include "schedule.h"
 #include "ucmachine.h"
 #include "utils.h"
-#include "fnames.h"
-#include "schedule.h"
-#include "databuf.h"
-#include "miscinf.h"
-//#include "items.h"            /* Debugging only */
+
+#include <cstring>
+// #include "items.h"            /* Debugging only */
 
 using std::cerr;
 using std::cout;
@@ -48,28 +49,29 @@ using std::vector;
  *  Read in the NPC's, plus the monster info.
  */
 
-void Game_window::read_npcs(
-) {
-	npcs.resize(1);         // Create main actor.
+void Game_window::read_npcs() {
+	npcs.resize(1);    // Create main actor.
 	const Main_actor_shared ava = std::make_shared<Main_actor>("", 0);
-	npcs[0] = ava;
+	npcs[0]                     = ava;
 	camera_actor = main_actor = ava.get();
-	bool fix_unused = false;    // Get set for old savegames.
+	bool fix_unused           = false;    // Get set for old savegames.
 	{
-		int num_npcs;
+		int             num_npcs;
 		IFileDataSource nfile(NPC_DAT);
 		if (nfile.good()) {
-			num_npcs1 = nfile.read2();  // Get counts.
-			num_npcs = num_npcs1 + nfile.read2();
+			num_npcs1 = nfile.read2();    // Get counts.
+			num_npcs  = num_npcs1 + nfile.read2();
 			main_actor->read(&nfile, 0, false, fix_unused);
 		} else {
-			if (!Game::is_editing())
+			if (!Game::is_editing()) {
 				throw file_read_exception(NPC_DAT);
+			}
 			num_npcs1 = num_npcs = 1;
-			if (Game::get_avname())
+			if (Game::get_avname()) {
 				main_actor->set_npc_name(Game::get_avname());
+			}
 			main_actor->set_shape(Shapeinfo_lookup::GetMaleAvShape());
-			main_actor->set_invalid();  // Put in middle of world.
+			main_actor->set_invalid();    // Put in middle of world.
 			main_actor->move(c_num_tiles / 2, c_num_tiles / 2, 0);
 		}
 		npcs.resize(num_npcs);
@@ -77,8 +79,8 @@ void Game_window::read_npcs(
 
 		// Don't like it... no i don't.
 		center_view(main_actor->get_tile());
-		for (int i = 1; i < num_npcs; i++) { // Create the rest.
-			npcs[i] = std::make_shared<Npc_actor>("", 0);
+		for (int i = 1; i < num_npcs; i++) {    // Create the rest.
+			npcs[i]   = std::make_shared<Npc_actor>("", 0);
 			auto& npc = npcs[i];
 			npc->read(&nfile, i, i < num_npcs1, fix_unused);
 			if (npc->is_unused()) {
@@ -86,31 +88,33 @@ void Game_window::read_npcs(
 				Game_object_shared keep;
 				npc->remove_this(&keep);
 				npc->set_schedule_type(Schedule::wait);
-			} else
+			} else {
 				npc->restore_schedule();
+			}
 			cycle_load_palette();
 		}
 	}
 	main_actor->set_actor_shape();
 	{
-		IFileDataSource nfile(MONSNPCS); // Monsters.
+		IFileDataSource nfile(MONSNPCS);    // Monsters.
 		if (nfile.good()) {
 			// (Won't exist the first time; in this case U7open throws
 			int cnt = nfile.read2();
-			nfile.skip(1);// Read 1 ahead to test.
+			nfile.skip(1);    // Read 1 ahead to test.
 			bool okay = nfile.good();
 			nfile.skip(-1);
 			while (okay && cnt--) {
 				// Read ahead to get shape.
 				nfile.skip(2);
 				const unsigned short shnum = nfile.read2() & 0x3ff;
-				okay = nfile.good();
+				okay                       = nfile.good();
 				nfile.skip(-4);
 				const ShapeID sid(shnum, 0);
-				if (!okay || sid.get_num_frames() < 16)
-					break;  // Watch for corrupted file.
+				if (!okay || sid.get_num_frames() < 16) {
+					break;    // Watch for corrupted file.
+				}
 				const Game_object_shared new_monster = Monster_actor::create(shnum);
-				auto *act = static_cast<Monster_actor*>(new_monster.get());
+				auto*                    act         = static_cast<Monster_actor*>(new_monster.get());
 				act->read(&nfile, -1, false, fix_unused);
 				act->set_schedule_loc(act->get_tile());
 				act->restore_schedule();
@@ -123,12 +127,12 @@ void Game_window::read_npcs(
 			Monster_actor::give_up();
 		}
 	}
-	if (moving_barge) {     // Gather all NPC's on barge.
-		Barge_object *b = moving_barge;
-		moving_barge = nullptr;
+	if (moving_barge) {    // Gather all NPC's on barge.
+		Barge_object* b = moving_barge;
+		moving_barge    = nullptr;
 		set_moving_barge(b);
 	}
-	read_schedules();       // Now get their schedules.
+	read_schedules();    // Now get their schedules.
 	center_view(main_actor->get_tile());
 }
 
@@ -138,8 +142,7 @@ void Game_window::read_npcs(
  *  Output: false if error, already reported.
  */
 
-void Game_window::write_npcs(
-) {
+void Game_window::write_npcs() {
 	const int num_npcs = npcs.size();
 	{
 		OFileDataSource nfile(NPC_DAT);
@@ -148,29 +151,32 @@ void Game_window::write_npcs(
 		nfile.write2(num_npcs - num_npcs1);
 		int i;
 		std::cout << "NPC write " << std::endl;
-		for (i = 0; i < num_npcs; i++)
+		for (i = 0; i < num_npcs; i++) {
 			get_npc(i)->write(&nfile);
+		}
 		nfile.flush();
-		if (!nfile.good())
+		if (!nfile.good()) {
 			throw file_write_exception(NPC_DAT);
+		}
 	}
-	write_schedules();      // Write schedules
+	write_schedules();    // Write schedules
 	{
 		// Now write out monsters in world.
 		OFileDataSource nfile(MONSNPCS);
-		int cnt = 0;
-		nfile.write2(0);        // Write 0 as a place holder.
-		for (Monster_actor *mact = Monster_actor::get_first_in_world();
-				mact; mact = mact->get_next_in_world())
-			if (!mact->is_dead()) { // Alive?
+		int             cnt = 0;
+		nfile.write2(0);    // Write 0 as a place holder.
+		for (Monster_actor* mact = Monster_actor::get_first_in_world(); mact; mact = mact->get_next_in_world()) {
+			if (!mact->is_dead()) {    // Alive?
 				mact->write(&nfile);
 				cnt++;
 			}
-		nfile.seek(0);          // Back to start.
-		nfile.write2(cnt);      // Write actual count.
+		}
+		nfile.seek(0);        // Back to start.
+		nfile.write2(cnt);    // Write actual count.
 		nfile.flush();
-		if (!nfile.good())
+		if (!nfile.good()) {
 			throw file_write_exception(MONSNPCS);
+		}
 	}
 }
 
@@ -180,26 +186,27 @@ void Game_window::write_npcs(
  */
 
 std::unique_ptr<short[]> Set_to_read_schedules(
-    IStreamDataSource &sfile,
-    int &num_npcs,          // # npc's returnes.
-    int &entsize,           // Entry size returned.
-    int &num_script_names      // # of usecode script names ret'd.
+		IStreamDataSource& sfile,
+		int&               num_npcs,           // # npc's returnes.
+		int&               entsize,            // Entry size returned.
+		int&               num_script_names    // # of usecode script names ret'd.
 ) {
-	entsize = 4;            // 4 is U7's size.
+	entsize          = 4;    // 4 is U7's size.
 	num_script_names = 0;
-	num_npcs = sfile.read4();   // # of NPC's, not include Avatar.
-	if (num_npcs == -1) {       // Exult format?
-		entsize = 8;
+	num_npcs         = sfile.read4();    // # of NPC's, not include Avatar.
+	if (num_npcs == -1) {                // Exult format?
+		entsize  = 8;
 		num_npcs = sfile.read4();
 	} else if (num_npcs == -2) {
-		entsize = 8;
-		num_npcs = sfile.read4();
+		entsize          = 8;
+		num_npcs         = sfile.read4();
 		num_script_names = sfile.read2();
 	}
 	auto offsets = std::make_unique<short[]>(num_npcs);
-	int i;              // Read offsets with list of scheds.
-	for (i = 0; i < num_npcs; i++)
+	int  i;    // Read offsets with list of scheds.
+	for (i = 0; i < num_npcs; i++) {
 		offsets[i] = sfile.read2();
+	}
 	return offsets;
 }
 
@@ -207,74 +214,66 @@ std::unique_ptr<short[]> Set_to_read_schedules(
  *  Read one NPC's schedule.
  */
 
-void Read_a_schedule(
-    IStreamDataSource &sfile,
-    int index,
-    Actor *npc,
-    int entsize,
-    const short *offsets
-) {
+void Read_a_schedule(IStreamDataSource& sfile, int index, Actor* npc, int entsize, const short* offsets) {
 	const int cnt = offsets[index] - offsets[index - 1];
 	// Read schedules into this array.
-	Schedule_change *schedules = cnt ? new Schedule_change[cnt] : nullptr;
-	unsigned char ent[10];
-	if (entsize == 4) { // U7 format?
-		for (int j = 0; j < cnt; j++) {
-			sfile.read(reinterpret_cast<char *>(ent), 4);
-			schedules[j].set4(ent);
+	Actor::Schedule_list list(cnt);
+	unsigned char        ent[10];
+	if (entsize == 4) {    // U7 format?
+		for (auto& sched : list) {
+			sfile.read(reinterpret_cast<char*>(ent), 4);
+			sched.set4(ent);
 		}
-	} else {        // Exult formats.
-		for (int j = 0; j < cnt; j++) {
-			sfile.read(reinterpret_cast<char *>(ent), 8);
-			schedules[j].set8(ent);
+	} else {    // Exult formats.
+		for (auto& sched : list) {
+			sfile.read(reinterpret_cast<char*>(ent), 8);
+			sched.set8(ent);
 		}
 	}
-	if (npc)            // Store in NPC.
-		npc->set_schedules(schedules, cnt);
-	else
-		delete [] schedules;
+	if (npc != nullptr) {    // Store in NPC.
+		npc->set_schedules(std::move(list));
+	}
 }
 
 /*
  *  Read NPC schedules.
  */
 
-void Game_window::read_schedules(
-) {
+void Game_window::read_schedules() {
 	std::unique_ptr<IFileDataSource> sfile = std::make_unique<IFileDataSource>(GSCHEDULE);
 	if (!sfile->good()) {
 #ifdef DEBUG
-		cerr << "Couldn't open " << GSCHEDULE << ". Falling back to "
-		     << SCHEDULE_DAT << "." << endl;
+		cerr << "Couldn't open " << GSCHEDULE << ". Falling back to " << SCHEDULE_DAT << "." << endl;
 #endif
 		sfile = std::make_unique<IFileDataSource>(SCHEDULE_DAT);
 		if (!sfile->good()) {
-			if (!Game::is_editing())
+			if (!Game::is_editing()) {
 				throw file_open_exception(get_system_path(SCHEDULE_DAT));
-			else
+			} else {
 				return;
+			}
 		}
 	}
-	int num_npcs = 0;
-	int entsize;
-	int num_script_names;
+	int  num_npcs = 0;
+	int  entsize;
+	int  num_script_names;
 	auto offsets = Set_to_read_schedules(*sfile, num_npcs, entsize, num_script_names);
 	Schedule_change::clear();
-	vector<std::string> &script_names = Schedule_change::get_script_names();
+	vector<std::string>& script_names = Schedule_change::get_script_names();
 	if (num_script_names) {
-		sfile->read2();   // Skip past total size.
+		sfile->read2();    // Skip past total size.
 		script_names.reserve(num_script_names);
 		for (int i = 0; i < num_script_names; ++i) {
-			const int sz = sfile->read2();
+			const int   sz = sfile->read2();
 			std::string nm;
 			sfile->read(nm, sz);
 			script_names.push_back(std::move(nm));
 		}
 	}
 
-	for (int i = 0; i < num_npcs - 1; i++) { // Do each NPC, except Avatar.
+	for (int i = 0; i < num_npcs - 1; i++) {    // Do each NPC, except Avatar.
 		// Avatar isn't included here.
-		Actor *npc = get_npc(i + 1);
+		Actor* npc = get_npc(i + 1);
 		Read_a_schedule(*sfile, i + 1, npc, entsize, offsets.get());
 		cycle_load_palette();
 	}
@@ -286,68 +285,71 @@ void Game_window::read_schedules(
  */
 
 void Game_window::write_schedules() {
-	Schedule_change *schedules;
-	int cnt;
 	short offset = 0;
-	int i;
-	int num;
+	int   i;
+	int   num;
 
 	// So do I allow for all NPCs (type1 and type2) - Yes i will
 	num = npcs.size();
 
-	OFileDataSource sfile(GSCHEDULE);
-	const vector<std::string> &script_names = Schedule_change::get_script_names();
+	OFileDataSource            sfile(GSCHEDULE);
+	const vector<std::string>& script_names = Schedule_change::get_script_names();
 
-	sfile.write4(static_cast<unsigned int>(-2));        // Exult version #.
-	sfile.write4(num);      // # of NPC's, not include Avatar.
-	sfile.write2(script_names.size());
-	sfile.write2(0);        // First offset
+	sfile.write4(static_cast<unsigned int>(-2));    // Exult version #.
+	sfile.write4(num);                              // # of NPC's, not include Avatar.
+	sfile.write2(static_cast<uint16>(script_names.size()));
+	sfile.write2(0);    // First offset
 
-	for (i = 1; i < num; i++) { // write offsets with list of scheds.
-		get_npc(i)->get_schedules(schedules, cnt);
-		offset += cnt;
+	for (i = 1; i < num; i++) {    // write offsets with list of scheds.
+		const Actor::Schedule_list* scheds = get_npc(i)->get_schedules();
+		offset += (scheds != nullptr) ? scheds->size() : 0;
 		sfile.write2(offset);
 	}
 	if (!script_names.empty()) {
-		int total = 0;      // Figure total size.
-		for (auto& elem : script_names)
+		int total = 0;    // Figure total size.
+		for (const auto& elem : script_names) {
 			total += 2 + elem.size();
+		}
 		sfile.write2(total);
-		for (auto& elem : script_names) {
-			sfile.write2(elem.size());
+		for (const auto& elem : script_names) {
+			sfile.write2(static_cast<uint16>(elem.size()));
 			sfile.write(elem);
 		}
 	}
-	for (i = 1; i < num; i++) { // Do each NPC, except Avatar.
-		get_npc(i)->get_schedules(schedules, cnt);
-		for (int j = 0; j < cnt; j++) {
+	for (i = 1; i < num; i++) {    // Do each NPC, except Avatar.
+		const Actor::Schedule_list* scheds = get_npc(i)->get_schedules();
+		if (scheds == nullptr) {
+			continue;
+		}
+		for (const auto& sched : *scheds) {
 			unsigned char ent[20];
-			schedules[j].write8(ent);
-			sfile.write(reinterpret_cast<char *>(ent), 8);
+			sched.write8(ent);
+			sfile.write(reinterpret_cast<char*>(ent), 8);
 		}
 	}
 }
 
-void Game_window::revert_schedules(Actor *npc) {
+void Game_window::revert_schedules(Actor* npc) {
 	// Can't do this if <= 0
-	if (npc->get_npc_num() <= 0) return;
+	if (npc->get_npc_num() <= 0) {
+		return;
+	}
 
 	IFileDataSource sfile(SCHEDULE_DAT);
 	if (!sfile.good()) {
 		throw file_read_exception(SCHEDULE_DAT);
 	}
 
-	int num_npcs;
-	int entsize;
-	int num_script_names;
+	int  num_npcs;
+	int  entsize;
+	int  num_script_names;
 	auto offsets = Set_to_read_schedules(sfile, num_npcs, entsize, num_script_names);
 	if (num_script_names) {
 		const int sz = sfile.read2();
 		sfile.skip(sz);
 	}
 	// Seek to the right place
-	sfile.skip(offsets[npc->get_npc_num() - 1]*entsize);
+	sfile.skip(offsets[npc->get_npc_num() - 1] * std::streamoff(entsize));
 
 	Read_a_schedule(sfile, npc->get_npc_num(), npc, entsize, offsets.get());
 }
-

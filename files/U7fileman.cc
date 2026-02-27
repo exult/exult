@@ -19,27 +19,23 @@
  */
 
 #ifdef HAVE_CONFIG_H
-#  include <config.h>
+#	include <config.h>
 #endif
 
-#include <cstdio>
-#include <iostream>
-#include <cstdlib>
-
 #include "U7fileman.h"
-#include "U7obj.h"
-#include "U7file.h"
+
+#include "Flat.h"
 #include "Flex.h"
 #include "IFF.h"
 #include "Table.h"
-#include "Flat.h"
-#include "utils.h"
+#include "U7file.h"
+#include "U7obj.h"
 
-using std::string;
 using std::make_unique;
+using std::string;
 
 static U7FileManager filemanager;
-U7FileManager *U7FileManager::self = &filemanager;
+U7FileManager*       U7FileManager::self = &filemanager;
 
 /**
  *  Searches for the desired "file". If it is not already open,
@@ -50,7 +46,7 @@ U7FileManager *U7FileManager::self = &filemanager;
  *  a null file pointer instead.
  *  @return Pointer to data reading class.
  */
-U7file *U7FileManager::get_file_object(const File_spec &s, bool allow_errors) {
+U7file* U7FileManager::get_file_object(const File_spec& s, bool allow_errors) {
 	if (file_list.count(s) != 0) {
 		return file_list[s].get();
 	}
@@ -83,12 +79,13 @@ U7file *U7FileManager::get_file_object(const File_spec &s, bool allow_errors) {
 
 	// Failed
 	if (uf == nullptr) {
-		if (!allow_errors)
+		if (!allow_errors) {
 			throw file_open_exception(s.name);
+		}
 		return nullptr;
 	}
 
-	U7file *pt = uf.get();
+	U7file* pt   = uf.get();
 	file_list[s] = std::move(uf);
 	return pt;
 }

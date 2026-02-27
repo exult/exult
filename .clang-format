@@ -1,86 +1,162 @@
 ﻿AccessModifierOffset: '-4'
 AlignAfterOpenBracket: AlwaysBreak
-AlignConsecutiveMacros: 'true'
-AlignConsecutiveAssignments: 'true'
-AlignConsecutiveDeclarations: 'true'
+AlignArrayOfStructures: Right
+AlignConsecutiveMacros: Consecutive
+AlignConsecutiveAssignments: Consecutive
+AlignConsecutiveBitFields: Consecutive
+AlignConsecutiveDeclarations: Consecutive
 AlignEscapedNewlines: Left
-AlignOperands: 'true'
-AlignTrailingComments: 'true'
-AllowAllArgumentsOnNextLine: 'true'
-AllowAllConstructorInitializersOnNextLine: 'true'
-AllowAllParametersOfDeclarationOnNextLine: 'true'
-AllowShortBlocksOnASingleLine: 'false'
-AllowShortCaseLabelsOnASingleLine: 'false'
+AlignOperands: Align
+AlignTrailingComments: true
+AllowAllArgumentsOnNextLine: true
+AllowAllConstructorInitializersOnNextLine: true
+AllowAllParametersOfDeclarationOnNextLine: true
+AllowShortBlocksOnASingleLine: false
+AllowShortCaseLabelsOnASingleLine: false
+AllowShortEnumsOnASingleLine: false
 AllowShortFunctionsOnASingleLine: Empty
 AllowShortIfStatementsOnASingleLine: Never
 AllowShortLambdasOnASingleLine: Empty
-AllowShortLoopsOnASingleLine: 'false'
+AllowShortLoopsOnASingleLine: false
 AlwaysBreakAfterReturnType: None
-AlwaysBreakBeforeMultilineStrings: 'false'
+AlwaysBreakBeforeMultilineStrings: false
+AlwaysBreakAfterDefinitionReturnType: None
 AlwaysBreakTemplateDeclarations: 'Yes'
-BinPackArguments: 'true'
-BinPackParameters: 'true'
+AttributeMacros:
+  - __capability
+BinPackArguments: true
+BinPackParameters: true
+BraceWrapping:
+  AfterCaseLabel: false
+  AfterClass: false
+  AfterControlStatement: Never
+  AfterEnum: false
+  AfterFunction: false
+  AfterNamespace: false
+  AfterObjCDeclaration: false
+  AfterStruct: false
+  AfterUnion: false
+  AfterExternBlock: false
+  BeforeCatch: false
+  BeforeElse: false
+  BeforeLambdaBody: false
+  BeforeWhile: false
+  IndentBraces: false
+  SplitEmptyFunction: true
+  SplitEmptyRecord: true
+  SplitEmptyNamespace: true
 BreakBeforeBinaryOperators: All
+BreakBeforeConceptDeclarations: true
 BreakBeforeBraces: Attach
-BreakBeforeTernaryOperators: 'true'
-BreakConstructorInitializers: BeforeColon
 BreakInheritanceList: BeforeColon
-CompactNamespaces: 'true'
-ConstructorInitializerIndentWidth: '8'
-ContinuationIndentWidth: '8'
-Cpp11BracedListStyle: 'true'
-DerivePointerAlignment: 'false'
-DisableFormat: 'false'
-FixNamespaceComments: 'true'
+BreakBeforeTernaryOperators: true
+BreakConstructorInitializers: BeforeColon
+BreakStringLiterals: true
+ColumnLimit: 132
+CompactNamespaces: true
+ConstructorInitializerIndentWidth: 8
+ContinuationIndentWidth: 8
+Cpp11BracedListStyle: true
+DeriveLineEnding: true
+DerivePointerAlignment: false
+DisableFormat: false
+EmptyLineAfterAccessModifier: Never
+EmptyLineBeforeAccessModifier: LogicalBlock
+FixNamespaceComments: true
 IncludeBlocks: Regroup
 IncludeCategories:
   # config.h must come first.
-  - Regex:           '["<]config.h+[>"]'
-    Priority:        -1
+  - Regex: '["<]config.h+[>"]'
+    Priority: -2
+    SortPriority: 0
+    CaseSensitive: false
   # pent_include.h.
-  - Regex:           '["<]pent_include.h+[>"]'
-    Priority:        1
+  - Regex: '["<]pent_include.h+[>"]'
+    Priority: -1
+    SortPriority: 0
+    CaseSensitive: false
   # mmsystem.h must come after windows.h, which is at the normal headers with extension.
-  - Regex:           '["<]mmsystem.h+[>"]'
-    Priority:        4
+  - Regex: '["<]mmsystem.h+[>"]'
+    Priority: 4
+    SortPriority: 0
+    CaseSensitive: false
   # Headers in <> without extension.
-  - Regex:           '<([A-Za-z0-9\Q/-_\E])+>'
-    Priority:        5
+  - Regex: '<([A-Za-z0-9\Q/-_\E])+>'
+    Priority: 6
+    SortPriority: 0
+    CaseSensitive: false
+  # Boost headers.
+  - Regex: '<boost/([A-Za-z0-9.\Q/-_\E])+>'
+    Priority: 5
+    SortPriority: 0
+    CaseSensitive: false
   # Headers in <> with extension.
-  - Regex:           '<([A-Za-z0-9.\Q/-_\E])+>'
-    Priority:        3
+  - Regex: '<([A-Za-z0-9.\Q/-_\E])+>'
+    Priority: 3
+    SortPriority: 0
+    CaseSensitive: false
   # Headers in "" with extension.
-  - Regex:           '"([A-Za-z0-9.\Q/-_\E])+"'
-    Priority:        2
-IndentCaseLabels: 'false'
-IncludeIsMainRegex: '$'
+  - Regex: '"([A-Za-z0-9.\Q/-_\E])+"'
+    Priority: 2
+    SortPriority: 0
+    CaseSensitive: false
+IncludeIsMainRegex: "$"
+IncludeIsMainSourceRegex: ""
+IndentAccessModifiers: false
+IndentCaseLabels: false
+IndentCaseBlocks: false
+IndentGotoLabels: true
 IndentPPDirectives: AfterHash
+IndentExternBlock: AfterExternBlock
 IndentWidth: '4'
-IndentWrappedFunctionNames: 'true'
-KeepEmptyLinesAtTheStartOfBlocks: 'false'
-Language: Cpp
-MaxEmptyLinesToKeep: '1'
+IndentRequires: true
+IndentRequiresClause: false
+RequiresClausePosition: OwnLine
+InsertBraces: true
+SeparateDefinitionBlocks: Always
+IndentWrappedFunctionNames: true
+InsertTrailingCommas: None
+KeepEmptyLinesAtTheStartOfBlocks: false
+LambdaBodyIndentation: Signature
+MaxEmptyLinesToKeep: 1
 NamespaceIndentation: All
+PenaltyExcessCharacter: 1000000
+PenaltyReturnTypeOnItsOwnLine: 10000000
 PointerAlignment: Left
-ReflowComments: 'true'
-SortIncludes: 'true'
-SortUsingDeclarations: 'true'
-SpaceAfterCStyleCast: 'false'
-SpaceAfterLogicalNot: 'false'
-SpaceAfterTemplateKeyword: 'true'
-SpaceBeforeAssignmentOperators: 'true'
-SpaceBeforeCpp11BracedList: 'false'
-SpaceBeforeCtorInitializerColon: 'true'
-SpaceBeforeInheritanceColon: 'true'
+PPIndentWidth: -1
+QualifierAlignment: Custom
+QualifierOrder: ["constexpr", "static", "inline", "const", "volatile", "type"]
+ReferenceAlignment: Pointer
+ReflowComments: true
+SortIncludes: true
+CommentPragmas: '^\\.+'
+ShortNamespaceLines: 1
+SortUsingDeclarations: true
+SpaceAfterCStyleCast: false
+SpaceAfterLogicalNot: false
+SpaceAfterTemplateKeyword: true
+SpaceBeforeAssignmentOperators: true
+SpaceBeforeCaseColon: false
+SpaceBeforeCpp11BracedList: false
+SpaceBeforeCtorInitializerColon: true
+SpaceBeforeInheritanceColon: true
 SpaceBeforeParens: ControlStatements
-SpaceBeforeRangeBasedForLoopColon: 'true'
-SpaceInEmptyParentheses: 'false'
-SpacesBeforeTrailingComments: '4'
-SpacesInAngles: 'false'
-SpacesInCStyleCastParentheses: 'false'
-SpacesInContainerLiterals: 'false'
-SpacesInParentheses: 'false'
-SpacesInSquareBrackets: 'false'
-Standard: Cpp11
-TabWidth: '4'
+SpaceAroundPointerQualifiers: Default
+SpaceBeforeRangeBasedForLoopColon: true
+SpaceInEmptyBlock: false
+SpaceInEmptyParentheses: false
+SpacesBeforeTrailingComments: 4
+SpacesInAngles: Never
+SpacesInCStyleCastParentheses: false
+SpacesInConditionalStatement: false
+SpacesInContainerLiterals: false
+SpacesInLineCommentPrefix:
+  Minimum: 1
+  Maximum: -1
+SpacesInParentheses: false
+SpacesInSquareBrackets: false
+SpaceBeforeSquareBrackets: false
+BitFieldColonSpacing: Both
+Standard: Latest
+TabWidth: 4
 UseTab: ForContinuationAndIndentation

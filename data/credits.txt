@@ -39,7 +39,7 @@
 \Cweapon animations, bits of combat.
 
 
-\CRyan "Colourless" Nunn
+\CAlexis Ryan aka "Colourless" 
 \CXMIDI meister, endings, roof removalist,
 \CSI Intro, NPC flag IO, Avatar identity,
 \CBG Paperdolls, "Big Commits(tm)"

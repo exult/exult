@@ -23,31 +23,27 @@
 //Called when user clicks on a bottle
 //(This has been rewired so that we can use milk bottles on butter churns:
 //see churn.uc for more details)
-void Bottle shape#(0x268) ()
-{
-	//Bottle was clicked on
-	if (event == DOUBLECLICK)
-	{
+void Bottle shape#(0x268) () {
+	if (event == DOUBLECLICK) {
+		//Bottle was clicked on
 		//this is a milk bottle - go and pick it up before you use it, then
 		//call this function again with event = SCRIPTED
-		if (get_item_frame() == FRAME_MILK)
+		if (get_item_frame() == FRAME_MILK) {
 			gotoAndGet(item);
-		else
-		{
+		} else {
 			useEdible(item, BOTTLE_NUTRITION, SOUND_DRINK);
 			return;
 		}
-	}
-	//Milk was picked up, and is ready to be used
-	else if (event == SCRIPTED)
-	{
-		var target = UI_click_on_item();
+	} else if (event == SCRIPTED) {
+		//Milk was picked up, and is ready to be used
+		struct<ObjPos> target = UI_click_on_item();
 		//a churn was selected - go to the churn and run churnButter()
 		if (target->get_item_shape() == SHAPE_KITCHEN_ITEM &&
-				target->get_item_frame() == FRAME_CHURN)
+				target->get_item_frame() == FRAME_CHURN) {
 			gotoChurn(target, CHURN_WITH_BOTTLE);
-		//otherwise, just drink the damn milk already
-		else
+		} else {
+			//otherwise, just drink the damn milk already
 			consumeEdible(item, target, BOTTLE_NUTRITION, SOUND_DRINK);
+		}
 	}
 }

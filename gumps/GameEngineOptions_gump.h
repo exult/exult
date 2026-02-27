@@ -1,5 +1,5 @@
 /*
-Copyright (C) 2001-2022 The Exult Team
+Copyright (C) 2001-2024 The Exult Team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -20,6 +20,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define GAMEENGINEOPTIONS_GUMP_H
 
 #include "Modal_gump.h"
+
 #include <array>
 #include <memory>
 #include <string>
@@ -28,34 +29,42 @@ class Gump_button;
 
 class GameEngineOptions_gump : public Modal_gump {
 private:
-	bool allow_autonotes;
-	int gumps_pause;
-	bool alternate_drop;
-	int frames;
+	bool                     allow_autonotes;
+	int                      gumps_pause;
+	bool                     alternate_drop;
+	int                      frames;
 	std::vector<std::string> frametext;
-	int difficulty;
-	int show_hits;
-	int mode;
-	bool charmDiff;
-	int cheats;
+	int                      difficulty;
+	int                      show_hits;
+	int                      mode;
+	bool                     charmDiff;
+	int                      cheats;
+	int                      feeding;
+	int                      enhancements;
 
 	enum button_ids {
-	    id_first = 0,
-	    id_ok = id_first,
-	    id_cancel,
-	    id_help,
-	    id_allow_autonotes,
-	    id_gumps_pause,
-	    id_alternate_drop,
-	    id_frames,
-	    id_show_hits,
-	    id_mode,
-	    id_charmDiff,
-	    id_difficulty,
-	    id_cheats,
-	    id_count
+		id_first = 0,
+		id_ok    = id_first,
+		id_help,
+		id_cancel,
+		id_first_setting,
+		id_allow_autonotes = id_first_setting,
+		id_gumps_pause,
+		id_alternate_drop,
+		id_frames,
+		id_show_hits,
+		id_mode,
+		id_charmDiff,
+		id_difficulty,
+		id_cheats,
+		id_feeding,
+		id_enhancements,
+		id_count
 	};
+
 	std::array<std::unique_ptr<Gump_button>, id_count> buttons;
+
+	int y_index_cheats_start = 0;
 
 public:
 	GameEngineOptions_gump();
@@ -64,11 +73,8 @@ public:
 	void paint() override;
 	void close() override;
 
-	// Handle events:
-	bool mouse_down(int mx, int my, int button) override;
-	bool mouse_up(int mx, int my, int button) override;
-
 	void build_buttons();
+	void update_cheat_buttons();
 
 	void load_settings();
 	void save_settings();
@@ -109,7 +115,18 @@ public:
 
 	void toggle_cheats(int state) {
 		cheats = state;
+		update_cheat_buttons();
 	}
+
+	void toggle_feeding(int state) {
+		feeding = state;
+	}
+
+	void toggle_enhancements(int state) {
+		enhancements = state;
+	}
+
+	Gump_button* on_button(int mx, int my) override;
 };
 
 #endif

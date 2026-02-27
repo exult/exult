@@ -11,8 +11,9 @@ Basic Information
 
 Midi in Exult is played by firstly loading a file and passing it to the XMIDI
 class for instrument mapping conversion. This is so the MT32 mapped music files
-from the original Ultima 7 and Serpent Isle will be playable on modern General
-Midi and General Midi/GS supporting sound cards.
+from the original Ultima VII: The Black Gate or Ultima VII Part 2: Serpent Isle
+will be playable on modern General Midi and General Midi/GS supporting sound
+cards.
 
 Certain considerations must be made, however, as some options are device
 specific. These are listed below in the section "Patch Conversion Information".

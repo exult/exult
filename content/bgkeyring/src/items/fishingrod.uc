@@ -36,43 +36,36 @@ const int SOUND_FISHING		= 103;	//the plop of bait entering the water
 //(more advice to the player, tweaked catch chance). Also extended
 //animation considerably, and increased catch chance to compensate
 //for the delay
-void FishingRod shape#(0x296) ()
-{
+void FishingRod shape#(0x296) () {
 	//Rod was doubleclicked on: start fishing
-	if (event == DOUBLECLICK)
-	{
+	if (event == DOUBLECLICK) {
 		//make sure the fishing rod is readied first
-		if (!AVATAR->is_readied(BG_WEAPON_HAND, SHAPE_FISHING_ROD, FRAME_ANY))
-		{
+		if (!AVATAR->is_readied(BG_WEAPON_HAND, SHAPE_FISHING_ROD, FRAME_ANY)) {
 			randomPartySay("@Thou must have the rod in thy hand.@");
 			return;
 		}
 
 		UI_close_gumps();
-		var target = UI_click_on_item();
+		struct<ObjPos> target = UI_click_on_item();
 
-		if (!UI_is_water(target) && target->get_item_shape() != SHAPE_FISH)
-		{
+		if (!UI_is_water(target) && target->get_item_shape() != SHAPE_FISH) {
 			UI_flash_mouse(0);
 
 			//only make this 1 in 4, to stop irritating the player
-			if (UI_get_random(4) == 1)
-			{
+			if (UI_get_random(4) == 1) {
 				//Spark is the resident angling expert
-				if (inParty(SPARK))
+				if (inParty(SPARK)) {
 					SPARK.say("@Thou shouldst cast thy line into the water, Avatar!@ He grins cheekily.");
-				else
+				} else {
 					randomPartySay("@Last I heard, fish doth not live upon dry land. Thou shouldst try thy rod in the water!@");
+				}
 			}
 			return;
-		}
-		else
-		{
+		} else {
 			//determine which way the avatar should be facing
 			var direction = directionFromAvatar(target);
 			//fishing animation
-			script AVATAR
-			{
+			script AVATAR {
 				nohalt;
 				call freeze;
 				face direction;
@@ -81,7 +74,10 @@ void FishingRod shape#(0x296) ()
 				sfx SOUND_FISHING;
 
 				//prevents the animation 'timing out' and reverting to standing
-				repeat 2	{ actor frame strike_2h; wait 5; };
+				repeat 2 {
+					actor frame strike_2h;
+					wait 5;
+				};
 
 				//call this function again, as event SCRIPTED, to determine
 				//if fish were caught
@@ -91,10 +87,7 @@ void FishingRod shape#(0x296) ()
 				call unfreeze;
 			}
 		}
-	}
-
-	else if (event == SCRIPTED)
-	{
+	} else if (event == SCRIPTED) {
 		var nearby_fish = AVATAR->find_nearby(SHAPE_FISH, 15, 0);
 		var num_fish_nearby = UI_get_array_size(nearby_fish);
 		var fish_caught = false;
@@ -102,26 +95,27 @@ void FishingRod shape#(0x296) ()
 
 		//Adjusted fish-catching chance: now it is a base chance +
 		//an adjustable chance per fish
-		if (num_fish_nearby > 0)
-		{
+		if (num_fish_nearby > 0) {
 			var catch_chance = BASE_CATCH_CHANCE + (num_fish_nearby * CHANCE_PER_FISH);
-			if (UI_get_random(100) <= catch_chance)
+			if (UI_get_random(100) <= catch_chance) {
 				fish_caught = true;
+			}
 		}
 
 		//Hooray, we got one!
-		if (fish_caught)
-		{
+		if (fish_caught) {
 			var fish = SHAPE_FOOD->create_new_object();
-			if (!fish) return;
+			if (!fish) {
+				return;
+			}
 
 			fish->set_item_frame(FRAME_TROUT);
 			//Added to stop fish sticking around indefinitely
 			fish->set_item_flag(TEMPORARY);
 
 			//put it near the avatar's feet
-			var avatar_pos = AVATAR->get_object_position();
-			avatar_pos[X] = avatar_pos[X] + 1;
+			struct<Position> avatar_pos = AVATAR->get_object_position();
+			avatar_pos.x += 1;
 			UI_update_last_created(avatar_pos);
 
 			UI_play_sound_effect(SOUND_LANDEDFISH);
@@ -138,64 +132,59 @@ void FishingRod shape#(0x296) ()
 			/*	Disabled as it is not correctly implemented
 			//Added: remove a fish from the water
 			var caught_fish;
-			if (target->get_item_shape() == SHAPE_FISH)
+			if (target->get_item_shape() == SHAPE_FISH) {
 				//Player clicked on a particular fish - grab that one
 				caught_fish = target;
-			else
+			} else {
 				//otherwise, grab one of the nearby fishies at random
 				caught_fish = nearby_fish[UI_get_random(num_fish_nearby)];
+			}
 			caught_fish->remove_item();
 			*/
 
 			//Make one of the party members comment on the catch
 			rand = UI_get_random(3);
-			if (rand == 1)
-			{
+			if (rand == 1) {
 				randomPartyBark("@Indeed, a whopper!@");
-				if (SPARK->npc_nearby())
+				if (SPARK->npc_nearby()) {
 					delayedBark(SPARK, "@I have seen bigger.@", 16);
-			}
-			else if (rand == 2)
+				}
+			} else if (rand == 2) {
 				randomPartyBark("@What a meal!@");
-			else if (rand == 3)
+			} else if (rand == 3) {
 				randomPartyBark(["@That fish does not", "look right.@"]);
-		}
-
-		//changed barks to reflect that there's no fish (better player guidance)
-		else if (num_fish_nearby == 0)
-		{
+			}
+		} else if (num_fish_nearby == 0) {
+			//changed barks to reflect that there's no fish (better player guidance)
 			rand = UI_get_random(3);
-			if (rand == 1)
-			{
+			if (rand == 1) {
 				//Spark, butting his head in as usual
-				if (inParty(SPARK) && canTalk(SPARK))
+				if (inParty(SPARK) && canTalk(SPARK)) {
 					SPARK.say("@The fish doth not seem to be biting, thou shouldst try somewhere else!",
 						"~@My father took me fishing sometimes -- thou canst find good spots near bridges, where thou canst see the fishes beneath the water.@");
-				else
+				} else {
 					randomPartySay("@Methinks there are no fish in these waters. Let us try in a better spot!@");
-			}
-			else if (rand == 2)
+				}
+			} else if (rand == 2) {
 				delayedBark(AVATAR, "@Not even a bite!@", 0);
-			else if (rand == 3)
+			} else if (rand == 3) {
 				delayedBark(AVATAR, "@I've lost my bait.@", 0);
-		}
-
-		else
-		{
+			}
+		} else {
 			rand = UI_get_random(4);
 
-			if (rand == 1)
+			if (rand == 1) {
 				delayedBark(AVATAR, "@Not even a bite!@", 0);
-			else if (rand == 2)
-			{
+			} else if (rand == 2) {
 				delayedBark(AVATAR, "@It got away!@", 1);
-				if (IOLO->npc_nearby())
+				if (IOLO->npc_nearby()) {
 					delayedBark(IOLO, "@It was the Big One!@", 16);
-			}
-			else if (rand == 3)
+				}
+			} else if (rand == 3) {
 				delayedBark(AVATAR, "@I've lost my bait.@", 0);
-			else if (rand == 4)
+			} else if (rand == 4) {
 				delayedBark(AVATAR, "@I felt a nibble.@", 0);
+			}
 		}
 	}
 }
@@ -204,18 +193,15 @@ void FishingRod shape#(0x296) ()
 //This function is responsible for making fish go bad after a certain
 //length of time.
 //Not used: sleeping will not advance the script queue.
-void expireFish ()
-{
+void expireFish () {
 	var reduced_quality = get_item_quality() - 1;
 	set_item_quality(reduced_quality);
 
-	if (reduced_quality == 0)
-	{
-		halt_scheduled();	//stop the countdown
+	if (reduced_quality == 0) {
+		//stop the countdown
+		halt_scheduled();
 		avatarBark("Fish now rotten!");
-	}
-	else
-	{
+	} else {
 		avatarBark("Fish now at " + reduced_quality + " quality");
 		script item after FISH_EXPIRY_RATE ticks call 0x600;
 	}

@@ -22,41 +22,47 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
-#include "utils.h"
-#include "exult_constants.h"
 #include "frflags.h"
+
+#include "exult_constants.h"
 #include "ignore_unused_variable_warning.h"
+#include "utils.h"
+
 using std::istream;
 
 bool Frame_flags_info::read(
-    std::istream &in,   // Input stream.
-    int version,        // Data file version.
-    Exult_Game game     // Loading BG file.
+		std::istream& in,         // Input stream.
+		int           version,    // Data file version.
+		Exult_Game    game        // Loading BG file.
 ) {
 	ignore_unused_variable_warning(game);
 	frame = ReadInt(in);
-	if (frame < 0)
+	if (frame < 0) {
 		frame = -1;
-	else
+	} else {
 		frame &= 0xff;
+	}
 
-	if (version >= 6)
+	if (version >= 6) {
 		quality = ReadInt(in);
-	else
+	} else {
 		quality = -1;
-	if (quality < 0)
+	}
+	if (quality < 0) {
 		quality = -1;
-	else
+	} else {
 		quality &= 0xff;
+	}
 
-	const int size = 8 * sizeof(m_flags); // Bit count.
-	int bit = 0;
+	const int    size  = 8 * sizeof(m_flags);    // Bit count.
+	int          bit   = 0;
 	unsigned int flags = 0;
 	while (in.good() && bit < size) {
-		if (ReadInt(in) != 0)
+		if (ReadInt(in) != 0) {
 			flags |= (1U << bit);
-		else
+		} else {
 			flags &= ~(1U << bit);
+		}
 		bit++;
 	}
 	m_flags = flags;

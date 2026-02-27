@@ -21,39 +21,42 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #ifndef COREAUDIOMIDIDRIVER_H_INCLUDED
 #define COREAUDIOMIDIDRIVER_H_INCLUDED
 
-#if defined(MACOSX) || defined(__IPHONEOS__)
-#define USE_CORE_AUDIO_MIDI
+#if !defined(USE_CORE_AUDIO_MIDI) && (defined(MACOSX) || defined(SDL_PLATFORM_IOS))
+#	define USE_CORE_AUDIO_MIDI
+#endif
 
-#include "LowLevelMidiDriver.h"
+#ifdef USE_CORE_AUDIO_MIDI
+#	include "LowLevelMidiDriver.h"
 
-#include <AudioToolbox/AUGraph.h>
+#	include <AudioToolbox/AUGraph.h>
 
 class CoreAudioMidiDriver : public LowLevelMidiDriver {
-	AUGraph _auGraph;
+	AUGraph   _auGraph;
 	AudioUnit _synth;
 
-
 	static const MidiDriverDesc desc;
-	static MidiDriver *createInstance() {
-		return new CoreAudioMidiDriver();
+
+	static std::shared_ptr<MidiDriver> createInstance() {
+		return std::make_shared<CoreAudioMidiDriver>();
 	}
 
 public:
-	static const MidiDriverDesc *getDesc() {
+	static const MidiDriverDesc* getDesc() {
 		return &desc;
 	}
+
+	std::vector<ConfigSetting_widget::Definition> GetSettings() override;
 
 	CoreAudioMidiDriver();
 
 protected:
-	int         open() override;
-	void        close() override;
-	void        send(uint32 message) override;
-	void        send_sysex(uint8 status, const uint8 *msg, uint16 length) override;
-	void        increaseThreadPriority() override;
-	void        yield() override;
+	int  open() override;
+	void close() override;
+	void send(uint32 message) override;
+	void send_sysex(uint8 status, const uint8* msg, uint16 length) override;
+	void increaseThreadPriority() override;
 };
 
-#endif //MACOSX || __IPHONEOS__
+#endif    // MACOSX || SDL_PLATFORM_IOS
 
-#endif //COREAUDIOMIDIDRIVER_H_INCLUDED
+#endif    // COREAUDIOMIDIDRIVER_H_INCLUDED

@@ -20,59 +20,69 @@
  */
 
 #ifndef INCL_SHAPEVGA
-#define INCL_SHAPEVGA   1
+#define INCL_SHAPEVGA 1
 
-#include <vector>
-#include <map>
 #include <fstream>
 #include <iostream>
+#include <map>
+#include <vector>
 // #include "autoarray.h"   +++++GOING AWAY.
+#include "exult_constants.h"
 #include "fnames.h"
 #include "imagebuf.h"
-#include "vgafile.h"
 #include "shapeinf.h"
-#include "exult_constants.h"
+#include "vgafile.h"
 
-#define c_first_obj_shape   0x96    // 0-0x95 are 8x8 flat shapes.
+#define c_first_obj_shape 0x96    // 0-0x95 are 8x8 flat shapes.
 
 /*
  *  The "shapes.vga" file:
  */
 class Shapes_vga_file : public Vga_file {
-	std::map<int, Shape_info> info; // Extra info. about each shape.
-	Shape_info zinfo;               // A fake one (all 0's).
-	bool info_read = false;         // True when info is set.
-	void Read_Shapeinf_text_data_file(bool editing, Exult_Game game_type);
-	void Read_Bodies_text_data_file(bool editing, Exult_Game game_type);
-	void Read_Paperdoll_text_data_file(bool editing, Exult_Game game_type);
-	void Write_Shapeinf_text_data_file(Exult_Game game_type);
-	void Write_Bodies_text_data_file(Exult_Game game_type);
-	void Write_Paperdoll_text_data_file(Exult_Game game_type);
+	std::map<int, Shape_info> info;                 // Extra info. about each shape.
+	Shape_info                zinfo;                // A fake one (all 0's).
+	bool                      info_read = false;    // True when info is set.
+	void                      Read_Shapeinf_text_data_file(bool editing, Exult_Game game_type);
+	void                      Read_Bodies_text_data_file(bool editing, Exult_Game game_type);
+	void                      Read_Paperdoll_text_data_file(bool editing, Exult_Game game_type);
+	void                      Read_Gumpinf_text_data_file(bool editing, Exult_Game game_type);
+	void                      Write_Shapeinf_text_data_file(Exult_Game game_type);
+	void                      Write_Bodies_text_data_file(Exult_Game game_type);
+	void                      Write_Paperdoll_text_data_file(Exult_Game game_type);
+	void                      Write_Gumpinf_text_data_file(Exult_Game game_type);
+
+	friend class ExultStudio;
+
 public:
 	Shapes_vga_file() = default;
-	Shapes_vga_file(const char *nm, int u7drag = -1, const char *nm2 = nullptr);
+	Shapes_vga_file(const char* nm, int u7drag = -1, const char* nm2 = nullptr);
 	void init();
 	// Read additional data files.
 	void reload_info(Exult_Game game);
 	void fix_old_shape_info(Exult_Game game);
 	// Returns true when some Shape data have been migrated.
-	bool read_info(Exult_Game game, bool editing = false);
-	void write_info(Exult_Game game);   // Write them back out.
-	Shape *new_shape(int shapenum) override;
-	Shape_info &get_info(int shapenum) {
+	bool   read_info(Exult_Game game, bool editing = false);
+	void   write_info(Exult_Game game);    // Write them back out.
+	Shape* new_shape(int shapenum) override;
+
+	Shape_info& get_info(int shapenum) {
 		auto it = info.find(shapenum);
-		if (it != info.end())
+		if (it != info.end()) {
 			return it->second;
+		}
 		return zinfo;
 	}
+
 	bool has_info(int shapenum) {
 		auto it = info.find(shapenum);
 		return it != info.end();
 	}
-	void set_info(int shapenum, const Shape_info &inf) {
+
+	void set_info(int shapenum, const Shape_info& inf) {
 		info[shapenum] = inf;
 	}
-	void copy_info(int shapenum, const Shape_info &inf) {
+
+	void copy_info(int shapenum, const Shape_info& inf) {
 		info[shapenum].copy(inf, true);
 	}
 };

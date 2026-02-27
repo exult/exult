@@ -1,0 +1,521 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="Files">
+      <UniqueIdentifier>{8aeb1a01-5fce-41cd-bfab-a3d079b548d9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shapes">
+      <UniqueIdentifier>{c2b29d3d-58ed-4da9-890a-79f42888bdba}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="imagewin">
+      <UniqueIdentifier>{51a498b3-b518-4e3f-b2e5-0aab04b9178e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Gamemgr">
+      <UniqueIdentifier>{ffe57a61-62da-4a95-a56b-2b2a1987087c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Files\Zip">
+      <UniqueIdentifier>{aa1daacd-8917-4591-8daf-9831ec9d89b9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Conf">
+      <UniqueIdentifier>{8b2045ad-302a-4669-ab52-4c529e480351}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Server">
+      <UniqueIdentifier>{0bbd8f60-919d-480a-9b82-5b408436c710}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Mapedit">
+      <UniqueIdentifier>{94077e2c-76ae-4325-ae80-7531cff28814}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shapes\Shapeinf">
+      <UniqueIdentifier>{2681821d-13b5-44c2-afe7-e28d4a2ef43d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Usecode">
+      <UniqueIdentifier>{ae029b6e-3150-4a4d-bcf8-8fc831cb71a3}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\..\server\objserial.cc">
+      <Filter>Server</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\server\servemsg.cc">
+      <Filter>Server</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\server\servewin32.cc">
+      <Filter>Server</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\files\crc.cc">
+      <Filter>Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\files\Flat.cc">
+      <Filter>Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\files\Flex.cc">
+      <Filter>Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\files\IFF.cc">
+      <Filter>Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\files\listfiles.cc">
+      <Filter>Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\files\msgfile.cc">
+      <Filter>Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\files\Table.cc">
+      <Filter>Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\files\U7file.cc">
+      <Filter>Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\files\U7fileman.cc">
+      <Filter>Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\files\U7obj.cc">
+      <Filter>Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\files\utils.cc">
+      <Filter>Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\files\zip\unzip.cc">
+      <Filter>Files\Zip</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\files\zip\zip.cc">
+      <Filter>Files\Zip</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\gamemgr\modmgr.cc">
+      <Filter>Gamemgr</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\imagewin\ibuf8.cc">
+      <Filter>imagewin</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\imagewin\imagebuf.cc">
+      <Filter>imagewin</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\shapes\font.cc">
+      <Filter>Shapes</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\shapes\fontgen.cc">
+      <Filter>Shapes</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\shapes\fontvga.cc">
+      <Filter>Shapes</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\shapes\items.cc">
+      <Filter>Shapes</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\shapes\pngio.cc">
+      <Filter>Shapes</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\shapes\shapeinf.cc">
+      <Filter>Shapes</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\shapes\shapevga.cc">
+      <Filter>Shapes</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\shapes\shapewrite.cc">
+      <Filter>Shapes</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\shapes\u7drag.cc">
+      <Filter>Shapes</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\shapes\vgafile.cc">
+      <Filter>Shapes</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\shapes\shapeinf\ammoinf.cc">
+      <Filter>Shapes\Shapeinf</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\shapes\shapeinf\aniinf.cc">
+      <Filter>Shapes\Shapeinf</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\shapes\shapeinf\armorinf.cc">
+      <Filter>Shapes\Shapeinf</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\shapes\shapeinf\bodyinf.cc">
+      <Filter>Shapes\Shapeinf</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\shapes\shapeinf\continf.cc">
+      <Filter>Shapes\Shapeinf</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\shapes\shapeinf\effhpinf.cc">
+      <Filter>Shapes\Shapeinf</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\shapes\shapeinf\expinf.cc">
+      <Filter>Shapes\Shapeinf</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\shapes\shapeinf\frflags.cc">
+      <Filter>Shapes\Shapeinf</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\shapes\shapeinf\frnameinf.cc">
+      <Filter>Shapes\Shapeinf</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\shapes\shapeinf\frusefun.cc">
+      <Filter>Shapes\Shapeinf</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\shapes\shapeinf\gumpinf.cc">
+      <Filter>Shapes\Shapeinf</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\shapes\shapeinf\lightinf.cc">
+      <Filter>Shapes\Shapeinf</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\shapes\shapeinf\monstinf.cc">
+      <Filter>Shapes\Shapeinf</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\shapes\shapeinf\npcdollinf.cc">
+      <Filter>Shapes\Shapeinf</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\shapes\shapeinf\objdollinf.cc">
+      <Filter>Shapes\Shapeinf</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\shapes\shapeinf\sfxinf.cc">
+      <Filter>Shapes\Shapeinf</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\shapes\shapeinf\warminf.cc">
+      <Filter>Shapes\Shapeinf</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\shapes\shapeinf\weaponinf.cc">
+      <Filter>Shapes\Shapeinf</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\mapedit\audiotest.cc">
+      <Filter>Mapedit</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\mapedit\bargeedit.cc">
+      <Filter>Mapedit</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\mapedit\chunklst.cc">
+      <Filter>Mapedit</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\mapedit\combo.cc">
+      <Filter>Mapedit</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\mapedit\compile.cc">
+      <Filter>Mapedit</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\mapedit\contedit.cc">
+      <Filter>Mapedit</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\mapedit\eggedit.cc">
+      <Filter>Mapedit</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\mapedit\execbox.cc">
+      <Filter>Mapedit</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\mapedit\exult_studio.cc">
+      <Filter>Mapedit</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\mapedit\locator.cc">
+      <Filter>Mapedit</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\mapedit\maps.cc">
+      <Filter>Mapedit</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\mapedit\npcedit.cc">
+      <Filter>Mapedit</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\mapedit\npclst.cc">
+      <Filter>Mapedit</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\mapedit\npcpresets.cc">
+      <Filter>Mapedit</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\mapedit\objbrowse.cc">
+      <Filter>Mapedit</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\mapedit\objedit.cc">
+      <Filter>Mapedit</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\mapedit\paledit.cc">
+      <Filter>Mapedit</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\mapedit\shapedraw.cc">
+      <Filter>Mapedit</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\mapedit\shapeedit.cc">
+      <Filter>Mapedit</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\mapedit\shapefile.cc">
+      <Filter>Mapedit</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\mapedit\shapegroup.cc">
+      <Filter>Mapedit</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\mapedit\shapelst.cc">
+      <Filter>Mapedit</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\mapedit\shapepresets.cc">
+      <Filter>Mapedit</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\mapedit\studio.cc">
+      <Filter>Mapedit</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\mapedit\ucbrowse.cc">
+      <Filter>Mapedit</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\usecode\ucsymtbl.cc">
+      <Filter>Usecode</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\conf\Configuration.cc">
+      <Filter>Conf</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\conf\XMLEntity.cc">
+      <Filter>Conf</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="vcpkg.json" />
+    <None Include="..\vcpkg-configuration.json" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\dirent.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\msvc_include.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\unistd.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\server\objserial.h">
+      <Filter>Server</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\server\servemsg.h">
+      <Filter>Server</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\server\servewin32.h">
+      <Filter>Server</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\files\crc.h">
+      <Filter>Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\files\databuf.h">
+      <Filter>Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\files\endianio.h">
+      <Filter>Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\files\Flat.h">
+      <Filter>Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\files\Flex.h">
+      <Filter>Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\files\IFF.h">
+      <Filter>Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\files\listfiles.h">
+      <Filter>Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\files\msgfile.h">
+      <Filter>Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\files\Table.h">
+      <Filter>Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\files\U7file.h">
+      <Filter>Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\files\U7fileman.h">
+      <Filter>Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\files\U7obj.h">
+      <Filter>Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\files\utils.h">
+      <Filter>Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\files\zip\unzip.h">
+      <Filter>Files\Zip</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\files\zip\zip.h">
+      <Filter>Files\Zip</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\gamemgr\bggame.h">
+      <Filter>Gamemgr</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\gamemgr\devgame.h">
+      <Filter>Gamemgr</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\gamemgr\modmgr.h">
+      <Filter>Gamemgr</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\gamemgr\sigame.h">
+      <Filter>Gamemgr</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\imagewin\ibuf8.h">
+      <Filter>imagewin</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\imagewin\imagebuf.h">
+      <Filter>imagewin</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\shapes\baseinf.h">
+      <Filter>Shapes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\shapes\data_utils.h">
+      <Filter>Shapes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\shapes\font.h">
+      <Filter>Shapes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\shapes\fontgen.h">
+      <Filter>Shapes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\shapes\fontvga.h">
+      <Filter>Shapes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\shapes\items.h">
+      <Filter>Shapes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\shapes\pngio.h">
+      <Filter>Shapes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\shapes\ready.h">
+      <Filter>Shapes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\shapes\shapeinf.h">
+      <Filter>Shapes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\shapes\shapevga.h">
+      <Filter>Shapes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\shapes\u7drag.h">
+      <Filter>Shapes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\shapes\vgafile.h">
+      <Filter>Shapes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\shapes\shapeinf\ammoinf.h">
+      <Filter>Shapes\Shapeinf</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\shapes\shapeinf\aniinf.h">
+      <Filter>Shapes\Shapeinf</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\shapes\shapeinf\armorinf.h">
+      <Filter>Shapes\Shapeinf</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\shapes\shapeinf\bodyinf.h">
+      <Filter>Shapes\Shapeinf</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\shapes\shapeinf\continf.h">
+      <Filter>Shapes\Shapeinf</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\shapes\shapeinf\effhpinf.h">
+      <Filter>Shapes\Shapeinf</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\shapes\shapeinf\expinf.h">
+      <Filter>Shapes\Shapeinf</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\shapes\shapeinf\frflags.h">
+      <Filter>Shapes\Shapeinf</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\shapes\shapeinf\frnameinf.h">
+      <Filter>Shapes\Shapeinf</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\shapes\shapeinf\frusefun.h">
+      <Filter>Shapes\Shapeinf</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\shapes\shapeinf\gumpinf.h">
+      <Filter>Shapes\Shapeinf</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\shapes\shapeinf\lightinf.h">
+      <Filter>Shapes\Shapeinf</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\shapes\shapeinf\monstinf.h">
+      <Filter>Shapes\Shapeinf</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\shapes\shapeinf\npcdollinf.h">
+      <Filter>Shapes\Shapeinf</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\shapes\shapeinf\objdollinf.h">
+      <Filter>Shapes\Shapeinf</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\shapes\shapeinf\sfxinf.h">
+      <Filter>Shapes\Shapeinf</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\shapes\shapeinf\warminf.h">
+      <Filter>Shapes\Shapeinf</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\shapes\shapeinf\weaponinf.h">
+      <Filter>Shapes\Shapeinf</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\mapedit\chunklst.h">
+      <Filter>Mapedit</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\mapedit\combo.h">
+      <Filter>Mapedit</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\mapedit\execbox.h">
+      <Filter>Mapedit</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\mapedit\gtk_redefines.h">
+      <Filter>Mapedit</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\mapedit\locator.h">
+      <Filter>Mapedit</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\mapedit\npclst.h">
+      <Filter>Mapedit</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\mapedit\npcpresets.h">
+      <Filter>Mapedit</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\mapedit\objbrowse.h">
+      <Filter>Mapedit</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\mapedit\paledit.h">
+      <Filter>Mapedit</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\mapedit\shapedraw.h">
+      <Filter>Mapedit</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\mapedit\shapefile.h">
+      <Filter>Mapedit</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\mapedit\shapegroup.h">
+      <Filter>Mapedit</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\mapedit\shapelst.h">
+      <Filter>Mapedit</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\mapedit\shapepresets.h">
+      <Filter>Mapedit</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\mapedit\studio.h">
+      <Filter>Mapedit</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\mapedit\ucbrowse.h">
+      <Filter>Mapedit</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\usecode\ucsymtbl.h">
+      <Filter>Usecode</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\conf\Configuration.h">
+      <Filter>Conf</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\conf\XMLEntity.h">
+      <Filter>Conf</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="..\..\..\win32\exultstudio.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="..\..\..\win32\exultstudioico.rc">
+      <Filter>Resource Files</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <CopyFileToFolders Include="..\..\..\mapedit\exult_studio.glade" />
+  </ItemGroup>
+</Project>

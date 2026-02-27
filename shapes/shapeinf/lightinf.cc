@@ -16,23 +16,26 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include "utils.h"
-#include "exult_constants.h"
 #include "lightinf.h"
+
+#include "exult_constants.h"
 #include "ignore_unused_variable_warning.h"
+#include "utils.h"
+
 using std::istream;
 
 bool Light_info::read(
-    std::istream &in,   // Input stream.
-    int version,        // Data file version.
-    Exult_Game game     // Loading BG file.
+		std::istream& in,         // Input stream.
+		int           version,    // Data file version.
+		Exult_Game    game        // Loading BG file.
 ) {
 	ignore_unused_variable_warning(version, game);
 	frame = ReadInt(in);
-	if (frame < 0)
+	if (frame < 0) {
 		frame = -1;
-	else
+	} else {
 		frame &= 0xff;
+	}
 	light = ReadInt(in) & 0xff;
 	return true;
 }

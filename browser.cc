@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2000-2022  The Exult Team
+ *  Copyright (C) 2000-2025  The Exult Team
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -17,196 +17,414 @@
  */
 
 #ifdef HAVE_CONFIG_H
-#  include <config.h>
+#	include <config.h>
 #endif
 
 #ifdef __GNUC__
 #	pragma GCC diagnostic push
 #	pragma GCC diagnostic ignored "-Wold-style-cast"
+#	pragma GCC diagnostic ignored "-Wzero-as-null-pointer-constant"
+#	if !defined(__llvm__) && !defined(__clang__)
+#		pragma GCC diagnostic ignored "-Wuseless-cast"
+#	endif
 #endif    // __GNUC__
-#include <SDL.h>
+#include <SDL3/SDL.h>
 #ifdef __GNUC__
 #	pragma GCC diagnostic pop
 #endif    // __GNUC__
 
-#include "files/U7file.h"
-#include "gamewin.h"
-#include "game.h"
+#include "Configuration.h"
 #include "browser.h"
 #include "exult.h"
+#include "files/U7file.h"
 #include "font.h"
+#include "game.h"
+#include "gamewin.h"
+#include "gump_utils.h"
+#include "istring.h"
 #include "items.h"
-#include "shapeid.h"
 #include "keys.h"
+#include "palette.h"
+#include "shapeid.h"
+
+#include <iomanip>
+#include <sstream>
+
+namespace {
+
+	class Strings {
+	public:
+		static auto ShowKeys() {
+			return get_text_msg(0x8B0 - msg_file_start);
+		}
+
+		static auto VgaFile() {
+			return get_text_msg(0x8B1 - msg_file_start);
+		}
+
+		static auto Shape() {
+			return get_text_msg(0x8B2 - msg_file_start);
+		}
+
+		static auto Frame() {
+			return get_text_msg(0x8B3 - msg_file_start);
+		}
+
+		static auto Palette() {
+			return get_text_msg(0x8B4 - msg_file_start);
+		}
+
+		static auto Class() {
+			return get_text_msg(0x8B5 - msg_file_start);
+		}
+
+		static auto ReadyType() {
+			return get_text_msg(0x8B6 - msg_file_start);
+		}
+
+		static auto ThreeD() {
+			return get_text_msg(0x8B7 - msg_file_start);
+		}
+
+		static auto NoShape() {
+			return get_text_msg(0x8B8 - msg_file_start);
+		}
+	};
+
+}    // namespace
 
 ShapeBrowser::ShapeBrowser() {
-	num_shapes = 0;
-	current_shape = 0;
-	num_frames = 0;
-	current_frame = 0;
-	num_files = game->get_resource("files/shapes/count").num;
-	current_file = 0;
-	shapes = nullptr;
-	num_palettes = game->get_resource("palettes/count").num;
+	num_shapes      = 0;
+	current_shape   = 0;
+	num_frames      = 0;
+	current_frame   = 0;
+	num_files       = game->get_resource("files/shapes/count").num;
+	current_file    = 0;
+	shapes          = nullptr;
+	num_palettes    = game->get_resource("palettes/count").num;
 	current_palette = 0;
-	num_xforms = game->get_resource("xforms/count").num;
-	current_xform = -1;
+	num_xforms      = game->get_resource("xforms/count").num;
+	current_xform   = -1;
 }
 
 ShapeBrowser::~ShapeBrowser() {
 	delete shapes;
 }
 
-static void handle_key(bool shift, int &value, int max, int amt = 1) {
-	if (max == 0) return;
+static void handle_key(bool shift, int& value, int max, int amt = 1) {
+	if (max == 0) {
+		return;
+	}
 
-	if (shift)
+	if (shift) {
 		value -= amt;
-	else
+	} else {
 		value += amt;
+	}
 
-	while (value < 0)
+	while (value < 0) {
 		value = max + value;
-	while (value >= max)
+	}
+	while (value >= max) {
 		value = value - max;
+	}
 }
 
 void ShapeBrowser::browse_shapes() {
+	Game_window*   gwin = Game_window::get_instance();
+	Shape_manager* sman = Shape_manager::get_instance();
+	Image_buffer8* ibuf = gwin->get_win()->get_ib8();
 
-	Game_window *gwin = Game_window::get_instance();
-	Shape_manager *sman = Shape_manager::get_instance();
-	Image_buffer8 *ibuf = gwin->get_win()->get_ib8();
-	Font *font = fontManager.get_font("MENU_FONT");
+	Palette             pal;
+	const str_int_pair& pal_tuple_static = game->get_resource("palettes/0");
+	const str_int_pair& pal_tuple_patch  = game->get_resource("palettes/patch/0");
+	pal.load(pal_tuple_static.str, pal_tuple_patch.str, pal_tuple_static.num);
 
-	const int maxx = gwin->get_width();
-	const int centerx = maxx / 2;
-	const int maxy = gwin->get_height();
-	const int centery = maxy / 2;
-	Palette pal;
-	char buf[255];
-	const char *fname;
+	Xform_palette fontcolor;
+	for (size_t i = 0; i < std::size(fontcolor.colors); i++) {
+		fontcolor.colors[i] = i;
+	}
 
-	snprintf(buf, 255, "files/shapes/%d", current_file);
-	fname = game->get_resource(buf).str;
-	if (!shapes)
-		shapes = new Vga_file(fname);
-	bool looping = true;
-	bool redraw = true;
-	SDL_Event event;
-	//int active;
+	// Try to use SMALL_BLACK_FONT and remap black to white
+	auto font = fontManager.get_font("SMALL_BLACK_FONT");
+	if (font) {
+		fontcolor.colors[0] = pal.find_color(256, 256, 256);
+	} else {
+		// Reset fontcolor black so it maps to black
+		fontcolor.colors[0] = 0;
+
+		// Try to get the Font from Blackgate first because it looks better than
+		// the SI one
+		font = std::make_shared<Font>();
+		if (font->load(U7MAINSHP_FLX, 9, 1) != 0) {
+			font.reset();
+		}
+
+		// Get the font for this game if don't already have it
+		if (!font) {
+			font = fontManager.get_font("MENU_FONT");
+		}
+	}
+
+	const int   maxx    = gwin->get_width();
+	const int   centerx = maxx / 2;
+	const int   maxy    = gwin->get_height();
+	const int   centery = maxy / 2;
+	char        buf[255];
+	const char* fname;
+	bool        looping             = true;
+	bool        redraw              = true;
+	bool        do_palette_rotation = true;
+	bool        bounding_box        = false;
+	SDL_Event   event;
+
+	auto get_patch_sources = [&](const char* main_file) -> std::vector<std::pair<std::string, int>> {
+		std::vector<std::pair<std::string, int>> sources;
+		sources.emplace_back(main_file, -1);    // Main file
+
+		std::string base_name(main_file);
+		if (base_name.find("faces.vga") != std::string::npos) {
+			sources.emplace_back(PATCH_FACES, -1);
+		} else if (base_name.find("gumps.vga") != std::string::npos) {
+			sources.emplace_back(PATCH_GUMPS, -1);
+		} else if (base_name.find("sprites.vga") != std::string::npos) {
+			sources.emplace_back(PATCH_SPRITES, -1);
+		} else if (base_name.find("mainshp.flx") != std::string::npos) {
+			sources.emplace_back(PATCH_MAINSHP, -1);
+		} else if (base_name.find("endshape.flx") != std::string::npos) {
+			sources.emplace_back(PATCH_ENDSHAPE, -1);
+		} else if (base_name.find("fonts.vga") != std::string::npos) {
+			// Add patch based on user's font configuration
+			std::string font_config;
+			config->value("config/gameplay/fonts", font_config, "original");
+			Pentagram::tolower(font_config);
+			if (font_config == "serif") {
+				sources.emplace_back(PATCH_SERIF_FONTS, -1);
+			} else if (font_config == "disabled") {
+				sources.emplace_back(PATCH_FONTS, -1);
+			} else {    // "original"
+				sources.emplace_back(PATCH_ORIGINAL_FONTS, -1);
+			}
+		}
+
+		return sources;
+	};
+
+	auto get_shape_frame = [&](int shape, int frame) -> Shape_frame* {
+		if (current_file == 0) {
+			return sman->get_shapes().get_shape(shape, frame);
+		} else {
+			// Use the browser's shapes for other files, including patches
+			if (!shapes) {
+				snprintf(buf, sizeof(buf), "files/shapes/%d", current_file);
+				fname = game->get_resource(buf).str;
+
+				std::vector<std::pair<std::string, int>> sources = get_patch_sources(fname);
+				shapes                                           = new Vga_file();
+				shapes->load(sources);
+			}
+			return shapes->get_shape(shape, frame);
+		}
+	};
+
+	auto get_num_shapes = [&]() -> int {
+		if (current_file == 0) {
+			return sman->get_shapes().get_num_shapes();
+		} else {
+			if (!shapes) {
+				snprintf(buf, sizeof(buf), "files/shapes/%d", current_file);
+				fname = game->get_resource(buf).str;
+
+				std::vector<std::pair<std::string, int>> sources = get_patch_sources(fname);
+				shapes                                           = new Vga_file();
+				shapes->load(sources);
+			}
+			return shapes->get_num_shapes();
+		}
+	};
+
+	auto get_num_frames = [&](int shape) -> int {
+		if (current_file == 0) {
+			return sman->get_shapes().get_num_frames(shape);
+		} else {
+			if (!shapes) {
+				snprintf(buf, sizeof(buf), "files/shapes/%d", current_file);
+				fname = game->get_resource(buf).str;
+
+				std::vector<std::pair<std::string, int>> sources = get_patch_sources(fname);
+				shapes                                           = new Vga_file();
+				shapes->load(sources);
+			}
+			return shapes->get_num_frames(shape);
+		}
+	};
+
+	if (current_file == 0) {
+		fname = "shapes.vga";
+	} else {
+		snprintf(buf, sizeof(buf), "files/shapes/%d", current_file);
+		fname = game->get_resource(buf).str;
+	}
+
+	if (!shapes && current_file > 0) {
+		std::vector<std::pair<std::string, int>> sources = get_patch_sources(fname);
+		shapes                                           = new Vga_file();
+		shapes->load(sources);
+	}
 
 	do {
 		if (redraw) {
 			gwin->clear_screen();
-			snprintf(buf, 255, "palettes/%d", current_palette);
-			const str_int_pair &pal_tuple = game->get_resource(buf);
-			snprintf(buf, 255, "palettes/patch/%d", current_palette);
-			const str_int_pair &patch_tuple = game->get_resource(buf);
+			snprintf(buf, sizeof(buf), "palettes/%d", current_palette);
+			const str_int_pair& pal_tuple = game->get_resource(buf);
+			snprintf(buf, sizeof(buf), "palettes/patch/%d", current_palette);
+			const str_int_pair& patch_tuple = game->get_resource(buf);
 			if (current_xform > 0) {
 				char xfrsc[256];
-				snprintf(xfrsc, 255, "xforms/%d",
-				         current_xform);
-				const str_int_pair &xform_tuple = game->get_resource(xfrsc);
-				pal.load(pal_tuple.str, patch_tuple.str,
-				         pal_tuple.num, xform_tuple.str, xform_tuple.num);
-			} else
+				snprintf(xfrsc, sizeof(xfrsc), "xforms/%d", current_xform);
+				const str_int_pair& xform_tuple = game->get_resource(xfrsc);
+				pal.load(pal_tuple.str, patch_tuple.str, pal_tuple.num, xform_tuple.str, xform_tuple.num);
+			} else {
 				pal.load(pal_tuple.str, patch_tuple.str, pal_tuple.num);
+			}
 
 			pal.apply();
-			font->paint_text_fixedwidth(ibuf, "Show [K]eys", 2, maxy - 50, 8);
 
-			snprintf(buf, 255, "VGA File: '%s'", fname);
-			//font->draw_text(ibuf, 0, 170, buf);
-			font->paint_text_fixedwidth(ibuf, buf, 2, maxy - 30, 8);
+			font->paint_text_fixedwidth(ibuf, Strings::ShowKeys(), 2, maxy - 50, 8, fontcolor.colors);
 
-			num_shapes = shapes->get_num_shapes();
-			snprintf(buf, 255, "Shape: %2d/%d", current_shape, num_shapes - 1);
-			//font->draw_text(ibuf, 0, 180, buf);
-			font->paint_text_fixedwidth(ibuf, buf, 2, maxy - 20, 8);
+			{
+				std::ostringstream oss;
+				oss << Strings::VgaFile() << fname << "'";
+				font->paint_text_fixedwidth(ibuf, oss.str().c_str(), 2, maxy - 30, 8, fontcolor.colors);
+			}
 
-			num_frames = shapes->get_num_frames(current_shape);
-			snprintf(buf, 255, "Frame: %2d/%d", current_frame, num_frames - 1);
-			//font->draw_text(ibuf, 160, 180, buf);
-			font->paint_text_fixedwidth(ibuf, buf, 162, maxy - 20, 8);
+			num_shapes = get_num_shapes();
+			{
+				std::ostringstream oss;
+				oss << Strings::Shape() << std::setw(2) << current_shape << "/" << (num_shapes - 1);
+				font->paint_text_fixedwidth(ibuf, oss.str().c_str(), 2, maxy - 20, 8, fontcolor.colors);
+			}
 
-			snprintf(buf, 255, "Palette: %s, %d", pal_tuple.str, pal_tuple.num);
-			//font->draw_text(ibuf, 0, 190, buf);
-			font->paint_text_fixedwidth(ibuf, buf, 2, maxy - 10, 8);
+			num_frames = get_num_frames(current_shape);
+			{
+				std::ostringstream oss;
+				oss << Strings::Frame() << std::setw(2) << current_frame << "/" << (num_frames - 1);
+				font->paint_text_fixedwidth(ibuf, oss.str().c_str(), 162, maxy - 20, 8, fontcolor.colors);
+			}
+
+			{
+				std::ostringstream oss;
+				oss << Strings::Palette() << pal_tuple.str << ", " << pal_tuple.num;
+				font->paint_text_fixedwidth(ibuf, oss.str().c_str(), 2, maxy - 10, 8, fontcolor.colors);
+			}
 
 			if (num_frames) {
-				Shape_frame *frame = shapes->get_shape(
-				                         current_shape, current_frame);
+				Shape_frame* frame = get_shape_frame(current_shape, current_frame);
 
 				if (frame) {
-					snprintf(buf, 255, "%d x %d", frame->get_width(), frame->get_height());
-					//font->draw_text(ibuf, 32, 32, buf);
-					font->paint_text_fixedwidth(ibuf, buf, 2, 22, 8);
+					snprintf(buf, sizeof(buf), "%d x %d", frame->get_width(), frame->get_height());
+					font->paint_text_fixedwidth(ibuf, buf, 2, 22, 8, fontcolor.colors);
 
-					const Shape_info &info =
-					    ShapeID::get_info(current_shape);
+					// Coords for shape to be drawn (centre of the screen)
+					const int x = gwin->get_width() / 2;
+					const int y = gwin->get_height() / 2;
 
-					snprintf(buf, 255, "class: %2i  ready_type: 0x%02x", info.get_shape_class(), info.get_ready_type());
-					font->paint_text_fixedwidth(ibuf, buf, 2, 12, 8);
-
-					// TODO: do we want to display something other than
-					// this for shapes >= 1024?
-					if (current_shape < get_num_item_names() && get_item_name(current_shape)) {
-						//font->draw_text(ibuf, 32, 16, get_item_name(current_shape));
-						font->paint_text_fixedwidth(ibuf, get_item_name(current_shape), 2, 2, 8);
+					// draw outline if not drawing bbox
+					if (current_file != 0 || !bounding_box) {
+						gwin->get_win()->fill8(
+								255, frame->get_width() + 4, frame->get_height() + 4, x - frame->get_xleft() - 2,
+								y - frame->get_yabove() - 2);
+						gwin->get_win()->fill8(
+								0, frame->get_width() + 2, frame->get_height() + 2, x - frame->get_xleft() - 1,
+								y - frame->get_yabove() - 1);
 					}
 
-					//draw outline
-					gwin->get_win()->fill8(255,
-					                       frame->get_width() + 4, frame->get_height() + 4,
-					                       gwin->get_width() / 2 - frame->get_xleft() - 2,
-					                       gwin->get_height() / 2 - frame->get_yabove() - 2);
-					gwin->get_win()->fill8(0,
-					                       frame->get_width() + 2, frame->get_height() + 2,
-					                       gwin->get_width() / 2 - frame->get_xleft() - 1,
-					                       gwin->get_height() / 2 - frame->get_yabove() - 1);
+					// Stuff that should only be drawn for object shapes in
+					// shapes.vga
+					if (current_file == 0) {
+						const Shape_info& info = ShapeID::get_info(current_shape);
 
-					//draw shape
-					sman->paint_shape(gwin->get_width() / 2, gwin->get_height() / 2, frame, true);
+						{
+							std::ostringstream oss;
+							oss << Strings::Class() << std::setw(2) << info.get_shape_class() << Strings::ReadyType() << std::hex
+								<< std::setfill('0') << std::setw(2) << static_cast<int>(info.get_ready_type()) << std::dec
+								<< Strings::ThreeD() << info.get_3d_xtiles(current_frame) << "x"
+								<< info.get_3d_ytiles(current_frame) << "x" << info.get_3d_height();
+							font->paint_text_fixedwidth(ibuf, oss.str().c_str(), 2, 12, 8, fontcolor.colors);
+						}
+						if (current_shape < get_num_item_names() && get_item_name(current_shape)) {
+							font->paint_text_fixedwidth(ibuf, get_item_name(current_shape), 2, 2, 8, fontcolor.colors);
+						}
+						if (bounding_box) {
+							info.paint_bbox(x, y, current_frame, gwin->get_win()->get_ibuf(), 255, 2);
+						}
+						// draw shape
+						sman->paint_shape(x, y, frame, true);
+						if (bounding_box) {
+							info.paint_bbox(x, y, current_frame, gwin->get_win()->get_ibuf(), 255, 1);
+						}
 
-				} else
-					font->draw_text(ibuf, centerx - 20, centery - 5, "No Shape");
-			} else
-				font->draw_text(ibuf, centerx - 20, centery - 5, "No Shape");
+					} else {
+						// draw shape
+						sman->paint_shape(x, y, frame, true);
+					}
+
+				} else {
+					font->draw_text(ibuf, centerx - 20, centery - 5, Strings::NoShape());
+				}
+			} else {
+				font->draw_text(ibuf, centerx - 20, centery - 5, Strings::NoShape());
+			}
 
 			pal.apply();
 			redraw = false;
 		}
-		SDL_WaitEvent(&event);
-		if (event.type == SDL_KEYDOWN) {
-			redraw = true;
-			const bool shift = event.key.keysym.mod & KMOD_SHIFT;
-			//int ctrl = event.key.keysym.mod & KMOD_CTRL;
-			switch (event.key.keysym.sym) {
+		Delay();
+		if (SDL_PollEvent(&event) && event.type == SDL_EVENT_KEY_DOWN) {
+			redraw           = true;
+			const bool shift = event.key.mod & SDL_KMOD_SHIFT;
+			switch (event.key.key) {
 			case SDLK_ESCAPE:
 				looping = false;
 				break;
-			case SDLK_v:
+			case SDLK_V:
 				handle_key(shift, current_file, num_files);
 				current_shape = 0;
 				current_frame = 0;
 				delete shapes;
-				snprintf(buf, 255, "files/shapes/%d", current_file);
-				fname = game->get_resource(buf).str;
-				shapes = new Vga_file(fname);
+				shapes = nullptr;
+				if (current_file > 0) {
+					snprintf(buf, sizeof(buf), "files/shapes/%d", current_file);
+					fname = game->get_resource(buf).str;
+
+					std::vector<std::pair<std::string, int>> sources = get_patch_sources(fname);
+					shapes                                           = new Vga_file();
+					shapes->load(sources);
+				} else {
+					fname = "shapes.vga";
+				}
 				break;
-			case SDLK_p:
+			case SDLK_P:
 				handle_key(shift, current_palette, num_palettes);
 				current_xform = -1;
 				break;
-			case SDLK_x:
-				handle_key(shift, current_xform,
-				           num_xforms);
+			case SDLK_R:
+				do_palette_rotation = !do_palette_rotation;
+				break;
+
+			case SDLK_B:
+				bounding_box = !bounding_box;
+				redraw       = true;
+				break;
+
+			case SDLK_X:
+				handle_key(shift, current_xform, num_xforms);
 				break;
 				// Shapes
-			case SDLK_s:
-				if ((event.key.keysym.mod & KMOD_ALT) && (event.key.keysym.mod & KMOD_CTRL))
+			case SDLK_S:
+				if ((event.key.mod & SDL_KMOD_ALT) && (event.key.mod & SDL_KMOD_CTRL)) {
 					make_screenshot(true);
-				else {
+				} else {
 					handle_key(shift, current_shape, num_shapes);
 					current_frame = 0;
 				}
@@ -219,9 +437,8 @@ void ShapeBrowser::browse_shapes() {
 				handle_key(false, current_shape, num_shapes);
 				current_frame = 0;
 				break;
-			case SDLK_j:    // Jump by 20.
-				handle_key(shift, current_shape,
-				           num_shapes, 20);
+			case SDLK_J:    // Jump by 20.
+				handle_key(shift, current_shape, num_shapes, 20);
 				current_frame = 0;
 				break;
 			case SDLK_PAGEUP:
@@ -233,7 +450,7 @@ void ShapeBrowser::browse_shapes() {
 				current_frame = 0;
 				break;
 				// Frames
-			case SDLK_f:
+			case SDLK_F:
 				handle_key(shift, current_frame, num_frames);
 				break;
 			case SDLK_LEFT:
@@ -242,21 +459,24 @@ void ShapeBrowser::browse_shapes() {
 			case SDLK_RIGHT:
 				handle_key(false, current_frame, num_frames);
 				break;
-			case SDLK_k:
+			case SDLK_K:
 				keybinder->ShowBrowserKeys();
 				break;
 			default:
-
 				break;
 			}
+		}
+		if (do_palette_rotation && gwin->rotatecolours()) {
+			gwin->show();
 		}
 	} while (looping);
 }
 
-bool ShapeBrowser::get_shape(int &shape, int &frame) {
-	if (!shapes || current_file != 0)
+bool ShapeBrowser::get_shape(int& shape, int& frame) {
+	Shape_manager* sman = Shape_manager::get_instance();
+	if (current_shape >= sman->get_shapes().get_num_shapes() || current_file != 0) {
 		return false;
-	else {
+	} else {
 		shape = current_shape;
 		frame = current_frame;
 		return true;

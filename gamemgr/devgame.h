@@ -24,9 +24,8 @@
 /*
  *  Inheriting from SI_Game is a temporary kludge.+++++++++
  */
-class DEV_Game: public SI_Game {
+class DEV_Game : public SI_Game {
 public:
 };
-
 
 #endif

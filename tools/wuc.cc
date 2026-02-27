@@ -1,38 +1,34 @@
+#include "span.h"
+#include "uctools.h"
+
+#include <array>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
 
-#include "uctools.h"
-#include "array_size.h"
-
-static opcode_desc push_table[] = {
-	{"true", 0, 0x13, 0, 0},
-	{"false", 0, 0x14, 0, 0},
-	{"itemref", 0, 0x3e, 0, 0},
-	{"eventid", 0, 0x48, 0, 0}
+constexpr static const std::array push_table{
+		opcode_desc{   "true", 0, 0x13, 0, 0},
+        opcode_desc{  "false", 0, 0x14, 0, 0},
+        opcode_desc{"itemref", 0, 0x3e, 0, 0},
+		opcode_desc{"eventid", 0, 0x48, 0, 0}
 };
 
-static opcode_desc pop_table[] = {
-	{"eventid", 0, 0x4b, 0, 0}
+constexpr static const std::array pop_table{
+		opcode_desc{"eventid", 0, 0x4b, 0, 0}
 };
 
-static const char *compiler_table[] = {
-	".argc",
-	".extern",
-	".externsize",
-	".localc"
-};
+constexpr static const std::array compiler_table{".argc", ".extern", ".externsize", ".localc"};
 
-#define MAX_LABELS 3500
+#define MAX_LABELS   3500
 #define TOKEN_LENGTH 25600
 
-char token[TOKEN_LENGTH], *token2, curlabel[256], indata;
-int pass,offset;
+char     token[TOKEN_LENGTH], *token2, curlabel[256], indata;
+int      pass, offset;
 unsigned byteval, word, funcnum, datasize, codesize;
-int extended;
+int      is_extended;
 
-char labels[MAX_LABELS][10];
-int offsets[MAX_LABELS];
+char     labels[MAX_LABELS][10];
+int      offsets[MAX_LABELS];
 unsigned lindex;
 
 FILE *fo, *fi;
@@ -40,7 +36,9 @@ FILE *fo, *fi;
 void emit_byte(unsigned i) {
 	if (pass > 0) {
 		fputc(i, fo);
-		if (indata) datasize++;
+		if (indata) {
+			datasize++;
+		}
 	}
 	offset++;
 	codesize++;
@@ -72,8 +70,9 @@ inline void emit_dword(int i) {
 
 void add_label() {
 	unsigned i;
-	if (token[strlen(token) - 1] == ':')
+	if (token[strlen(token) - 1] == ':') {
 		token[strlen(token) - 1] = 0;
+	}
 	if (lindex >= MAX_LABELS) {
 		printf("Too many labels.\n");
 		exit(0);
@@ -91,42 +90,47 @@ void add_label() {
 int get_label() {
 	unsigned i;
 	for (i = 0; i < lindex; i++) {
-		if (!strcasecmp(token, labels[i]))
+		if (!strcasecmp(token, labels[i])) {
 			return offsets[i];
+		}
 	}
 	printf("Warning: label '%s' does not exist.\n", token);
-	if (token[0] == 'L')
+	if (token[0] == 'L') {
 		sscanf(token, "L%x", &word);
-	else
+	} else {
 		sscanf(token, "%x", &word);
+	}
 	return word;
 }
 
 void check_jump_label_16(int label) {
-	if (label < -32768 || label > 32767)
+	if (label < -32768 || label > 32767) {
 		printf("Warning: offset too big for 16 bit at label %s!\n", curlabel);
+	}
 }
 
 void check_data_label_16(int label) {
-	if (label > 65535)
+	if (label > 65535) {
 		printf("Warning: offset too big for 16 bit at label %s!\n", curlabel);
+	}
 }
 
-int find_intrinsic(const char * const *func_table, unsigned funsize, const char *name) {
-	unsigned i;
-	for (i = 0; i < funsize; i++) {
-		if (!strcasecmp(name, func_table[i]))
+int find_intrinsic(tcb::span<const std::string_view> func_table, const char* name) {
+	for (size_t i = 0; i < func_table.size(); i++) {
+		if (name == func_table[i]) {
 			return i;
+		}
 	}
 	printf("Warning: intrinsic '%s' does not exist.\n", name);
 	return 0;
 }
 
-void read_token(FILE *fi) {
+void read_token(FILE* fi) {
 	int i = 0;
 	int c = 32;
-	while (((c == ' ') || (c == '\t') || (c == '\n') || (c == ',')) && !feof(fi))
+	while (((c == ' ') || (c == '\t') || (c == '\n') || (c == ',')) && !feof(fi)) {
 		c = fgetc(fi);
+	}
 	while ((c != ' ') && (c != '\t') && (c != '\n') && (c != ',') && !feof(fi)) {
 		if (i >= TOKEN_LENGTH - 1) {
 			fprintf(stderr, "Error: token too long!\n");
@@ -134,7 +138,8 @@ void read_token(FILE *fi) {
 		}
 		token[i++] = c;
 		if (c == ';') {
-			while ((c = fgetc(fi)) != '\n') /* do nothing */ ;
+			while ((c = fgetc(fi)) != '\n') /* do nothing */
+				;
 			i = 0;
 		}
 		if (c == 39) {
@@ -158,33 +163,32 @@ void read_token(FILE *fi) {
 	token[i] = 0;
 }
 
-int main(int argc,char *argv[]) {
-	unsigned i;
-	const unsigned opsize = array_size(opcode_table);
-	const unsigned pushsize = array_size(push_table);
-	const unsigned popsize = array_size(pop_table);
-	const unsigned compsize = array_size(compiler_table);
-	int label;
-	const char * const *func_table = bg_intrinsic_table;
-	int funsize = bg_intrinsic_size;
-	int findex = 1;         // Index in argv of 1st filename.
-	unsigned int opcodetype;
+int main(int argc, char* argv[]) {
+	unsigned       i;
+	const unsigned opsize   = opcode_table.size();
+	const unsigned pushsize = push_table.size();
+	const unsigned popsize  = pop_table.size();
+	const unsigned compsize = compiler_table.size();
+	int            label;
+	int            findex = 1;    // Index in argv of 1st filename.
+	unsigned int   opcodetype;
 	indata = codesize = datasize = 0;
 	/*  printf("Wody's Usecode Compiler v0.009\nCopyright (c) 1999 Wody "
-	    "Dragon (a.k.a. Wouter Dijkslag)\n");*/
+		"Dragon (a.k.a. Wouter Dijkslag)\n");*/
 	if (argc < 3) {
 		printf("syntax: %s [-s|-b] infile outfile\n", argv[0]);
 		exit(0);
 	}
+	tcb::span<const std::string_view> func_table;
 	// Serpent Isle?
 	if (strcmp(argv[1], "-s") == 0) {
 		findex++;
 		func_table = si_intrinsic_table;
-		funsize = si_intrinsic_size;
 	} else if (strcmp(argv[1], "-b") == 0) {
 		findex++;
 		func_table = sibeta_intrinsic_table;
-		funsize = sibeta_intrinsic_size;
+	} else {
+		func_table = bg_intrinsic_table;
 	}
 
 	lindex = 0;
@@ -201,15 +205,16 @@ int main(int argc,char *argv[]) {
 		while (!feof(fi)) {
 			read_token(fi);
 			if (strlen(token) > 1 && token[strlen(token) - 1] == ':') {
-				token[strlen(token) - 1] = 0; // remove trailing ':'
-				if (pass == 0)
+				token[strlen(token) - 1] = 0;    // remove trailing ':'
+				if (pass == 0) {
 					add_label();
+				}
 				strcpy(curlabel, token);
 			} else if (!strcmp(token, ".code")) {
 				indata = 0;
 				offset = 0;
 			} else if (!strcmp(token, ".data")) {
-				if (extended == 0) {
+				if (is_extended == 0) {
 					emit_word(funcnum);
 					emit_word(0);
 					emit_word(0);
@@ -230,19 +235,20 @@ int main(int argc,char *argv[]) {
 				sscanf(token, "%x", &funcnum);
 				printf("Function %04X\n", funcnum);
 				// codesize=2;
-				extended = 0;
+				is_extended = 0;
 			} else if (!strcmp(token, ".ext32")) {
-				extended = 1;
+				is_extended = 1;
 			} else if (!strcmp(token, ".msize") || !strcmp(token, ".dsize")) {
 				// Ignore either of these.
 			} else if (token[0] == '.') {
 				indata = 0;
-				for (i = 0; i < compsize; i++)
+				for (i = 0; i < compsize; i++) {
 					if (!strcasecmp(compiler_table[i], token)) {
 						read_token(fi);
 						sscanf(token, "%x", &word);
 						emit_word(word);
 					}
+				}
 			} else if (!strcmp(token, "db")) {
 				read_token(fi);
 				if (token[0] == '\'') {
@@ -283,16 +289,22 @@ int main(int argc,char *argv[]) {
 				read_token(fi);
 				sscanf(token, "%x", &word);
 				emit_word(word);
-			} else
+			} else {
 				for (i = 0; i < opsize; i++) {
-					if (!opcode_table[i].mnemonic) continue;
+					if (!opcode_table[i].mnemonic) {
+						continue;
+					}
 					if (!strcasecmp(opcode_table[i].mnemonic, token)) {
-						if (opcode_table[i].nbytes == 0 && opcode_table[i].type == 0)
+						if (opcode_table[i].nbytes == 0 && opcode_table[i].type == 0) {
 							emit_byte(i);
-						else {
+						} else {
 							opcodetype = opcode_table[i].type;
-							if (i == 0x21) opcodetype = op_push;
-							if (i == 0x12) opcodetype = op_pop;
+							if (i == 0x21) {
+								opcodetype = op_push;
+							}
+							if (i == 0x12) {
+								opcodetype = op_pop;
+							}
 							switch (opcodetype) {
 							case op_byte:
 								emit_byte(i);
@@ -303,11 +315,14 @@ int main(int argc,char *argv[]) {
 							case op_call:
 								emit_byte(i);
 								read_token(fi);
-								if ((token2 = strchr(token, '@')) != nullptr) {
+								token2 = strchr(token, '@');
+								if (token2 != nullptr) {
 									*token2++ = 0;
-									if (token[0] != '_')
-										word = find_intrinsic(func_table, funsize, token);
-									else {
+									if (token[0] != '_') {
+										if (sscanf(token, "UNKNOWN_%4x", &word) != 1) {
+											word = find_intrinsic(func_table, token);
+										}
+									} else {
 										read_token(fi);
 										sscanf(token, "(%x)", &word);
 									}
@@ -337,10 +352,11 @@ int main(int argc,char *argv[]) {
 							case op_varref:
 								emit_byte(i);
 								read_token(fi);
-								if (!memcmp(token, "extern:", sizeof("extern:")-1))
+								if (!memcmp(token, "extern:", sizeof("extern:") - 1)) {
 									sscanf(token, "extern:[%x]", &word);
-								else
+								} else {
 									sscanf(token, "[%x]", &word);
+								}
 								emit_word(word);
 								break;
 							case op_flgref:
@@ -399,22 +415,26 @@ int main(int argc,char *argv[]) {
 								emit_byte(i);
 								read_token(fi);
 								if (pass == 1) {
-									// printf("%x, %x, %x\n", get_label(), offset, get_label() - offset-2);
+									// printf("%x, %x, %x\n", get_label(),
+									// offset, get_label() - offset-2);
 									label = get_label() - offset - 2;
 									check_jump_label_16(label);
 									emit_word(label);
-								} else
+								} else {
 									emit_word(-1);
+								}
 								break;
 							case op_relative_jump32:
 							case op_uncond_jump32:
 								emit_byte(i);
 								read_token(fi);
 								if (pass == 1) {
-									// printf("%x, %x, %x\n", get_label(), offset, get_label() - offset-2);
+									// printf("%x, %x, %x\n", get_label(),
+									// offset, get_label() - offset-2);
 									emit_dword(get_label() - offset - 4);
-								} else
+								} else {
 									emit_dword(-1);
+								}
 								break;
 							case op_immed_and_relative_jump:
 							case op_argnum_reljump:
@@ -427,8 +447,9 @@ int main(int argc,char *argv[]) {
 									label = get_label() - offset - 2;
 									check_jump_label_16(label);
 									emit_word(label);
-								} else
+								} else {
 									emit_word(-1);
+								}
 								break;
 							case op_immedreljump32:
 							case op_argnum_reljump32:
@@ -437,10 +458,11 @@ int main(int argc,char *argv[]) {
 								sscanf(token, "%x", &word);
 								emit_word(word);
 								read_token(fi);
-								if (pass == 1)
+								if (pass == 1) {
 									emit_dword(get_label() - offset - 4);
-								else
+								} else {
 									emit_dword(-1);
+								}
 								break;
 							case op_sloop:
 							case op_static_sloop:
@@ -463,8 +485,9 @@ int main(int argc,char *argv[]) {
 									label = get_label() - offset - 2;
 									check_jump_label_16(label);
 									emit_word(label);
-								} else
+								} else {
 									emit_word(-1);
+								}
 								break;
 							case op_sloop32:
 								emit_byte(0x82);
@@ -482,24 +505,25 @@ int main(int argc,char *argv[]) {
 								emit_word(word);
 								read_token(fi);
 								sscanf(token, "%x", &word);
-								if (pass == 1)
+								if (pass == 1) {
 									emit_dword(get_label() - offset - 2);
-								else
+								} else {
 									emit_dword(-1);
+								}
 								break;
 							default:
 								break;
 							}
 						}
 					}
-
 				}
+			}
 		}
 
-		if (extended == 0) {
+		if (is_extended == 0) {
 			fseek(fo, 2, SEEK_SET);
 			indata = 0;
-			i = codesize;
+			i      = codesize;
 
 			if (codesize > 65535) {
 				printf("Error: code size > 64Kb and not in ext32 mode!\n");
@@ -514,7 +538,7 @@ int main(int argc,char *argv[]) {
 		} else {
 			fseek(fo, 4, SEEK_SET);
 			indata = 0;
-			i = codesize;
+			i      = codesize;
 			emit_dword(i);
 			emit_dword(datasize);
 		}

@@ -5,10 +5,6 @@ EXULT_FLX_OBJECTS = \
 	exult_logo.shp		\
 	exult0.pal		\
 	meditown.mid		\
-	font.shp		\
-	fonton.shp		\
-	navfont.shp		\
-	navfonton.shp		\
 	pointers.shp		\
 	extras.shp		\
 	notebook.shp		\
@@ -20,11 +16,6 @@ EXULT_FLX_OBJECTS = \
 	sav_upup.shp		\
 	sav_slider.shp		\
 	sav_selected.shp	\
-	gameplayoptions.shp	\
-	gamemenu.shp		\
-	audiooptions.shp	\
-	videooptions.shp	\
-	miscoptions.shp		\
 	hp_bar.shp		\
 	sfx_icon.shp		\
 	mtgm.mid			\
@@ -44,7 +35,61 @@ EXULT_FLX_OBJECTS = \
 	exultmsg_de.txt \
 	exultmsg_es.txt \
 	exultmsg_fr.txt \
-	endfont.shp
+	scroll_left.shp \
+	scroll_right.shp \
+	checkmark_background.shp \
+	mixer.shp \
+	fs_badges.shp
+
+EXULT_FONTS_ORIGINAL_VGA_OBJECTS = \
+	fonts/original.in \
+	fonts/0_original.shp \
+	fonts/1_wood_runic.shp \
+	fonts/2_small_black.shp \
+	fonts/3_metal_runic.shp \
+	fonts/4_tiny_black.shp \
+	fonts/5_tiny_white.shp \
+	fonts/6_gold_runic.shp \
+	fonts/7_original.shp \
+	fonts/8_tiny_ophidian.shp \
+	fonts/9_metal_ophidian.shp \
+	fonts/10_gold_ophidian.shp \
+	fonts/3_mainshp_original.shp \
+	fonts/4_endgame_original.shp \
+	fonts/5_endgame_original.shp \
+	fonts/6_endgame_original.shp \
+	fonts/14_intro_original.shp \
+	fonts/9_mainshp_bg.shp \
+	fonts/9_mainshp_si.shp \
+	fonts/font.shp \
+	fonts/fonton.shp \
+	fonts/navfont.shp \
+	fonts/navfonton.shp
+
+EXULT_FONTS_SERIF_VGA_OBJECTS = \
+	fonts/serif.in \
+	fonts/0_serif.shp \
+	fonts/1_wood_runic.shp \
+	fonts/2_small_black.shp \
+	fonts/3_metal_runic.shp \
+	fonts/4_tiny_black.shp \
+	fonts/5_tiny_white.shp \
+	fonts/6_gold_runic.shp \
+	fonts/7_serif.shp \
+	fonts/8_tiny_ophidian.shp \
+	fonts/9_metal_ophidian.shp \
+	fonts/10_gold_ophidian.shp \
+	fonts/3_mainshp_serif.shp \
+	fonts/4_endgame_serif.shp \
+	fonts/5_endgame_serif.shp \
+	fonts/6_endgame_serif.shp \
+	fonts/14_intro_serif.shp \
+	fonts/9_mainshp_bg.shp \
+	fonts/9_mainshp_si.shp \
+	fonts/font.shp \
+	fonts/fonton.shp \
+	fonts/navfont.shp \
+	fonts/navfonton.shp
 
 EXULT_BG_FLX_OBJECTS = \
 	bg/flx.in \
@@ -59,7 +104,9 @@ EXULT_BG_FLX_OBJECTS = \
 	bg/blends.dat \
 	bg/container.dat \
 	bg/autonotes.txt \
-	bg/intro_hand.shp
+	bg/intro_hand.shp \
+	bg/gump_info.txt \
+	bg/global_flags.txt
 
 EXULT_BG_INTROSFX_MT32_OBJECTS = \
 	bg/introsfx_mt.in \
@@ -109,7 +156,12 @@ EXULT_SI_FLX_OBJECTS = \
 	si/ext_intro_pil1.flc \
 	si/ext_intro_a.xmi \
 	si/ext_intro_r.xmi \
-	si/ext_intro_si01.ogg
+	si/ext_intro_si01.ogg \
+	si/ext_intro_sanctum1.flc \
+	si/ext_intro_sanctum2.flc \
+	si/ext_intro_sanctum3.flc \
+	si/gump_info.txt \
+	si/global_flags.txt
 
 EXULT_BG_PAPERDOL_VGA_OBJECTS = \
 	bg/amulets.shp \
@@ -190,12 +242,16 @@ estudionewdir = $(datadir)/exult/estudio/new
 
 if DATA_FILES
 EXULT_FLX = exult.flx
+EXULT_FONTS_ORIGINAL_VGA = fonts_original.vga
+EXULT_FONTS_SERIF_VGA = fonts_serif.vga
 EXULT_BG_FLX = exult_bg.flx
 EXULT_SI_FLX = exult_si.flx
 EXULT_BG_PAPERDOL_VGA = bg/bg_paperdol.vga
 EXULT_BG_MR_FACES_VGA = bg/bg_mr_faces.vga
 else
 EXULT_FLX =
+EXULT_FONTS_ORIGINAL_VGA =
+EXULT_FONTS_SERIF_VGA =
 EXULT_BG_FLX =
 EXULT_SI_FLX =
 EXULT_BG_PAPERDOL_VGA =
@@ -203,7 +259,7 @@ EXULT_BG_MR_FACES_VGA =
 endif
 
 flex_DATA =  \
-		$(EXULT_FLX) $(EXULT_BG_FLX) $(EXULT_SI_FLX) midisfx.flx
+		$(EXULT_FLX) $(EXULT_BG_FLX) $(EXULT_SI_FLX) $(EXULT_FONTS_ORIGINAL_VGA) $(EXULT_FONTS_SERIF_VGA) midisfx.flx
 
 if BUILD_STUDIO
 estudionew_DATA = $(ESTUDIO_NEW_FILES)
@@ -211,22 +267,23 @@ else
 estudionew_DATA =
 endif
 
-CLEANFILES = exult.flx exult_bg.flx exult_si.flx bg/bg_paperdol.vga bg/bg_mr_faces.vga bg/introsfx_mt32.flx bg/introsfx_mt.flx *~
+CLEANFILES = exult.flx exult_bg.flx exult_si.flx bg/bg_paperdol.vga bg/bg_mr_faces.vga bg/introsfx_mt32.flx bg/introsfx_mt.flx fonts_original.vga fonts_serif.vga *~
 
 EXTRA_DIST = flx.in $(EXULT_FLX_OBJECTS) $(EXULT_BG_FLX_OBJECTS) \
 	$(EXULT_SI_FLX_OBJECTS) $(ESTUDIO_NEW_FILES) midisfx.flx \
 	$(EXULT_BG_INTROSFX_MT32_OBJECTS) $(EXULT_BG_INTROSFX_SB_OBJECTS) \
 	exultmsg.txt bginclude.uc marketpl.mid myusecode.uc \
-	$(EXULT_BG_PAPERDOL_VGA_OBJECTS) $(EXULT_BG_MR_FACES_VGA_OBJECTS)
+	$(EXULT_BG_PAPERDOL_VGA_OBJECTS) $(EXULT_BG_MR_FACES_VGA_OBJECTS) \
+	$(EXULT_FONTS_ORIGINAL_VGA_OBJECTS) $(EXULT_FONTS_SERIF_VGA_OBJECTS)
 
 if CROSS_COMPILING
-expack = $(EXPACK)
+expack = $(EXPACK_PROG)
 else
-expack = ../tools/expack$(EXEEXT)
+expack = $(top_builddir)/tools/expack$(EXEEXT)
 endif
 
-../tools/expack$(EXEEXT):
-	+(cd ../tools;$(MAKE) expack$(EXEEXT))
+$(top_builddir)/tools/expack$(EXEEXT):
+	+(cd $(top_builddir)/tools;$(MAKE) expack$(EXEEXT))
 
 bg/bg_paperdol.vga: $(expack) $(EXULT_BG_PAPERDOL_VGA_OBJECTS)
 	$(expack) -i $(srcdir)/bg/bg_paperdol.in
@@ -234,7 +291,13 @@ bg/bg_paperdol.vga: $(expack) $(EXULT_BG_PAPERDOL_VGA_OBJECTS)
 bg/bg_mr_faces.vga: $(expack) $(EXULT_BG_MR_FACES_VGA_OBJECTS)
 	$(expack) -i $(srcdir)/bg/bg_mr_faces.in
 
-exult.flx: $(expack) $(EXULT_FLX_OBJECTS)
+fonts_original.vga: $(expack) $(EXULT_FONTS_ORIGINAL_VGA_OBJECTS)
+	$(expack) -i $(srcdir)/fonts/original.in
+
+fonts_serif.vga: $(expack) $(EXULT_FONTS_SERIF_VGA_OBJECTS)
+	$(expack) -i $(srcdir)/fonts/serif.in
+
+exult.flx: $(expack) $(EXULT_FLX_OBJECTS) fonts_original.vga fonts_serif.vga
 	$(expack) -i $(srcdir)/flx.in
 
 exult_bg.flx: $(expack) $(EXULT_BG_FLX_OBJECTS) bg/bg_paperdol.vga bg/bg_mr_faces.vga bg/introsfx_mt32.flx bg/introsfx_sb.flx
@@ -255,7 +318,13 @@ exult_bg_flx.h: exult_bg.flx
 
 exult_si_flx.h: exult_si.flx
 
+fonts_original.vga.h: fonts_original.vga
+
+fonts_serif.vga.h: fonts_serif.vga
+
 bg/introsfx_mt32_flx.h: bg/introsfx_mt32.flx
 
 bg/introsfx_sb_flx.h: bg/introsfx_sb.flx
 
+all-local: exult.flx exult_bg.flx exult_si.flx
+	-cp -fR $(srcdir)/*.flx $(builddir) 2>/dev/null

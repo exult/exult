@@ -21,11 +21,12 @@
 #ifndef TABLE_H
 #define TABLE_H
 
-#include <vector>
-#include <string>
 #include "U7file.h"
 #include "common_types.h"
 #include "exceptions.h"
+
+#include <string>
+#include <vector>
 
 class DataSource;
 
@@ -39,6 +40,7 @@ protected:
 	std::vector<Reference> object_list;
 
 	void index_file() override;
+
 	Reference get_object_reference(uint32 objnum) const override {
 		return object_list[objnum];
 	}
@@ -46,22 +48,21 @@ protected:
 public:
 	/// Basic constructor.
 	/// @param spec File name and object index pair.
-	explicit Table(const File_spec &spec)
-		: U7file(spec)
-	{  }
+	explicit Table(const File_spec& spec) : U7file(spec) {}
 
 	size_t number_of_objects() override {
 		return object_list.size();
 	}
-	const char *get_archive_type() override {
+
+	const char* get_archive_type() override {
 		return "TABLE";
 	}
 
-	static bool is_table(IDataSource *in);
+	static bool is_table(IDataSource* in);
 	static bool is_table(const std::string& fname);
 };
 
-using TableFile = U7DataFile<Table>;
+using TableFile   = U7DataFile<Table>;
 using TableBuffer = U7DataBuffer<Table>;
 
 #endif

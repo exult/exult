@@ -22,8 +22,7 @@
 
 //Called when user clicks on food
 //Reimplemented to add in apple->dough behaviour
-void Food shape#(0x179) ()
-{
+void Food shape#(0x179) () {
 	//Todo: organise this better, by using explicit frames? e.g. nutrition[FRAME_BREAD] = 4 etc.
 	var nutritional_values = [
 		4,	//Small bread
@@ -64,39 +63,32 @@ void Food shape#(0x179) ()
 	var food_frame = get_item_frame();
 
 	//Apples can be used on pastry dough to make pie
-	if (food_frame == FRAME_APPLE || food_frame == FRAME_EGG)
-	{
-		var target = UI_click_on_item();
+	if (food_frame == FRAME_APPLE || food_frame == FRAME_EGG) {
+		struct<ObjPos> target = UI_click_on_item();
 
 		//apple was used on dough
-		if (target->get_item_shape() == SHAPE_DOUGH)
-		{
+		if (target->get_item_shape() == SHAPE_DOUGH) {
 			var target_frame = target->get_item_frame();
 
-			if (food_frame == FRAME_APPLE)
-			{
+			if (food_frame == FRAME_APPLE) {
 				//remove the apple and change the dough to the raw-pie appearance
-				if (target_frame == FRAME_DOUGH_FLAT)
-				{
+				if (target_frame == FRAME_DOUGH_FLAT) {
 					remove_item();
 					target->set_item_frame(FRAME_DOUGH_PIE);
-				}
-				else if (target_frame == FRAME_DOUGH_BALL)
+				} else if (target_frame == FRAME_DOUGH_BALL) {
 					randomPartySay("@Thou shouldst first roll out the dough to make a base!@");
-			}
-
-			//eggs + flour = cake batter
-			else if (food_frame == FRAME_EGG && target_frame == FRAME_FLOUR)
-			{
+				}
+			} else if (food_frame == FRAME_EGG && target_frame == FRAME_FLOUR) {
+				//eggs + flour = cake batter
 				remove_item();
 				target->set_item_frame(FRAME_DOUGH_CAKE);
 			}
-		}
-		//otherwise, just use the food normally
-		else
+		} else {
+			//otherwise, just use the food normally
 			consumeEdible(item, target, nutrition, SOUND_EAT);
-	}
-	//Use regular food normally
-	else
+		}
+	} else {
+		//Use regular food normally
 		useEdible(item, nutrition, SOUND_EAT);
+	}
 }

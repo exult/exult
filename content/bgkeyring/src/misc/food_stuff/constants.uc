@@ -20,8 +20,7 @@
  *	Last Modified: 2006-03-19
  */
 
-enum food_levels
-{
+enum food_levels {
 	FOODLEVEL_PECKISH	= 5,	//below this level, the character is starving
 								//(taking damage from hunger?)
 	FOODLEVEL_WELLFED	= 10,	//below this level, the character is peckish
@@ -34,8 +33,7 @@ enum food_levels
 
 //flags (event ids, actually) to specify what kind of milk container is being
 //churned/milked with
-enum milk_types
-{
+enum milk_types {
 	CHURN_WITH_BOTTLE	= 1,
 	CHURN_WITH_BUCKET	= 2,
 	CHURN_WITH_PITCHER	= 3,

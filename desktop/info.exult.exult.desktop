@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=Exult
+Comment=Exult Ultima VII Engine
+Exec=exult
+Icon=info.exult.exult
+Terminal=false
+Type=Application
+Categories=Game;RolePlaying;

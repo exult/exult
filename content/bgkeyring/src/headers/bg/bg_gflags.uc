@@ -27,8 +27,7 @@
 */
 
 //Who the player has met. BG used global flags for this because the MET item flag didn't originally exist.
-enum met_flags
-{
+enum met_flags {
 	MET_LORD_BRITISH	= 0x98,
 	MET_FINNIGAN		= 0x4C,
 	MET_NYSTUL			= 0x99,
@@ -57,8 +56,7 @@ enum met_flags
 };
 
 //Flags used by the starting murder investigation quest
-enum trinsic_murder_flags
-{
+enum trinsic_murder_flags {
 	GOT_CHRISTOPHERS_KEY		= 0x3C,
 	GOT_TRINSIC_PASSWORD		= 0x3D,
 	NEEDS_TRINSIC_PASSWORD		= 0x42,
@@ -86,8 +84,7 @@ const int CAST_ARMAGEDDON = 0x1E;
 
 
 //Flags used in conversation with Lord British
-enum lb_conversation_flags
-{
+enum lb_conversation_flags {
 	WESTON_FREED					= 0xCC,
 	AGREED_TO_FREE_WESTON			= 0xCD,
 	GOT_ORB							= 0xDD,
@@ -100,28 +97,24 @@ enum lb_conversation_flags
 };
 
 //Flags used in conversation with Julia
-enum julia_conversation_flags
-{
+enum julia_conversation_flags {
 	ASKED_JULIA_TO_LEAVE		= 0x101,
 	JULIA_IN_PARTY				= 0x108,
 	ASKED_JULIA_ABOUT_SPARK		= 0x121
 };
 
 //Flags used in conversation with Tseramed
-enum tseramed_conversation_flags
-{
+enum tseramed_conversation_flags {
 	TSERAMED_THINKS_MAGE		= 0x15E
 };
 
 //Flags used in Minoc conversations to do with the sawmill murder
-enum minoc_murder_flags
-{
+enum minoc_murder_flags {
 	LEARNED_ABOUT_MINOC_MURDER	= 0x11F
 };
 
 //Flags used by the Owen's Monument quest
-enum owen_monument_flags
-{
+enum owen_monument_flags {
 	COMPLETED_OWENS_QUEST		= 0xF7,
 	LEARNED_ABOUT_PLANS			= 0x10B,
 	OWENS_PLANS_ARE_UNSAFE		= 0xFD
@@ -140,8 +133,7 @@ const int JEANETTE_LOVES_WILLY = 0x85;	//heard about Jeanette's crush on Willy t
 const int HIRED_BY_WILLY = 0xCB;		//hired by Willy to bake bread
 
 //Miscellaneous flags for NPCs in Paws
-enum paws_flags
-{
+enum paws_flags {
 	HEARD_ABOUT_PAWS_THEFT	= 0x212,	//Heard from an NPC about the theft
 	TOBIAS_ACCUSED			= 0x213,	//Feridwyn accused Tobias of the theft
 	SOLVED_PAWS_THEFT		= 0x218,	//Found Garritt was the thief
@@ -150,8 +142,7 @@ enum paws_flags
 	DELIVERED_CAMILLES_WHEAT = 0x21D	//Delivered the wheat to Thurston (so you don't get paid for it twice)
 };
 
-enum serpents_hold_flags
-{
+enum serpents_hold_flags {
 	STARTED_HOLD_INVESTIGATION = 0x25E,		//Got the mission from John-Paul to find who defaced the statue
 	FINISHED_HOLD_INVESTIGATION = 0x261,	//Finished the statue investigation properly, pinning Sir Pendaran as the culprit
 	HEARD_ABOUT_RIKY	= 0x277,			//Heard that Tory's baby son was kidnapped by harpies

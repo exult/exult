@@ -17,7 +17,7 @@
  */
 
 #ifndef INCL_LIGHTINF_H
-#define INCL_LIGHTINF_H  1
+#define INCL_LIGHTINF_H 1
 
 #include "baseinf.h"
 #include "exult_constants.h"
@@ -31,57 +31,67 @@ class Shape_info;
  *  This is meant to be stored in a totally ordered vector.
  */
 class Light_info : public Base_info {
-	short   frame;
-	char    light;
+	short frame;
+	char  light;
+
 public:
 	friend class Shape_info;
 	Light_info() = default;
-	Light_info(short f, char l, bool p = false, bool m = false,
-	            bool s = false, bool inv = false)
-		: Base_info(m, p, inv, s), frame(f), light(l)
-	{  }
-	Light_info(const Light_info &other)
-		: Base_info(other), frame(other.frame), light(other.light) {
+
+	Light_info(short f, char l, bool p = false, bool m = false, bool s = false, bool inv = false)
+			: Base_info(m, p, inv, s), frame(f), light(l) {}
+
+	Light_info(const Light_info& other) : Base_info(other), frame(other.frame), light(other.light) {
 		info_flags = other.info_flags;
 	}
+
 	// Read in from file.
-	bool read(std::istream &in, int version, Exult_Game game);
+	bool read(std::istream& in, int version, Exult_Game game);
 	// Write out.
-	void write(std::ostream &out, int shapenum, Exult_Game game);
+	void write(std::ostream& out, int shapenum, Exult_Game game);
+
 	void invalidate() {
 		light = 0;
 		set_invalid(true);
 	}
+
 	int get_frame() const {
 		return frame;
 	}
+
 	int get_light() const {
 		return light;
 	}
+
 	void set_light(int f) {
 		if (light != f) {
 			set_modified(true);
 			light = f;
 		}
 	}
-	bool operator<(const Light_info &other) const {
+
+	bool operator<(const Light_info& other) const {
 		return static_cast<unsigned short>(frame) < static_cast<unsigned short>(other.frame);
 	}
-	bool operator==(const Light_info &other) const {
+
+	bool operator==(const Light_info& other) const {
 		return this == &other || (!(*this < other) && !(other < *this));
 	}
-	bool operator!=(const Light_info &other) const {
+
+	bool operator!=(const Light_info& other) const {
 		return !(*this == other);
 	}
-	Light_info &operator=(const Light_info &other) {
+
+	Light_info& operator=(const Light_info& other) {
 		if (this != &other) {
-			frame = other.frame;
-			light = other.light;
+			frame      = other.frame;
+			light      = other.light;
 			info_flags = other.info_flags;
 		}
 		return *this;
 	}
-	void set(const Light_info &other) {
+
+	void set(const Light_info& other) {
 		// Assumes *this == other.
 		// No need to guard against self-assignment.
 		// Do NOT copy modified or static flags.
@@ -89,7 +99,11 @@ public:
 		set_invalid(other.is_invalid());
 		set_light(other.light);
 	}
-	enum { is_binary = 0, entry_size = 0 };
+
+	enum {
+		is_binary  = 0,
+		entry_size = 0
+	};
 };
 
 #endif

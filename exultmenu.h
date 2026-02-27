@@ -19,8 +19,8 @@
 #ifndef EXULTMENU_H
 #define EXULTMENU_H
 
-#include "palette.h"
 #include "game.h"
+#include "palette.h"
 
 #include <memory>
 
@@ -35,26 +35,25 @@ class Shape_frame;
 
 class ExultMenu {
 private:
-	Font *font;
-	Font *fonton;
-	Font *navfont;
-	Font *navfonton;
-	Game_window *gwin;
-	Image_buffer8 *ibuf;
-	Vga_file exult_flx;
+	std::shared_ptr<Font> font;
+	std::shared_ptr<Font> fonton;
+	std::shared_ptr<Font> navfont;
+	std::shared_ptr<Font> navfonton;
+	Game_window*          gwin;
+	Image_buffer8*        ibuf;
+	Vga_file              exult_flx;
 	//  Palette pal;
-	int centerx, centery;
-	int pagesize;
-	void calc_win();
-	Mouse *menu_mouse;
+	int                       centerx, centery;
+	int                       pagesize;
+	void                      calc_win();
 	std::unique_ptr<MenuList> create_main_menu(int first = 0);
-	std::unique_ptr<MenuList> create_mods_menu(ModManager *selgame, int first = 0);
-	BaseGameInfo *show_mods_menu(ModManager *selgame);
+	std::unique_ptr<MenuList> create_mods_menu(ModManager* selgame, int first = 0);
+	BaseGameInfo*             show_mods_menu(ModManager* selgame);
 
 public:
-	ExultMenu(Game_window *gw);
-	BaseGameInfo *run();
-	void setup();
+	ExultMenu(Game_window* gw);
+	BaseGameInfo* run();
+	void          setup();
 };
 
-#endif //EXULTMENU_H
+#endif    // EXULTMENU_H

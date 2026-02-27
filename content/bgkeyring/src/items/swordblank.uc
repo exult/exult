@@ -24,13 +24,15 @@
 //objects to automatically place it on those objects (e.g. on a firepit)
 //or perform other forging-related behaviours (e.g. quenching it in a
 //trough of water).
-void SwordBlank shape#(0x29C) ()
-{
+void SwordBlank shape#(0x29C) () {
 	var current_frame;
 
-	var hot_frames;		//Hot enough to hammer
-	var warm_frames;	//Heated, but not hot enough
-	var cool_frames;	//Cooled down completely
+	//Hot enough to hammer
+	var hot_frames;
+	//Heated, but not hot enough
+	var warm_frames;
+	//Cooled down completely
+	var cool_frames;
 
 
 	current_frame = get_item_frame();
@@ -39,32 +41,26 @@ void SwordBlank shape#(0x29C) ()
 	//on what heated state it is in. e.g. if the sword is on an anvil
 	//and is hot, doubleclicking it will hit it with a hammer; if it
 	//is too cool for hammering, it will be picked up instead.
-	if (isBlackSword(item))
-	{
+	if (isBlackSword(item)) {
 		hot_frames = [10, 11, 12];
 		warm_frames = [8, 9];
 		cool_frames = [13, 14, 15];
-	}
-	else
-	{
+	} else {
 		hot_frames = [2, 3, 4, 5];
 		warm_frames = [1];
 		cool_frames = [0, 6, 7];
 	}
-	
-	if (event == DOUBLECLICK)
-	{
+
+	if (event == DOUBLECLICK) {
 		//Avatar is wielding a hammer - now check if the swordblank
 		//is sitting on an anvil and is hot enough. If so, we will
 		//automatically hammer the sword; if not, just pick it up
 		//normally
 		if (AVATAR->is_readied(BG_WEAPON_HAND, SHAPE_HAMMER, FRAME_ANY) ||
 			//Also allow Julia's hammer:
-			AVATAR->is_readied(BG_WEAPON_HAND, SHAPE_JULIAS_HAMMER, FRAME_ANY))
-		{
+			AVATAR->is_readied(BG_WEAPON_HAND, SHAPE_JULIAS_HAMMER, FRAME_ANY)) {
 			var anvil = find_nearest(SHAPE_ANVIL, 3);
-			if (anvil && onAnvil(item, anvil) && current_frame in hot_frames)
-			{
+			if (anvil && onAnvil(item, anvil) && current_frame in hot_frames) {
 				gotoObject(anvil, 0, 2, 0, useHammerOnSwordblank, item, SCRIPTED);
 				return;
 			}
@@ -73,111 +69,106 @@ void SwordBlank shape#(0x29C) ()
 		//picked up. Go and get it, then call this function again
 		//as event = SCRIPTED
 		gotoAndGet(item);
-	}
-
-	//Swordblank is now carried and is ready to be used on something
-	else if (event == SCRIPTED)
-	{
+	} else if (event == SCRIPTED) {
+		//Swordblank is now carried and is ready to be used on something
 		UI_close_gumps();
-		var target = UI_click_on_item();
+		struct<ObjPos> target = UI_click_on_item();
 		var target_shape = target->get_item_shape();
 
 		//Now, decide what to do based on the shape of the target item
 
 		//Used on anvil: go to anvil and call this function again with
 		//event level 8
-		if (target_shape == SHAPE_ANVIL)
+		if (target_shape == SHAPE_ANVIL) {
 			gotoObject(target, 0, 2, 0, SwordBlank, item, 8);
-
-		//Used on firepit: go to firepit and call this function again
-		//with event level 9
-		else if (target_shape == SHAPE_FIREPIT)
+		} else if (target_shape == SHAPE_FIREPIT) {
+			//Used on firepit: go to firepit and call this function again
+			//with event level 9
 			gotoObject(target, 1, 0, 0, SwordBlank, item, 9);
-
-		//Used on water trough: if sword is hot enough and trough isn't
-		//empty, go to trough and call this function again with event level 10.
-		else if (target_shape in [SHAPE_TROUGH_HORIZONTAL, SHAPE_TROUGH_VERTICAL])
-		{
+		} else if (target_shape in [SHAPE_TROUGH_HORIZONTAL, SHAPE_TROUGH_VERTICAL]) {
+			//Used on water trough: if sword is hot enough and trough isn't
+			//empty, go to trough and call this function again with event level 10.
 			//make sure the trough is full
-			if (target->get_item_frame() in [3, 7])
-			{
+			if (target->get_item_frame() in [3, 7]) {
 				//now check if the swordblank is hot
-				if (current_frame in hot_frames || current_frame in warm_frames)
-				{
+				if (current_frame in hot_frames || current_frame in warm_frames) {
 					//stolen from Bucket()
 					var target_offsetx;
 					var target_offsety;
-					if (target_shape == SHAPE_TROUGH_HORIZONTAL)
-					{
+					if (target_shape == SHAPE_TROUGH_HORIZONTAL) {
 						target_offsetx = [-1, -2, -1, -2, 1, 1, -4, -4];
 						target_offsety = [1, 1, -2, -2, 0, -1, 0, -1];
-					}
-					else
-					{
+					} else {
 						target_offsetx = [1, 1, -2, -2, 0, -1, 0, -1];
 						target_offsety = [-1, -2, -1, -2, 1, 1, -4, -4];
 					}
 
 					gotoObject(target, target_offsetx, target_offsety, 0, SwordBlank, item, 10);
-				}
-				else
+				} else {
 					avatarBark("@The sword's not hot.@");
-			}
-			else
+				}
+			} else {
 				avatarBark("@There's not enough water.@");
+			}
 		}
-	}
-
-	//Swordblank was used on anvil
-	else if (event == 8)
-	{
+	} else if (event == 8) {
+		//Swordblank was used on anvil
 		//Animate the avatar
-		script AVATAR
-		{	face north;					actor frame bowing;
-			wait 3;						actor frame standing;}
+		script AVATAR {
+			face north;
+			actor frame bowing;
+			wait 3;
+			actor frame standing;
+		}
 
 		//Do the swordblank's scripting
-		script item
-		{	nohalt;						wait 3;
+		script item {
+			nohalt;
+			wait 3;
 			//Place the blank atop the anvil
 			call useSwordOnAnvil;
 			//Since this script will have overridden the
 			//original cooling behaviour
-			call startCooling;}
-	}
-
-	//Swordblank was used on firepit
-	else if (event == 9)
-	{
+			call startCooling;
+		}
+	} else if (event == 9) {
+		//Swordblank was used on firepit
 		//Animate the avatar
-		script AVATAR
-		{	//This is hardcoded because I can't be bothered finding
+		script AVATAR {
+			//This is hardcoded because I can't be bothered finding
 			//the nearest firepit just to measure the direction
-			face north;					actor frame bowing;
-			wait 3;						actor frame standing;}
+			face north;
+			actor frame bowing;
+			wait 3;
+			actor frame standing;
+		}
 
 		//Do the swordblank's scripting
-		script item
-		{ 	nohalt;						wait 3;
+		script item {
+			nohalt;
+			wait 3;
 			//Place the blank atop the firepit
 			call useSwordOnFirepit;
 			//Since this script will have overridden the original
 			//cooling behaviour
-			call startCooling;}
-	}
-
-	//Swordblank was used on trough
-	else if (event == 10)
-	{
+			call startCooling;
+		}
+	} else if (event == 10) {
+		//Swordblank was used on trough
 		//Animate the avatar
-		script AVATAR
-		{	face west;					actor frame bowing;
-			wait 10;					actor frame standing;}
+		script AVATAR {
+			face west;
+			actor frame bowing;
+			wait 10;
+			actor frame standing;
+		}
 
 		//Do the swordblank's scripting
-		script item
-		{	nohalt;						wait 5;
-			call useSwordOnTrough;}
+		script item {
+			nohalt;
+			wait 5;
+			call useSwordOnTrough;
+		}
 		//No startCooling, since the blade is now cold
 	}
 }

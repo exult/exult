@@ -1,0 +1,34 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="si">
+      <UniqueIdentifier>{4fc74670-42ed-47d6-a985-34885fc7957f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="bg">
+      <UniqueIdentifier>{2fd22aae-1bc3-4d5e-989b-91a3602ec876}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="..\..\..\data\flx.in" />
+    <CustomBuild Include="..\..\..\data\fonts\original.in"/>
+    <CustomBuild Include="..\..\..\data\fonts\serif.in"/>
+    <CustomBuild Include="..\..\..\data\si\flx.in">
+      <Filter>si</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\..\data\bg\flx.in">
+      <Filter>bg</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\..\data\bg\introsfx_mt.in">
+      <Filter>bg</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\..\data\bg\introsfx_sb.in">
+      <Filter>bg</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\..\data\bg\bg_mr_faces.in">
+      <Filter>bg</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\..\data\bg\bg_paperdol.in">
+      <Filter>bg</Filter>
+    </CustomBuild>
+  </ItemGroup>
+</Project>

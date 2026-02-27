@@ -20,19 +20,20 @@
  */
 
 #ifdef HAVE_CONFIG_H
-#  include <config.h>
+#	include <config.h>
 #endif
 
-#include <cstring>
 #include "ucmachine.h"
-#include "keyring.h"
-#include "conversation.h"
 
+#include "conversation.h"
+#include "keyring.h"
+
+#include <cstring>
 
 Usecode_machine::Usecode_machine() {
 	// Clear global flags.
-	std::memset(gflags, 0, sizeof(gflags));
-	conv = new Conversation;
+	gflags.resize(gflags_page_size, 0);
+	conv    = new Conversation;
 	keyring = new Keyring;
 }
 
@@ -40,8 +41,7 @@ Usecode_machine::Usecode_machine() {
  *  Delete.
  */
 
-Usecode_machine::~Usecode_machine(
-) {
+Usecode_machine::~Usecode_machine() {
 	delete conv;
 	delete keyring;
 }
@@ -53,4 +53,3 @@ void Usecode_machine::init_conversation() {
 int Usecode_machine::get_num_faces_on_screen() const {
 	return conv->get_num_faces_on_screen();
 }
-

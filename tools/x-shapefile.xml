@@ -2,6 +2,6 @@
 	<mime-info xmlns="http://www.freedesktop.org/standards/shared-mime-info">
 		<mime-type type="image/x-shapefile">
 			<comment>Exult Shape File</comment>
-			<glob pattern="*.shp"/>
+			<glob pattern="*.shp" weight="60"/>
 		</mime-type>
 	</mime-info>

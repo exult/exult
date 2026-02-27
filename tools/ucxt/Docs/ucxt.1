@@ -1,0 +1,98 @@
+.\"
+.\" This manpage was created for the Debian exult package by Jordà Polo
+.\" <jorda@ettin.org>, based on the output of help2man.
+.\"
+.TH ucxt "1" "August 2006"
+
+.SH NAME
+ucxt \- Ultima VII/VIII usecode disassembler.
+
+.SH SYNOPSIS
+.TP
+ucxt [\fIOPTIONS\fR] \fB\-a\fR 
+prints all the functions
+.TP
+ucxt [\fIOPTIONS\fR] \fB\<hex_function_number>\fR 
+disassembles a single function to stdout
+
+.SH DESCRIPTION
+Games supported by Exult (Ultima VII, for example) consist in large part
+of usecode. Exult basically implements a virtual machine the machine
+language of which is usecode.
+.TP
+The \fBucxt\fR command allows you to disassemble usecode.
+
+.SH OPTIONS
+.
+.TP
+Misc Flags (any/all of these):
+.
+.TP
+.B -nc
+don't look for exult's .xml config file
+.TP
+.B -v
+turns on verbose output mode
+.TP
+.B -ofile
+output to the specified file
+.TP
+.B -ifile
+load the usecode file specified by the filename
+.TP
+.B -ro
+output the raw opcodes in addition to the \fB\-f\fR format
+.TP
+.B -ac
+output automatically generated comments
+.TP
+.B -uc
+output automatically generated 'useless' comments
+.TP
+.B -b
+only do 'basic' optimisations
+.TP
+.B -dbg
+output debugging information if present in usecode
+.TP
+.B -ext32
+convert function to ext32 format if not already
+.TP
+.
+Game Specifier Flags (only one of these):
+.
+.TP
+.B -bg
+select the black gate usecode file
+.TP
+.B -si
+select the serpent isle usecode file
+.TP
+.B -u8
+select the ultima 8/pagan usecode file (experimental)
+.TP
+.
+Output Format Flags (only one of these):
+.
+.TP
+.B -fl
+output using brief "list" format
+.TP
+.B -fa
+output using "assembler" format (default)
+.TP
+.B -fs
+output using "exult script" format
+.TP
+.B -fz
+output using "exult script" format
+.TP
+.B -ftt
+output using the translation table xml format
+.TP
+.B -ff
+outputs all flags referenced in the usecode file sorted both by "flags
+within a function" and "functions using flag"
+
+.SH SEE ALSO
+.BR exult (6)

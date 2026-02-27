@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf8"?>
+<installer-gui-script minSpecVersion="2">
+	<title>Exult SHP Plug-in for The GIMP 3.0</title>
+	<background file="exult.png" mime-type="image/png" scaling="proportional" alignment="bottomleft"/>
+	<background-darkAqua file="exult.png" mime-type="image/png" scaling="proportional" alignment="topleft"/>
+	<license file="COPYING"/>
+	<options customize="never" require-scripts="false" hostArchitectures="x86_64,arm64"/>
+	<domains enable_anywhere="false" enable_currentUserHome="true" enable_localSystem="false"/>
+	<allowed-os-versions>
+		<os-version min="11.0"/>
+	</allowed-os-versions>
+	<choices-outline>
+		<line choice="shp"/>
+	</choices-outline>
+	<choice id="shp" visible="false" customLocation="/tmp/u7shp">
+		<pkg-ref id="info.exult.shp.pkg" version="0" onConclusion="none">plugin.pkg</pkg-ref>
+	</choice>
+</installer-gui-script>

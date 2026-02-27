@@ -21,13 +21,14 @@
 #ifndef U7FILE_H
 #define U7FILE_H
 
+#include "U7obj.h"
+#include "common_types.h"
+#include "databuf.h"
+#include "exceptions.h"
+
 #include <fstream>
 #include <string>
 #include <utility>
-#include "databuf.h"
-#include "U7obj.h"
-#include "exceptions.h"
-#include "common_types.h"
 
 /**
  *  The U7file class is an abstract data object which is
@@ -44,13 +45,16 @@ protected:
 	/// Pointer to the DataSource which will be used by
 	/// derived classes.
 	std::unique_ptr<IDataSource> data;
+
 	/// Causes file/buffer information to be read. Or will do,
 	/// when it is implemented for derived classes.
 	virtual void index_file() {}
+
 	struct Reference {
-		size_t  offset;
-		size_t  size;
+		size_t offset;
+		size_t size;
 	};
+
 	virtual Reference get_object_reference(uint32) const {
 		return Reference{0, 0};
 	}
@@ -58,18 +62,19 @@ protected:
 public:
 	/// Initializes from a file spec. Needed by some constructors.
 	/// @param spec A file specification.
-	explicit U7file(File_spec spec)
-		: identifier(std::move(spec)), data(nullptr) {}
+	explicit U7file(File_spec spec) : identifier(std::move(spec)), data(nullptr) {}
+
 	/// Deletes the data source. The destructors of derived classes
 	/// should delete anything else that is needed by the datasource
 	/// (e.g. buffers) but NOT the datadource.
-	virtual ~U7file() noexcept = default;
-	U7file(const U7file&) = delete;
+	virtual ~U7file() noexcept       = default;
+	U7file(const U7file&)            = delete;
 	U7file& operator=(const U7file&) = delete;
-	U7file(U7file&&) = default;
-	U7file& operator=(U7file&&) = default;
+	U7file(U7file&&)                 = delete;
+	U7file& operator=(U7file&&)      = delete;
 
 	virtual size_t number_of_objects() = 0;
+
 	/**
 	 *  Reads the desired object from the file.
 	 *  @param objnum   Number of object to read.
@@ -77,7 +82,7 @@ public:
 	 *  @return Buffer created with new[] containing the object data or
 	 *  null on any failure.
 	 */
-	std::unique_ptr<unsigned char[]> retrieve(uint32 objnum, std::size_t &len) {
+	std::unique_ptr<unsigned char[]> retrieve(uint32 objnum, std::size_t& len, bool nulllterminate = false) {
 		if (!data || objnum >= number_of_objects()) {
 			len = 0;
 			return nullptr;
@@ -89,10 +94,10 @@ public:
 			return nullptr;
 		}
 		len = ref.size;
-		return data->readN(len);
+		return data->readN(len, nulllterminate);
 	}
 
-	virtual const char *get_archive_type() = 0;
+	virtual const char* get_archive_type() = 0;
 
 	/**
 	 *  Reads the desired object from the file.
@@ -103,7 +108,7 @@ public:
 	 */
 	IBufferDataSource retrieve(uint32 objnum) {
 		std::size_t len;
-		auto buffer = retrieve(objnum, len);
+		auto        buffer = retrieve(objnum, len);
 		return IBufferDataSource(std::move(buffer), len);
 	}
 };
@@ -121,8 +126,7 @@ public:
 	/// opens the file if it exists. It also creates and initializes
 	/// the data source, or sets it to null if the file is not there.
 	/// @param spec Name of file to open. Ignores the index portion.
-	explicit U7DataFile(const File_spec &spec)
-		: T(spec) {
+	explicit U7DataFile(const File_spec& spec) : T(spec) {
 		this->data = std::make_unique<IFileDataSource>(this->identifier.name);
 		if (this->data->good()) {
 			this->index_file();
@@ -143,11 +147,11 @@ public:
 	/// Creates and initializes the data source from the data source.
 	/// @param spec Unique identifier for this data object.
 	/// @param dt   Unique pointer to IExultDataSource that we shoud use.
-	U7DataBuffer(const File_spec &spec, std::unique_ptr<IExultDataSource> dt)
-		: T(spec) {
+	U7DataBuffer(const File_spec& spec, std::unique_ptr<IExultDataSource> dt) : T(spec) {
 		this->data = std::move(dt);
 		this->index_file();
 	}
+
 	/// Creates and initializes the data source from the buffer.
 	/// Takes ownership of the parameters and deletes them when done,
 	/// so callers should NOT delete them.
@@ -155,17 +159,16 @@ public:
 	/// @param buf  Buffer to read from. The class deletes the buffer
 	/// at the end. Can be null if l also is.
 	/// @param l    Length of data in the buffer.
-	U7DataBuffer(const File_spec &spec, const char *buf, unsigned int l)
-		: T(spec) {
+	U7DataBuffer(const File_spec& spec, const char* buf, unsigned int l) : T(spec) {
 		this->data = std::make_unique<IExultDataSource>(buf, l);
 		this->index_file();
 	}
+
 	/// Creates and initializes the data source from the specified
 	/// file/number pair.
 	/// @param spec Unique identifier for this data object. The 'name'
 	/// member **MUST** be a valid file name.
-	explicit U7DataBuffer(const File_spec &spec)
-		: T(spec) {
+	explicit U7DataBuffer(const File_spec& spec) : T(spec) {
 		this->data = std::make_unique<IExultDataSource>(spec.name, spec.index);
 		this->index_file();
 	}
@@ -177,40 +180,45 @@ public:
 class File_data {
 protected:
 	/// The file this refers to. Should NOT be deleted!
-	U7file *file;
+	U7file* file;
 	/// Number of objects in the file.
 	size_t count;
 	/// Whether the file comes from patch dir.
 	bool patch;
 
 public:
-	explicit File_data(const File_spec &spec);
-	File_data(const File_data &other) noexcept = default;
+	explicit File_data(const File_spec& spec);
+
 	bool from_patch() const {
 		return patch;
 	}
+
 	size_t number_of_objects() const {
 		return count;
 	}
-	std::unique_ptr<unsigned char[]> retrieve(uint32 objnum, std::size_t &len) const {
+
+	std::unique_ptr<unsigned char[]> retrieve(uint32 objnum, std::size_t& len) const {
 		bool pt;
 		return retrieve(objnum, len, pt);
 	}
-	std::unique_ptr<unsigned char[]> retrieve(uint32 objnum, std::size_t &len, bool &pt) const {
-		pt = patch;
+
+	std::unique_ptr<unsigned char[]> retrieve(uint32 objnum, std::size_t& len, bool& pt) const {
+		pt  = patch;
 		len = 0;
 		if (file) {
 			return file->retrieve(objnum, len);
 		}
 		return nullptr;
 	}
+
 	IBufferDataSource retrieve(uint32 objnum) const {
 		if (file) {
 			return file->retrieve(objnum);
 		}
 		return IBufferDataSource(nullptr, 0);
 	}
-	const char *get_archive_type() {
+
+	const char* get_archive_type() {
 		return file ? file->get_archive_type() : "NONE";
 	}
 };
@@ -225,27 +233,30 @@ protected:
 	std::vector<File_data> files;
 
 public:
-	U7multifile(const U7multifile&) = delete;
+	U7multifile(const U7multifile&)            = delete;
 	U7multifile& operator=(const U7multifile&) = delete;
-	explicit U7multifile(const File_spec &spec);
-	U7multifile(const File_spec &spec0, const File_spec &spec1);
-	U7multifile(const File_spec &spec0, const File_spec &spec1,
-	            const File_spec &spec2);
-	U7multifile(const std::vector<File_spec> &specs);
+	explicit U7multifile(const File_spec& spec);
+	U7multifile(const File_spec& spec0, const File_spec& spec1);
+	U7multifile(const File_spec& spec0, const File_spec& spec1, const File_spec& spec2);
+	U7multifile(const std::vector<File_spec>& specs);
 
 	size_t number_of_objects() const;
-	std::unique_ptr<unsigned char[]> retrieve(uint32 objnum, std::size_t &len) const {
+
+	std::unique_ptr<unsigned char[]> retrieve(uint32 objnum, std::size_t& len) const {
 		bool pt;
 		return retrieve(objnum, len, pt);
 	}
-	std::unique_ptr<unsigned char[]> retrieve(uint32 objnum, std::size_t &len, bool &patch) const;
+
+	std::unique_ptr<unsigned char[]> retrieve(uint32 objnum, std::size_t& len, bool& patch) const;
+
 	IBufferDataSource retrieve(uint32 objnum) {
 		bool pt;
 		return retrieve(objnum, pt);
 	}
-	IBufferDataSource retrieve(uint32 objnum, bool &patch) {
+
+	IBufferDataSource retrieve(uint32 objnum, bool& patch) {
 		std::size_t len;
-		auto buffer = retrieve(objnum, len, patch);
+		auto        buffer = retrieve(objnum, len, patch);
 		return IBufferDataSource(std::move(buffer), len);
 	}
 };

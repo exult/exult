@@ -19,40 +19,39 @@
  */
 
 #ifdef HAVE_CONFIG_H
-#  include <config.h>
+#	include <config.h>
 #endif
 
-#include <iostream>
-using std::istream;
-
 #include "ucfunction.h"
-#include "utils.h"
+
+#include "endianio.h"
+
+#include <iostream>
+
+using std::istream;
 
 /*
  *  Read in a function.
  */
 
-Usecode_function::Usecode_function(
-    istream &file
-) : orig(nullptr) {
-	id = Read2(file);
+Usecode_function::Usecode_function(istream& file) : orig(nullptr) {
+	id = little_endian::Read2(file);
 
 	// support for our extended usecode format. (32 bit lengths and ids)
 	if (id == 0xfffe) {
-		id = Read4s(file);
-		len = Read4(file);
+		id       = little_endian::Read4s(file);
+		len      = little_endian::Read4(file);
 		extended = true;
 		// older extended usecode format. (32 bit lengths)
 	} else if (id == 0xffff) {
-		id = Read2(file);
-		len = Read4(file);
+		id       = little_endian::Read2(file);
+		len      = little_endian::Read4(file);
 		extended = true;
 	} else {
-		len = Read2(file);
+		len      = little_endian::Read2(file);
 		extended = false;
 	}
 
-	code = new unsigned char[len];  // Allocate buffer & read it in.
-	file.read(reinterpret_cast<char *>(code), len);
+	code = new unsigned char[len];    // Allocate buffer & read it in.
+	file.read(reinterpret_cast<char*>(code), len);
 }
-

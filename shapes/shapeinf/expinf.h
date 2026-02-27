@@ -5,7 +5,7 @@
  **/
 
 #ifndef INCL_EXPINF_H
-#define INCL_EXPINF_H   1
+#define INCL_EXPINF_H 1
 
 /*
 Copyright (C) 2008-2022 The Exult Team
@@ -36,14 +36,15 @@ class Shape_info;
  *  Information about explosions.
  */
 class Explosion_info : public Base_info {
-	int     sprite;         // Explosion sprite.
-	int     sfxnum;         // SFX to play or 255 for none.
+	int sprite;    // Explosion sprite.
+	int sfxnum;    // SFX to play or 255 for none.
 public:
 	friend class Shape_info;
 	// Read in from file.
-	bool read(std::istream &in, int version, Exult_Game game);
+	bool read(std::istream& in, int version, Exult_Game game);
 	// Write out.
-	void write(std::ostream &out, int shapenum, Exult_Game game);
+	void write(std::ostream& out, int shapenum, Exult_Game game);
+
 	void set(int shape, int sfx) {
 		if (sfxnum != sfx || sprite != shape) {
 			set_modified(true);
@@ -51,16 +52,23 @@ public:
 			sprite = shape;
 		}
 	}
+
 	int get_sprite() const {
 		return sprite;
 	}
+
 	int get_sfx() const {
 		return sfxnum;
 	}
+
 	static int get_info_flag() {
 		return 0x10;
 	}
-	enum { is_binary = 0, entry_size = 0 };
+
+	enum {
+		is_binary  = 0,
+		entry_size = 0
+	};
 };
 
 #endif

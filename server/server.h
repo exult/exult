@@ -29,14 +29,14 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 #ifdef USE_EXULTSTUDIO
 
-using Message_handler = void (*)(int &);
+using Message_handler = void (*)(int&);
 
-extern int client_socket;
+extern int  client_socket;
 extern void Server_init();
 extern void Server_delay(Message_handler handle_message);
 extern void Server_delay();
 extern void Server_close();
 
-#endif  /* USE_EXULTSTUDIO */
+#endif /* USE_EXULTSTUDIO */
 
-#endif  /* INCL_SERVER */
+#endif /* INCL_SERVER */

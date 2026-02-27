@@ -1,34 +1,62 @@
 CompileFlags:
-    Add:
-      [
-        -xc++,
-        -std=c++17,
-        -stdlib=libstdc++,
-        -Weverything,
-        -Wno-pre-c++14-compat,
-        -Wno-pre-c++14-compat-pedantic,
-        -Wno-pre-c++17-compat,
-        -Wno-pre-c++17-compat-pedantic,
-        -Wno-pre-c++20-compat,
-        -Wno-pre-c++20-compat-pedantic,
-        -Wno-c++98-compat,
-        -Wno-c++98-compat-pedantic,
-        -Wno-c++11-compat,
-        -Wno-c++11-compat-pedantic,
-        -Wno-c++14-compat,
-        -Wno-c++14-compat-pedantic,
-        -Wno-c++17-compat,
-        -Wno-c++17-compat-pedantic,
-        -Wno-c++20-compat,
-        -Wno-c++20-compat-pedantic,
-        -Wno-padded,
-        -Wno-implicit-int-conversion,
-        -Wno-sign-conversion,
-        -Wno-missing-variable-declarations,
-        -Wno-weak-vtables,
-        -Wno-global-constructors,
-        -Wno-exit-time-destructors,
-        -Wno-missing-prototypes,
-      ]
-    Remove: -W*
-    Compiler: D:/msys64/mingw64/bin/clang++.exe
+  Add:
+    [
+      -Weverything,
+      -Wno-pre-c++14-compat,
+      -Wno-pre-c++14-compat-pedantic,
+      -Wno-pre-c++17-compat,
+      -Wno-pre-c++17-compat-pedantic,
+      -Wno-pre-c++20-compat,
+      -Wno-pre-c++20-compat-pedantic,
+      -Wno-c++98-compat,
+      -Wno-c++98-compat-pedantic,
+      -Wno-c++11-compat,
+      -Wno-c++11-compat-pedantic,
+      -Wno-c++14-compat,
+      -Wno-c++14-compat-pedantic,
+      -Wno-c++17-compat,
+      -Wno-c++17-compat-pedantic,
+      -Wno-c++20-compat,
+      -Wno-c++20-compat-pedantic,
+      -Wno-padded,
+      -Wno-implicit-int-conversion,
+      -Wno-sign-conversion,
+      -Wno-missing-variable-declarations,
+      -Wno-weak-vtables,
+      -Wno-global-constructors,
+      -Wno-exit-time-destructors,
+      -Wno-missing-prototypes,
+      -DVERSION="1.11.0git"
+    ]
+  Remove: -W*
+---
+If:
+  PathMatch: .*\.h
+  PathExclude: [ios/.*, mapedit/tools/mockup/.*, mapedit/tools/smooth/.*]
+CompileFlags:
+  Add: [-xc++-user-header, -std=c++17]
+---
+If:
+  PathMatch: [.*\.c]
+CompileFlags:
+  Add: [-xc, -std=c11, -Wno-declaration-after-statement]
+---
+If:
+  PathMatch: [mapedit/tools/mockup/.*\.h, mapedit/tools/smooth/.*\.h]
+CompileFlags:
+  Add: [-xc-header, -std=c11, -Wno-declaration-after-statement]
+---
+If:
+  PathMatch: [.*\.m]
+CompileFlags:
+  Add: [-Wno-declaration-after-statement]
+---
+If:
+  PathMatch: [ios/.\.h]
+CompileFlags:
+  Add: [-xobjective-c-header, -Wno-declaration-after-statement]
+---
+If:
+  PathMatch: [audio/midi_drivers/Core(Audio)?MidiDriver\.h]
+CompileFlags:
+  Add: [-xc++-user-header]

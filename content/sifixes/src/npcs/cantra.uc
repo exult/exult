@@ -24,31 +24,24 @@
  *	The original code was written by Jeff Freedman (aka "DrCode").
  */
 
-void Cantra object#(0x440) ()
-{
+void Cantra object#(0x440) () {
 	// I prefer to check this flag instead:
-	if (!get_item_flag(SI_ZOMBIE))
+	if (!get_item_flag(SI_ZOMBIE)) {
 		Cantra.original();
-
-	else
-	{
+	} else {
 		// Changed from Jeff's code for a SI-like behavior:
-		if (event == DOUBLECLICK)
-		{
+		if (event == DOUBLECLICK) {
 			AVATAR->item_say("Hello, Cantra.");
 			CANTRA->makePartyFaceNPC();
 			delayedBark(CANTRA, "@I am not Cantra!@", 2);
 			CANTRA->set_schedule_type(TALK);
-		}
-		else if (event == STARTED_TALKING)
-		{
+		} else if (event == STARTED_TALKING) {
 			CANTRA->run_schedule();
 			var msg = ["@I want thy flesh!@", "@I want thy blood!@", "@Blood! Blood everywhere!@", "@How hungry I am!@"];
 			var rand = UI_get_random(UI_get_array_size(msg));
 			item.say(msg[rand]);
 
-			converse (["Hello, Cantra.", "bye"])
-			{
+			converse (["Hello, Cantra.", "bye"]) {
 				case "bye":
 					say("@Yes, thou mayest go away.@");
 					break;

@@ -1,3 +1,15 @@
+if BUILD_EXULT
+SDLRWOPS= \
+	sdlrwopsstreambuf.cc \
+	sdlrwopsstreambuf.h \
+	sdlrwopsistream.cc \
+	sdlrwopsistream.h \
+	sdlrwopsostream.cc \
+	sdlrwopsostream.h
+else
+SDLRWOPS=
+endif
+
 AM_CPPFLAGS = -I$(top_srcdir) -I$(top_srcdir)/headers $(SDL_CFLAGS) $(INCDIRS) $(WINDOWING_SYSTEM) \
 		$(DEBUG_LEVEL) $(OPT_LEVEL) $(WARNINGS) $(CPPFLAGS) -DEXULT_DATADIR=\"$(EXULT_DATADIR)\"
 
@@ -32,6 +44,7 @@ libu7file_la_SOURCES =	\
 	U7obj.h	\
 	utils.cc	\
 	utils.h		\
+	endianio.h	\
 	databuf.h	\
 	listfiles.cc	\
 	listfiles.h	\
@@ -39,12 +52,7 @@ libu7file_la_SOURCES =	\
 	crc.h		\
 	msgfile.cc	\
 	msgfile.h	\
-	sdlrwopsstreambuf.cc \
-	sdlrwopsstreambuf.h \
-	sdlrwopsistream.cc \
-	sdlrwopsistream.h \
-	sdlrwopsostream.cc \
-	sdlrwopsostream.h
+	$(SDLRWOPS)
 
 EXTRA_DIST = 		\
 	module.mk	\

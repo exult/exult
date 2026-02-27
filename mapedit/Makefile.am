@@ -1,36 +1,16 @@
 AM_CPPFLAGS = -I$(top_srcdir)/headers -I$(top_srcdir) -I$(top_srcdir)/shapes \
 	-I$(top_srcdir)/imagewin -I$(top_srcdir)/conf -I$(top_srcdir)/gamemgr \
 	-I$(top_srcdir)/files -I$(top_srcdir)/server  -I$(top_srcdir)/usecode \
-	-I$(top_srcdir)/shapes/shapeinf \
-	$(GTK_CFLAGS) $(INCDIRS) $(WINDOWING_SYSTEM) \
+	-I$(top_srcdir)/shapes/shapeinf -I$(top_srcdir)/data \
+	$(GTK_CFLAGS) $(PNG_CFLAGS) $(ICU_CFLAGS) $(INCDIRS) $(WINDOWING_SYSTEM) \
 	$(DEBUG_LEVEL) $(OPT_LEVEL) $(WARNINGS) $(CPPFLAGS) -DEXULT_DATADIR=\"$(EXULT_DATADIR)\"
-
-if GIMP_PLUGIN
-GIMP_PLUGINS=u7shp
-else
-GIMP_PLUGINS=
-endif
 
 if BUILD_STUDIO
 bin_PROGRAMS = exult_studio
-else
-bin_PROGRAMS =
 endif
 
-u7shp_SOURCES = u7shp.cc
-
-u7shp_CPPFLAGS = -I$(top_srcdir) -I$(top_srcdir)/files -I$(top_srcdir)/headers \
-	-I$(top_srcdir)/shapes -I$(top_srcdir)/imagewin -I$(top_srcdir)/files \
-	$(GIMP_INCLUDES) $(GTK_CFLAGS) $(INCDIRS) \
-	$(DEBUG_LEVEL) $(OPT_LEVEL) $(WARNINGS) $(CPPFLAGS) -DHAVE_CONFIG_H
-
-u7shp_LDADD = \
-	../imagewin/libimagewin.la	\
-	../shapes/libshapes.la \
-	../files/libu7file.la \
-	$(GIMP_LIBS)
-
 exult_studio_SOURCES = \
+	audiotest.cc \
 	bargeedit.cc \
 	chunklst.cc \
 	chunklst.h \
@@ -64,26 +44,27 @@ exult_studio_SOURCES = \
 	shapegroup.h \
 	shapelst.cc \
 	shapelst.h \
+	shapepresets.cc \
+	shapepresets.h \
+	npcpresets.cc \
+	npcpresets.h \
 	ucbrowse.cc \
 	ucbrowse.h \
 	gtk_redefines.h
 
-
-noinst_PROGRAMS = $(GIMP_PLUGINS)
-
 exult_studio_LDADD = \
-	../conf/libconf.la		\
-	../imagewin/libimagewin.la	\
-	../gamemgr/libgamemgr.la	\
-	../shapes/libshapes.la 		\
-	../files/libu7file.la		\
-	../files/zip/libminizip.la		\
-	../server/libserver.la		\
-	../usecode/libusecode.la		\
-	../shapes/shapeinf/libshapeinf.la	\
-	-lpng $(FREETYPE2_LIBS) $(SYSLIBS) $(x_libraries) $(GTK_LIBS) $(ZLIB_LIBS)
+	$(top_builddir)/conf/libconf.la		\
+	$(top_builddir)/imagewin/libimagewin.la	\
+	$(top_builddir)/gamemgr/libgamemgr.la	\
+	$(top_builddir)/shapes/libshapes.la 		\
+	$(top_builddir)/files/libu7file.la		\
+	$(top_builddir)/files/zip/libminizip.la		\
+	$(top_builddir)/server/libserver.la		\
+	$(top_builddir)/usecode/libusecode.la		\
+	$(top_builddir)/shapes/shapeinf/libshapeinf.la	\
+	$(PNG_LIBS) $(FREETYPE2_LIBS) $(SYSLIBS) $(x_libraries) $(GTK_LIBS) $(ICU_LIBS) $(ZLIB_LIBS)
 
-exult_studio_CFLAGS = $(GTK_CFLAGS)
+exult_studio_CFLAGS = $(GTK_CFLAGS) $(PNG_CFLAGS) $(ICU_CFLAGS)
 exult_studio_LDFLAGS = -export-dynamic		# For Gtk+ 2.x
 
 mapeditdir = $(datadir)/exult
@@ -95,19 +76,8 @@ mapedit_DATA =
 endif
 
 EXTRA_DIST=	\
-	gimpwin32.txt \
-	PhotoshopShapePlugin.zip \
 	exult_studio.glade \
-	uniquepal.c \
 	logo.xpm
 
-if GIMP_PLUGIN
-install-exec-local:
-	install -d $(DESTDIR)$(GIMP_PLUGIN_PREFIX)
-	install -c $(GIMP_PLUGINS) $(DESTDIR)$(GIMP_PLUGIN_PREFIX)
-else
-install-exec-local:
-endif
-
-CLEANFILES = *~ u7shp$(EXEEXT)
+CLEANFILES = *~
 

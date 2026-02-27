@@ -40,8 +40,7 @@
  *	likes of UI_path_run_usecode.
  */
 
-enum events
-{
+enum events {
 	PROXIMITY		= 0,	// Object is on-screen or nearby
 							// This is called repeatedly, with a random delay
 							// between each call
@@ -67,25 +66,23 @@ enum events
 							// and by the TALK schedule
 
 	//The following events are arbitrary programmer conventions:
-	PATH_SUCCESS	= 10,	// Set with calls to UI_path_run_usecode, to indicate
+	BG_PATH_SUCCESS	= 7,	// Set with calls to UI_path_run_usecode, to indicate
 							// a successful pathfind to the target object
-	PATH_FAILURE	= 11	// Set with calls to UI_set_path_failure, to indicate
+	BG_PATH_FAILURE	= 8,	// Set with calls to UI_set_path_failure, to indicate
 							// an interrupted pathfind (e.g. when the player
 							// moves the Avatar manually)
-};
-
-/*
- *	Coordinate axes - use when referencing X,Y,Z coordinate arrays.
- *	Note that the coordinates returned by UI_click_on_item are 1 array-index
- *	higher, because index 1 of the returned array is the actual item clicked on.
- *	You can resolve this to a regular X,Y,Z coordinates array by using
- *	array = removeFromArray(array, array[1]); (see also bg_externals.uc)
- */
-enum axes
-{
-	X = 1,	//horizontal axis (numbered from west to east)
-	Y = 2,	//vertical axis (numbered from north to south)
-	Z = 3	//lift axis (numbered from ground to sky)
+	PATH_SUCCESS_9	= 9,	// Set with calls to UI_path_run_usecode, to indicate
+							// a successful pathfind to the target object
+	PATH_SUCCESS	= 10,	// Set with calls to UI_path_run_usecode, to indicate
+							// a successful pathfind to the target object
+	PATH_FAILURE	= 11,	// Set with calls to UI_set_path_failure, to indicate
+							// an interrupted pathfind (e.g. when the player
+							// moves the Avatar manually)
+	SI_PATH_SUCCESS	= 13,	// Set with calls to UI_path_run_usecode, to indicate
+							// a successful pathfind to the target object
+	SI_PATH_FAILURE	= 14	// Set with calls to UI_set_path_failure, to indicate
+							// an interrupted pathfind (e.g. when the player
+							// moves the Avatar manually)
 };
 
 /*
@@ -94,8 +91,7 @@ enum axes
  *	script item { step NORTH; step NORTH; face SOUTH; }
  *	takes two steps north, then turn to face south
  */
-enum directions
-{
+enum directions {
 	NORTH		= 0,
 	NORTHEAST	= 1,
 	EAST		= 2,
@@ -111,8 +107,7 @@ enum directions
  *	usually only used by conversation scripts, as a way of narrowing down
  *	schedule-related behaviour.
  */
-enum day_periods
-{
+enum day_periods {
 	// The period is equal to one-third of the current game hour.
 	MIDNIGHT		= 0,	// 0-2
 	EARLY			= 1,	// 3-5
@@ -129,16 +124,14 @@ enum day_periods
  *	to a measuring function. These are commonly used with object-related
  *	intrinsics like UI_get_cont_items, UI_count_objects, UI_remove_party_items.
  */
-enum wildcards
-{
+enum wildcards {
 	SHAPE_ANY	= -359,
 	QUALITY_ANY	= -359,
 	FRAME_ANY	= -359
 };
 
 // tick multipliers, for use with UI_advance_time or script statements
-enum times
-{
+enum times {
 	MINUTE	= 25,
 	HOUR	= 1500
 };
@@ -147,7 +140,7 @@ const long DAY		= 36000;
  *	Examples:
  *	UI_advance_time(30 * MINUTE); // advance time by 30 game minutes
  *	UI_advance_time(2 * HOUR); // advance time by two game hours
- *	script after MINUTE ticks	{ ... } // schedule this script block to execute
+ *	script after MINUTE ticks {  ... } // schedule this script block to execute
  *	                       // after one game minute
  */
 
@@ -157,8 +150,7 @@ const long DAY		= 36000;
  *	These can be retrieved and set using UI_get_item_flag(itemref, flag),
  *	UI_set_item_flag(itemref, flag) and UI_clear_item_flag(itemref, flag).
 */
-enum item_flags
-{
+enum item_flags {
 	INVISIBLE			= 0,
 	ASLEEP				= 1,
 	CHARMED				= 2,
@@ -173,7 +165,7 @@ enum item_flags
 	OKAY_TO_TAKE		= 11,		// The item does not belong to anyone, and won't
 									// trigger stealing behaviour if you take it.
 	MIGHT				= 12,		// Double strength, dext, intel.
-	IMMUNITIES			= 13,		// Lots of imunities; can be gotten only.
+	IMMUNITIES			= 13,		// Lots of immunities; can be gotten only.
 	CANT_DIE			= 14,		// Test flag in monster_info.
 	IN_ACTION			= 15,		// If the NPC is doing something. Set by "Dance" spell in BG.
 	DONT_MOVE			= 16,		// SI-only. NPC can't move; "cutscene" mode.
@@ -210,14 +202,14 @@ enum item_flags
 	TATTOOED			= 33,
 	READ				= 34,		// Can read non-Latin alphabet scrolls, books, signs.
 	ISPETRA				= 35,
+	CAN_FLY				= 36,
 	FREEZE				= 37,
 	NAKED				= 38 		// Exult. Makes the avatar naked given its skin.
 									// Other NPCs should use set_polymorph instead.
 };
 
 // Business activities (taken from the cheat screen)
-enum schedules
-{
+enum schedules {
 	IN_COMBAT		= 0,	// renamed to not conflict with COMBAT, the NPC
 							// stat property.
 	PACE_HORIZONTAL	= 1,	// Walk horizontally until you hit a wall, then
@@ -276,13 +268,12 @@ enum schedules
 /*
  *	NPC animation frames. Use these with UI_set_item_frame or (preferably) in
  *	script blocks, with 'actor frame'.
- *	e.g.: script AVATAR { actor frame STAND; actor frame USE; actor frame
+ *	e.g.: script AVATAR {  actor frame STAND; actor frame USE; actor frame
  *	SWING_1; actor_frame STAND; }
  *	Important note: use 'actor frame' with NPCs instead of 'frame', as 'actor
  *	frame' takes the NPC's current facing into account.
  */
-enum npc_frames
-{
+enum npc_frames {
 	STAND		= 0,
 	WALK_1		= 1,
 	WALK_2		= 2,
@@ -307,8 +298,7 @@ enum npc_frames
 
 // North/South/East/West frame offsets for the NPC frames. Only really necessary
 // if you're using UI_set_item_frame or 'frame'
-enum frame_offsets
-{
+enum frame_offsets {
 	NORTH_FRAMESET	= 0,
 	SOUTH_FRAMESET	= 16,
 	WEST_FRAMESET	= 32,
@@ -317,14 +307,13 @@ enum frame_offsets
 
 // Ready slots for Black Gate: use with <UI_is_readied> or <UI_get_readied>.
 // These are the same whether paperdolls are on or off.
-enum inv_slots_bg
-{
+enum inv_slots_bg {
 	BG_BACKPACK		=  0,
 	BG_WEAPON_HAND	=  1,
-	BG_BOTH_HANDS	=  1,
 	BG_SHIELD_HAND	=  2,
 	BG_OFF_HAND		=  2,
 	BG_BELT			=  3,
+	BG_NECK			=  4,
 	BG_TORSO		=  5,
 	BG_LEFT_RING	=  6,
 	BG_RIGHT_RING	=  7,
@@ -332,23 +321,24 @@ enum inv_slots_bg
 	BG_HEAD			=  9,
 	BG_LEGS			= 10,
 	BG_FEET			= 11,
-	BG_USECODE		= 12,
-	BG_CLOAK		= 13,	// Exult-only
-	BG_GLOVES		= 14,	// Exult-only
-	BG_EARS			= 16,	// Exult-only
-	BG_BACK_SHIELD	= 17,	// Exult-only
-	BG_BACK_2H		= 19,	// Exult-only
-	BG_AMULET		= 22	// Exult-only
+	BG_USECODE		= 12,	// Exult-only; ported from SI
+	BG_CLOAK		= 13,	// Exult-only; ported from SI
+	BG_GLOVES		= 14,	// Exult-only; ported from SI
+	BG_TRIPLE_BOLTS	= 15,
+	BG_EARS			= 16,	// Exult-only; ported from SI
+	BG_BACK_SHIELD	= 17,	// Exult-only; ported from SI
+	BG_BACK_2H		= 19,	// Exult-only; ported from SI
+	BG_BOTH_HANDS	= 20,
+	BG_LRGLOVES		= 21,	// Uses both ring slots
+	BG_AMULET		= 22	// Exult-only; ported from SI
 };
 
 // Ready slots for Serpent Isle: use with <UI_is_readied> or <UI_get_readied>.
 // These are the same whether paperdolls are on or off.
-enum inv_slots_si
-{
+enum inv_slots_si {
 	SI_SHIELD_HAND	=  0,
 	SI_OFF_HAND		=  0,
 	SI_WEAPON_HAND	=  1,
-	SI_BOTH_HANDS	=  1,
 	SI_CLOAK		=  2,
 	SI_AMULET		=  3,
 	SI_HEAD			=  4,
@@ -364,7 +354,10 @@ enum inv_slots_si
 	SI_LEGS			= 14,
 	SI_BACKPACK		= 15,
 	SI_BACK_SHIELD	= 16,
-	SI_BACK_2H		= 17
+	SI_BACK_2H		= 17,
+	SI_TRIPLE_BOLTS	= 18,	// Exult-only; ported from BG
+	SI_BOTH_HANDS	= 20,
+	SI_LRGLOVES		= 21	// Exult-only; ported from BG; uses both ring slots
 };
 
 /*
@@ -376,8 +369,7 @@ enum inv_slots_si
  *	calculate a relative positive/negative adjustment to set it to a target
  *	value.
  */
-enum npc_properties
-{
+enum npc_properties {
 	STRENGTH		= 0,
 	DEXTERITY		= 1,
 	INTELLIGENCE	= 2,
@@ -396,8 +388,7 @@ enum npc_properties
 
 // NPC attack behaviours. Retrieve and set using UI_set_attack_mode(npc, mode)
 // and UI_get_attack_mode(npc).
-enum npc_attack_modes
-{
+enum npc_attack_modes {
 	NEAREST		= 0,
 	WEAKEST		= 1,
 	STRONGEST	= 2,
@@ -415,8 +406,7 @@ enum npc_attack_modes
  *	correspond to frame numbers in pointers.uc, but to some internal mapping.
  *	(the "BLOCKED" cursor seems to be unavailable through this method.)
  */
-enum cursors
-{
+enum cursors {
 	CURSOR_X			= 1,	//Default "no you can't do that" X cursor
 	CURSOR_OUT_OF_RANGE = 2,
 	CURSOR_OUT_OF_AMMO	= 3,
@@ -424,8 +414,7 @@ enum cursors
 	CURSOR_WONT_FIT		= 5
 };
 
-enum egg_states
-{
+enum egg_states {
 	CACHED_IN = 0,			// Activated when chunk read in?
 	PARTY_NEAR = 1,
 	AVATAR_NEAR = 2,		// Avatar steps into area.
@@ -436,17 +425,15 @@ enum egg_states
 	EXTERNAL_CRITERIA = 7	// Appears on Isle of Avatar.  Guessing
 };
 
-//NPC atitudes toward the avatar
-enum alignments
-{
+//NPC attitudes toward the avatar
+enum alignments {
 	NEUTRAL			= 0,
 	GOOD			= 1,
 	EVIL			= 2,
 	CHAOTIC			= 3
 };
 
-enum weather_types
-{
+enum weather_types {
 	CLEAR_WEATHER	= 0,
 	SNOWING			= 1,	//Unsure; in Exult, works the same as RAIN, below and seems identical to RAIN in the originals
 	RAIN			= 2,
@@ -458,23 +445,21 @@ enum weather_types
 
 //Mask values used (e.g.) in find_nearby intrinsic; these are flags, which mean
 //that they can be added together
-enum item_masks
-{
+enum item_masks {
 	MASK_NONE				= 0x0,
-	MASK_NPC				= 0x04,
-	MASK_NPC2				= 0x08,		//Maybe non-party NPCs only? All NPCs in Exult
+	MASK_NPC				= 0x04,		//Only find NPCs, alive or dead
+	MASK_NPC2				= 0x08,		//Only find living NPCs
 	MASK_EGG				= 0x10,		//Also for barges
 	MASK_INVISIBLE			= 0x20,
 	MASK_PARTY_INVISIBLE	= 0x40,
 	MASK_TRANSLUCENT		= 0x80,
-	MASK_ALL_UNSEEN			= 0xB0		//MASK_EGG+MASK_INVISIBLE+MASK_TRANLUCENT
+	MASK_ALL_UNSEEN			= 0xB0		//MASK_EGG+MASK_INVISIBLE+MASK_TRANSLUCENT
 };
 
 //NPC animation frames, WITH rotation bit. Use these with UI_set_item_frame_rot
 //or (preferably) in script blocks, with 'frame'.
-//e.g.: script AVATAR { frame STAND_WEST; frame USE_NORTH; frame SWING_1_SOUTH; frame STAND_EAST; }
-enum npc_rot_frames
-{
+//e.g.: script AVATAR {  frame STAND_WEST; frame USE_NORTH; frame SWING_1_SOUTH; frame STAND_EAST; }
+enum npc_rot_frames {
 	STAND_NORTH			= 0x0000,
 	WALK_1_NORTH		= 0x0001,
 	WALK_2_NORTH		= 0x0002,
@@ -541,12 +526,20 @@ enum npc_rot_frames
 	CAST_2_EAST			= 0x003F
 };
 
-enum damage_types
-{
+enum damage_types {
 	NORMAL_DAMAGE		= 0,
 	FIRE_DAMAGE			= 1,
 	MAGIC_DAMAGE		= 2,
 	LIGHTNING_DAMAGE	= 3,
+	POISON_DAMAGE		= 3,
+	STARVATION_DAMAGE	= 3,
+	FREEZING_DAMAGE		= 3,
 	ETHEREAL_DAMAGE		= 4,
 	SONIC_DAMAGE		= 5
+};
+
+enum sprite_repeats {
+	LOOP_ONCE = -1,		// Go through all frames once.
+	LOOP_UNTIL_OFFSCREEN = -2,	// Keep looping until the sprite is off-screen.
+	LOOP_REVERSE = -3	// As LOOP_ONCE, but in reverse order.
 };

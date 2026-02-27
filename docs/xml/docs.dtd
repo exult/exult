@@ -37,7 +37,7 @@
 <!ELEMENT q (#PCDATA)>
 
 <!-- Empty elements -->
-<!ELEMENT br (#PCDATA)>
+<!ELEMENT br EMPTY>
 <!ELEMENT Exult (#PCDATA)>
 <!ELEMENT Studio (#PCDATA)>
 <!ELEMENT Pentagram (#PCDATA)>

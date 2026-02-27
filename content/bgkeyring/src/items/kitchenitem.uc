@@ -25,97 +25,81 @@
  *	script, it must be included before bucket.uc and food.uc.
  */
 
-void KitchenItem shape#(0x35F) ()
-{
+void KitchenItem shape#(0x35F) () {
 	var framenum = get_item_frame();
-	var target;
+	struct<ObjPos> target;
 
-	if (event == DOUBLECLICK)
-	{
+	if (event == DOUBLECLICK) {
 		//flour sack behaviour
-		if (framenum == FRAME_FLOURSACK_OPEN)
-		{
+		if (framenum == FRAME_FLOURSACK_OPEN) {
 			target = UI_click_on_item();
-			var target_pos = target->get_object_position();
+			struct<Position> target_pos = target->get_object_position();
 			var target_shape = target->get_item_shape();
 
-			if (target_shape == SHAPE_WORKTABLE_HORIZONTAL)
-			{
-				target_pos[X] = target_pos[X] - UI_die_roll(0, 3);
+			if (target_shape == SHAPE_WORKTABLE_HORIZONTAL) {
+				target_pos.x -= UI_die_roll(0, 3);
 				//vertical offset ensures the flour ends up on top of the table
-				target_pos[Z] = target_pos[Z] + 2;
-			}
-			else if (target_shape == SHAPE_WORKTABLE_VERTICAL)
-			{
-				target_pos[Y] = target_pos[Y] - UI_die_roll(0, 2);
+				target_pos.z += 2;
+			} else if (target_shape == SHAPE_WORKTABLE_VERTICAL) {
+				target_pos.y -= UI_die_roll(0, 2);
 				//vertical offset ensures the flour ends up on top of the table
-				target_pos[Z] = target_pos[Z] + 2;
-			}
-			//only those two kinds of tables are supported, oddly
-			else
-			{
+				target_pos.z += 2;
+			} else {
+				//only those two kinds of tables are supported, oddly
 				randomPartySay("@Why not put the flour on the table first?@");
 				return;
 			}
 
 			//create and position the new flour object
 			var flour = SHAPE_DOUGH->create_new_object();
-			if (!flour) return;
+			if (!flour) {
+				return;
+			}
 			flour->set_item_frame(FRAME_FLOUR);
-			flour->set_item_flag(TEMPORARY);	//now what the hell is this flag?
+			flour->set_item_flag(TEMPORARY);
 			target_pos->update_last_created();
-		}
-
-		//empty pitcher behaviour - go and pick up the pitcher
-		//then rerun the function with event = SCRIPTED
-		else if (framenum == FRAME_PITCHER) gotoAndGet(item);
-
-		//rolling pin behaviour
-		else if (framenum in [FRAME_ROLLINGPIN, FRAME_ROLLINGPIN_2])
-		{
+		} else if (framenum == FRAME_PITCHER) {
+			gotoAndGet(item);
+		} else if (framenum in [FRAME_ROLLINGPIN, FRAME_ROLLINGPIN_2]) {
+			//empty pitcher behaviour - go and pick up the pitcher
+			//then rerun the function with event = SCRIPTED
+			//rolling pin behaviour
 			target = UI_click_on_item();
 
-			//rolling pin was used on a ball of dough
-			if (target->get_item_shape() == SHAPE_DOUGH && target->get_item_frame() == FRAME_DOUGH_BALL)
+			if (target->get_item_shape() == SHAPE_DOUGH && target->get_item_frame() == FRAME_DOUGH_BALL) {
+				//rolling pin was used on a ball of dough
 				//roll it out into flat dough
 				target->set_item_frame(FRAME_DOUGH_FLAT);
-
-			//rolling pin was used on a person (donk!)
-			else if (canTalk(target))
+			} else if (canTalk(target)) {
+				//rolling pin was used on a person (donk!)
 				target->item_say("@Hey! That really hurt!@");
-		}
-
-		//closed floursack behaviour (no idea why there are two identical
-		//frames for this...)
-		else if (framenum in [FRAME_FLOURSACK, FRAME_FLOURSACK_2])
+			}
+		} else if (framenum in [FRAME_FLOURSACK, FRAME_FLOURSACK_2]) {
+			//closed floursack behaviour (no idea why there are two identical
+			//frames for this...)
 			set_item_frame(FRAME_FLOURSACK_OPEN);
-
-		//churn behaviour (simple prompt for milk)
-		else if (framenum == FRAME_CHURN)
+		} else if (framenum == FRAME_CHURN) {
+			//churn behaviour (simple prompt for milk)
 			randomPartySay("@Thou shan't get far without some milk to churn!@");
-
-		//full pitcher behaviour
-		else if (framenum == FRAME_PITCHER_MILK)
-		{
+		} else if (framenum == FRAME_PITCHER_MILK) {
+			//full pitcher behaviour
 			target = UI_click_on_item();
-			if (target->get_item_shape() == SHAPE_KITCHEN_ITEM && target->get_item_frame() == FRAME_CHURN)
+			if (target->get_item_shape() == SHAPE_KITCHEN_ITEM && target->get_item_frame() == FRAME_CHURN) {
 				gotoChurn(target, CHURN_WITH_PITCHER);
-			else
+			} else {
 				randomPartySay("@Why not churn that milk into butter?@");
+			}
 		}
-	}
-
-	//currently only pitchers use this, since they need to be manually picked up
-	//Note that this calls milkCow(), which lives in cow.uc
-	else if (event == SCRIPTED)
-	{
-		if (framenum == FRAME_PITCHER)
-		{
+	} else if (event == SCRIPTED) {
+		//currently only pitchers use this, since they need to be manually picked up
+		//Note that this calls milkCow(), which lives in cow.uc
+		if (framenum == FRAME_PITCHER) {
 			target = UI_click_on_item();
-			if (target->get_item_shape() == SHAPE_COW)
+			if (target->get_item_shape() == SHAPE_COW) {
 				gotoCow(target, MILK_WITH_PITCHER);
-			else
+			} else {
 				randomPartySay("@Thou couldst always milk a cow to fill yon pitcher... if thou don't mind getting thy hands dirty, that is!@");
+			}
 		}
 	}
 }

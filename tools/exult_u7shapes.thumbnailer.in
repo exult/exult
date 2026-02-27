@@ -1,0 +1,4 @@
+[Thumbnailer Entry]
+TryExec=@bindir@/exult_shp_thumbnailer
+Exec=@bindir@/exult_shp_thumbnailer -s %s %i %o
+MimeType=image/x-shapefile

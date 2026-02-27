@@ -24,15 +24,27 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #ifndef ISTRING_H
 #define ISTRING_H
 
-#include <string>
 #include "common_types.h"
+
+#include <string>
 
 namespace Pentagram {
 
-int strcasecmp(const char *s1, const char *s2);
-int strncasecmp(const char *s1, const char *s2, std::size_t length);
+	int strcasecmp(const char* s1, const char* s2);
+	int strncasecmp(const char* s1, const char* s2, std::size_t length);
 
-}
+	inline void tolower(char* str) {
+		while (*str) {
+			char& c = *str++;
+			c       = std::tolower(c);
+		}
+	}
+
+	inline void tolower(std::string& str) {
+		for (char& c : str) {
+			c = std::tolower(c);
+		}
+	}
+}    // namespace Pentagram
 
 #endif
-

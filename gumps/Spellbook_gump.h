@@ -34,7 +34,8 @@ int sign(T val) {
  */
 class Spelltype_gump : public Gump {
 public:
-	Spelltype_gump(int shnum) : Gump(nullptr, shnum) {  }
+	Spelltype_gump(int shnum) : Gump(nullptr, shnum) {}
+
 	// Perform spell.
 	virtual void do_spell(int spell) = 0;
 	// Set bookmark.
@@ -45,55 +46,56 @@ public:
  *  Open spellbook.  The spells are drawn in the object area.
  */
 class Spellbook_gump : public Spelltype_gump {
-	int page;           // Starting with 0 (= circle #).
-	int turning_page;       // 1 if turning forward, -1 backward,
+	int page;            // Starting with 0 (= circle #).
+	int turning_page;    // 1 if turning forward, -1 backward,
 	//   0 if not turning.
-	int turning_frame;      // Next frame to show.
+	int   turning_frame;    // Next frame to show.
 	short avail[9 * 8];     // For each spell, # which the
 	//   available reagents make possible.
-	Spellbook_object *book;     // Book this shows.
-	Game_object *book_owner;    // Top-owner of book.
+	Spellbook_object* book;          // Book this shows.
+	Game_object*      book_owner;    // Top-owner of book.
 	// Page turners:
-	Gump_button *leftpage, *rightpage;
-	Bookmark_button *bookmark;
-	Gump_button *spells[9 * 8]; // ->spell 'buttons'.
-	int spwidth, spheight;      // Dimensions of a spell shape.
-	void set_avail();       // Set up counts.
+	Gump_button *    leftpage, *rightpage;
+	Bookmark_button* bookmark;
+	Gump_button*     spells[9 * 8];        // ->spell 'buttons'.
+	int              spwidth, spheight;    // Dimensions of a spell shape.
+	void             set_avail();          // Set up counts.
 public:
 	friend class Bookmark_button;
-	Spellbook_gump(Spellbook_object *b);
+	Spellbook_gump(Spellbook_object* b);
 	~Spellbook_gump() override;
-	void do_spell(int spell) override;   // Perform spell.
-	void change_page(int delta);    // Page forward/backward.
-	void select_spell(int spell) override;   // Set bookmark.
-	Game_object *get_owner() override;// Get object this belongs to.
+	void         do_spell(int spell) override;        // Perform spell.
+	void         change_page(int delta);              // Page forward/backward.
+	void         select_spell(int spell) override;    // Set bookmark.
+	Game_object* get_owner() override;                // Get object this belongs to.
 	// Is a given point on a button?
-	Gump_button *on_button(int mx, int my) override;
+	Gump_button* on_button(int mx, int my) override;
 	// Paint button.
-	void paint_button(Gump_button *btn);
+	void paint_button(Gump_button* btn);
 	// Paint it and its contents.
 	void paint() override;
-	bool handle_kbd_event(void *ev) override;
+	bool handle_kbd_event(void* ev) override;
 };
 
 /*
  *  Open spell-scroll in Serpent Isle.
  */
 class Spellscroll_gump : public Spelltype_gump {
-	Game_object *scroll;        // Scroll clicked on.
-	Gump_button *spell;
-	int spwidth, spheight;      // Dimensions of a spell shape.
+	Game_object* scroll;    // Scroll clicked on.
+	Gump_button* spell;
+	int          spwidth, spheight;    // Dimensions of a spell shape.
 public:
-	Spellscroll_gump(Game_object *s);
+	Spellscroll_gump(Game_object* s);
 	~Spellscroll_gump() override;
-	void do_spell(int spell) override;   // Perform spell.
-	void select_spell(int) override
-	{  }
-	Game_object *get_owner() override;// Get object this belongs to.
+	void do_spell(int spell) override;    // Perform spell.
+
+	void select_spell(int) override {}
+
+	Game_object* get_owner() override;    // Get object this belongs to.
 	// Is a given point on a button?
-	Gump_button *on_button(int mx, int my) override;
+	Gump_button* on_button(int mx, int my) override;
 	// Paint button.
-	void paint_button(Gump_button *btn);
+	void paint_button(Gump_button* btn);
 	// Paint it and its contents.
 	void paint() override;
 };

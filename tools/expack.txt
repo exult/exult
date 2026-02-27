@@ -22,7 +22,7 @@ DESCRIPTION
 
 expack is a command-line utility that lets you extract and create Flex files. 
 Flex files are archives (which means that they act as containers for other 
-files, somewhat like directories) used by Ultima 7 to store most of its data. 
+files, somewhat like directories) used by Ultima VII to store most of its data. 
 Note that the names of the original files are not stored in the Flex --- files 
 are only retrievable by their index. 
 

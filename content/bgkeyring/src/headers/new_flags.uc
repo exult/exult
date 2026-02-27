@@ -23,8 +23,7 @@
  *	Last Modified: 2006-03-19
  */
 
-enum new_misc_flags
-{
+enum new_misc_flags {
 	//The player has heard a Fellowship member rabbit on about
 	//their philosophy. Used for new conversation behaviour by
 	//askAboutPhilosophy() in npcs.uc.
@@ -37,15 +36,13 @@ enum new_misc_flags
 
 //Flags used by the selling-fish-to-Gordon conversation option
 //(use static vars instead?)
-enum gordon_fish_sales
-{
+enum gordon_fish_sales {
 	ASKED_GORDON_ABOUT_FISHING				= 0x360,
 	HIRED_BY_GORDON							= 0x361,
 	GOT_GORDONS_ROD							= 0x362
 };
 
-enum menion_swordmaking
-{
+enum menion_swordmaking {
 	//Menion is waiting to give you a sword you were carrying
 	//too much to accept
 	MENION_HAS_SWORD						= 0x363,
@@ -54,42 +51,41 @@ enum menion_swordmaking
 };
 
 //Flags used by the Rune of Honor quest
-enum rune_of_honor_flags
-{
+enum rune_of_honor_flags {
 	//Talked to Finnigan about Trinsic and the Rune of
 	//Honor (starts off quest)
 	TOLD_ABOUT_RUNE							= 0x370,
-	
+
 	//Talked to Candice about Rune and need LB's permission
 	//to return it
 	NEED_PERMISSION_FOR_RUNE				= 0x371,
 	//Got LB's permission to return Rune
 	GOT_PERMISSION_FOR_RUNE					= 0x372,
-	
+
 	//Candice wants a replica made
 	NEED_REPLICA_RUNE						= 0x373,
 	//Found out who can make the replica
 	KNOWS_ARTISAN_FOR_RUNE					= 0x374,
 	//Received the replica rune (prevents it being given twice)
 	GOT_REPLICA_RUNE						= 0x375,
-	
+
 	//The replica is on the pedestal in Trinsic
 	FAKE_RUNE_IN_TRINSIC					= 0x376,
 	//The real rune is on the pedestal in Trinsic
 	REAL_RUNE_IN_TRINSIC					= 0x377,
-	
+
 	//The replica is on the pedestal in Britain
 	FAKE_RUNE_IN_BRITAIN					= 0x378,
 	//The real rune has been removed from the pedestal in Britain
 	//(needs to be inverted because it will start out false)
 	RUNE_TAKEN_FROM_BRITAIN					= 0x379,
-	
+
 	//The theft discovery timer has been started (prevents
 	//it restarting)
 	RUNE_THEFT_TIMER_RUNNING				= 0x37A,
 	//Finnigan has got angry letter, demands you return the rune
 	RUNE_THEFT_DISCOVERED					= 0x37B,
-	
+
 	//Returned the real rune to Britain after stealing it
 	//(failed end of quest)
 	RETURNED_STOLEN_RUNE					= 0x37C,
@@ -114,8 +110,7 @@ const int MAGE_KILLED						= 0x605;
 //Some of the above flags are cleared when the player meets
 //Laurianna. This is for economy of global flags, as the
 //quest is reaching its end:
-enum laurianna_metaplot_flags
-{
+enum laurianna_metaplot_flags {
 	LAURIANNA_DRANK_POTION					= 0x5FF,
 	RECEIVED_ZAURIEL_REWARD					= 0x600,
 	LAURIANNA_CURED							= 0x601,
@@ -126,15 +121,13 @@ enum laurianna_metaplot_flags
 
 //some of the above flags are cleared again when Laurianna
 //moves to Yew.  This is for economy of global flags.
-enum laurianna_yew_flags
-{                                               
+enum laurianna_yew_flags {
 	LAURIANNA_READY							= 0x5FF,
 	LAURIANNA_WILL_JOIN						= 0x600
 };
 
 //The following flags are used for meditating in shrines:
-enum shrine_meditation_flags
-{
+enum shrine_meditation_flags {
 	// This first value is never actually used as a flag;
 	// it has been defined for convenience only
 	MEDITATED_AT_SHRINE_BASE				= 0x608,
@@ -151,8 +144,7 @@ enum shrine_meditation_flags
 //When the following flags are set, the above flags
 //are cleared; thus, we can control the quest with
 //only two flags per shrine.
-enum codex_quest_flags
-{
+enum codex_quest_flags {
 	// This first value has been defined for convenience only,
 	// and is actually used for meditation at the Honesty shrine
 	VIEWED_CODEX_BASE						= 0x610,
@@ -171,8 +163,7 @@ enum codex_quest_flags
 const int IN_CODEX_QUEST					= 0x619;
 
 //Codex mini-quest flags:
-enum codex_quest_flags
-{
+enum codex_quest_flags {
 	SEEN_CODEX_ONCE							= 0x61A,
 	SPIRITUALITY_STONE_QUEST				= 0x61B,
 	ATTUNED_SPIRITUALITY_STONE				= 0x61C,

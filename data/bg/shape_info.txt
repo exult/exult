@@ -12,52 +12,52 @@
 #		:shapenum/spritenum/sfxnum
 #	If a shape is not in the list below, it will use the 'default'
 #	explosion (spritenum 5) with no sound effect (sfxnum -1).
-#   You can leave sfxnum out, in which case there will be no SFX.
+#	You can leave sfxnum out, in which case there will be no SFX.
 #
-#	 Delayed blast
+#		Delayed blast.
 #
 :399/13/65
 
-#	 Death Vortex
+#		Death Vortex.
 #
 :639/8/63
 
-#	 Burst Arrow
+#		Burst Arrow.
 #
 :554/19/7
 
-#	 Explosion
+#		Explosion.
 #
 :78/4/8
 
-#	 Delayed Blast
+#		Delayed Blast.
 #
 :621/4/9
 
-#	 Cannon
+#		Cannon.
 #
 :702/4/9
 
-#	 Powder Keg
+#		Powder Keg.
 #
 :704/4/9
 
-#	 Starburst
+#		Starburst.
 #
 :565/18/7
 
-#	 Swordstrike
+#		Swordstrike.
 #
 :287/23/65
 
-#	 Fire Bolt
+#		Fire Bolt.
 #
 :856/5/65
 %%endsection
 
 %%section shape_sfx
 #	Format
-#		:shapenum/sfxnum/chance/range/rand/extra
+#		:shapenum/sfxnum/chance/range/rand/extra/volume/framenum
 #	Only the first two parameters are required.
 #	chance is the % chance of playing the sfx at any given moment.
 #	Values of chance not in the [1-100] interval are treated as 100.
@@ -66,164 +66,166 @@
 #	rand is a flag controlling how range is used: if rand is 1, Exult
 #	will randomly play one sfx in the range; if rand is 0, Exult will
 #	play them sequentially, wrapping back to the first sfx.
-#	extra is basicall for the grandfather clock. It is a SFX that will
+#	extra is basically for the grandfather clock. It is a SFX that will
 #	play every game hour a number of times equal to hour % 12 (or
 #	twelve times for midnight).
+#	Volume is used to control individual sfx volume levels. If no value
+#	is given, 100% volume will be assumed.
+#	framenum sets which frame plays the sfx, -1 is the default and plays
+#	for all frames.
 #
-#	Surf (49)
-:612/49
-:613/49
-:632/49
-:736/49
-:737/49
-:751/49
-:808/49
-:834/49
-:875/49
-:907/49
-:911/49
-:918/49
-:1012/49
-:1020/49
-:1022/49
+#		Surf (49).
+#
+:612/49/0/0/0/-1/20
+:613/49/0/0/0/-1/20
+:632/49/0/0/0/-1/20
+:699/49/0/0/0/-1/20
+:736/49/0/0/0/-1/20
+:737/49/0/0/0/-1/20
+:751/49/0/0/0/-1/20
+:808/49/0/0/0/-1/20
+:834/49/0/0/0/-1/20
+:875/49/0/0/0/-1/20
+:907/49/0/0/0/-1/20
+:911/49/0/0/0/-1/20
+:918/49/0/0/0/-1/20
+:1012/49/0/0/0/-1/20
+:1020/49/0/0/0/-1/20
+:1022/49/0/0/0/-1/20
 
-#	Bubbles (54 to 58)
+#		Bubbles (54 to 58).
 #
-:334/54/100/5/1
-:335/54/100/5/1
+:334/54/100/5/1/-1/50
+:335/54/100/5/1/-1/50
 #	Doesn't seem to play sounds
 #:780/54/100/5/1
 
-#	Slimes (54 to 58)
+#		Slimes (54 to 58).
 #
 :529/54/100/5/1
 
-#	Fountains
+#		Fountains.
 #
-:893/48
+:893/48/0/0/0/-1/40
 
-#	Moongates
+#		Moongates.
 #
-:157/77
-:776/77
-:777/77
-:779/77
+:157/77/0/0/0/-1/80
+:776/77/0/0/0/-1/80
+:777/77/0/0/0/-1/80
+:779/77/0/0/0/-1/80
 
-#	Ethereal monster
+#		Ethereal monster.
 #
 :230/79
 
-#	Sphere generator
+#		Sphere generator.
 #
-:234/80
-:235/80
-:236/80
+:234/80/0/0/0/-1/80
+:235/80/0/0/0/-1/80
+:236/80/0/0/0/-1/80
 
-#	Tetrahedron generator
+#		Tetrahedron generator.
 #
-:242/81
-:243/81
-:244/81
+:242/81/0/0/0/-1/60
+:243/81/0/0/0/-1/60
+:244/81/0/0/0/-1/60
 
-#	Cube generator
+#		Cube generator.
 #
-:238/82
-:239/82
-:240/82
+:238/82/0/0/0/-1/80
+:239/82/0/0/0/-1/80
+:240/82/0/0/0/-1/80
 
-#	Black gate
+#		Black gate.
 #
-:305/78
+:305/78/0/0/0/-1/80
 
-#	Vortex cube
-#
-:786/79
-
-#	Grandfather clock
+#		Grandfather clock.
 #
 :252/17/100/2/0/19
 :695/17/100/2/0/19
 
-#	Cavern
+#		Cavern.
 #
-:389/103/5
-:391/103/5
+:389/103/5/0/0/0/-1/80
+:391/103/5/0/0/0/-1/80
 
-#	Bee
+#		Bee.
 #
-:494/113
+:494/113/0/0/0/-1/70
 
-#	Magic weapons
+#		Magic weapons.
 #
-:547/104
-:548/104
-:559/104
-:562/104
+:547/104/0/0/0/-1/50
+:548/104/0/0/0/-1/50
+:559/104/0/0/0/-1/50
+:562/104/0/0/0/-1/50
 
-#	Flaming weapons -- sounds awful, so it is disabled
+#		Flaming weapons -- sounds awful, so it is disabled.
 #
 #:551/20/50/3/1
 #:553/20/50/3/1
 #:630/20/50/3/1
 
-#	Mechanism
+#		Mechanism.
 #
-:685/114
+:685/114/0/0/0/-1/60
 
-#	Mill Stone
+#		Mill Stone.
 #
-:711/26
+:711/26/0/0/0/-1/50
 
-#	Well of Souls
+#		Well of Souls.
 #
-:748/52
+:748/52/0/0/0/-1/60/1
 
-#	Orrery
+#		Orrery -- only shape #767 plays sfx to prevent too much noise.
 #
-:755/114
+#:755/114
 :767/114
 
-#	Energy Field
+#		Energy Field.
 #
-:768/11
+:768/11/20/0/0/-1/20
 
-#	Smokebomb
+#		Smokebomb.
 #
-:769/52
+:769/52/0/0/0/-1/100
 
-#	The Vortex Cube
+#		The Vortex Cube.
 #
-:786/79
+:786/79/0/0/0/-1/70
 
-#	Water
+#		Water.
 #
-:794/50
+:794/50/0/0/0/-1/30
 
-#	Campfire -- sounds awful, so it is disabled
+#		Campfire -- sounds awful, so it is disabled.
 #
 #:825/20/50/3/1
 
-#	Fire Field -- sounds awful, so it is disabled
+#		Fire Field -- sounds awful, so it is disabled.
 #
 #:895/20/50/3/1
 
-#	Poison/Sleep Field
+#		Poison/Sleep Field.
 #
-:900/52
-:902/52
+:900/52/11/20/0/0/-1/40
+:902/52/11/20/0/0/-1/40
 
-#	Water Wheel
+#		Water Wheel -- only shapes #942 & #952 play sfx to prevent too much noise.
 #
-:934/59
-:941/59
-:942/59
-:951/59
+#:934/59
+#:941/59
+:942/59/0/0/0/-1/80
+:951/59/0/0/0/-1/80
 
-#	Prisms
+#		Prisms.
 #
-:968/81
-:981/81
-:1010/11
+:968/81/0/0/0/-1/60
+:981/81/0/0/0/-1/60
+:1010/11/0/0/0/-1/60
 %%endsection
 
 %%section animation
@@ -279,19 +281,24 @@
 #
 #	Quest items
 #
-#		Ring of invibility
+#		Ring of invibility.
+#
 :296/1
 
-#		Ring of protection
+#		Ring of protection.
+#
 :297/1
 
-#		Ring of regeneration
+#		Ring of regeneration.
+#
 :298/1
 
-#		Lit light source
+#		Lit light source.
+#
 :338/1
 
-#		Lit torch
+#		Lit torch.
+#
 :701/1
 %%endsection
 
@@ -333,7 +340,7 @@
 :522/-1/0/4
 :522/-1/255/4
 
-#		Vertical Door - 270.
+#		Vertical door.
 #
 :270/0/0/6
 :270/1/0/6
@@ -345,7 +352,7 @@
 :270/17/0/6
 :270/18/0/6
 
-#		Horizontal Door - 376.
+#		Horizontal door.
 #
 :376/0/0/6
 :376/1/0/6
@@ -357,7 +364,7 @@
 :376/17/0/6
 :376/18/0/6
 
-#		Vertical Door - 432.
+#		Vertical door.
 #
 :432/0/0/6
 :432/1/0/6
@@ -366,7 +373,7 @@
 :432/5/0/6
 :432/6/0/6
 
-#		Horizontal Door - 433.
+#		Horizontal door.
 #
 :433/0/0/6
 :433/1/0/6
@@ -375,7 +382,7 @@
 :433/5/0/6
 :433/6/0/6
 
-#		Powder keg
+#		Powder keg.
 #
 :704/-1/0/4
 %%endsection
@@ -457,47 +464,47 @@
 #	goblin: nonzero if goblin, zero otherwise
 #
 #
-#		Mages
+#		Mages.
 #
 :154/0/0/1/1/1/0/0/0
 :445/0/0/1/1/1/0/0/0
 :446/0/0/1/1/1/0/0/0
 
-#		Ghosts
+#		Ghosts.
 #
 :299/0/0/0/1/1/0/0/0
 :317/0/0/0/1/1/0/0/0
 
-#		Liches
+#		Liches.
 #
 :354/0/0/1/1/1/0/0/0
 :519/0/0/1/1/1/0/0/0
 
-#		Dragon
+#		Dragon.
 #
 :504/0/0/0/0/1/0/0/0
 
-#		Gazer
+#		Gazer.
 #
 :511/0/0/0/0/1/0/0/0
 
-#		Kissme
+#		Kissme.
 #
 :382/0/0/0/1/0/0/0/0
 
-#		Wisp
+#		Wisp.
 #
 :534/0/0/0/1/0/0/0/0
 
-#		Batlin
+#		Batlin.
 #
 :403/0/0/0/0/0/1/0/0
 :482/0/0/0/0/0/1/0/0
 
-#		Lord British
+#		Lord British.
 :466/0/0/0/0/0/1/0/0
 
-#		Cyclops
+#		Cyclops.
 #
 :380/0/0/0/0/0/0/1/0
 :501/0/0/0/0/0/0/1/0
@@ -519,7 +526,7 @@
 
 #		Light.
 #
-198:/-1/3
+:198/-1/3
 
 #		Lit light source.
 #
@@ -573,6 +580,109 @@
 #		Campfire.
 #
 :825/-1/7
+
+#	not original light sources:
+
+#		Laboratory Burner.
+#
+:307/1/1
+
+#		Lightning whip.
+#
+:549/-1/5
+
+#		Stove.
+#
+:664/1/1
+
+#		Sword blank.
+#
+:668/1/1
+:668/2/1
+:668/3/2
+:668/4/3
+
+#		Baking hearth.
+#
+:831/-1/2
+
+#		Moongates.
+#
+:157/-1/1
+:776/-1/1
+:777/-1/1
+:779/-1/1
+
+#		FoV mirror.
+#
+:848/3/1
+:848/4/1
+:848/5/1
+:848/6/1
+:848/7/1
+:848/8/1
+:848/9/1
+
+#	shapes that might be eligible for lighting:
+
+#		Magic locks on doors (light sources in U6).
+#
+#:225/3/1
+#:270/3/1
+#:270/7/1
+#:270/11/1
+#:270/15/1
+#:270/19/1
+#:376/3/1
+#:376/7/1
+#:376/11/1
+#:376/15/1
+#:376/19/1
+#:432/3/1
+#:432/7/1
+#:432/11/1
+#:433/3/1
+#:433/7/1
+#:433/11/1
+
+#		Musket.
+#
+#:278/2/1
+#:278/3/1
+#:278/4/1
+
+#		Ignite spell shape.
+#
+#:280/-1/1
+
+#		Glimmer spell shape.
+#
+#:566/-1/5
+
+#		Firedoom type spell shape.
+#
+#:676/-1/3
+
+#		Lightning spell shape.
+#
+#:731/-1/1
+#:807/-1/1
+
+#		Fire bolt shape.
+#
+#:856/-1/3
+
+#		Dragon breath spell shape.
+#
+#:857/-1/8
+
+#		Casting frames.
+#
+#:859/-1/2
+
+#		Sun piece of orrery.
+#
+#:988/8/2
 %%endsection
 
 %%section warmth_data
@@ -609,8 +719,8 @@
 
 #		Gloves.
 #
-579:/-1/7
-580:/-1/-5
+:579/-1/7
+:580/-1/-5
 
 #		Legs.
 #
@@ -854,18 +964,18 @@
 #		neck = 20				Fills cloak, amulet slots
 #		scabbard = 21			Fills belt, back2h_spot and back_shield spots
 #
-#	Bodies.
+#		Bodies.
 #
 :400/3/8
 :402/3/8
 :414/3/8
 
-#	Torch.
+#		Torch.
 #
 :595/8/2
 :701/8/2
 
-#	SHIELDS
+#		SHIELDS.
 #
 :543/8/21
 :545/8/21
@@ -874,13 +984,13 @@
 :609/8/21
 :663/8/21
 
-#	WEAPONS 1 H
+#		WEAPONS 1 H.
 #
 :555/8/21
 :592/8/21
 
 
-#	WEAPONS 2H
+#		WEAPONS 2H.
 #
 :548/21/-1
 :553/21/-1
@@ -905,23 +1015,23 @@
 :598/2/-1
 :647/2/-1
 
-#	Bed roll.
+#		Bed roll.
 #
 :583/21/-1
 
-#	CLOAKS
+#		CLOAKS
 #
 :285/20/-1
 
-#	Kidney Belt
+#		Kidney Belt
 #
 :584/2/-1
 
-#	Bag (Belt)
+#		Bag (Belt)
 #
 :802/2/-1
 
-#	Diaper
+#		Diaper
 :822/5/-1
 
 %%endsection
@@ -942,16 +1052,16 @@
 #		barge_draftanimal = 5
 #		barge_turtle = 6
 #
-#	Cart parts.
+#		Cart parts.
 #
 :774/4
 :796/5
 
-#	Seat.
+#		Seat.
 #
 :292/2
 
-#	Sails.
+#		Sails.
 #
 :251/3
 %%endsection
@@ -971,7 +1081,7 @@
 #	showing a gump when double-clicked.
 #	reagents: Gives effectivelly infinite reagents.
 #
-#	Swamp boots.
+#		Swamp boots.
 #
 :588/-1/-1/0/0/0/0/0/0/0/0/0/0/1/0
 %%endsection
@@ -1010,7 +1120,6 @@
 #	flag: If nonzero, the object is on fire.
 #
 #
-
 :179/1
 :198/1
 :338/1
@@ -1051,23 +1160,24 @@
 #		caltrops = 3
 #		campfire = 4
 #
-#	Fire field
+#		Fire field.
 #
 :895/0
 
-#	Sleep field
+#		Sleep field.
 #
 :902/1
 
-#	Poison field
+#		Poison field.
 #
 :900/2
 
-#	Caltrops
+#		Caltrops.
 #
 :756/3
 
-#	Campfire
+#		Campfire.
+#
 :825/4
 %%endsection
 
@@ -1083,7 +1193,7 @@
 #	quality: The quality that grants the flag or -1 for all qualities.
 #	type: Nonzero if specifying a function name, zero if specifying a number.
 #
-#	Books.
+#		Books.
 #
 :642/-1/100/0/1592
 :642/-1/101/0/1592
@@ -1165,4 +1275,16 @@
 :642/-1/177/0/1592
 :642/-1/178/0/1592
 :642/-1/179/0/1592
+%%endsection
+
+%%section on_hit_usecode
+#
+#	Usecode function to be called when a weapon hits if it has the 'no damage'
+#	flag set.
+#
+#	Format:
+#		:shapenum/funid
+#
+#	funid: Function id to call, or -1 for none.
+#
 %%endsection

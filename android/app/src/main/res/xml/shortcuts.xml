@@ -1,0 +1,17 @@
+<?xml version ="1.0" encoding="utf-8"?>
+<shortcuts xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- Force Start Launcher shortcut. Just runs ExultLauncherActivity activity with an Intent for EDIT action -->
+    <shortcut android:shortcutId="force_launcher"
+        android:enabled="true"
+        android:icon="@drawable/ankh"
+        android:shortcutShortLabel="@string/shortcut_launcher_shortlabel"
+        android:shortcutLongLabel="@string/shortcut_launcher_longlabel"
+        android:shortcutDisabledMessage="@string/shortcut_launcher_disabledmessage">
+        <intent
+            android:action="android.intent.action.EDIT"
+            android:targetPackage="info.exult"
+            android:targetClass="info.exult.ExultLauncherActivity" />
+
+    </shortcut>
+</shortcuts>

@@ -25,8 +25,7 @@
  *	Last Modified: 2006-02-27
  */
 
-enum MakePotion_levels
-{
+enum MakePotion_levels {
 	CAST_TELEPORT						= 1,
 	TELEPORT_WIDGETS					= 2,
 	POTION_FADE_SCREEN					= 3,
@@ -50,75 +49,73 @@ enum MakePotion_levels
 	IS_AT_POTION_2						= 21
 };
 
-void zaurielMakePotion object#() ()
-{
-	var pos;
+void zaurielMakePotion object#() () {
+	struct<Position> pos;
 	var party = UI_get_party_list();
 	var casting;
-	
-	if (event == CAST_TELEPORT)
-	{
+
+	if (event == CAST_TELEPORT) {
 		//item = ZAURIEL
 		ZAURIEL->show_npc_face(0);
 		say("@I shall teleport us all into my lab so that we have some privacy while I work on the potion.@");
 		//Teleportation spell:
-		script item
-		{	nohalt;						finish;
-			face south;					call showCastingFrames;
-			actor frame cast_up;			wait 2;						say "@Vas In Por@";
-			next frame;					wait 2;						previous frame;
-			wait 2;						next frame;					wait 2;
-			previous frame;				sfx SOUND_TELEPORT;
+		script item {
+			nohalt;
+			finish;
+			face south;
+			call showCastingFrames;
+			actor frame cast_up;
+			wait 2;
+			say "@Vas In Por@";
+			next frame;
+			wait 2;
+			previous frame;
+			wait 2;
+			next frame;
+			wait 2;
+			previous frame;
+			sfx SOUND_TELEPORT;
 			call zaurielMakePotion, TELEPORT_WIDGETS;
 			wait 8;
 			call zaurielMakePotion, POTION_FADE_SCREEN;
 			actor frame standing;
 			wait 5;
-			call zaurielMakePotion, MOVE_TO_LAB;}
+			call zaurielMakePotion, MOVE_TO_LAB;
+		}
 		abort;
-	}
-	
-	else if (event == TELEPORT_WIDGETS)
-	{
+	} else if (event == TELEPORT_WIDGETS) {
 		//item = ZAURIEL
 		//The spell effect animation:
 		pos = get_object_position();
-		UI_sprite_effect(ANIMATION_TELEPORT, pos[X], pos[Y], 0, 0, 0, -1);
-		for (npc in party)
-		{
+		UI_sprite_effect(ANIMATION_TELEPORT, pos.x, pos.y, 0, 0, 0, -1);
+		for (npc in party) {
 			pos = npc->get_object_position();
-			UI_sprite_effect(ANIMATION_TELEPORT, pos[X], pos[Y], 0, 0, 0, -1);
+			UI_sprite_effect(ANIMATION_TELEPORT, pos.x, pos.y, 0, 0, 0, -1);
 		}
-	}
-	
-	else if (event == POTION_FADE_SCREEN)
+	} else if (event == POTION_FADE_SCREEN) {
 		//Fade to black:
 		UI_fade_palette(12, 1, 0);
-	
-	else if (event == MOVE_TO_LAB)
-	{
+	} else if (event == MOVE_TO_LAB) {
 		//item = ZAURIEL
 		//Move Zauriel
 		move_object([0x535, 0xA47, 0x0]);
 		set_item_frame_rot(STAND_EAST);
-		
+
 		//Use the Avatar to unfade the screen:
-		script AVATAR
-		{	face west;					wait 2;
+		script AVATAR {
+			face west;
+			wait 2;
 			call zaurielMakePotion, POTION_UNFADE_SCREEN;
 			wait 5;
-			call zaurielMakePotion, MAKE_POTION;}
+			call zaurielMakePotion, MAKE_POTION;
+		}
 		//Move the party:
 		pos = [0x53D, 0xA46, 0x0];
 		PARTY->move_object(pos);
-	}
-	
-	else if (event == POTION_UNFADE_SCREEN)
+	} else if (event == POTION_UNFADE_SCREEN) {
 		//Unfade from black:
 		UI_fade_palette(12, 1, 1);
-	
-	else if (event == MAKE_POTION)
-	{
+	} else if (event == MAKE_POTION) {
 		script AVATAR after 2 ticks call trueFreeze;
 
 		ZAURIEL->show_npc_face(0);
@@ -128,20 +125,16 @@ void zaurielMakePotion object#() ()
 		UI_remove_party_items(1, SHAPE_VENOM, QUALITY_ANY, FRAME_ANY, true);
 		say("Zauriel takes the Blackrock and the Silver Serpent venom from you. @Thank thee, Avatar.@");
 		//The cutscene:
-		script ZAURIEL after 3 ticks
-		{
-			nohalt;								finish;
+		script ZAURIEL after 3 ticks {
+			nohalt;
+			finish;
 			call zaurielMakePotion, WALK_TO_CAULDRON_1;
 		}
-		
-	}
-	
-	else if (event >= WALK_TO_CAULDRON_1 && event <= WALK_TO_POTION_2)
-	{
+
+	} else if (event >= WALK_TO_CAULDRON_1 && event <= WALK_TO_POTION_2) {
 		var pos = [0x537, 0xa46, 0x0];
 		var newevent;
-		switch (event)
-		{
+		switch (event) {
 			case WALK_TO_CAULDRON_1:
 				newevent = IS_AT_CAULDRON_1;
 				break;
@@ -158,114 +151,106 @@ void zaurielMakePotion object#() ()
 				break;
 		}
 		ZAURIEL->si_path_run_usecode(pos, newevent, ZAURIEL, zaurielMakePotion, true);
-	}
-
-	else if (event >= IS_AT_CAULDRON_1 && event <= IS_AT_POTION_2)
-	{
-		if (event <= IS_AT_CAULDRON_2)
-		{
-			if (event == IS_AT_CAULDRON_1)
-			{
-				script ZAURIEL
-				{
-					nohalt;		finish;
-					actor frame standing;	face east;
-					wait 2;		actor frame bowing;
-					wait 2;	 	call zaurielMakePotion, PLACE_BLACKROCK;
-					actor frame standing;	wait 2;
+	} else if (event >= IS_AT_CAULDRON_1 && event <= IS_AT_POTION_2) {
+		if (event <= IS_AT_CAULDRON_2) {
+			if (event == IS_AT_CAULDRON_1) {
+				script ZAURIEL {
+					nohalt;
+					finish;
+					actor frame standing;
+					face east;
+					wait 2;
+					actor frame bowing;
+					wait 2;
+					call zaurielMakePotion, PLACE_BLACKROCK;
+					actor frame standing;
+					wait 2;
 					call zaurielMakePotion, WALK_TO_POTION_1;
 				};
-			}
-			else
-			{
-				script ZAURIEL
-				{
-					nohalt;		finish;
-					actor frame standing;	face east;
-					repeat 3
-					{
-						actor frame standing;		wait 2;
-						actor frame ready;		wait 2;
+			} else {
+				script ZAURIEL {
+					nohalt;
+					finish;
+					actor frame standing;
+					face east;
+					repeat 3 {
+						actor frame standing;
+						wait 2;
+						actor frame ready;
+						wait 2;
 						call zaurielMakePotion, UPDATE_CAULDRON;
 					};
-					actor frame standing;	wait 2;
+					actor frame standing;
+					wait 2;
 					call zaurielMakePotion, BEGIN_DIALOG_1;
 				}
 			}
-		}
-		else
-		{
+		} else {
 			var newevent;
-			if (event == IS_AT_POTION_1)
+			if (event == IS_AT_POTION_1) {
 				newevent = WALK_TO_POTION_2;
-			else
+			} else {
 				newevent = WALK_TO_CAULDRON_2;
-			script ZAURIEL
-			{
-				nohalt;		finish;
-				actor frame standing;	face west;
-				wait 2;		actor frame ready;
-				wait 2;	 	call zaurielMakePotion, DELETE_POTIONS;
-				actor frame standing;	wait 2;
+			}
+			script ZAURIEL {
+				nohalt;
+				finish;
+				actor frame standing;
+				face west;
+				wait 2;
+				actor frame ready;
+				wait 2;
+				call zaurielMakePotion, DELETE_POTIONS;
+				actor frame standing;
+				wait 2;
 				call zaurielMakePotion, newevent;
 			};
 		}
-	}
-
-	else if (event == PLACE_BLACKROCK)
-	{
+	} else if (event == PLACE_BLACKROCK) {
 		var blackrock = UI_create_new_object(SHAPE_BLACKROCK);
 		UI_update_last_created([1337, 2630, 2]);
-	}
-	
-	else if (event == DELETE_POTIONS)
-	{
+	} else if (event == DELETE_POTIONS) {
 		var potions = ZAURIEL->find_nearest(SHAPE_BLACKROCK_POTION, 3);
 		potions->remove_item();
 		UI_play_sound_effect(SOUND_KEY);
-	}
-	
-	else if (event == UPDATE_CAULDRON)
-	{
+	} else if (event == UPDATE_CAULDRON) {
 		var cauldron = ZAURIEL->find_nearest(SHAPE_CAULDRON, 10);
 		var blackrock = ZAURIEL->find_nearest(SHAPE_BLACKROCK, 10);
 		var framemap = [ 4, -1,  3, 		0,  2];
 		var sfxmap	 = [67, 67, 67, SOUND_KEY, 67];
 		var frameindex = cauldron->get_item_frame() + 1;
-		
-		if (blackrock)
+
+		if (blackrock) {
 			blackrock->UI_remove_item();
-		if (framemap[frameindex] != 0)
+		}
+		if (framemap[frameindex] != 0) {
 			UI_sprite_effect(ANIMATION_POOF, 1336, 2629, 0, 0, 0, -1);
+		}
 		UI_play_sound_effect(sfxmap[frameindex]);
 		cauldron->set_item_frame(framemap[frameindex]);
-	}
-	
-	else if (event == BEGIN_DIALOG_1)
-	{
+	} else if (event == BEGIN_DIALOG_1) {
 		var potion;
-		
+
 		ZAURIEL->show_npc_face(0);
 		say("Zauriel finally turns to you and hands you the potion. @Here, the potion is ready.");
 		say("@Make good use of it, for I shall -not- give thee any more!@ In the vial is a glowing black potion.");
-		
+
 		//Try to create the potion in the Avatar's inventory:
 		UI_set_last_created(get_cont_items(SHAPE_BLACKROCK_POTION, QUALITY_ANY, FRAME_ANY));
-		if (!AVATAR->give_last_created())
-		{
+		if (!AVATAR->give_last_created()) {
 			say("@Since thou art so overburdened, I shall place the potion on the ground.@");
 			UI_update_last_created(AVATAR->get_object_position());
 		}
-	
+
 		//Remind the player that a piece of Blackrock is still needed:
 		var blackrock_count = PARTY->count_objects(SHAPE_BLACKROCK, QUALITY_ANY, FRAME_ANY);
-		if (!blackrock_count)
+		if (!blackrock_count) {
 			say("@Remember that thou dost still need to gather a piece of Blackrock ore in order to neutralize the necklace!@");
+		}
 		say("@I shall now tell thee where my daughter is being held.@");
 		add("Where are they?");
-		
-		converse (0)
-		{
+
+		converse (0) {
 			case "Where are they?" (remove):
 				say("@Yes, I was just about to say that! A little more patience, Avatar, if thou wilt!");
 				say("@There is a small island to the north of Skara Brae; that is where the mage and his thugs are located.");
@@ -274,16 +259,25 @@ void zaurielMakePotion object#() ()
 				say("@But thou art resourceful enough to bypass this minor obstacle.@");
 				gflags[ZAURIEL_TOLD_LOCATION] = true;
 		}
-		
+
 		say("@Now that everything is said, I shall take us back to where we were.@");
 		//Teleportation animation:
-		script item
-		{	nohalt;						finish;
-			face south;					call showCastingFrames;
-			actor frame cast_up;			wait 2;						say "@Vas In Por@";
-			next frame;					wait 2;						previous frame;
-			wait 2;						next frame;					wait 2;
-			previous frame;				sfx SOUND_TELEPORT;
+		script item {
+			nohalt;
+			finish;
+			face south;
+			call showCastingFrames;
+			actor frame cast_up;
+			wait 2;
+			say "@Vas In Por@";
+			next frame;
+			wait 2;
+			previous frame;
+			wait 2;
+			next frame;
+			wait 2;
+			previous frame;
+			sfx SOUND_TELEPORT;
 			call zaurielMakePotion, TELEPORT_WIDGETS;
 			wait 8;
 			call zaurielMakePotion, POTION_FADE_SCREEN;
@@ -292,50 +286,47 @@ void zaurielMakePotion object#() ()
 			call zaurielMakePotion, MOVE_TO_LBCASTLE;
 		}
 		abort;
-	}
-	
-	else if (event == MOVE_TO_LBCASTLE)
-	{
+	} else if (event == MOVE_TO_LBCASTLE) {
 		//item = ZAURIEL
 		AVATAR->trueUnfreeze();
 		//Move Zauriel:
 		move_object([0x3A2, 0x4E0, 0x0]);
 		set_item_frame_rot(STAND_SOUTH);
 		//Use Avatar to unfade screen:
-		script AVATAR
-		{	face north;					wait 2;
+		script AVATAR {
+			face north;
+			wait 2;
 			call zaurielMakePotion, POTION_UNFADE_SCREEN;
 			wait 5;
-			call zaurielMakePotion, BEGIN_DIALOG_2;}
+			call zaurielMakePotion, BEGIN_DIALOG_2;
+		}
 		//Move party:
 		pos = [0x3A2, 0x4E6, 0x0];
 		PARTY->move_object(pos);
-	}
-	
-	else if (event == BEGIN_DIALOG_2)
-	{
+	} else if (event == BEGIN_DIALOG_2) {
 		ZAURIEL->show_npc_face(0);
 		say("@Here we are again. Thou knowest now what needs to be done, so I ask thee to do so quickly.");
 		say("@But before thou dost go, I must confess that I find this place far too crowded for me.");
 		say("@When thou hast rescued my daughter, come meet me near the Skara Brae Moongate.");
-		if (PARTY->count_objects(SHAPE_SEXTANT, QUALITY_ANY, FRAME_ANY))
+		if (PARTY->count_objects(SHAPE_SEXTANT, QUALITY_ANY, FRAME_ANY)) {
 			say("@Thy sextant shall guide thee: I shall be at 45 degrees south, 38 degrees west.@");
-		else
+		} else {
 			say("@Shouldst thou acquire a sextant, take this as a reference: I shall be at 45 degrees south, 38 degrees west.@");
-		
+		}
+
 		giveExperience(100);
 		//Fire the teleport animation and move Zauriel:
 		gflags[ZAURIEL_TELEPORTED] = true;
-		var pos = ZAURIEL->get_object_position();
-		UI_sprite_effect(ANIMATION_TELEPORT, pos[X], pos[Y], 0, 0, 0, -1);
-		script ZAURIEL
-		{	nohalt;						say "@Meet me near Skara Brae!@";
-			sfx SOUND_TELEPORT;			wait 6;
-			call zaurielMakePotion, TELEPORT_TO_SKARABRAE;}
-	}
-	
-	else if (event == TELEPORT_TO_SKARABRAE)
-	{
+		struct<Position> pos = ZAURIEL->get_object_position();
+		UI_sprite_effect(ANIMATION_TELEPORT, pos.x, pos.y, 0, 0, 0, -1);
+		script ZAURIEL {
+			nohalt;
+			say "@Meet me near Skara Brae!@";
+			sfx SOUND_TELEPORT;
+			wait 6;
+			call zaurielMakePotion, TELEPORT_TO_SKARABRAE;
+		}
+	} else if (event == TELEPORT_TO_SKARABRAE) {
 		//Move him to the destination:
 		move_object([0x224, 0x630, 0x0]);
 		set_item_frame_rot(STAND_SOUTH);

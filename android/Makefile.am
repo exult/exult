@@ -7,21 +7,12 @@ android_DATA=$(ANDROID_APK)
 
 # These are shared with iOS, but need to be staged in the android tree and are not allowed to have
 # a '-' in the filename.
-DPAD_DIRECTIONS = \
-	$(abs_builddir)/app/src/main/res/drawable/dpad_east.png \
-	$(abs_builddir)/app/src/main/res/drawable/dpad_north.png \
-	$(abs_builddir)/app/src/main/res/drawable/dpad_northeast.png \
-	$(abs_builddir)/app/src/main/res/drawable/dpad_northwest.png \
-	$(abs_builddir)/app/src/main/res/drawable/dpad_south.png \
-	$(abs_builddir)/app/src/main/res/drawable/dpad_southeast.png \
-	$(abs_builddir)/app/src/main/res/drawable/dpad_southwest.png \
-	$(abs_builddir)/app/src/main/res/drawable/dpad_west.png
 DPAD_CENTER = \
-	$(abs_builddir)/app/src/main/res/drawable/dpad_center.png
+	$(abs_builddir)/app/src/main/res/drawable/joythumb_glass.png
 BUTTON = \
 	$(abs_builddir)/app/src/main/res/drawable/btn.png \
 	$(abs_builddir)/app/src/main/res/drawable/btnpressed.png
-SHARED_IMAGE_ASSETS = $(DPAD_DIRECTIONS) $(DPAD_CENTER) $(BUTTON)
+SHARED_IMAGE_ASSETS = $(DPAD_CENTER) $(BUTTON)
 
 # All the DATA files that getinstalled by a normal build.
 # TODO: Would be ideal to infer this list rather than hard-coding it here.  
@@ -52,10 +43,13 @@ APK_SOURCE_TREE = \
 	$(abs_builddir)/app/src/main/java/info/exult \
 	$(abs_builddir)/app/src/main/res/layout \
 	$(abs_builddir)/app/src/main/res/values \
+	$(abs_builddir)/app/src/main/res/values-night \
+	$(abs_builddir)/app/src/main/res/xml \
 	$(abs_builddir)/app/src/main/res/drawable/ankh.png \
 	$(abs_builddir)/app/src/main/res/drawable/back.gif \
 	$(abs_builddir)/app/src/main/res/drawable/exult_logo_nice.png \
-	$(abs_builddir)/app/src/main/res/drawable/tile_back.xml
+	$(abs_builddir)/app/src/main/res/drawable/tile_back.xml \
+	$(abs_builddir)/app/src/main/res/drawable-night/back.gif
 
 # Pull together all the components into the full staged APK build tree
 APK_BUILD_TREE = $(APK_SOURCE_TREE) $(LIBSDL_JAVA_DIR) $(SHARED_IMAGE_ASSETS) $(APK_ASSETS)
@@ -67,11 +61,11 @@ GRADLE_PROJECT_PROPS=--project-prop EXULT_SOURCE_DIR=$(abs_top_srcdir) --project
 # Always call the gradle wrapper to update the APK
 .PHONY: $(ANDROID_APK)
 $(ANDROID_APK): $(abs_builddir)/gradlew
-	ANDROID_SDK_ROOT=$(ANDROID_SDK_ROOT) ./gradlew assemble$(APK_BUILD_TYPE) $(GRADLE_PROJECT_PROPS) --info
+	ANDROID_HOME=$(ANDROID_HOME) ./gradlew assemble$(APK_BUILD_TYPE) $(GRADLE_PROJECT_PROPS) --info
 
 # Generate the gradle wrapper
 $(abs_builddir)/gradlew: $(APK_BUILD_TREE) android_packages
-	ANDROID_SDK_ROOT=$(ANDROID_SDK_ROOT) $(GRADLE) wrapper $(GRADLE_PROJECT_PROPS)
+	ANDROID_HOME=$(ANDROID_HOME) $(GRADLE) wrapper $(GRADLE_PROJECT_PROPS)
 
 # Always try to install any missing android packages
 .PHONY: android_packages
@@ -93,11 +87,7 @@ $(abs_builddir)/app/src/main/java/org/libsdl: $(SDL_SOURCE_DIR)
 	@$(MKDIR_P) $(@D)
 	$(LN_S) $(SDL_SOURCE_DIR)/android-project/app/src/main/java/org/libsdl $@
 
-$(abs_builddir)/app/src/main/res/drawable/dpad_center.png: $(abs_top_srcdir)/ios/Images/joypad-glass.png
-	@$(MKDIR_P) $(@D)
-	$(LN_S) $< $@
-
-$(DPAD_DIRECTIONS): $(abs_builddir)/app/src/main/res/drawable/dpad_%.png: $(abs_top_srcdir)/ios/Images/joypad-glass-%.png
+$(abs_builddir)/app/src/main/res/drawable/joythumb_glass.png: $(abs_top_srcdir)/ios/Images/joythumb-glass.png
 	@$(MKDIR_P) $(@D)
 	$(LN_S) $< $@
 
@@ -116,4 +106,4 @@ $(APK_ASSETS): $(APK_ASSETS_DIR)/%: $(abs_top_srcdir)/data/%
 # The NDK build also utilizes this codebase rather than downloading a
 # separate copy.
 $(SDL_SOURCE_DIR):
-	$(GIT) clone --branch release-2.0.22 --depth 1 https://github.com/libsdl-org/SDL.git $@
+	$(GIT) -c advice.detachedHead=false clone --branch release-3.4.0 --depth 1 https://github.com/libsdl-org/SDL.git $@

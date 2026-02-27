@@ -89,7 +89,7 @@
 
 \C"We leave it any longer,
 \Cand I could become more difficult"
-\L - Ryan,
+\L - Colourless,
 \L on world-wrapping
 
 \C"On a more positive note,
@@ -142,3 +142,9 @@
 \CHow can I have not actually
 \Ccompleted Black Gate?"
 \L - Amy
+
+\C"Changing your entire personal
+\Cidentity makes this whole credits 
+\Cthing difficult"
+\L - Colourless after 
+\L becoming a new Person

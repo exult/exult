@@ -1,0 +1,164 @@
+name: ci-omnios
+
+on:
+  push:
+    paths:
+      - "**"
+      - "!android/**"
+      - "!docs/**"
+      - "docs/Makefile.am"
+      - "!ios/**"
+      - "!macosx/**"
+      - "!msvcstuff/**"
+      - "!win32/**"
+      - "!AUTHORS"
+      - "!ChangeLog"
+      - "!COPYING"
+      - "!FAQ"
+      - "!INSTALL"
+      - "!NEWS"
+      - "!**README**"
+      - "!**.ico"
+      - "!**.md"
+      - "!**.png"
+      - "!**.txt"
+      - "!.clang*"
+      - "!.gitignore"
+      - "!.gitattributes"
+      - "!.github/workflows/*"
+      - ".github/workflows/ci-omnios.yml"
+  pull_request:
+    paths:
+      - "**"
+      - "!android/**"
+      - "!docs/**"
+      - "docs/Makefile.am"
+      - "!ios/**"
+      - "!macosx/**"
+      - "!msvcstuff/**"
+      - "!win32/**"
+      - "!AUTHORS"
+      - "!ChangeLog"
+      - "!COPYING"
+      - "!FAQ"
+      - "!INSTALL"
+      - "!NEWS"
+      - "!**README**"
+      - "!**.ico"
+      - "!**.md"
+      - "!**.png"
+      - "!**.txt"
+      - "!.clang*"
+      - "!.gitignore"
+      - "!.gitattributes"
+      - "!.github/workflows/*"
+      - ".github/workflows/ci-omnios.yml"
+
+jobs:
+  notify:
+    name: Exult-CI (IRC & Discord notification)
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    needs:
+      - ci-omnios
+    if: ${{ always() && (github.repository_owner == 'exult' && github.event_name != 'pull_request') }}
+    steps:
+      - name: IRC success notification (ircs://irc.libera.chat:6697/#exult)
+        uses: Gottox/irc-message-action@v2
+        continue-on-error: true
+        if: needs.ci-omnios.result == 'success'
+        with:
+          server: irc.libera.chat
+          port: 6697
+          channel: "#exult"
+          nickname: github-actions
+          tls: true
+          message: "\x0313exult\x03/\x0306${{ github.ref }}\x03 \x0314${{ github.sha }}\x03 https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }} The OmniOS build \x033succeeded\x03."
+      - name: IRC failure notification (ircs://irc.libera.chat:6697/#exult)
+        uses: Gottox/irc-message-action@v2
+        continue-on-error: true
+        if: needs.ci-omnios.result != 'success'
+        with:
+          server: irc.libera.chat
+          port: 6697
+          channel: "#exult"
+          nickname: github-actions
+          tls: true
+          message: "\x0313exult\x03/\x0306${{ github.ref }}\x03 \x0314${{ github.sha }}\x03 https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }} The OmniOS build \x034failed\x03."
+      - name: Discord success notification
+        uses: rjstone/discord-webhook-notify@v1
+        continue-on-error: true
+        if: needs.ci-omnios.result == 'success'
+        with:
+          severity: info
+          webhookUrl: ${{ secrets.DISCORD_WEBHOOK }}
+          username: Exult github-actions
+          avatarUrl: https://avatars.githubusercontent.com/u/15114538?s=200&v=4
+          text: '**[The OmniOS build succeeded:](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})**'
+      - name: Discord failure notification
+        uses: rjstone/discord-webhook-notify@v1
+        continue-on-error: true
+        if: needs.ci-omnios.result != 'success'
+        with:
+          severity: error
+          webhookUrl: ${{ secrets.DISCORD_WEBHOOK }}
+          username: Exult github-actions
+          avatarUrl: https://avatars.githubusercontent.com/u/15114538?s=200&v=4
+          text: '**[The OmniOS build failed:](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})**'
+  ci-omnios:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Build Exult in OmniOS
+      id: ci-omnios
+      uses: vmactions/omnios-vm@v1.1.3
+      with:
+        usesh: true
+        sync: rsync
+        copyback: false
+        prepare: |
+          pkg update -v pkg
+          pkg update -v
+          pkg install gcc13
+          pkg install llvm-17
+          pkg install clang-17
+          curl -ORL https://pkgsrc.SmartOS.org/packages/SmartOS/bootstrap/bootstrap-2024Q4-x86_64.tar.gz
+          tar -zxpf bootstrap-2024Q4-x86_64.tar.gz -C /
+          export PATH=/opt/local/bin:/opt/local/sbin:$PATH
+          export MANPATH=/opt/local/man:$MANPATH
+          pkgin -y update
+          pkgin -y upgrade
+          pkgin -y install at-spi2-core xorgproto
+          pkgin -y install alsa-lib fluidsynth libogg libvorbis
+          pkgin -y install autoconf autoconf-archive automake bison flex gettext \
+                           git glib2 gmake icu json-glib libtool pkgconf SDL2 SDL2_image
+          pkgin -y install cairo gdk-pixbuf2 gegl gimp png
+          pkgin -y install freetype2 harfbuzz
+          pkgin -y install fontconfig
+          pkgin -y install gtk2+ gtk3+ pango
+          pkgin -y install babl libX11 libXext
+          pkgin -y install git cmake libusb libunwind ffmpeg7
+          git -c advice.detachedHead=false clone --branch release-3.2.14 --depth 1 https://github.com/libsdl-org/SDL SDL3
+          cd SDL3
+          mkdir -p build
+          cmake -B build -S .
+          cmake --build build
+          cmake --install build
+          cd ..
+          git -c advice.detachedHead=false clone --branch release-3.2.4 --depth 1 https://github.com/libsdl-org/SDL_image SDL3_image
+          cd SDL3_image
+          mkdir -p build
+          cmake -B build -S .
+          cmake --build build
+          cmake --install build
+          cd ..
+        run: |
+          export PATH=/opt/local/bin:/opt/local/sbin:/usr/local/bin:$PATH
+          export MANPATH=/opt/local/man:/opt/local/share/man:/usr/local/share/man:$MANPATH
+          export PKG_CONFIG_PATH=/opt/local/share/pkgconfig:/opt/local/lib/pkgconfig:/opt/ooce/lib/amd64/pkgconfig:/usr/local/lib/pkgconfig:$PKG_CONFIG_PATH
+          autoreconf -v -i
+          ./configure --with-debug=extreme --enable-exult-studio --enable-exult-studio-support --enable-compiler --enable-gimp-plugin \
+            --enable-zip-support --enable-shared --enable-midi-sfx --enable-shp-thumbnailer --enable-data --enable-mods \
+            --with-usecode-debugger=yes --enable-usecode-container --enable-nonreadied-objects --enable-aseprite-plugin \
+            CXX=clang++ CC=clang
+          make -j 2

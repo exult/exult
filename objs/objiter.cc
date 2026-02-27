@@ -23,32 +23,36 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
 #ifdef HAVE_CONFIG_H
-#  include <config.h>
+#	include <config.h>
 #endif
+
 #include "objiter.h"
+
+#include "chunks.h"
 #include "contain.h"
 #include "gamewin.h"
-#include "chunks.h"
 
 /*
  *  Create to start after/before a given object within a chunk.
  */
 
-template<class D>
-D_Recursive_object_iterator<D>::D_Recursive_object_iterator(
-    Game_object *start      // Start here.
-) : child(nullptr), elems(start->get_outermost()->get_chunk()->get_objects()) {
+template <class D>
+D_Recursive_object_iterator<D>::D_Recursive_object_iterator(Game_object* start    // Start here.
+															)
+		: child(nullptr), elems(start->get_outermost()->get_chunk()->get_objects()) {
 	// Get what obj. is in (or itself).
-	Game_object *owner = start->get_outermost();
-	Game_object *obj;       // Find owner within its chunk.
+	Game_object* owner = start->get_outermost();
+	Game_object* obj;    // Find owner within its chunk.
 	while ((obj = get_next()) != nullptr && obj != owner)
 		;
-	if (!obj)
-		return;         // Bad.  It wasn't found.
-	if (obj != start)       // Given object contained?
+	if (!obj) {
+		return;    // Bad.  It wasn't found.
+	}
+	if (obj != start) {    // Given object contained?
 		// Look within for it.
 		while ((obj = get_next()) != nullptr && obj != start)
 			;
+	}
 }
 
 /*
@@ -57,23 +61,25 @@ D_Recursive_object_iterator<D>::D_Recursive_object_iterator(
  *  Output: Next in world, or nullptr if done.
  */
 
-template<class D> Game_object *D_Recursive_object_iterator<D>::get_next(
-) {
-	Game_object *obj;
-	if (child) {        // Going through container?
+template <class D>
+Game_object* D_Recursive_object_iterator<D>::get_next() {
+	Game_object* obj;
+	if (child) {    // Going through container?
 		obj = child->get_next();
-		if (obj)
+		if (obj) {
 			return obj;
+		}
 		delete child;
-		child = nullptr;      // Child done.
+		child = nullptr;    // Child done.
 	}
-	obj = elems.get_next();     // Get next from our list.
-	if (!obj)
-		return nullptr;       // All done.
+	obj = elems.get_next();    // Get next from our list.
+	if (!obj) {
+		return nullptr;    // All done.
+	}
 	// Is it a container?
-	Container_game_object *c = obj->as_container();
-	if (c)              // Container?  Set to go through it.
-		child = new D_Recursive_object_iterator<D>(
-		    c->get_objects());
+	Container_game_object* c = obj->as_container();
+	if (c) {    // Container?  Set to go through it.
+		child = new D_Recursive_object_iterator<D>(c->get_objects());
+	}
 	return obj;
 }

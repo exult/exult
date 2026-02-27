@@ -25,8 +25,8 @@
  */
 
 // Temporary flags:
-enum Temporary_flags  // Temporary flag are used for a great many things
-{
+enum Temporary_flags {
+	// Temporary flag are used for a great many things
 	TEMP_FLAG_1 = 0x7,
 	TEMP_FLAG_2 = 0x8,
 	TEMP_FLAG_3 = 0x9,
@@ -35,8 +35,7 @@ enum Temporary_flags  // Temporary flag are used for a great many things
 
 const int STARTING_SPEECH = 0x3;
 
-enum Companions_have_equipment
-{
+enum Companions_have_equipment {
 	STEFANO_HAS_BELONGINGS = 0xF,
 	GWENNO_HAS_BELONGINGS = 0x10,
 	SELINA_HAS_BELONGINGS = 0x11,
@@ -48,14 +47,13 @@ enum Companions_have_equipment
 	IOLO_HAS_BELONGINGS = 0x19
 };
 
-enum Copy_protection_duplicate_prevention
-{
+enum Copy_protection_duplicate_prevention {
 	ASKED_9TH_CIRCLE = 0x1A,
 	ASKED_ARMOR_MATERIALS = 0x1B,
 	ASKED_BEASTS = 0x1C,
 	ASKED_REAGENTS = 0x1D,
 	ASKED_MASS_DEATH = 0x1E,
-	ASKED_GINSING = 0x1F,
+	ASKED_GINSENG = 0x1F,
 	ASKED_CREATE_AUTOMATA = 0x20,
 	ASKED_REASONS_FOR_WRITING = 0x21,
 	ASKED_OPHIDIAN_WRITING = 0x22,
@@ -68,8 +66,7 @@ enum Copy_protection_duplicate_prevention
 };
 
 // These are the "generic"
-enum Monitor_townplot
-{
+enum Monitor_townplot {
 	FIRST_TALK_WITH_MARSTEN = 0x32,
 	TOLD_MARSTEN_SERVES_LORD_BRITISH = 0x2D,
 	RENOUNCED_BRITISH = 0xA5,
@@ -90,37 +87,33 @@ enum Monitor_townplot
 
 	ASK_LUCILLA_ABOUT_ANDRAL = 0x8F,
 
-	CREAMATED_PIKEMAN = 0xBE
+	CREMATED_PIKEMAN = 0xBE
 };
 
-enum Xenka_subplot
-{
+enum Xenka_subplot {
 	AVATAR_GOT_SHORT_STICK = 0x60,
 	DUPRE_IS_TOAST = 0x61
 };
 
-enum Find_Batlin_subplot
-{
+enum Find_Batlin_subplot {
 	ASKED_ANDRAL_ABOUT_ROBBERY = 0x58,
 	ASKED_STANDARR_ABOUT_BRUNT = 0x8D,
-	KNOWS_BATLIS_WAS_IN_MONITOR = 0x8E,
+	KNOWS_BATLIN_WAS_IN_MONITOR = 0x8E,
 	ASKED_SHAZZANA_ABOUT_SAILOR = 0xA8
 };
 
-enum Monitor_sex_subplots
-{
+enum Monitor_sex_subplots {
 	BRENDANN_PROPOSAL = 0x3D,
 	BRENDANN_TATTOO_COMPLIMENT = 0x3F,
 
 	COURTED_LUCILLA = 0x53,
-	ACCEPTEC_LUCILLA_PROPOSAL = 0x54,
+	ACCEPTED_LUCILLA_PROPOSAL = 0x54,
 	KNOWS_OF_LUCILLA_AND_SPEKTOR = 0x55,
 
 	GAINED_GWANI_CLOAK = 0x8A
 };
 
-enum Monitor_traitor_subplot
-{
+enum Monitor_traitor_subplot {
 	ASKED_TEMPLAR_ABOUT_GOBLINS = 0xA4,
 	ASKED_STANDARR_ABOUT_QUESTS = 0xBA,
 	KNOW_OF_MONITOR_THIEF = 0xB6,
@@ -143,13 +136,12 @@ enum Monitor_traitor_subplot
 	TOLD_HARNNA_FOUND_SCROLL = 0xC7,
 	// If 0xCC is set, changes or adds conversation with Harnna, Shazzana, Standarr, Templar, Brendann, Caladin,
 	// and also looks to add a bark about it to Brendann. No one outside of Monitor checks this,
-	// so the dialog in Fawn won’t change. Similar to the original Origin bug with Harnna and the Strange Coins,
+	// so the dialog in Fawn won't change. Similar to the original Origin bug with Harnna and the Strange Coins,
 	// if Flag 204 is set you can repeatedly ask Standarr about Pomdirgun, the option does not get removed.
 	POMDIRGUN_IS_DEAD = 0xCC
 };
 
-enum Kidnapping_of_Cantra_subplot
-{
+enum Kidnapping_of_Cantra_subplot {
 	SHAMINOS_KEEP_BARRIERS_GONE = 0x0,
 	KNOWS_CANTRA_IS_MISSING = 0x79,
 	WILL_FIND_CANTRA = 0x5B,
@@ -159,8 +151,7 @@ enum Kidnapping_of_Cantra_subplot
 	HOUND_TRACKED_BATLIN = 0x25D
 };
 
-enum Knights_Test_subplot
-{
+enum Knights_Test_subplot {
 	CAN_ASK_ABOUT_TEST = 0x33,
 	ASKED_CANTRA_ABOUT_TEST = 0xBC,
 	KNOW_TEST_SECRETS = 0x3B,
@@ -176,8 +167,7 @@ enum Knights_Test_subplot
 	AVATAR_IS_KNIGHT = 0x48
 };
 
-enum Lydia_Poison_subplot
-{
+enum Lydia_Poison_subplot {
 	POISONED_BY_LYDIA = 0x98,
 	CAN_ASK_LYDIA_ABOUT_POISON = 0x35,
 	LYDIA_CONFESSES = 0xCA,
@@ -185,8 +175,7 @@ enum Lydia_Poison_subplot
 	KNOWS_ABOUT_VARO_LEAVES = 0x76
 };
 
-enum Free_Iolo_subplot
-{
+enum Free_Iolo_subplot {
 	KNOWS_IOLO_IMPRISONED = 0xA9,
 	TALKED_TO_IMPRISONED_IOLO = 0xAA,
 	MARSTEN_WONT_RELEASE_IOLO = 0xB5,
@@ -195,8 +184,7 @@ enum Free_Iolo_subplot
 	MARSTEN_GAVE_JAIL_KEY = 0xCD
 };
 
-enum Fawn_townplot
-{
+enum Fawn_townplot {
 	ASKED_JENDON_DAEMON_ARTIFACTS = 0x156,
 	ASK_DELIN_ABOUT_BATLIN = 0x158,
 	ORACLE_SET_TO_INNOCENT = 0x16E,
@@ -213,19 +201,15 @@ enum Fawn_townplot
 	RETURNED_COMB_OF_BEAUTY = 0x212
 };
 
-enum Sleeping_Bull_townplot
-{
+enum Sleeping_Bull_townplot {
 	ASKED_ANDRAL_ABOUT_INN = 0xC
 };
 
-/*
-enum Moonshade_townplot
-{
+enum Moonshade_townplot {
+	FILBERCIO_BANQUET_WILL_HAPPEN = 0xDA,
 };
-*/
 
-enum Gustacios_experiment_subplot
-{
+enum Gustacios_experiment_subplot {
 	HAVE_1ST_ENERGY_GLOBE = 0x11C,
 	SEEN_RED_LIGHTNING = 0x121,
 	SEEN_YELLOW_LIGHTNING = 0x122,
@@ -240,15 +224,13 @@ enum Gustacios_experiment_subplot
 	HAVE_MIRROR_OF_TRUTH = 0xE5
 };
 
-enum Rotoluncia_subplot
-{
+enum Rotoluncia_subplot {
 	HAVE_TALKING_SCROLL = 0xD7,
 	SCROLL_SPEAKS = 0xE9,
 	CAN_USE_FILBERCIOS_BARGE = 0xEC
 };
 
-enum Pothos_subplot
-{
+enum Pothos_subplot {
 	POTHOS_RETURNED = 0xD9,
 	KNOWS_POTHOS_SECRET = 0xDC,
 	WILL_HELP_POTHOS = 0xE8,
@@ -256,34 +238,35 @@ enum Pothos_subplot
 	KNOWS_ERSTAM_PASSWORD = 0x145
 };
 
-enum Spellbook_subplot
-{
+enum Spellbook_subplot {
 	NEED_FRESH_MANDRAKE = 0xDE,
 	CORRECT_SALT_TIDES = 0x26C,
 	HAVE_FRESH_MANDRAKE = 0x26D,
 	HAVE_NEW_SPELLBOOK = 0xDB
 };
 
-enum Gorlab_swamp_townplot
-{
+enum Gorlab_swamp_townplot {
 	EDRIN_DREAMS_OF_SIRANUSH = 0xF3,
 	EDRIN_KNOWS_SIRANUSH_IS_REAL = 0x213,
 	DREAM_REALM_COMPLETE = 0x2DB
 };
 
-enum Skullcrusher_townplot
-{
+enum Skullcrusher_townplot {
 	// Yenani gave you a valuable secret, the password to open the gate to Skullcrusher.
 	KNOW_SKULLCRUSHER_PASSWORD = 613,
 	// New for SIfixes, set when the Skullcrusher automatons receive non-waiting schedules.
 	SKULLCRUSHER_AUTOMATONS = 614
 };
 
+enum Spinebreaker_townplot {
+	OPENED_SPINEBREAKER_DOOR = 0x251,
+	READ_STRUCTURE_OF_ORDER = 0x252,
+};
+
 // The quotes are from http://www.it-he.org
-enum Bane_flags
-{
+enum Bane_flags {
 	BANES_RELEASED = 0x4,
-	WANTONESS_BANE_DEAD = 0xD3, // Haha! I am Dupre, bane of drunkenness!
+	WANTONNESS_BANE_DEAD = 0xD3, // Haha! I am Dupre, bane of drunkenness!
 	INSANITY_BANE_DEAD = 0xD5,  // I am Iolo! Bane of shooting-the-Avatar-
                                 // through-the-heart-with-the-triple-crossbow!
 	ANARCHY_BANE_DEAD = 0xD4,   // Kneel before Shamino, bane of rapidly
@@ -304,8 +287,7 @@ const int FAWN_TRIAL_DONE_FIRST_DAY = 0x170;
 const int BEATRIX_PROTECTION = 0x25B;
 const int BEATRIX_FORGAVE_SHAMINO = 0x25C;
 
-enum Find_Gwenno_subplot
-{
+enum Find_Gwenno_subplot {
 	GWENNO_IS_DEAD = 0x26A,
 	ASKED_SPEKTOR_ABOUT_GWENNO = 0xA7,
 	FREED_GWENNOS_BODY = 0x25F,
@@ -318,16 +300,14 @@ enum Find_Gwenno_subplot
 const int TALKED_TO_CHAOS_HIEROPHANT = 0x22B;
 const int TALKED_TO_GREAT_HIEROPHANT = 0x279;
 
-enum Serpent_Speech
-{
+enum Serpent_Speech {
 	SERPENT_GWANI_HORN_SPEECH = 0x2DC,
 	// GES talked about banes after Gwenno got resurrected:
 	SERPENT_GWENNO_BANE_SPEECH = 0x2DD
 };
 
-enum Bard_songs    // Songs (Byrin and Iolo):
-
-{
+enum Bard_songs {
+	// Songs (Byrin and Iolo):
 	HEARD_BEATRIX_SONG = 0x1D3,
 	HEARD_MOUNTAIN_SONG = 0x1D4,
 	HEARD_GWANI_SONG = 0x1D5,
@@ -336,8 +316,7 @@ enum Bard_songs    // Songs (Byrin and Iolo):
 	HEARD_WHITE_DRAGON_SONG = 0x1D8
 };
 
-enum Teleport_storm_objects
-{
+enum Teleport_storm_objects {
 	EQUIPMENT_EXCHANGED = 0x6,
 	IOLO_MADE_EQUIPMENT_LIST = 0x78,
 	DUPRE_MADE_EQUIPMENT_LIST = 0xB7,
@@ -411,8 +390,7 @@ enum Teleport_storm_objects
 
 const int TIME_FORMAT_24_HOURS = 0x400;
 
-enum Silver_Seed_flags
-{
+enum Silver_Seed_flags {
 	WEARING_BELT_OF_STRENGTH = 0x2E8,
 	EXPERIENCE_FROM_BELT_OF_STRENGTH = 0x2E9,
 	USED_AMULET_OF_BALANCE = 0x2EE,

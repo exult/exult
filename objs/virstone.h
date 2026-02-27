@@ -24,7 +24,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
 #ifndef INCL_VIRSTONE
-#define INCL_VIRSTONE   1
+#define INCL_VIRSTONE 1
 
 #include "iregobjs.h"
 
@@ -32,33 +32,40 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *  A virtue stone can be set to a position on the map.
  */
 class Virtue_stone_object : public Ireg_game_object {
-	Tile_coord pos;         // Position it teleports to.
-	int map;                // Map to teleport to.
+	Tile_coord pos;    // Position it teleports to.
+	int        map;    // Map to teleport to.
 public:
-	Virtue_stone_object(int shapenum, int framenum, unsigned int tilex,
-	                    unsigned int tiley, unsigned int lft)
-		: Ireg_game_object(shapenum, framenum, tilex, tiley, lft),
-		  pos(0, 0, 0), map(0)
-	{  }
-	Virtue_stone_object *as_virtstone() override {
+	Virtue_stone_object(int shapenum, int framenum, unsigned int tilex, unsigned int tiley, unsigned int lft)
+			: Ireg_game_object(shapenum, framenum, tilex, tiley, lft), pos(0, 0, 0), map(0) {}
+
+	Virtue_stone_object* as_virtstone() override {
 		return this;
 	}
-	void set_target_pos(Tile_coord const &t) {  // Set/get position.
+
+	const Virtue_stone_object* as_virtstone() const override {
+		return this;
+	}
+
+	void set_target_pos(const Tile_coord& t) {    // Set/get position.
 		pos = t;
 	}
-	void set_target_pos(unsigned char tilex, unsigned char tiley,
-	                    unsigned char schunk, unsigned char lift);
+
+	void set_target_pos(unsigned char tilex, unsigned char tiley, unsigned char schunk, unsigned char lift);
+
 	Tile_coord get_target_pos() {
 		return pos;
 	}
-	int get_target_map() {  // Get/set map.
+
+	int get_target_map() {    // Get/set map.
 		return map;
 	}
+
 	void set_target_map(int m) {
 		map = m;
 	}
+
 	// Write out to IREG file.
-	void write_ireg(ODataSource *out) override;
+	void write_ireg(ODataSource* out) override;
 	// Get size of IREG. Returns -1 if can't write to buffer
 	int get_ireg_size() override;
 };

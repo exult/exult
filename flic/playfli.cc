@@ -24,236 +24,339 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
 #ifdef HAVE_CONFIG_H
-#  include <config.h>
+#	include <config.h>
 #endif
 
-#include <cstring>
-#include <iostream>
-#include "databuf.h"
 #include "playfli.h"
-#include "utils.h"
+
+#include "databuf.h"
+#include "endianio.h"
+#include "exceptions.h"
 #include "gamewin.h"
 #include "palette.h"
+
+#include <algorithm>
+#include <cstring>
+#include <iostream>
 
 #ifdef __GNUC__
 #	pragma GCC diagnostic push
 #	pragma GCC diagnostic ignored "-Wold-style-cast"
+#	pragma GCC diagnostic ignored "-Wzero-as-null-pointer-constant"
+#	if !defined(__llvm__) && !defined(__clang__)
+#		pragma GCC diagnostic ignored "-Wuseless-cast"
+#	endif
 #endif    // __GNUC__
-#include <SDL.h>
+#include <SDL3/SDL.h>
 #ifdef __GNUC__
 #	pragma GCC diagnostic pop
 #endif    // __GNUC__
 
-using std::ifstream;
-using std::size_t;
 using std::cout;
 using std::endl;
+using std::ifstream;
+using std::size_t;
 
 void playfli::initfli() {
-	fli_data.read(fli_name, 8);
-	fli_size = fli_data.read4();
+	size_t pos = fli_data.getPos();
+	fli_data.skip(4);
 	fli_magic = fli_data.read2();
+	fli_data.seek(pos);
+	if (fli_magic != 0xaf11 && fli_magic != 0xaf12) {
+		// This is a U7-style flic with a 8-byte name prefixed.
+		fli_data.read(fli_name, 8);
+	}
+	fli_size  = fli_data.read4();
+	fli_magic = fli_data.read2();
+	if (fli_magic != 0xaf11 && fli_magic != 0xaf12) {
+		throw exult_exception("Not a valid FLI file");
+	}
 	fli_frames = fli_data.read2();
-	fli_width = fli_data.read2();
+	fli_width  = fli_data.read2();
 	fli_height = fli_data.read2();
-	fli_depth = fli_data.read2();
-	fli_flags = fli_data.read2();
-	fli_speed = fli_data.read2();
+	fli_depth  = fli_data.read2();
+	fli_flags  = fli_data.read2();
+	fli_speed  = fli_data.read2();
 	fli_data.skip(110);
 	streampos = streamstart = fli_data.getPos();
-	frame = 0;
-	thispal = -1;
-	nextpal = 0;
-	changepal = false;
+	frame                   = 0;
+	thispal                 = -1;
+	nextpal                 = 0;
+	changepal               = false;
 }
 
-
-void playfli::info(fliinfo *fi) {
+void playfli::info(fliinfo* fi) const {
 #ifdef DEBUG
-	cout << "Flic name :   " << fli_name << endl;
+	if (fli_name[0] == 0) {
+		cout << "Flic name :   (none)" << endl;
+	} else {
+		cout << "Flic name :   " << fli_name << endl;
+	}
 	cout << "Frame count : " << fli_frames << endl;
 	cout << "Width :       " << fli_width << endl;
 	cout << "Height :      " << fli_height << endl;
 	cout << "Depth :       " << fli_depth << endl;
 	cout << "Speed :       " << fli_speed << endl;
 #endif
-	if (fi) {
+	if (fi != nullptr) {
 		fi->frames = fli_frames;
-		fi->width = fli_width;
+		fi->width  = fli_width;
 		fi->height = fli_height;
-		fi->depth = fli_depth;
-		fi->speed = fli_speed;
+		fi->depth  = fli_depth;
+		fi->speed  = fli_speed;
 	}
 }
 
-int playfli::play(Image_window *win, int first_frame, int last_frame, unsigned long ticks, int brightness) {
-	const int xoffset = (win->get_game_width() - fli_width) / 2;
-	const int yoffset = (win->get_game_height() - fli_height) / 2;
-	bool dont_show = false;
+int playfli::play(Image_window* win, int first_frame, int last_frame, unsigned long ticks, int brightness) {
+	const int xoffset   = (win->get_game_width() - fli_width) / 2;
+	const int yoffset   = (win->get_game_height() - fli_height) / 2;
+	bool      dont_show = false;
 
 	if (!fli_buf) {
 		fli_buf = win->create_buffer(fli_width, fli_height);
 	}
 
 	// Set up last frame
-	if (first_frame == last_frame) dont_show = true;
-	if (first_frame < 0) first_frame += fli_frames;
-	if (last_frame < 0) last_frame += 1 + fli_frames;
-	if (first_frame == last_frame) last_frame++;
-	if (last_frame < 0 || last_frame > fli_frames) last_frame = fli_frames;
+	if (first_frame == last_frame) {
+		dont_show = true;
+	}
+	if (first_frame < 0) {
+		first_frame += fli_frames;
+	}
+	if (last_frame < 0) {
+		last_frame += 1 + fli_frames;
+	}
+	if (first_frame == last_frame) {
+		last_frame++;
+	}
+	if (last_frame < 0 || last_frame > fli_frames) {
+		last_frame = fli_frames;
+	}
 
-	if (!ticks) ticks = SDL_GetTicks();
+	if (ticks == 0u) {
+		ticks = SDL_GetTicks();
+	}
 
 	if (first_frame < frame) {
-		nextpal = 0;
-		frame = 0;
+		nextpal   = 0;
+		frame     = 0;
 		streampos = streamstart;
 	}
-	auto *pixbuf = new uint8[fli_width];
+
+	std::vector<uint8> pixbuf(fli_width);
 
 	if (brightness != palette->get_brightness()) {
 		palette->set_brightness(brightness);
 		changepal = true;
 	}
 
+	auto read_palette = [this]() {
+		const size_t packets = fli_data.read2();
+
+		std::array<unsigned char, 768> colors{};
+
+		auto* current = colors.data();
+
+		for (size_t p_count = 0; p_count < packets; p_count++) {
+			const size_t skip = fli_data.read1();
+
+			current += skip;
+			size_t change = fli_data.read1();
+
+			if (change == 0) {
+				change = 256;
+			}
+			fli_data.read(current, change * 3);
+		}
+		return colors;
+	};
+
+	auto update_palette = [this](const std::array<unsigned char, 768>& colors) {
+		palette->set_palette(colors.data());
+		if (thispal != nextpal) {
+			thispal   = nextpal;
+			changepal = true;
+		}
+		nextpal++;
+	};
+
 	// Play frames...
 	for (; frame < last_frame; frame++) {
 		fli_data.seek(streampos);
 		const int frame_size = fli_data.read4();
-		//frame_magic = fli_data.read2();
+		// Skip frame_magic
 		fli_data.skip(2);
 		const int frame_chunks = fli_data.read2();
 		fli_data.skip(8);
 		for (int chunk = 0; chunk < frame_chunks; chunk++) {
-			//chunk_size = fli_data.read4();
+			// Skip chunk_size
 			fli_data.skip(4);
-			const int chunk_type = fli_data.read2();
+			const auto chunk_type = static_cast<FlicChunks>(fli_data.read2());
 
 			switch (chunk_type) {
-			case 11: {
-				const int packets = fli_data.read2();
-				unsigned char colors[3 * 256];
-
-				memset(colors, 0, 3 * 256);
-				int current = 0;
-
-				for (int p_count = 0; p_count < packets;
-				        p_count++) {
-					const int skip = fli_data.read1();
-
-					current += skip;
-					int change = fli_data.read1();
-
-					if (change == 0)
-						change = 256;
-					fli_data.read(reinterpret_cast<char *>(&colors[current * 3]), change * 3);
+			case FLI_COLOR256: {
+				auto colors = read_palette();
+				for (auto& color : colors) {
+					color /= 4;
 				}
-				// Set palette
-				palette->set_palette(colors);
-				if (thispal != nextpal) {
-					thispal = nextpal;
-					changepal = true;
-				}
-				nextpal++;
-
+				update_palette(colors);
+				break;
 			}
-			break;
 
-			case 12: {
+			case FLI_COLOR: {
+				auto colors = read_palette();
+				update_palette(colors);
+				break;
+			}
 
-				const int skip_lines = fli_data.read2();
+			case FLI_LC: {
+				const int skip_lines   = fli_data.read2();
 				const int change_lines = fli_data.read2();
 				for (int line = 0; line < change_lines; line++) {
 					const int packets = fli_data.read1();
-					int pixpos = 0;
-					for (int p_count = 0; p_count < packets;
-					        p_count++) {
+					int       pix_pos = 0;
+					for (int p_count = 0; p_count < packets; p_count++) {
 						const int skip_count = fli_data.read1();
-						pixpos += skip_count;
-						sint8 size_count = fli_data.read1();
+						pix_pos += skip_count;
+						const int size_count = static_cast<sint8>(fli_data.read1());
 						if (size_count < 0) {
-							size_count = -size_count;
-							const uint8 data = fli_data.read1();
-							memset(pixbuf, data, size_count);
-							fli_buf->copy8(pixbuf, size_count, 1,
-								               pixpos, skip_lines + line);
-							pixpos += size_count;
-
+							const int  pix_count = std::abs(size_count);
+							const auto data      = static_cast<uint8>(fli_data.read1());
+							fli_buf->fill_hline8(data, pix_count, pix_pos, skip_lines + line);
+							pix_pos += pix_count;
 						} else {
-							fli_data.read(pixbuf, size_count);
-							fli_buf->copy8(pixbuf, size_count, 1,
-								               pixpos, skip_lines + line);
-							pixpos += size_count;
+							fli_data.read(pixbuf.data(), size_count);
+							fli_buf->copy_hline8(pixbuf.data(), size_count, pix_pos, skip_lines + line);
+							pix_pos += size_count;
 						}
 					}
 				}
-
+				break;
 			}
-			break;
 
-			case 13:
+			case FLI_BLACK:
+				fli_buf->fill8(0);
 				break;
 
-			case 15: {
+			case FLI_BRUN: {
 				for (int line = 0; line < fli_height; line++) {
 					const int packets = fli_data.read1();
-					int pixpos = 0;
-					for (int p_count = 0; p_count < packets;
-					        p_count++) {
-						const sint8 size_count = fli_data.read1();
+					auto*     pix_pos = pixbuf.data();
+					for (int p_count = 0; p_count < packets; p_count++) {
+						const int size_count = static_cast<sint8>(fli_data.read1());
 						if (size_count > 0) {
-							const uint8 data = fli_data.read1();
-							memset(&pixbuf[pixpos], data, size_count);
-							pixpos += size_count;
+							const auto data = static_cast<uint8>(fli_data.read1());
+							pix_pos         = std::fill_n(pix_pos, size_count, data);
 						} else {
-							fli_data.read(&pixbuf[pixpos],
-							               -size_count);
-							pixpos -= size_count;
+							const int pix_count = std::abs(size_count);
+							fli_data.read(pix_pos, pix_count);
+							pix_pos += pix_count;
 						}
 					}
-					fli_buf->copy8(pixbuf, fli_width, 1, 0, line);
+					fli_buf->copy_hline8(pixbuf.data(), fli_width, 0, line);
 				}
-			}
-			break;
-
-			case 16:
-				fli_data.skip(fli_width * fli_height);
 				break;
+			}
+
+			case FLI_COPY: {
+				for (int line = 0; line < fli_height; line++) {
+					fli_data.read(pixbuf.data(), fli_width);
+					fli_buf->copy_hline8(pixbuf.data(), fli_width, 0, line);
+				}
+				break;
+			}
+
+			case FLI_SS2: {
+				const int change_lines = fli_data.read2();
+				for (int line = 0; line < change_lines; line++) {
+					int packets = fli_data.read2();
+					while ((packets & 0x8000U) != 0U) {
+						// flag word
+						if ((packets & 0x4000U) != 0U) {
+							// skip lines
+							line += std::abs(static_cast<sint16>(packets));
+						} else {
+							// Set last pixel of current line (used if line
+							// width is odd)
+							fli_buf->put_pixel8(packets & 0xff, fli_width - 1, line);
+						}
+						packets = fli_data.read2();
+					}
+					int pix_pos = 0;
+					for (int p_count = 0; p_count < packets; p_count++) {
+						const int skip_count = fli_data.read1();
+						pix_pos += skip_count;
+						const int size_count = static_cast<sint8>(fli_data.read1());
+						if (size_count < 0) {
+							const uint16 data       = fli_data.read2();
+							auto*        pixptr     = pixbuf.data();
+							const int    word_count = std::abs(size_count);
+							for (int i = 0; i < word_count; i++) {
+								little_endian::Write2(pixptr, data);
+							}
+							fli_buf->copy_hline8(pixbuf.data(), 2 * word_count, pix_pos, line);
+							pix_pos += 2 * word_count;
+						} else {
+							fli_data.read(pixbuf.data(), 2 * size_count);
+							fli_buf->copy_hline8(pixbuf.data(), 2 * size_count, pix_pos, line);
+							pix_pos += 2 * size_count;
+						}
+					}
+				}
+				break;
+			}
+
+			case FLI_PSTAMP: {
+				std::cerr << "FLIC ERROR: Postage Stamp Image not supported "
+							 "(chunk type FLI_PSTAMP == 18)"
+						  << endl;
+				size_t skip = fli_data.read4();
+				fli_data.skip(skip - 4);
+				break;
+			}
 
 			default:
-				cout << "UNKNOWN FLIC FRAME" << endl;
+				std::cerr << "FLIC ERROR: Invalid chunk type: " << static_cast<int>(chunk_type) << endl;
 				break;
 			}
 		}
 
 		streampos += frame_size;
 
-		if (changepal) palette->apply(false);
+		if (changepal) {
+			palette->apply(false);
+		}
 		changepal = false;
 
-		if (frame < first_frame)
+		if (frame < first_frame) {
 			continue;
+		}
 
 		// Speed related frame skipping detection
 		const bool skip_frame = Game_window::get_instance()->get_frame_skipping() && SDL_GetTicks() >= ticks;
 
 		win->put(fli_buf.get(), xoffset, yoffset);
 
-		if (ticks > SDL_GetTicks()) SDL_Delay(ticks - SDL_GetTicks());
+		if (ticks > SDL_GetTicks()) {
+			SDL_Delay(ticks - SDL_GetTicks());
+		}
 
-		ticks += fli_speed * 10;
+		if (fli_magic == 0xaf11) {
+			ticks += fli_speed * 10;    // FLC format: convert from 1/70th second
+		} else {                        // fli_magic == 0xaf12
+			ticks += fli_speed;         // FLI format: already in milliseconds
+		}
 
+		win->FillGuardband();
 		if (!dont_show && !skip_frame) {
 			win->show();
 		}
 	}
 
-	delete[] pixbuf;
-
 	return ticks;
 }
 
-void playfli::put_buffer(Image_window *win) {
+void playfli::put_buffer(Image_window* win) const {
 	const int xoffset = (win->get_game_width() - fli_width) / 2;
 	const int yoffset = (win->get_game_height() - fli_height) / 2;
 

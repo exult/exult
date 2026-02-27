@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>info.exult.exult.studio</id>
+  <name>Exult Studio</name>
+  <developer id="info.exult.exult">
+    <name>Exult Contributors</name>
+    <url>https://github.com/exult/exult/graphs/contributors</url>
+  </developer>
+  <summary>Editor for the Ultima VII game engine Exult</summary>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>GPL-2.0-only</project_license>
+  <launchable type="desktop-id">info.exult.exult.studio.desktop</launchable>
+  <url type="homepage">https://exult.info/</url>
+  <url type="bugtracker">https://github.com/exult/exult/issues</url>
+  <url type="help">https://exult.info/studio.html</url>
+  <url type="vcs-browser">https://github.com/exult/exult</url>
+  <description>
+    <p>Exult is a project to recreate Ultima VII for modern operating systems, using the game's original plot, data, and graphics files.</p>
+    <p>Exult Studio is the editor component of the Exult engine suite and, together with the main Exult engine, can be used to create mods for the Ultima VII games or even build entire new games on their engine.</p>
+  </description>
+  <screenshots>
+    <screenshot type="default">
+      <image type="source">https://exult.info/images/studio01.png</image>
+      <caption>Basic editing view</caption>
+    </screenshot>
+    <screenshot>
+      <image type="source">https://exult.info/images/studio02.png</image>
+      <caption>Viewing graphics for a given game</caption>
+    </screenshot>
+    <screenshot>
+      <image type="source">https://exult.info/images/studio03.png</image>
+      <caption>Editing a monster spawner "egg"</caption>
+    </screenshot>
+    <screenshot>
+      <image type="source">https://exult.info/images/studio10.png</image>
+      <caption>Exult Studio's NPC editor'</caption>
+    </screenshot>
+  </screenshots>
+  <releases>
+    <release version="1.10.1" date="2024-09-25">
+      <url>https://github.com/exult/exult/releases/tag/v1.10.1</url>
+    </release>
+    <release version="1.10" date="2024-09-08">
+      <url>https://github.com/exult/exult/releases/tag/v1.10</url>
+    </release>
+    <release version="1.8" date="2022-04-12">
+      <url>https://github.com/exult/exult/releases/tag/v1.8</url>
+    </release>
+    <release version="1.6" date="2020-04-17">
+      <url>https://github.com/exult/exult/releases/tag/v1.6</url>
+    </release>
+    <release version="1.2" date="2004-06-10">
+      <url>https://github.com/exult/exult/releases/tag/v1.2</url>
+    </release>
+    <release version="1.00" date="2002-11-06">
+      <url>https://github.com/exult/exult/releases/tag/v1.00</url>
+    </release>
+  </releases>
+  <content_rating type="oars-1.1" />
+  <update_contact>https://github.com/exult/exult/issues</update_contact>
+  <recommends>
+    <control>keyboard</control>
+    <control>pointing</control>
+  </recommends>
+  <requires>
+    <internet>offline-only</internet>
+  </requires>
+  <provides>
+    <binary>exult_studio</binary>
+  </provides>
+  <categories>
+      <category>Game</category>
+      <category>RolePlaying</category>
+      <category>Development</category>
+  </categories>
+  <keywords>
+    <keyword>Ultima</keyword>
+    <keyword>avatar</keyword>
+    <keyword>fantasy</keyword>
+    <keyword>editor</keyword>
+    <keyword>retro</keyword>
+  </keywords>
+</component>

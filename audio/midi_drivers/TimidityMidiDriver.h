@@ -22,35 +22,42 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #ifdef USE_TIMIDITY_MIDI
 
-#include "LowLevelMidiDriver.h"
+#	include "LowLevelMidiDriver.h"
 
-class TimidityMidiDriver : public LowLevelMidiDriver
-{
+class TimidityMidiDriver : public LowLevelMidiDriver {
+	bool used_inst[128];
+	bool used_drums[128];
 
-	bool	used_inst[128];
-	bool	used_drums[128];
+	static const MidiDriverDesc desc;
 
-	const static MidiDriverDesc	desc;
-	static MidiDriver *createInstance() {
-		return new TimidityMidiDriver();
+	static std::shared_ptr<MidiDriver> createInstance() {
+		return std::make_shared<TimidityMidiDriver>();
 	}
 
 public:
-	static const MidiDriverDesc* getDesc() { return &desc; }
-	TimidityMidiDriver() = default;
+	TimidityMidiDriver() : LowLevelMidiDriver(std::string(desc.name)) {}
+
+	static const MidiDriverDesc* getDesc() {
+		return &desc;
+	}
 
 protected:
 	// LowLevelMidiDriver implementation
-	int			open() override;
-	void		close() override;
-	void		send(uint32 b) override;
-	void		lowLevelProduceSamples(sint16 *samples, uint32 num_samples) override;
+	int  open() override;
+	void close() override;
+	void send(uint32 b) override;
+	void lowLevelProduceSamples(sint16* samples, uint32 num_samples) override;
 
 	// MidiDriver overloads
-	bool		isSampleProducer() override { return true; }
-	bool		noTimbreSupport() override { return true; }
+	bool isSampleProducer() override {
+		return true;
+	}
+
+	bool noTimbreSupport() override {
+		return true;
+	}
 };
 
-#endif //USE_TIMIDITY_MIDI
+#endif    // USE_TIMIDITY_MIDI
 
-#endif //TIMIDITYMIDIDRIVER_H_INCLUDED
+#endif    // TIMIDITYMIDIDRIVER_H_INCLUDED

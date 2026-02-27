@@ -19,14 +19,13 @@
  *	Author: Marzo Junior
  */
 
-var IsObjectBlocked 0x82C (var obj, var obj_pos, var size, var blacklist)
-{
+var IsObjectBlocked 0x82C (var obj, struct<Position> obj_pos, var size, var blacklist) {
 	var near_list = UI_find_nearby(obj, SHAPE_ANY, absoluteValueOf(size), MASK_INVISIBLE);
 	for (blocker in near_list) {
-		var position = UI_get_object_position(blocker);
-		if (position[X] <= obj_pos[X] && position[X] >= obj_pos[X] + size &&
-		    position[Y] <= obj_pos[Y] && position[Y] >= obj_pos[Y] + size &&
-		    position[Z] <= 2 && blocker != obj &&
+		struct<Position> position = UI_get_object_position(blocker);
+		if (position.x <= obj_pos.x && position.x >= obj_pos.x + size &&
+		    position.y <= obj_pos.y && position.y >= obj_pos.y + size &&
+		    position.z <= 2 && blocker != obj &&
 		    !(UI_get_item_shape(blocker) in blacklist)
 			// Original usecode erroneously checks this flag on obj
 		    && UI_get_item_flag(blocker, IS_SOLID)) {

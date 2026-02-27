@@ -21,11 +21,12 @@
 #ifndef U7FILEMAN_H
 #define U7FILEMAN_H
 
+#include "U7file.h"
+#include "exceptions.h"
+
 #include <map>
 #include <memory>
 #include <string>
-#include "U7file.h"
-#include "exceptions.h"
 
 /**
  *  This class manages "files". These "files" are managed by an
@@ -36,22 +37,24 @@ protected:
 	/// The actual "file" list.
 	std::map<File_spec, std::unique_ptr<U7file>> file_list;
 	/// Static pointer to self.
-	static U7FileManager *self;
+	static U7FileManager* self;
 
 public:
-	U7FileManager() = default;
-	U7FileManager(const U7FileManager&) = delete;
+	U7FileManager()                                = default;
+	U7FileManager(const U7FileManager&)            = delete;
 	U7FileManager& operator=(const U7FileManager&) = delete;
-	U7FileManager(U7FileManager&&) = default;
-	U7FileManager& operator=(U7FileManager&&) = default;
+	U7FileManager(U7FileManager&&)                 = default;
+	U7FileManager& operator=(U7FileManager&&)      = default;
+
 	~U7FileManager() {
 		reset();
 	}
 
 	void reset();
 
-	U7file *get_file_object(const File_spec &s, bool allow_errors = false);
-	static U7FileManager *get_ptr() {
+	U7file* get_file_object(const File_spec& s, bool allow_errors = false);
+
+	static U7FileManager* get_ptr() {
 		return self;
 	}
 };

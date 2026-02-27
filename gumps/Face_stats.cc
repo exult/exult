@@ -1,5 +1,5 @@
 /*
-Copyright (C) 2001-2022 The Exult Team
+Copyright (C) 2001-2025 The Exult Team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -17,66 +17,83 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
 #ifdef HAVE_CONFIG_H
-#  include <config.h>
+#	include <config.h>
 #endif
 
 #include "Face_stats.h"
+
 #include "Face_button.h"
+#include "Gump_manager.h"
 #include "Paperdoll_gump.h"
 #include "actors.h"
-#include "party.h"
-#include "exult_flx.h"
-#include "gamewin.h"
-#include "game.h"
-#include "Gump_manager.h"
+#include "cheat.h"
 #include "combat_opts.h"
-#include "ignore_unused_variable_warning.h"
+#include "exult_flx.h"
+#include "game.h"
+#include "gamewin.h"
+#include "party.h"
 
 #define PALETTE_INDEX_RED   22
 #define PALETTE_INDEX_GREEN 64
 #define PALETTE_INDEX_BLUE  79
 
-#define PORTRAIT_NUM_MODES  5
+#define PORTRAIT_NUM_MODES 5
 
-#define PORTRAIT_WIDTH      40
-#define PORTRAIT_HEIGHT     35
+#define PORTRAIT_WIDTH  40
+#define PORTRAIT_HEIGHT 35
+
+// Frames for the Badge shape
+enum BadgeFrames {
+	ASLEEP = 0,
+	POISONED,
+	CHARMED,
+	HUNGRY,
+	PROTECTED,
+	CURSED,
+	PARALYZED,
+	FREEZING,
+	NUM_BADGES
+};
 
 class Stat_bar : public Gump_button {
-	Actor       *actor;
-	int     prop;
-	int     prop_max;
-	unsigned char   colour;
+	Actor*        actor;
+	int           prop;
+	int           prop_max;
+	unsigned char colour;
 
-	int     val;
-	int     max_val;
+	int val;
+	int max_val;
+
 public:
-	Stat_bar(Gump *par, int px, int py, Actor *a, int s, int m, unsigned char c);
+	Stat_bar(Gump* par, int px, int py, Actor* a, int s, int m, unsigned char c);
 	void double_clicked(int x, int y) override;
 	void paint() override;
 
-	bool activate(int button) override {
-		return button == 1;
+	bool activate(MouseButton button) override {
+		return button == MouseButton::Left;
 	}
-	bool push(int button) override {
-		return button == 1;
+
+	bool push(MouseButton button) override {
+		return button == MouseButton::Left;
 	}
-	void unpush(int button) override {
+
+	void unpush(MouseButton button) override {
 		ignore_unused_variable_warning(button);
 	}
+
 	// update dirty region, if required
 	void update_widget() override;
 
-	bool is_draggable() override {
+	bool is_draggable() const override {
 		return false;
 	}
 };
 
-Stat_bar::Stat_bar(Gump *par, int px, int py, Actor *a, int s, int m, unsigned char c)
-	: Gump_button(par, EXULT_FLX_HP_BAR_SHP, px, py, SF_EXULT_FLX),
-	  actor(a), prop(s), prop_max(m), colour(c), val(-256), max_val(-256) {
-
+Stat_bar::Stat_bar(Gump* par, int px, int py, Actor* a, int s, int m, unsigned char c)
+		: Gump_button(par, EXULT_FLX_HP_BAR_SHP, px, py, SF_EXULT_FLX), actor(a), prop(s), prop_max(m), colour(c), val(-256),
+		  max_val(-256) {
 	gwin->add_dirty(get_rect());
-	val = actor->get_effective_prop(prop);
+	val     = actor->get_effective_prop(prop);
 	max_val = actor->get_effective_prop(prop_max);
 }
 
@@ -85,20 +102,19 @@ void Stat_bar::double_clicked(int x, int y) {
 	gumpman->add_gump(actor, game->get_shape("gumps/statsdisplay"));
 }
 
-
-
 /*
  *  Paint on screen.
  */
 
-void Stat_bar::paint(
-) {
+void Stat_bar::paint() {
 	Gump_button::paint();
 
 	int width = (val * 32) / (max_val ? max_val : 1);
 
 	if (width > 0) {
-		if (width > 32) width = 32;
+		if (width > 32) {
+			width = 32;
+		}
 
 		int px = x;
 		int py = y;
@@ -117,10 +133,11 @@ void Stat_bar::paint(
  */
 
 void Stat_bar::update_widget() {
-	if (val != actor->get_effective_prop(prop) || max_val != actor->get_effective_prop(prop_max))
+	if (val != actor->get_effective_prop(prop) || max_val != actor->get_effective_prop(prop_max)) {
 		gwin->add_dirty(get_rect());
+	}
 
-	val = actor->get_effective_prop(prop);
+	val     = actor->get_effective_prop(prop);
 	max_val = actor->get_effective_prop(prop_max);
 }
 
@@ -130,46 +147,54 @@ void Stat_bar::update_widget() {
 
 class Portrait_button : public Face_button {
 protected:
-	Stat_bar    *hp;        // Bar for HP
-	Stat_bar    *mana;      // Bar for MANA
-	bool        hit;
-	bool        pois;
-	bool        prot;
-	bool        para;
-	bool        charm;
-	bool        curse;
+	Stat_bar* hp;      // Bar for HP
+	Stat_bar* mana;    // Bar for MANA
+	bool      hit;
+	bool      pois;
+	bool      prot;
+	bool      para;
+	bool      charm;
+	bool      curse;
+	bool      freezing;
+	bool      hungry;
+	bool      asleep;
+
 public:
-	Portrait_button(Gump *par, int px, int py, Actor *a);
+	Portrait_button(Gump* par, int px, int py, Actor* a);
 	~Portrait_button() override;
 	void double_clicked(int x, int y) override;
 	void paint() override;
+	void paintBadge(int frame, int position);
 
 	// update dirty region, if required
 	void update_widget() override;
 
-	bool on_button(int mx, int my) const override;
+	Gump_button* on_button(int mx, int my) override;
 
-	TileRect get_rect() override;
+	TileRect get_rect() const override;
 
-	bool is_draggable() override {
+	bool is_draggable() const override {
 		return false;
 	}
 };
 
-
-Portrait_button::Portrait_button(Gump *par, int px, int py, Actor *a)
-	: Face_button(par, px + 14, py - 20, a), hp(nullptr), mana(nullptr) {
+Portrait_button::Portrait_button(Gump* par, int px, int py, Actor* a)
+		: Face_button(par, px + 14, py - 20, a), hp(nullptr), mana(nullptr) {
 	hp = new Stat_bar(par, px + 4, py - 10, a, Actor::health, Actor::strength, PALETTE_INDEX_RED);
 
-	if (actor->get_effective_prop(Actor::magic) > 0)
+	if (actor->get_effective_prop(Actor::magic) > 0) {
 		mana = new Stat_bar(par, px + 4, py - 5, a, Actor::mana, Actor::magic, PALETTE_INDEX_BLUE);
+	}
 
-	hit = actor->was_hit();
-	pois = actor->get_flag(Obj_flags::poisoned);
-	prot = actor->get_flag(Obj_flags::protection);
-	para = actor->get_flag(Obj_flags::paralyzed);
-	charm = actor->get_flag(Obj_flags::charmed);
-	curse = actor->get_flag(Obj_flags::cursed);
+	hit      = actor->was_hit();
+	pois     = actor->get_flag(Obj_flags::poisoned);
+	prot     = actor->get_flag(Obj_flags::protection);
+	para     = actor->get_flag(Obj_flags::paralyzed);
+	charm    = actor->get_flag(Obj_flags::charmed);
+	curse    = actor->get_flag(Obj_flags::cursed);
+	freezing = actor->get_flag(Obj_flags::freeze);
+	hungry   = actor->get_property(static_cast<int>(Actor::food_level)) <= 9;
+	asleep   = actor->get_flag(Obj_flags::asleep);
 
 	gwin->add_dirty(get_rect());
 }
@@ -180,47 +205,56 @@ Portrait_button::~Portrait_button() {
 }
 
 void Portrait_button::double_clicked(int x, int y) {
-	if (hp && hp->on_button(x, y))
+	if (hp && hp->on_button(x, y)) {
 		hp->double_clicked(x, y);
-	else if (mana && mana->on_button(x, y))
+	} else if (mana && mana->on_button(x, y)) {
 		mana->double_clicked(x, y);
-	else if (actor->can_act_charmed())
+	} else if (Combat::is_paused() && gwin->in_combat()) {
+		int ax = 0, ay = 0;
+		gwin->get_shape_location(actor, ax, ay);
+		gwin->paused_combat_select(ax, ay);
+	} else if (actor->can_act_charmed()) {
 		actor->show_inventory();
+	}
 }
 
-bool Portrait_button::on_button(int x, int y) const {
-	if (hp && hp->on_button(x, y))
-		return true;
-	else if (mana && mana->on_button(x, y))
-		return true;
-	else if (Face_button::on_button(x, y))
-		return true;
-
-	return false;
+Gump_button* Portrait_button::on_button(int x, int y) {
+	Gump_button* ret = nullptr;
+	if (hp && (ret = hp->on_button(x, y))) {
+		return ret;
+	} else if (mana && (ret = mana->on_button(x, y))) {
+		return ret;
+	} else {
+		return Face_button::on_button(x, y);
+	}
 }
 
 void Portrait_button::update_widget() {
 	Face_button::update_widget();
-	if (hp)
+	if (hp) {
 		hp->update_widget();
-	if (mana)
+	}
+	if (mana) {
 		mana->update_widget();
+	}
 
-	if (hit != actor->was_hit() ||
-	        pois != actor->get_flag(Obj_flags::poisoned) ||
-	        prot != actor->get_flag(Obj_flags::protection) ||
-	        para != actor->get_flag(Obj_flags::paralyzed) ||
-	        charm != actor->get_flag(Obj_flags::charmed) ||
-	        curse != actor->get_flag(Obj_flags::cursed)) {
+	if (hit != actor->was_hit() || pois != actor->get_flag(Obj_flags::poisoned) || prot != actor->get_flag(Obj_flags::protection)
+		|| para != actor->get_flag(Obj_flags::paralyzed) || charm != actor->get_flag(Obj_flags::charmed)
+		|| curse != actor->get_flag(Obj_flags::cursed) || freezing != actor->get_flag(Obj_flags::freeze)
+		|| hungry != (actor->get_property(static_cast<int>(Actor::food_level)) <= 9)
+		|| asleep != actor->get_flag(Obj_flags::asleep)) {
 		TileRect r = get_rect();
 		gwin->add_dirty(r);
-		hit = actor->was_hit();
-		pois = actor->get_flag(Obj_flags::poisoned);
-		prot = actor->get_flag(Obj_flags::protection);
-		para = actor->get_flag(Obj_flags::paralyzed);
-		charm = actor->get_flag(Obj_flags::charmed);
-		curse = actor->get_flag(Obj_flags::cursed);
-		r = get_rect();
+		hit      = actor->was_hit();
+		pois     = actor->get_flag(Obj_flags::poisoned);
+		prot     = actor->get_flag(Obj_flags::protection);
+		para     = actor->get_flag(Obj_flags::paralyzed);
+		charm    = actor->get_flag(Obj_flags::charmed);
+		curse    = actor->get_flag(Obj_flags::cursed);
+		freezing = actor->get_flag(Obj_flags::freeze);
+		hungry   = actor->get_property(static_cast<int>(Actor::food_level)) <= 9;
+		asleep   = actor->get_flag(Obj_flags::asleep);
+		r        = get_rect();
 		gwin->add_dirty(r);
 	}
 }
@@ -232,51 +266,85 @@ void Portrait_button::update_widget() {
 void Portrait_button::paint() {
 	Face_button::paint();
 
-	Shape_frame *s = get_shape();
+	Shape_frame* s = get_shape();
 
 	if (s) {
-		int px = x;
-		int py = y;
+		int sx = 0;
+		int sy = 0;
 
-		if (parent) {
-			px += parent->get_x();
-			py += parent->get_y();
-		}
+		local_to_screen(sx, sy);
 
 		if (hit) {
-			sman->paint_outline(px, py, s, HIT_PIXEL);
-		} else if (charm)
-			sman->paint_outline(px, py, s, CHARMED_PIXEL);
-		else if (para) {
-			sman->paint_outline(px, py, s, PARALYZE_PIXEL);
+			sman->paint_outline(sx, sy, s, HIT_PIXEL);
+		} else if (charm) {
+			sman->paint_outline(sx, sy, s, CHARMED_PIXEL);
+		} else if (para) {
+			sman->paint_outline(sx, sy, s, PARALYZE_PIXEL);
 		} else if (prot) {
-			sman->paint_outline(px, py, s, PROTECT_PIXEL);
-		} else if (curse)
-			sman->paint_outline(px, py, s, CURSED_PIXEL);
-		else if (pois) {
-			sman->paint_outline(px, py, s, POISON_PIXEL);
+			sman->paint_outline(sx, sy, s, PROTECT_PIXEL);
+		} else if (curse) {
+			sman->paint_outline(sx, sy, s, CURSED_PIXEL);
+		} else if (pois) {
+			sman->paint_outline(sx, sy, s, POISON_PIXEL);
 		}
 	}
 
-	if (hp)
+	if (hp) {
 		hp->paint();
-	if (mana)
+	}
+	if (mana) {
 		mana->paint();
+	}
+	int badge = 0;
+	// Badges paint over bars
+	if (asleep) {
+		paintBadge(ASLEEP, badge++);
+	}
+	if (pois) {
+		paintBadge(POISONED, badge++);
+	}
+	if (charm) {
+		paintBadge(CHARMED, badge++);
+	}
+	if (hungry && cheat.GetFoodUse() != Cheat::FoodUse::Disabled) {
+		paintBadge(HUNGRY, badge++);
+	}
+	if (prot) {
+		paintBadge(PROTECTED, badge++);
+	}
+	if (curse) {
+		paintBadge(CURSED, badge++);
+	}
+	if (para) {
+		paintBadge(PARALYZED, badge++);
+	}
+	if (freezing) {
+		paintBadge(FREEZING, badge++);
+	}
 }
 
-TileRect Portrait_button::get_rect() {
+void Portrait_button::paintBadge(int frame, int position) {
+	ShapeID sid(EXULT_FLX_FS_BADGES_SHP, frame, SF_EXULT_FLX);
+	int     sx = position * 6 - 8;
+	int     sy = 11;
+	local_to_screen(sx, sy);
+	sid.paint_shape(sx, sy);
+}
+
+TileRect Portrait_button::get_rect() const {
 	TileRect rect = Face_button::get_rect();
-	if (hit || pois || prot || para || charm || curse)
-		rect.enlarge(2);
 
 	if (hp) {
 		const TileRect r = hp->get_rect();
-		rect = rect.add(r);
+		rect             = rect.add(r);
 	}
 	if (mana) {
 		const TileRect r = mana->get_rect();
-		rect = rect.add(r);
+		rect             = rect.add(r);
 	}
+
+	// always enlarge by 3 around the shape to account for badges and outlines
+	rect.enlarge(3);
 
 	return rect;
 }
@@ -288,9 +356,8 @@ TileRect Portrait_button::get_rect() {
 Face_stats::Face_stats() : Gump(nullptr, 0, 0, 0, SF_GUMPS_VGA) {
 	for (int i = 1; i < 8; i++) {
 		npc_nums[i] = -1;
-		party[i] = nullptr;
+		party[i]    = nullptr;
 	}
-
 
 	create_buttons();
 }
@@ -306,30 +373,35 @@ Face_stats::~Face_stats() {
  *  Paint on screen.
  */
 
-void Face_stats::paint(
-) {
-	for (auto *act : party)
-		if (act)
+void Face_stats::paint() {
+	for (auto* act : party) {
+		if (act) {
 			act->paint();
+		}
+	}
 }
 
 /*
  *  On a Button?
  */
 
-Gump_button *Face_stats::on_button(int mx, int my) {
-	for (auto *act : party)
-		if (act && act->on_button(mx, my))
+Gump_button* Face_stats::on_button(int mx, int my) {
+	for (auto* act : party) {
+		if (act && act->on_button(mx, my)) {
 			return act;
+		}
+	}
 
 	return nullptr;
 }
 
 // add dirty region, if dirty
 void Face_stats::update_gump() {
-	for (auto *act : party)
-		if (act)
+	for (auto* act : party) {
+		if (act) {
 			act->update_widget();
+		}
+	}
 }
 
 // Delete all the buttons
@@ -344,8 +416,8 @@ void Face_stats::delete_buttons() {
 		npc_nums[i] = -1;
 	}
 
-	resx = 0;
-	resy = 0;
+	resx  = 0;
+	resy  = 0;
 	gamex = 0;
 	gamey = 0;
 }
@@ -373,36 +445,41 @@ void Face_stats::create_buttons() {
 
 	for (i = 0; i < party_size; i++) {
 		const int num = partyman->get_member(i);
-		Actor* act = gwin->get_npc(num);
+		Actor*    act = gwin->get_npc(num);
 		assert(act != nullptr);
 		// Show faces if in SI, or if paperdolls are allowed
 		if (sman->can_use_paperdolls() ||
 			// Otherwise, show faces also if the character
 			// has paperdoll information
-			act->get_info().get_npc_paperdoll())
+			act->get_info().get_npc_paperdoll()) {
 			++num_to_paint;
+		}
 	}
 
-	if (mode == 0)
+	if (mode == 0) {
 		posx = 0;
-	else if (mode == 1)
+	} else if (mode == 1) {
 		posx = (resx - (num_to_paint + 1) * PORTRAIT_WIDTH) / 2;
-	else if (mode == 2) {
+	} else if (mode == 2) {
 		posx  = resx - PORTRAIT_WIDTH;
 		width = -PORTRAIT_WIDTH;
 	} else if (mode == 3) {
-		// if large black bars we dont want potraits floating in space so put them next to the game window
-		if (black_bar_width > (PORTRAIT_WIDTH * 2))
+		// if large black bars we dont want potraits floating in space so put
+		// them next to the game window
+		if (black_bar_width > (PORTRAIT_WIDTH * 2)) {
 			posx = black_bar_width - PORTRAIT_WIDTH - 5;
+		}
 		// center potrait in blank space
-		else if (black_bar_width > PORTRAIT_WIDTH)
+		else if (black_bar_width > PORTRAIT_WIDTH) {
 			posx = black_bar_width / 2 - PORTRAIT_WIDTH / 2;
-		else
+		} else {
 			posx = 0;
+		}
 		posy   = PORTRAIT_HEIGHT;
 		width  = 0;
 		height = PORTRAIT_HEIGHT;
-		// center potraits in Y, mainly to avoid conflicting with other on screeen controls
+		// center potraits in Y, mainly to avoid conflicting with other on
+		// screeen controls
 		y        = gamey / 2 - (PORTRAIT_HEIGHT * 4) / 2;
 		vertical = true;
 	}
@@ -416,12 +493,13 @@ void Face_stats::create_buttons() {
 	for (i = 0; i < party_size; i++) {
 		// if vertical display first 4 on left and last 4 on right
 		if (vertical && i == 3) {
-			if (black_bar_width > (PORTRAIT_WIDTH * 2))
+			if (black_bar_width > (PORTRAIT_WIDTH * 2)) {
 				posx = gamex + 5;
-			else if (black_bar_width > PORTRAIT_WIDTH)
+			} else if (black_bar_width > PORTRAIT_WIDTH) {
 				posx = black_bar_width + gamex - black_bar_width / 2 - PORTRAIT_WIDTH / 2;
-			else
+			} else {
 				posx = black_bar_width + gamex - PORTRAIT_WIDTH;
+			}
 			posy = 0;
 		}
 		npc_nums[i + 1] = partyman->get_member(i);
@@ -440,17 +518,20 @@ void Face_stats::create_buttons() {
 
 	region.x = region.y = region.w = region.h = 0;
 
-	for (i = 0; i < 8; i++)
+	for (i = 0; i < 8; i++) {
 		if (party[i]) {
 			const TileRect r = party[i]->get_rect();
-			region     = region.add(r);
+			region           = region.add(r);
 		}
+	}
 }
 
 bool Face_stats::has_point(int x, int y) const {
-	for (auto *act : party)
-		if (act && act->on_button(x, y))
+	for (auto* act : party) {
+		if (act && act->on_button(x, y)) {
 			return true;
+		}
+	}
 	return false;
 }
 
@@ -463,35 +544,67 @@ bool Face_stats::has_point(int x, int y) const {
  */
 
 bool Face_stats::add(
-    Game_object *obj,
-    int mx, int my,         // Mouse location.
-    int sx, int sy,         // Screen location of obj's hotspot.
-    bool dont_check,        // Skip volume check.
-    bool combine            // True to try to combine obj.  MAY
-    //   cause obj to be deleted.
+		Game_object* obj, int mx, int my,    // Mouse location.
+		int sx, int sy,                      // Screen location of obj's hotspot.
+		bool dont_check,                     // Skip volume check.
+		bool combine                         // True to try to combine obj.  MAY
+											 //   cause obj to be deleted.
 ) {
-	if (sx < 0 && sy < 0 && my < 0 && mx < 0)
+	if (sx < 0 && sy < 0 && my < 0 && mx < 0) {
 		return false;
+	}
 
-	for (auto *act : party)
-		if (act && act->on_button(mx, my))
+	for (auto* act : party) {
+		if (act && act->on_button(mx, my)) {
 			return act->get_actor()->add(obj, dont_check, combine);
+		}
+	}
 
 	return false;
 }
 
-Container_game_object *Face_stats::find_actor(int mx, int my) {
-	for (auto *act : party)
-		if (act && act->on_button(mx, my))
+Container_game_object* Face_stats::find_actor(int mx, int my) {
+	for (auto* act : party) {
+		if (act && act->on_button(mx, my)) {
 			return act->get_actor();
+		}
+	}
 
 	return nullptr;
 }
 
 // Statics
 
-int Face_stats::mode = 0;
-Face_stats *Face_stats::self = nullptr;
+int         Face_stats::mode = 0;
+Face_stats* Face_stats::self = nullptr;
+
+// Hide the gump without destroying it
+void Face_stats::HideGump() {
+	if (self) {
+		gumpman->remove_gump(self);
+	}
+}
+
+// Show the gump if it exists
+void Face_stats::ShowGump() {
+	if (self) {
+		gumpman->add_gump(self);
+	}
+}
+
+// Check if the gump is currently visible
+bool Face_stats::Visible() {
+	if (!self) {
+		return false;
+	}
+
+	for (auto it = gumpman->begin(); it != gumpman->end(); it++) {
+		if (*it == self) {
+			return true;
+		}
+	}
+	return false;
+}
 
 // Creates if doesn't already exist
 void Face_stats::CreateGump() {
@@ -503,21 +616,23 @@ void Face_stats::CreateGump() {
 
 // Removes is exists
 void Face_stats::RemoveGump() {
-	if (self)
+	if (self) {
 		gumpman->close_gump(self);
+	}
 }
 
 // Increments the state of the gump
 void Face_stats::AdvanceState() {
-	if (!self)
+	if (!self) {
 		CreateGump();
-	else {
+	} else {
 		RemoveGump();
 
 		mode++;
 		mode %= PORTRAIT_NUM_MODES;
-		if (mode)
+		if (mode) {
 			CreateGump();
+		}
 	}
 }
 
@@ -531,15 +646,16 @@ void Face_stats::UpdateButtons() {
 	}
 }
 
-void Face_stats::save_config(Configuration *config) {
+void Face_stats::save_config(Configuration* config) {
 	config->set("config/gameplay/facestats", self ? mode : -1, true);
 }
 
-void Face_stats::load_config(Configuration *config) {
+void Face_stats::load_config(Configuration* config) {
 	int nmode;
 	config->value("config/gameplay/facestats", nmode, -1);
-	if (self)
+	if (self) {
 		RemoveGump();
+	}
 	if (nmode >= 0) {
 		mode = nmode % PORTRAIT_NUM_MODES;
 		CreateGump();

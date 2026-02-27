@@ -1,5 +1,5 @@
 /*
-Copyright (C) 2000-2022 The Exult Team
+Copyright (C) 2000-2024 The Exult Team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -17,27 +17,30 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
 #ifdef HAVE_CONFIG_H
-#  include <config.h>
+#	include <config.h>
 #endif
 
 #ifdef __GNUC__
 #	pragma GCC diagnostic push
 #	pragma GCC diagnostic ignored "-Wold-style-cast"
+#	pragma GCC diagnostic ignored "-Wzero-as-null-pointer-constant"
+#	if !defined(__llvm__) && !defined(__clang__)
+#		pragma GCC diagnostic ignored "-Wuseless-cast"
+#	endif
 #endif    // __GNUC__
-#include <SDL.h>
+#include <SDL3/SDL.h>
 #ifdef __GNUC__
 #	pragma GCC diagnostic pop
 #endif    // __GNUC__
 
-#include "Yesno_gump.h"
-#include "gamewin.h"
-#include "mouse.h"
-#include "game.h"
 #include "Gump_button.h"
 #include "Gump_manager.h"
-#include "font.h"
+#include "Yesno_gump.h"
 #include "exult.h"
-#include "touchui.h"
+#include "font.h"
+#include "game.h"
+#include "gamewin.h"
+#include "mouse.h"
 
 #include <cstring>
 
@@ -45,49 +48,42 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *  Statics:
  */
 
-short Yesno_gump::yesx = 63;
+short Yesno_gump::yesx   = 63;
 short Yesno_gump::yesnoy = 45;
-short Yesno_gump::nox = 84;
-
+short Yesno_gump::nox    = 84;
 
 /*
  *  A 'yes' or 'no' button.
  */
 
 class Yesno_button : public Gump_button {
-	int isyes;          // 1 for 'yes', 0 for 'no'.
+	int isyes;    // 1 for 'yes', 0 for 'no'.
 public:
-	Yesno_button(Gump *par, int px, int py, int yes)
-		: Gump_button(par, yes ?
-		              game->get_shape("gumps/yesbtn")
-		              : game->get_shape("gumps/nobtn"), px, py),
-		                isyes(yes)
-	{  }
-	// What to do when 'clicked':
-	bool activate(int button = 1) override;
-};
+	Yesno_button(Gump* par, int px, int py, int yes)
+			: Gump_button(par, yes ? game->get_shape("gumps/yesbtn") : game->get_shape("gumps/nobtn"), px, py), isyes(yes) {}
 
+	// What to do when 'clicked':
+	bool activate(MouseButton button) override;
+};
 
 /*
  *  Handle 'yes' or 'no' button.
  */
 
-bool Yesno_button::activate(
-    int button
-) {
-	if (button != 1) return false;
-	static_cast<Yesno_gump *>(parent)->set_answer(isyes);
+bool Yesno_button::activate(MouseButton button) {
+	if (button != MouseButton::Left) {
+		return false;
+	}
+	static_cast<Yesno_gump*>(parent)->set_answer(isyes);
 	return true;
 }
-
 
 /*
  *  Create a yes/no box.
  */
 
-Yesno_gump::Yesno_gump(
-    const std::string &txt, const char *font
-) : Modal_gump(nullptr, game->get_shape("gumps/yesnobox")), text(txt), fontname(font), answer(-1) {
+Yesno_gump::Yesno_gump(const std::string& txt, const char* font)
+		: Modal_gump(nullptr, game->get_shape("gumps/yesnobox")), text(txt), fontname(font), answer(-1) {
 	set_object_area(TileRect(6, 5, 116, 32));
 	add_elem(new Yesno_button(this, yesx, yesnoy, 1));
 	add_elem(new Yesno_button(this, nox, yesnoy, 0));
@@ -97,61 +93,28 @@ Yesno_gump::Yesno_gump(
  *  Paint on screen.
  */
 
-void Yesno_gump::paint(
-) {
+void Yesno_gump::paint() {
 	// Paint the gump itself.
 	paint_shape(x, y);
-	paint_elems();          // Paint buttons.
+	paint_elems();    // Paint buttons.
 	// Paint text.
-	fontManager.get_font(fontname)->paint_text_box(gwin->get_win()->get_ib8(), text.c_str(),
-	        x + object_area.x, y + object_area.y, object_area.w, object_area.h, 2);
-	if (touchui != nullptr) {
-		touchui->showButtonControls();
-	}
+	fontManager.get_font(fontname)->paint_text_box(
+			gwin->get_win()->get_ib8(), text.c_str(), x + object_area.x, y + object_area.y, object_area.w, object_area.h, 2);
 	gwin->set_painted();
-}
-
-/*
- *  Handle mouse-down events.
- */
-
-bool Yesno_gump::mouse_down(
-    int mx, int my, int button      // Position in window.
-) {
-	if (button != 1) return false;
-	pushed = on_button(mx, my);
-	if (pushed)
-		pushed->push(button);       // Show it.
-	return true;
-}
-
-/*
- *  Handle mouse-up events.
- */
-
-bool Yesno_gump::mouse_up(
-    int mx, int my, int button          // Position in window.
-) {
-	if (button != 1) return false;
-
-	if (pushed) {       // Pushing a button?
-		pushed->unpush(button);
-		if (pushed->on_button(mx, my))
-			pushed->activate(button);
-		pushed = nullptr;
-	}
-	return true;
 }
 
 /*
  *  Handle ASCII character typed.
  */
 
-void Yesno_gump::key_down(int chr) {
-	if (chr == 'y' || chr == 'Y' || chr == SDLK_RETURN || chr == SDLK_KP_ENTER)
+bool Yesno_gump::key_down(SDL_Keycode chr, SDL_Keycode unicode) {
+	ignore_unused_variable_warning(unicode);
+	if (chr == SDLK_Y || chr == SDLK_RETURN) {
 		set_answer(1);
-	else if (chr == 'n' || chr == 'N' || chr == SDLK_ESCAPE)
+	} else if (chr == SDLK_N || chr == SDLK_ESCAPE) {
 		set_answer(0);
+	}
+	return true;
 }
 
 /*
@@ -161,51 +124,52 @@ void Yesno_gump::key_down(int chr) {
  */
 
 bool Yesno_gump::ask(
-    const char *txt,            // What to ask.
-    const char *font
-) {
+		const char* txt,    // What to ask.
+		Paintable* paint, const char* font) {
+	// make sure gumps are loaded
+	auto sm = Shape_manager::get_instance();
+	if (!sm->are_gumps_loaded()) {
+		sm->load_gumps_minimal();
+	}
 	Yesno_gump dlg(txt, font);
-	bool answer;
-	if (!gumpman->do_modal_gump(&dlg, Mouse::hand))
+	bool       answer;
+	if (!gumpman->do_modal_gump(&dlg, Mouse::hand, paint)) {
 		answer = false;
-	else
+	} else {
 		answer = dlg.get_answer();
-	if (touchui != nullptr && gumpman->gump_mode())
-		touchui->hideButtonControls();
+	}
 	return answer;
 }
 
-
-
-Countdown_gump::Countdown_gump(const std::string &txt, int timeout, const char *font) :
-	Yesno_gump(std::string(), font), text_fmt(txt), timer(timeout) {
-	answer = false;
+Countdown_gump::Countdown_gump(const std::string& txt, int timeout, const char* font)
+		: Yesno_gump(std::string(), font), text_fmt(txt), timer(timeout) {
+	answer     = false;
 	start_time = SDL_GetTicks();
 }
 
 bool Countdown_gump::run() {
-	const int elapsed = SDL_GetTicks() - start_time;
+	const int elapsed   = SDL_GetTicks() - start_time;
 	const int remaining = timer * 1000 - elapsed;
 
-	if (remaining <= 0)  set_answer(0);
+	if (remaining <= 0) {
+		set_answer(0);
+	}
 
-	char *new_text = new char[text_fmt.size() + 32];
-	snprintf(new_text, text_fmt.size() + 31, "%s %i...", text_fmt.c_str(), remaining / 1000);
-	new_text[text_fmt.size() + 31] = 0;
+	char* new_text = new char[text_fmt.size() + 32];
+	snprintf(new_text, text_fmt.size() + 32, "%s %i...", text_fmt.c_str(), remaining / 1000);
 	text = new_text;
-	delete [] new_text;
+	delete[] new_text;
 
 	return true;
 }
 
-bool Countdown_gump::ask(const char *txt, int timeout, const char *font) {
+bool Countdown_gump::ask(const char* txt, int timeout, const char* font) {
 	Countdown_gump dlg(txt, timeout, font);
-	bool answer;
-	if (!gumpman->do_modal_gump(&dlg, Mouse::hand))
+	bool           answer;
+	if (!gumpman->do_modal_gump(&dlg, Mouse::hand)) {
 		answer = false;
-	else
+	} else {
 		answer = dlg.get_answer();
-	if (touchui != nullptr && gumpman->gump_mode())
-		touchui->hideButtonControls();
+	}
 	return answer;
 }

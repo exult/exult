@@ -19,78 +19,81 @@
 #ifndef _Configuration_h_
 #define _Configuration_h_
 
-
 #include "XMLEntity.h"
 
-class   Configuration {
+class Configuration {
 public:
-	Configuration()
-		: xmltree(new XMLnode("config")), rootname("config")
-	{ }
-	Configuration(const std::string &fname, const std::string &root)
-		: xmltree(new XMLnode(root)), rootname(root) {
-		if (!fname.empty()) read_config_file(fname);
+	Configuration() : xmltree(new XMLnode("config")), rootname("config") {}
+
+	Configuration(const std::string& fname, const std::string& root) : xmltree(new XMLnode(root)), rootname(root) {
+		if (!fname.empty()) {
+			read_config_file(fname);
+		}
 	}
 
 	~Configuration() {
 		delete xmltree;
 	}
 
-	bool    read_config_file(const std::string &input_filename, const std::string &root = std::string());
-	bool    read_abs_config_file(const std::string &input_filename, const std::string &root = std::string());
+	bool read_config_file(const std::string& input_filename, const std::string& root = std::string());
+	bool read_abs_config_file(const std::string& input_filename, const std::string& root = std::string());
 
-	bool    read_config_string(const std::string &);
+	bool read_config_string(const std::string&);
 
-	void    value(const std::string &key, std::string &ret, const std::string &defaultvalue) const;
-	void    value(const std::string &key, bool &ret, bool defaultvalue = false) const;
-	void    value(const std::string &key, int &ret, int defaultvalue = 0) const;
+	void value(const std::string& key, std::string& ret, const std::string& defaultvalue) const;
+	void value(const std::string& key, bool& ret, bool defaultvalue = false) const;
+	void value(const std::string& key, int& ret, int defaultvalue = 0) const;
 
-	void    value(const std::string &key, std::string &ret, const char *defaultvalue = "") const {
+	void value(const std::string& key, std::string& ret, const char* defaultvalue = "") const {
 		value(key, ret, std::string(defaultvalue));
 	}
-	void    value(const char *key, std::string &ret, const char *defaultvalue = "") const {
-		value(std::string(key), ret, defaultvalue);
-	}
-	void    value(const char *key, bool &ret, bool defaultvalue = false) const {
-		value(std::string(key), ret, defaultvalue);
-	}
-	void    value(const char *key, int &ret, int defaultvalue = 0) const {
+
+	void value(const char* key, std::string& ret, const char* defaultvalue = "") const {
 		value(std::string(key), ret, defaultvalue);
 	}
 
-	bool    key_exists(const std::string &key) const;
+	void value(const char* key, bool& ret, bool defaultvalue = false) const {
+		value(std::string(key), ret, defaultvalue);
+	}
 
-	void    set(const std::string &key, const std::string &value, bool write_out);
-	void    set(const char *key, const char *value, bool write_out);
-	void    set(const char *key, const std::string &value, bool write_out);
-	void    set(const char *key, int, bool write_out);
+	void value(const char* key, int& ret, int defaultvalue = 0) const {
+		value(std::string(key), ret, defaultvalue);
+	}
 
-	void    remove(const std::string &key, bool write_out);
+	bool key_exists(const std::string& key) const;
+
+	void set(const std::string& key, const std::string& value, bool write_out);
+	void set(const char* key, const char* value, bool write_out);
+	void set(const char* key, const std::string& value, bool write_out);
+	void set(const char* key, int, bool write_out);
+	void set(const std::string& key, int, bool write_out);
+
+	void remove(const std::string& key, bool write_out);
 
 	// Return a list of keys that are subsidiary to the supplied key
-	std::vector<std::string>    listkeys(const std::string &key, bool longformat = true);
-	std::vector<std::string>    listkeys(const char *key, bool longformat = true);
+	std::vector<std::string> listkeys(const std::string& key, bool longformat = true);
+	std::vector<std::string> listkeys(const char* key, bool longformat = true);
 
-	std::string dump(); // Assembles a readable representation
-	std::ostream &dump(std::ostream &o, const std::string &indentstr);
+	std::string   dump();    // Assembles a readable representation
+	std::ostream& dump(std::ostream& o, const std::string& indentstr);
 
-	void    write_back();
+	void write_back();
 
-	void clear(const std::string &new_root = std::string());
+	void clear(const std::string& new_root = std::string());
 
-	using KeyType = XMLnode::KeyType;
+	using KeyType     = XMLnode::KeyType;
 	using KeyTypeList = XMLnode::KeyTypeList;
 
-	void getsubkeys(KeyTypeList &ktl, const std::string &basekey);
+	void getsubkeys(KeyTypeList& ktl, const std::string& basekey);
 
 private:
-	XMLnode *xmltree;
+	XMLnode*    xmltree;
 	std::string rootname;
 	std::string filename;
-	bool    is_file = false;
+	bool        is_file = false;
 };
 
 // Global Config
-extern Configuration *config;
+extern Configuration* config;
 
 #endif

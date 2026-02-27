@@ -1,5 +1,5 @@
 /*
-Copyright (C) 2011-2022 The Exult Team
+Copyright (C) 2011-2024 The Exult Team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -19,23 +19,24 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #ifndef SHORTCUTBAR_GUMP_H
 #define SHORTCUTBAR_GUMP_H
 
-
 #ifdef __GNUC__
 #	pragma GCC diagnostic push
 #	pragma GCC diagnostic ignored "-Wold-style-cast"
+#	pragma GCC diagnostic ignored "-Wzero-as-null-pointer-constant"
+#	if !defined(__llvm__) && !defined(__clang__)
+#		pragma GCC diagnostic ignored "-Wuseless-cast"
+#	endif
 #endif    // __GNUC__
-#include <SDL.h>
+#include <SDL3/SDL.h>
 #ifdef __GNUC__
 #	pragma GCC diagnostic pop
 #endif    // __GNUC__
 
-#include "gamewin.h"
-#include "objs.h"
-#include "misc_buttons.h"
-#include "Modal_gump.h"
 #include "Gamemenu_gump.h"
-
-#define SHORTCUT_BAR_USER_EVENT 0x53425545 // "SBUE"
+#include "Modal_gump.h"
+#include "gamewin.h"
+#include "misc_buttons.h"
+#include "objs.h"
 
 /* -------------------------------------------- */
 
@@ -53,64 +54,78 @@ enum ShortcutBarButtonItemType {
 	SB_ITEM_FEED
 };
 
-Game_object *is_party_item(int shnum, int frnum = c_any_framenum,
-                   int qual = c_any_qual);
+Game_object* is_party_item(int shnum, int frnum = c_any_framenum, int qual = c_any_qual);
 
 struct ShortcutBarButtonItem {
-	const char *name;
+	const char*               name;
 	ShortcutBarButtonItemType type;
-	ShapeID *shapeId;
-	TileRect rect; // Shortcut bar button click area
-	int mx, my;		// Coordinates where shape is to be drawn
-	bool pushed;
-	bool translucent;
+	ShapeID*                  shapeId;
+	TileRect                  rect;      // Shortcut bar button click area
+	int                       mx, my;    // Coordinates where shape is to be drawn
+	bool                      pushed;
+	bool                      translucent;
 };
 
 #define MAX_SHORTCUT_BAR_ITEMS 10
 
-class ShortcutBar_gump: public Gump {
+class ShortcutBar_gump : public Gump {
 public:
 	ShortcutBar_gump(int placex = 0, int placey = 0);
 	~ShortcutBar_gump() override;
-	int handle_event(SDL_Event *event);
+	int  handle_event(SDL_Event* event);
 	void paint() override;
 
 	// Don't close on end_gump_mode
 	bool is_persistent() const override {
 		return true;
 	}
+
 	// Can't be dragged with mouse
 	bool is_draggable() const override {
 		return false;
 	}
+
 	// Show the hand cursor
 	bool no_handcursor() const override {
 		return true;
 	}
 
-	int startx;
-	int resx;
-	int gamex;
-	int starty;
-	int resy;
-	int gamey;
-	void onUserEvent(SDL_Event *event);
-// add dirty region, if dirty
+	static uint32 eventType;
+
+	enum {
+		EVENT_CODE_INVALID    = 0,
+		SHORTCUT_BAR_MOUSE_UP = 0x53425545
+	};
+
+	int  startx;
+	int  resx;
+	int  gamex;
+	int  starty;
+	int  resy;
+	int  gamey;
+	void handleMouseUp(SDL_Event& event);
+	// add dirty region, if dirty
 	void update_gump() override;
-	void set_changed() { has_changed = true; }
-	void check_for_updates(int shnum);
+
+	void set_changed() {
+		has_changed = true;
+	}
+
+	void        check_for_updates(int shnum);
+	static void HideGump();
+	static void ShowGump();
+	static bool Visible();
 
 private:
 	ShortcutBarButtonItem buttonItems[MAX_SHORTCUT_BAR_ITEMS];
-	int numButtons;
-	int lastClickedButton;
-	SDL_TimerID timerId;
-	void createButtons();
-	void deleteButtons();
-	void onItemClicked(int index, bool doubleClicked);
-	void mouse_down(SDL_Event *event, int mx, int my);
-	void mouse_up(SDL_Event *event, int mx, int my);
-	bool has_changed;
+	int                   numButtons;
+	SDL_TimerID           timerId;
+	void                  createButtons();
+	void                  deleteButtons();
+	void                  onItemClicked(int index, bool doubleClicked);
+	void                  sdl_mouse_down(SDL_Event* event, int mx, int my);
+	void                  sdl_mouse_up(SDL_Event* event, int mx, int my);
+	bool                  has_changed;
 
 	int locx;
 	int locy;

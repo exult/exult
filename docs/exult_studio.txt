@@ -1,7 +1,7 @@
 Exult Studio Documentation
-last changed: 20 February 2021 (GMT)
+last changed: 21 January 2026 (GMT)
 
-The latest version of this document can be found at http://exult.info/studio.php
+The latest version of this document can be found at https://exult.info/studio.html
 
 
 1. Introduction
@@ -16,14 +16,16 @@ The latest version of this document can be found at http://exult.info/studio.php
 2.4. What you can do at the moment
 2.5. Settings in exult.cfg.
 2.6. Command line options
+2.7. Map Editing keys in Exult
 
 3. Exult Studio basics
 3.1. Description
 3.2. Shape files
-3.3. Map files
-3.4. Palettes files
-3.5. Groups files
+3.3. Map files: U7CHUNKS
+3.4. Map files: NPCs
+3.5. Palettes files
 3.6. The detail window
+3.7. Groups files
 
 4. Exult Studio's menus
 4.1. An overview
@@ -34,10 +36,10 @@ The latest version of this document can be found at http://exult.info/studio.php
 4.6. Map
 4.7. Tool bar
 
-5. Basic editors
-5.1. The shape editor
-5.2. Creating Combination files
-5.3. Custom Usecode
+5. Shape editor
+5.1. Shape Properties Window
+5.2. Shapes context menu
+5.3. Shapes presets
 
 6. Egg editing
 6.1. Explaining eggs
@@ -54,7 +56,6 @@ The latest version of this document can be found at http://exult.info/studio.php
 6.12. Path eggs
 6.13. Button eggs
 6.14. Intermap eggs
-6.15. Multi-map support
 
 7. NPC editing
 7.1. Editing an existing NPC
@@ -63,45 +64,56 @@ The latest version of this document can be found at http://exult.info/studio.php
 7.4. NPC Properties
 7.5. NPC Flags
 7.6. NPC Schedules
+7.7. NPC Presets
 
-8. Basic map editing
-8.1. Learning the basics of map editing
-8.2. Moving objects around
-8.3. How to place objects from Exult Studio
-8.4. Mark, delete, copy, make multiple objects
-8.5. Making floating objects like bridges
-8.6. How to change the frame of an object
-8.7. How to change chunks (the big red outlined square)
-8.8. How to make a structures consisting of multiple objects
-8.9. More things you can do with Combos
-8.10. Use the paint feature to quickly create a forest
+8. Basic editors
+8.1. Creating Combination files
+8.2. Custom Usecode
 
-9. Miscellaneous
-9.1. Creating a boat, flying carpet, or horse drawn carriage
-9.2. Importing and creating your own custom shapes
-9.3. How to create a custom font?
-9.4. Other tools that might be useful
-9.5. Porting Exult Studio to other platforms
-9.6. About this client/server stuff?
-9.7. About this 'terrain-editing' stuff and why you can't just drag objects to where you want.
-9.8. ifix and ireg reference chart
-9.9. What's next?
-9.10. Known Bugs with the Linux port
+9. Basic map editing
+9.1. Learning the basics of map editing
+9.2. Moving objects around
+9.3. How to place objects from Exult Studio
+9.4. Mark, delete, copy, make multiple objects
+9.5. Making floating objects like bridges
+9.6. How to change the frame of an object
+9.7. How to change chunks (the big red outlined square)
+9.8. How to make a structures consisting of multiple objects
+9.9. More things you can do with Combos
+9.10. Use the paint feature to quickly create a forest
 
-10. Credits
-10.1. Thanks
+10. Mods and patches
+10.1. Introduction to Mods and Patches
+10.2. Mod cfg files
+10.3. Patching the digital OGG tracks
+10.4. Hardcoded global flags
 
-11. Changes to the Documentation
-11.1. - 20 February 2021
-11.2. - 13 March 2016
-11.3. - 21 November 2013
-11.4. - 19 February 2011
-11.5. - 23 January 2011
-11.6. - 18 December 2010
-11.7. - 11 March 2010
-11.8. - 01 March 2005
-11.9. - 23 May 2004
-11.10. - 06 February 2004
+11. Playscenes
+11.1. Playscenes Introduction
+11.2. Script Format
+11.3. Scene Section
+11.4. Text Section
+11.5. Notes and Limitations
+11.6. Examples
+11.7. Creating Scene FLX Files
+
+12. Miscellaneous
+12.1. Multi-map support
+12.2. Creating a boat, flying carpet, or horse drawn carriage
+12.3. Importing and creating your own custom shapes
+12.4. How to create a custom font?
+12.5. Other tools that might be useful
+12.6. About this 'terrain-editing' stuff and why you can't just drag objects to where you want.
+12.7. ifix and ireg reference chart
+12.8. Porting Exult Studio to other platforms
+12.9. About this client/server stuff?
+12.10. What's next?
+
+13. Credits
+13.1. Thanks
+
+14. Changes to the Documentation
+14.1. - 21 January 2026
 
 
 --------------------------------------------------------------------------------
@@ -163,7 +175,7 @@ Of course the terms explained in ReadMe.txt are also used in this Documentation 
 
 * You need Exult and you need to install it properly (see ReadMe.txt). Also make sure that you are using the latest snapshot of Exult.
 Exult Studioonly works with the latest snapshot, not the latest release.
-* For U*ix platforms you need to build Exult Studio from the source available from our source snapshot at http://exult.info/download.php.
+* For U*ix platforms you need to build Exult Studio from the source available from our source snapshot at https://exult.info/download.html.
 * For Windows platforms (XP,Vista,7,8,10) you need to download Exult Studio from our download page and install it in the same folder where you installed Exult.
 * For macOS we also provide a snapshot on our download page. Download the disk image and move the app to the Applications.
 
@@ -171,30 +183,29 @@ Exult Studioonly works with the latest snapshot, not the latest release.
 
 2.2. Running Exult Studio
 
-You can run Exult Studio all by itself, but it isn't useful that way, as it uses Exult as a server. What you really want to do is:
+You can run Exult Studio all by itself, but it isn't very useful that way, as it uses Exult as a server. What you really want to do is:
 * Put 'exult_studio.glade' in the Exult 'data' folder (not needed if you use the snapshot for Windows or macOS).
 * Be sure 'exult_studio' is in your path. (on Windows 'exult_studio.exe' needs to be in the same folder as exult.exe)
 * Run Exult in windowed mode (not fullscreen).
 * Enable the Exult cheat mode (see ReadMe.txt).
-* Press 'alt+ctrl+m' to go into 'map-editor' mode. If all is set up correctly, exult_studio will start up, and will have a list of files on the left side of its window.
+* Press 'alt-ctrl-m' to go into 'map-editor' mode. If all is set up correctly, exult_studio will start up, connect to Exult and will have a list of files on the left side of its window.
 
 Starting up one or the other separately will reconnect them:
-* If Exult isn't running, start it up. Then, in Exult Studio, use the 'File' menu to choose the static folder (for the game you're playing).
-* If Exult Studio isn't running start it up and select the game to edit in the "File-Open Game" dialog.
+* If Exult isn't running, start it up and start (or journey onward) a game and enter map edit mode by pressing 'ctrl-alt-m'. In Exult Studio click on "File-Open Game" to select the game you want to edit and then press the "Connect" button to connect to the running Exult instance.
+* If Exult Studio isn't running start it up and select the game to edit in the "File-Open Game" dialog and then press the "Connect" button to connect to the running Exult instance.
 
-You can also reconnect by selecting "File-Connect" in Exult Studio's menu.
 
 
 2.3. Step-by-step instructions to run Exult Studio
 
 The above instructions may still be too technical for everybody. You have to make sure all these steps are taken care of before you're going to get very far with your world building.
 1. While it is not explicitly needed it is useful to have a working copy of either BG or SI properly installed onto your computer.
-2. Next, you need to have the latest Exult snapshotinstalled properly onto your computer and working correctly. If you are currently playing either BG or SI on your machine this is probably done right. To make sure you have the correct version, ensure that it says X.XX GIT (X.XX stands for some version number) during Exult's start-up screen (for example see http://exult.info/images/screenshots/mainmenu.png).
+2. Next, you need to have the latest Exult snapshot installed properly onto your computer and working correctly. If you are currently playing either BG or SI on your machine this is probably done right. To make sure you have the correct version, ensure that it says X.XX GIT (X.XX stands for some version number) during Exult's start-up screen (for example see https://exult.info/images/screenshots/mainmenu.png).
 3. You need to make sure the newest version of Exult Studio is installed properly onto your computer as well. Exult Studio should be installed in the same folder as the Exult snapshot.
 4. The patch folder needs to be in folder which you are allowed to write, so Exult Studio can save any changes to existing games. See 2.4. What you can do at the moment on how to change exult.cfg accordingly.
 5. In order for Exult Studio to work properly, you need to have Exult running in windowed mode. If you can see your desktop while playing, then you're doing it right.
 6. Make sure you have Cheats enabled. This can be enabled in the Gameplay options of the Game see (see ReadMe.txt).
-7. While running Exult in windowed mode, hit 'ctrl+alt+m' to enter map-editing mode. Exult Studio should open up if you did everything correctly. In map-editing mode the world is frozen, but you are still able to move your characters around in order to place objects. You're now ready to start your world editing. You should be seeing something like this:
+7. While running Exult in windowed mode, hit 'ctrl-alt-m' to enter map-editing mode. Exult Studio should open up if you did everything correctly. In map-editing mode the world is frozen, but you are still able to move your characters around in order to place objects. You're now ready to start your world editing. You should be seeing something like this:
 
 
 
@@ -225,7 +236,7 @@ The above instructions may still be too technical for everybody. You have to mak
     ./blackgate/patch
     </patch>
   </blackgate>
-IMPORTANT:Exult Studio requires the "patch" folder to be writeable. If you don't have writeaccess you need to place it somewhere you are allowed to write to and change the path accordingly in exult.cfg.
+IMPORTANT:Exult Studio requires the "patch" folder to be writeable. If you don't have write access you need to place it somewhere you are allowed to write to and change the path accordingly in exult.cfg.
 Exult will also read files from 'patch' if it exists on starting a new game. The patch folder is expected to be within the main game folder, parallel to the static folder.
 In any mode, you can add the currently selected shape by shift-clicking.
 
@@ -251,14 +262,66 @@ You can change the settings of Exult Studio either with the preferences dialog o
 				<game> part of exult.cfg)
     </default_game>
     <image_editor>
-    gimp-remote -n
+    path_to_gimp binary
 				** command that calls the image editor.
     </image_editor>
+    <edit_filetype>
+    .PNG
+				** Select either .PNG or .SHP for the image editor.
+    </edit_filetype>
     <background_color>
     0
 				** background color for the shape-chooser. Use the preference
 				dialog of Exult Studio for this.
     </background_color>
+    <shape_scale>
+    2
+				** The scale at which we display the shapes. Use the Zoom up/down
+				buttons in the Exult Studio button bar.
+    </shape_scale>
+    <shape_bilinear>
+    0
+				** Whether to apply the bilinear filter on the displayed shapes. Use the
+				Bilinear toggle in the Exult Studio button bar.
+    </shape_bilinear>
+    <prompt>
+      <terrain_warning>
+      yes
+				** Always show the terrain editing warning prompt.
+      </terrain_warning>
+      <npcs_listview>
+      yes
+				** Always show the notice When trying to view the NPCs list when disconnected.
+      </npcs_listview>
+      <barge_discard>
+      yes
+				** Always show the barge editor discard changes prompt.
+      </barge_discard>
+      <combo_discard>
+      yes
+				** Always show the combo editor discard changes prompt.
+      </combo_discard>
+      <egg_discard>
+      yes
+				** Always show the egg editor discard changes prompt.
+      </egg_discard>
+      <container_discard>
+      yes
+				** Always show the container editor discard changes prompt.
+      </container_discard>
+      <npc_discard>
+      yes
+				** Always show the NPC editor discard changes prompt.
+      </npc_discard>
+      <object_discard>
+      yes
+				** Always show the object editor discard changes prompt.
+      </object_discard>
+      <shape_discard>
+      yes
+				** Always show the shape editor discard changes prompt.
+      </shape_discard>
+    </prompt>
   </estudio>
 
 
@@ -271,8 +334,6 @@ Exult Studio offers some "hidden" command line options:
  Do not display the state of the games.
 * (--config) -c configfile
  Specify alternate config file (relative or absolute paths work).
-* (--portable) -p
- Portable option for Windows only. Exult Studio will read cfg file from the folder Exult got installed to.
 * (--game) -g GAMENAME
  specifies GAMENAME and Exult Studio will read the game base folder from exult.cfg. GAMENAME can be chosen from the games specified in <game> part of exult.cfg.
 * (--mod) -m modname
@@ -283,7 +344,38 @@ Exult Studio offers some "hidden" command line options:
  This option is only useful to developers who want to edit exult_studio.glade themselves.
 * (--cssdir) -y FOLDER
  tells exult_studio to look in FOLDER for css file that customizes the look of Exult Studio (exult_studio.css).
+* (--portable) -p
+ Portable option for Windows only. Exult Studio will read cfg file from the folder Exult got installed to.
+* (--zoom) -z
+ Scales the shapes view by a factor of 2, 3, 4, 6, 8, 12, 16, 24 or 32. Use '-z 2' or '-z 2 b' to also enable the bilinear filtering.
 
+
+
+2.7. Map Editing keys in Exult
+
+Exult uses some keys for map editing with Exult Studio. Hit 'shift-h' to see the map edit keys help screen.
+
+Map edit commands
+Ctrl-Del : Delete selection
+Ctrl-Arrow keys : move selection (x, y coordinates)
+Ctrl-Page keys : move selection (z coordinates)
+Ctrl-c : Copy selected object
+Ctrl-x : Cut selected object
+Ctrl-v : Paste selected object
+Shift-F3 : write Minimap
+Shift-h : List map edit keys
+Alt-l : Decrement skiplift
+Ctrl-Alt-m : Toggle Map editor
+Ctrl-KP+/- : Cycles through frames of selected shape(s)
+Ctrl-KP* : Rotates the frame of selected shape(s)
+With some additional keys with mouse click functions:
+
+Mouse shortcuts
+Ctrl-Leftclick : selects another object while maintaining the current selection
+Ctrl-Leftdoubleclick : on an object opens the basic editor
+Shift-Leftclick : adds the currently selected shape from  into
+Drag Leftclick : When in 'Pick for edit/combo' mode and dragging the mouse while
+						holding the left mouse button, selects all shapes you drag over
 
 
 
@@ -303,16 +395,20 @@ Shapes are the basic graphical elements of the game. Each shape has one or more 
  When a shape file is selected, the right part of the main window will show frame zero of the shapes contained therein. Shapes can be selected by clicking, which will show there number, number of frames, and name if known. Other frames can be viewed by changing the frame number.
 When the selected file contains shapes that have names in their info you can also use the find option to find shapes that have that name (e.g. in shapes.vga you can search for 'door' to find all shapes that have door frames). You can search down or up in the selected file.
 When viewing shapes you can press the button 'Frames' in the lower right corner of Exult Studio to show all the frames of a shape next to each others.
-Shape files also have a special right-click-menu. See 5.1. The shape editor .
+Shape files also have a special right-click-menu. See 1.1. .
 Typical shape files are:
+* Fonts.vga
+ displays all text graphics used throughout the game.
+* Faces.vga
+ contains all of the graphics for conversation pictures.
 * Sprites.vga
  displays all the animations that can be used to overlay the screen.
 * Shapes.vga
  displays the objects that can be placed onto the world.
-* Fonts.vga
- displays all text graphics used throughout the game.
-* Faces.vga
- contains all of the graphics for conversation pictures..
+* Gumps.vga
+ shows all gump graphics used throughout the game.
+* Paperdoll.vga
+ contains the graphics for the paperdoll interface (SI only for now).
 * Pointers.shp
  contains the graphics for the mouse cursor.
 * Combos.flx
@@ -320,7 +416,7 @@ Typical shape files are:
 
 
 
-3.3. Map files
+3.3. Map files: U7CHUNKS
 
 These files contain so called chunks that serve as templates in the final map. The chunks of the selected map file are shown in the right part of the main window.
  When a chunk is selected you have two options below:
@@ -334,13 +430,24 @@ Right clicking on a chunk gives you another two options (also the File-save/reve
 Empty
  Creates a new chunk. Drag the new chunk onto the game and edit it by dragging shapes on it.
 Duplicate
- Duplicates a chunk. Drag the duplicate chunk onto the map to edit it.
+ Duplicates a chunk to the bottom of the chunk list. Drag the duplicate chunk onto the map to edit it.
 * Delete
  Deletes that chunk. Be very careful with this option.
 
 
 
-3.4. Palettes files
+3.4. Map files: NPCs
+
+Here all the NPCs of the game are listed - to view this list Exult Studio needs to be connected to Exult. When an NPC is selected it's number and name are listed under the NPCs display and you can also scroll through its frames or view all frames in a row when you toggle the "Frames" button.
+ When an NPC is selected you have two options below:
+* Find
+ Type the name of an NPC and this will search for it in the list and highlight the NPC.
+* Locate
+ shows places in the Exult game where that NPC is currently placed.
+
+
+
+3.5. Palettes files
 
 The palettes used by a game are stored in the files listed there.
  When you select a palette with number zero is shown in the right part of the main window. Other palettes are shown by selecting another palettes number When a palettes file is selected you have some options:
@@ -358,10 +465,24 @@ The palette text files are compatible with the Gimp.
 Right clicking on a palette only gives you the default File-save/revert option.
 
 
-3.5. Groups files
+3.6. The detail window
+
+Below the detail windows you have the following options:
+* Frame:
+ select the frame displayed.
+* Frames
+ shows all the frames of a shape next to each others.
+* Find
+ Lets you search for a specified shape in the group.
+* Locate
+ Locates the selected shape inside the game. It locates only the shape not a specific frame.
+
+
+
+3.7. Groups files
 
 Editing a game can become quite cumbersome when you have to choose between a lot of shape files containing several frames. To make this task easier we have implemented so called groups to groups several shapes together. For example you can group all shapes containing door frames together in a group called 'doors'.
- For this you have to select Groups and create a new group by writing the name in the lower part of the window and then click 'add'. You now have the option in the Shape Menu to add a shape to this group.
+ For this you have to select Groups and create a new group by writing the name in the lower part of the window and then click 'New'. You now have the option in the Shape Menu to add a shape to this group.
  When you double-click a group the group window opens that shows the shapes in the group and by selecting a shape you see the shape info. You also have some options to edit the group:
 * Move
  Moves the shapes within the group.
@@ -378,27 +499,15 @@ Editing a game can become quite cumbersome when you have to choose between a lot
 * Locate
  Locates the selected shape inside the game. It locates only the shape not a specific frame.
 
+We also allow some basic operations on a group that you selected in the gropus list:
+* Export/Import
+ Exports/Imports the group to/from a grp file. This way you can share groups with other users.
+* Clone
+ Creates a copy of the selected group.
+* Delete
+ Deletes the selected group.
 
-
-3.6. The detail window
-
-Below the detail windows you have the following options:
-* Frame:
- select the frame displayed.
-* Frames
- shows all the frames of a shape next to each others.
-* Find
- Lets you search for a specified shape in the group.
-* Locate
- Locates the selected shape inside the game. It locates only the shape not a specific frame.
-
-Right-clicking on the detailed view of any file gives these options (along with other options specific to the file):
-* File...
-Save
- Saves all the changes you made to it without saving any other file.
-Revert
- Discards all changes..
-
+For shapes.vga files we offer some builtin groups that you can open or clone in the groups list.
 
 
 
@@ -409,6 +518,7 @@ Revert
 
 Before you get started with constructing your own little world its important to know a little bit about the structure of Exult Studio and the arrangement of menus. An overview of some of the Exult Studio menus follows.
 
+Note: Some menu items are only available when Exult Studio is connected to Exult, when not connected these are greyed out and can't be selected.
 
 
 4.2. File
@@ -419,9 +529,9 @@ Before you get started with constructing your own little world its important to 
 * New Mod...
  Easily start a new mod for an existing game. The dialog that opens lets you select the game you want to mod, the name of the mod and its name in the Exult menu (menu string).
 * Open Game...
- Choose the Game folder of the game you that you have been working on.
-* Save all'Ctrl+S'
- Saves map, shape info and groups you edited. Saves all the changes you've made to the world you have been working on. If you're happy with your changes do this before you quit or all work will be lost.
+ Choose the game or mod you want to work on.
+* Save all'Ctrl-S'
+ Saves map, shape info, groups and presets you edited. Saves all the changes you've made to the world you have been working on. If you're happy with your changes do this before you quit or all work will be lost.
 * New...
 Shapes file...
  Lets you choose the folder where you want to create a new vga file and requires you to enter a name for it (e.g. mygame.vga).
@@ -436,11 +546,15 @@ Groups
  You can "bundle" shapes of vga files into groups to make world building easier. These groups get saved with this option.
 Combos
  This saves the combination files.
+* Presets
+ Saves the presets you can create in the shapes and NPC editor.
 * Reload...
-Map'Ctrl+R'
+Map'Ctrl-R'
  Reloads the map. All changes made since the last save get discarded.
 Usecode
  Very useful when you edit the usecode of a game or add new usecode to an existing game. Normally this would require a restart of Exult.
+Style CSS
+ The interface of Exult Studio now supports customization via a CSS file (exult_studio.css) and if you changed that you can reload it without having to restart Exult Studio.
 * Connect
  Connects Exult and Exult Studio if one of them had to be restarted.
 * Preferences
@@ -452,19 +566,21 @@ Default Game Name:
  Choose the game Exult Studio opens by default. Use the name specified in exult.cfg.
 Shape List Background:
  Sometimes the default black background may make certain shapes hard to see. Choose a different background color here.
-* Exit'Ctrl+Q'
+* Prompts
+ Resets all warning or dialog prompts that you are able to always suppress.
+* Exit'Ctrl-Q'
  Exits Exult Studio.
 
-Note that the default location for saving and creation of new files is the PATCH folder of a game. If there is no PATCH folder specified will create one. See 2.4. What you can do at the moment .
+Note that the default location for saving and creation of new files is the PATCH folder of a game. If there is no PATCH folder specified Exult Studio will create one. See 2.4. What you can do at the moment .
 
 
 4.3. Edit
 
-* Cut 'Ctrl+X'
+* Cut 'Ctrl-X'
  Removes the selected object(s) and puts it into memory.
-* Copy 'Ctrl+C'
+* Copy 'Ctrl-C'
  Copies the selected object(s) into memory.
-* Paste 'Ctrl+V'
+* Paste 'Ctrl-V'
  Shows the crosshair cursor and copies the object(s) from the memory into the game where you left click the crosshair.
 * Properties...
  Shows the properties of the selected object. If more than one object is selected it shows the properties of the last selected object.
@@ -476,51 +592,57 @@ Note that the default location for saving and creation of new files is the PATCH
 * Create NPC...
  Create or edit NPCs with this. See 7. NPC editing for more information.
 * Create Barge...
- Create a barge such as a magic carpet or a horse drawn carriage. See 9.1. for more information.
+ Create a barge such as a magic carpet or a horse drawn carriage. See 12.2. for more information.
 * Set Game Information
- Edit the game information shwon in the Exult menu.
+ Edit the game information shown in the Exult menu.
 
-When in map-edit mode, you can select shapes in Exult by left-clicking, or multiple shapes by ctrl+left-clicking.
+When in map-edit mode, you can select shapes in Exult by left-clicking, or multiple shapes by ctrl-left-clicking.
 
 
 4.4. Mode
 
 It describes how the mouse behaves inside Exult when map-editing.
 * Move
- This is the normal mode where you can drag things with the mouse, or single-click to identify objects. In this mode you also select objects. A selected object is shown with a red outline. To select more than one object hold down 'Ctrl' while selecting. Move the selection 'Ctrl+arrow' (x,y coordinates) and 'Ctrl+page' keys (z coordinates).
+ This is the normal mode where you can drag things with the mouse, or single-click to identify objects. In this mode you also select objects. A selected object is shown with a red outline. To select more than one object hold down 'ctrl' while selecting. Move the selection 'ctrl-arrow' (x,y coordinates) and 'ctrl-page' keys (z coordinates).
 * Paint
  a single-left-click inserts the last-selected shape from 'shapes.vga', and dragging with the left-button inserts that shape in every tile (so you'd probably only want to do this with 8x8 flat shapes). Also, in 'Paint' mode, the footprint at ground level is shown (though this may be changed in the future).
  If you hold the alt key down, random frames from the currently-selected shape will be painted (handy for grassy areas).
 * Paint with chunks
  works the same as the normal Paint mode only with chunks. Left-clicking the mouse paints the current chunk onto the map.
- Take a look at 8.7. How to change chunks (the big red outlined square) .
+ Take a look at 9.7. How to change chunks (the big red outlined square) .
+* Pick for Edit
+ Allows mass selecting objs without the need to hold down 'ctrl', just moving the mouse while pressing the left mouse button selects all objects under the mouse.
 * Pick for Combo
- Picks objects for a new combo file. Double-left-click to add objects to the combo, single-left-click to identify object. See 5.2. Creating Combination files
+ Picks objects for a new combo file. Double-left-click to add objects to the combo, single-left-click to identify object. Just moving the mouse while pressing the left mouse button selects all objects under the mouse. See 8.1. Creating Combination files
 * Select chunks
- You can select chunks and move them around with ctrl+arrow keys. This will leave generic chunks where the original chunks were, and is probably better used for moving parts of a map because you misjudged the position it needed to be in.
+ You can select chunks and move them around with 'ctrl-arrow' keys. This will leave generic chunks where the original chunks were, and is probably better used for moving parts of a map because you misjudged the position it needed to be in.
 
 Note that you can only drag objects in the game window when you are in "Move" mode.
 
 
 4.5. Tools
 
-* Locator...'Ctrl+L'
+* Locator...'Ctrl-L'
  shows where the current game window is within the entire map, and lets you move the view by double-clicking a location or by dragging the little box
-* New Combo..
- Creates a new Combo file. See 5.2. Creating Combination files .
+* Write Minimap
+ Writes the minimaps (minimaps.vga) of the current game.
+* New Combo...
+ Creates a new Combo file. See 8.1. Creating Combination files .
 * Unused shapes...
  searches the entire world being created to see if any of the shapes in shapes.vga are not in use. Have patience when doing this and treat the results with caution.
 * Compile Usecode...
- Compiles the usecode script usecode.uc in the patch folder (see 5.3.)
-* Fix old shape info
- Old versions of discarded some shpe info data on saving. This option adds the discarded information back to old mods and patches.
+ Compiles the usecode script usecode.uc in the patch folder (see 8.2.)
+* Fix old shape info...
+ Old versions of Exult Studio discarded some shape info data on saving. This option adds the discarded information back to old mods and patches.
+* Audio Tester...
+ Plays back music, voice and sound effects through Exult.
 
 
 
 4.6. Map
 
 * New
- Used to create a new map to use for multi-map support (see 6.15. Multi-map support ).
+ Used to create a new map to use for multi-map support (see 12.1. Multi-map support ).
 * Main/Map #xx
  The default map or the map that is currently being worked on. The game needs to be started in Exult to see the other maps.
 
@@ -528,30 +650,48 @@ Note that you can only drag objects in the game window when you are in "Move" mo
 
 4.7. Tool bar
 
-* Play
- This is the same as pressing 'Alt+Ctrl+M' in Exult. It exits the Map Edit Mode and lets you play the game. By pressing it again you enter Map Edit Mode again.
+* Connect/Disconnect
+ Connects or disconnects Exult Studio from Exult.
+* Play/Edit
+ This is the same as pressing 'alt-ctrl-m' in Exult. It exits the Map Edit Mode and lets you play the game but by pressing Edit you enter Map Edit Mode again.
 * Grid
- Shows a grid of white lines in the game window for better control on placing objects.
-* Edit lift:
- Changes the lift of a selected object in the game window. Lift means the distance of an object from the ground.
+ Shows a grid of white lines in the game window for better visual control on placing objects.
+* 3D Bounding boxes
+ Toggles the display of 3D bounding boxes around objects in the game window.
 * Hide lift:
  Hides objects that are above the chosen height.
 * Edit terrain
  See 2.4. What you can do at the moment . Note that a terrain is used in multiple instances of the map and changing it in one place changes it in all the others as well.
+* Zoom
+ Zooms in or out the shapes in the shape browser.
+* Bilinear
+ Toggles bilinear filtering of shapes in the shape browser.
 
 
 
 
 --------------------------------------------------------------------------------
 
-5. Basic editors
-5.1. The shape editor
+5. Shape editor
+5.1. Shape Properties Window
+
+Double-clicking a shape opens the Shape Info window, which provides detailed editing capabilities for all aspects of a shape's behavior and appearance. The window uses tabs to organize the many properties into logical categories.
+The Shape Info is a very extensive editor but most of it is self explanatory. Selecting a class or certain flags may open additional tabs with more options.
+
+
+
+5.2. Shapes context menu
 
 When you right click on a shape in the Shape browser (e.g. Files-Shapes.vga) you get some options of how to edit the shapes.
+* File
+Save
+ Saves this shape.
+Revert
+ Reverts changes to this file.
 * Info...
- Displays the information of an object. You can change a lot of stuff there and caution is advised. The information is saved by 4.2. File .
+ Same as double-clicking a shape, displays the information in the editor. You can change a lot of stuff there and caution is advised. The information is saved by 4.2. File .
 * Edit...:
- Brings up your image-editor on the chosen frame. When you save in the image-editor, ES will read the changes back within 5 seconds. This is especially convenient if you have 'gimp-remote', as it will open a window for the frame in an already-running gimp.
+ Brings up your image-editor on the chosen frame. When you save in the image-editor, ES will read the changes back within 5 seconds.
 * Edit tiled:
  This is only for 'flat' (8x8) shapes. It forms an image from all the frames and brings it up in the image-editor. This is really handy for making lots of terrain frames like grass. A dialog lets you choose the dimensions.
 * New frame:
@@ -566,26 +706,14 @@ When you right click on a shape in the Shape browser (e.g. Files-Shapes.vga) you
  Gives you a dialog for choosing the shape #, as well as the initial # of frames.
  You can also create a new font shape from TrueType or Type1 font files. It's mainly a convenience for someone creating a whole new game, as their only single-colored. Maybe in the future we'll have some functions to create two-colored fonts like the main one in Ultima VII, although it might take hand-editing to make the letters look that nice.
 
-Note:Edit... doesn't work on Windows system. It stores the shape as PNG file in GAMEDIR/itmp/ (e.g. blackgate/itmp). If you manually open the file with an image editor of your liking and then save it, ES doesn't read the changes back.
 
 
-5.2. Creating Combination files
+5.3. Shapes presets
 
-Create 'combination shapes', like a fence or an entire roof by selecting "Tools-New Combo" (see 4.5.). When you run Exult Studio the first time a file called combos.flx gets automatically created in the "Patch" folder. Choose the 'Pick for Combo' choice in the 'Modes' menu, and an empty window should pop up. In the game window, double-click a group of objects, and they should appear in the window. You can then select an object there and tweak its position. When you are done hit apply and the combo gets temporally saved until you hit "Save all" or "Save - Save map".
- You can drag and drop combinations into the game window.
-
-
-5.3. Custom Usecode
-
-As hinted at (see 1.3.) Usecode is actually what runs Ultima VII and therefore any game created with Exult Studio.
- As of yet we do not have a Usecode editor/debugger. So writing your own Usecode is not that easy.
-For an example of how Usecode may look like download our experimental patch for BG at http://exult.info/snapshots/patch.zip.
- In that zip you'll find a readme.txt which tells you how to run it.
- You will also see two files called usecode.uc and usecode.
-Usecode.uc is the usecode script that will help you understand our usecode language.
- When you run ucc (see 9.4.) with that file (e.g. "ucc -o usecode usecode.uc") you will get the file called usecode. This file 'usecode' should be the same as the one in the zip file.
-Someone does have to write extensive documentation for this but I (Dominus) am not really up for that task.
- Wizardry Dragon and Marzo made a good list of intrinsics http://www.thefeudallands.ca/srcdocs/files/intrinsics-uc.html and Pertex has written some documentation at http://web.archive.org/web/20071217233843/http://www.sophen.de/exult/ (unfortunately Pertex original documentation has vanished but at least the wayback machine can be of great help) that might be able help you.
+You can save presets that you can apply to any Shape.
+ To save a preset, open a shape you want to use, enter a preset name and press the "New" button. To apply a preset to a Shape, select the preset from the dropdown list and press "Apply".
+ You can also apply the properties of a shape not saved as preset by entering the shape number and pressing the button "Apply from Shape #".
+ Additionally you can export/import, clone, rename and delete presets.
 
 
 
@@ -609,7 +737,7 @@ Currently Exult Studio supports the following types of eggs (more details follow
 * Voice and Voice
  will play a speech track when the character meets the required values set in the egg creation menu.
 * Usecode
- allows for the activation of custom usecode when an egg's requirements are met. The creation of custom usecode is discussed (though not in depth) at 5.3..
+ allows for the activation of custom usecode when an egg's requirements are met. The creation of custom usecode is discussed (though not in depth) at 8.2..
 * Missile
  create interesting objects like flamethrower traps.
 * Teleport
@@ -627,16 +755,12 @@ Currently Exult Studio supports the following types of eggs (more details follow
 
 6.3. Add, remove and edit eggs
 
-The most convenient way to create an egg is to select Create new egg from the edit menu. This will pop up the Exult Egg window. Here you can select the type of egg you wish to create and the properties you are going to give it. When you are happy with the egg press apply and then enter Exult and place the egg wherever you like. To remove an egg, select it while in map-edit mode and press 'ctrl+x' to cut the egg. You can still paste it elsewhere if you like. To edit an egg, double click it in map editing mode. This will bring up the egg window where you will be able to change an existing egg's attributes.
+The most convenient way to create an egg is to select Create new egg from the edit menu. This will pop up the Exult Egg window. Here you can select the type of egg you wish to create and the properties you are going to give it. When you are happy with the egg press apply and then enter Exult and place the egg wherever you like by right clicking in the game. To remove an egg, select it while in map-edit mode and press 'ctrl-DEL'. To edit an egg, double click it in map editing mode. This will bring up the egg window where you will be able to change an existing egg's attributes.
 
 
 6.4. Properties of eggs
 
 Before you select the type of egg you want you can edit basic properties of eggs. These are:
-* Probability
- of the egg being activated. By giving an egg a probability of 100 you can ensure that whenever the requirements necessary to make an egg activate are met, the egg will activate. With a probability of 0 nothing will ever happen when the egg's requirements are met. A probability anywhere between 0 and 100 will cause the activation of an egg to be a random event.
-* Distance
- allows you to set how far a character needs to be from an egg in order to activate it. Each distance unit is equal to one tile (8x8 pixel) of the map.
 * Criteria
  is very important as it sets what needs to be done to activate the egg. The options are:
 Cached in - An egg with this characteristic is activated when the chunk it is on is loaded into memory. This usually happens from several screens away.
@@ -647,19 +771,23 @@ Avatar footpad - In this case the distance property is ignored and the Avatar ha
 Party footpad - This option is identical to the Avatar footpad option except if either the main character or one of his companions stumbles onto the egg it will be activated.
 Something on - This egg is activated whenever an object is placed AND removed within the area specified by an egg.
 External - Eggs set to the external characteristic will be activated by button eggs in the vicinity.
-* Flag
- final attribute you can give an egg to determine whether it will be activated or not. As a note you can mix and match flags, you can set an egg to nocturnal once only or nocturnal auto-reset.Not that an egg will be reactivated after you walk about a screenful away and then return if the the flags "once-only" or "auto-reset" are not set.
+* Probability
+ of the egg being activated. By giving an egg a probability of 100 you can ensure that whenever the requirements necessary to make an egg activate are met, the egg will activate. With a probability of 0 nothing will ever happen when the egg's requirements are met. A probability anywhere between 0 and 100 will cause the activation of an egg to be a random event.
+* Flags
+ attributes you can give an egg to determine whether it will be activated or not. As a note you can mix and match flags, you can set an egg to nocturnal once only or nocturnal auto-reset. Note that an egg will be reactivated after you walk about a screenful away and then return if the the flags "once-only" or "auto-reset" are not set.
 Nocturnal - Any egg with this setting will only be activated during the nighttime. Great for setting the spawning of creatures of the night, or giving some nice night time music.
 Hatched - This creates an egg that has already been activated. It is inactive and will not do anything.
 Once-Only - Any egg with this flag applied will only hatch once and then disappear from the game world.
 Auto-reset - Eggs with this flag attached will continue to activate every time the conditions set in the egg menu are met.
+* Distance
+ allows you to set how far a character needs to be from an egg in order to activate it. Each distance unit is equal to one tile (8x8 pixel) of the map.
 
 
 
 6.5. Placing a monster spawning egg
 
 The first thing you want to consider before placing monster spawn is some of the basic egg attributes. What probability do you want? What distance? Will it be a nocturnal creature? Next you have to set the monster specific egg attributes. The first question is probably what type of monster you want to place. You can now switch to the main Exult Studio window, select shapes.vga and choose a shape. Drag and drop this on the "Exult Egg" window. Frame # isn't overly important when placing a monster, but for placing an object it can be very important. Enter these attributes into their respective form. You next have to set the monster's schedule. The various schedules that are important for a monster spawn are discussed next.
- You also have to set the spawned monster's alignment. Any creature set to a Neutral alignment will ignore the Avatar and friends, following their schedule until attacked. Any creature set to Evil will immediately attack the Avatar if you get too close. A Good creature will help the avatar in fights, but will also attack the Avatar if he is caught stealing or killing "good" NPCs. It will also attack evil Monsters or NPCs regardless of the Avatar. And finally Chaotic creatures or monsters will attack anyone, regardless of their alignement
+ You also have to set the spawned monster's alignment. Any creature set to a Neutral alignment will ignore the Avatar and friends, following their schedule until attacked. Any creature set to Evil will immediately attack the Avatar if you get too close. A Good creature will help the avatar in fights, but will also attack the Avatar if he is caught stealing or killing "good" NPCs. It will also attack evil Monsters or NPCs regardless of the Avatar. And finally Chaotic creatures or monsters will attack anyone, regardless of their alignment
  Next you can set the number of creatures you want to appear using the count option. You can set anywhere from 1 to 31 monsters.
  Finally you can assign a Usecode number or name to the spawned monster (leave this blank if you don't want to set one).
  When you're finished setting the egg the way you want, simply press "Apply" and place the egg on the world map.
@@ -669,7 +797,7 @@ The first thing you want to consider before placing monster spawn is some of the
 
 6.6. Schedules of Monsters and Creatures
 
-You can have the full set of schedules that NPCs can have but for a spawned monster you will most like want to use one of the following schedules.
+You can have the full set of schedules that NPCs can have but for a spawned monster you will most likely want to use one of the following schedules.
 
 * Horiz. Pace
  Any creature given this schedule will pace back and forth in a horizontal manner. Great for guards and sentries
@@ -699,11 +827,10 @@ You can have the full set of schedules that NPCs can have but for a spawned mons
 
 
 
-
 6.7. Jukebox, Sound Effects and Voice eggs
 
 Using these eggs couldn't be more straightforward, select the sound effect, music score, or recorded digital voice you desire and then place them onto the map. When a character activates the egg they begin to play. You can set music and sound effects to play on a continuous loop for continuous effects such as water fountains or short pieces of background music that you don't want to quit until a new music egg is triggered.
- In the game window you can test and find out the # of the audio by pressing 'Alt+1'.
+ While Exult Studio is connected to Exult you can test the audio by pressing the play button.
 
 
 6.8. Usecode eggs
@@ -714,11 +841,9 @@ Usecode eggs have many different functions that will be discussed later. The imp
 6.9. Missile eggs
 
 When you place a missile egg, the first thing you have to set is the egg's activation attributes. Do you want an egg to activate when the Avatar is near a certain spot, or should someone have to directly step on the trap?
- To choose the type of missile you want to shoot from your trap, select shape number 1 for a fireball that doesn't do damage, 3 for a lightning bolt, and 6 to shoot arrows. Select shape 9 for a fireball that actually does damage. You can also set the direction you want the trap to fire when it is activated, you can choose any of the 8 cardinal directions.
+ You can also set the direction you want the trap to fire when it is activated, you can choose any of the 8 cardinal directions.
  You can also use the delay timer to set how steady you want the stream of projectiles to be. 1 makes a constant stream of projectiles, while a value of 10 makes for the occasional danger. Don't set the timer to 0 seconds, Exult REALLY doesn't like this.
  Using these options you can make some pretty dangerous obstacles for the Avatar to avoid.
-Note: Shape numbers assume you are using either BG or SI data. When making a new game you can set weapons info of shapes yourself and choose which shape numbers are used by each weapon.
-
 
 
 
@@ -735,9 +860,12 @@ There are two attributes of the weather egg that one needs to worry about.
 * Weather
  The most important attribute as this sets the effect you can expect when an egg is activated.
 Halt - Halts and current weather and set the world to a pleasant sunny default.
-Storm - Lots of thunder and lightning and the world darkens.
-Cloudy - Some rain, not a lot else going on
-Magic storm - Lots of thunder and lightning and the world darkens. As well this type of storm eliminates the character's magic casting abilities while the storm is in affect.
+Snow - Snow flakes, clouds and music track #18 plays.
+Rain - Rain, lots of thunder and lightning, clouds.
+Sparkle - a different type of rain that seems to be more sparkly and eliminates the ability of the Avatar to use magic spells.
+Fog the game experiences a white out and some rain drops.
+Overcast Some clouds, never more than two casting their shadow.
+Clouds - Much more clouds, some overlapping each other.
 * Duration
  sets the how long the chosen weather will last. The time is measured in game time and can last up to 255 minutes.
 
@@ -759,11 +887,6 @@ The button egg has the interesting ability to activate all eggs in the immediate
 An intermap egg works precisely the same as a regular teleport egg except it can be used to teleport the main character between maps. The Coordinates options are used to set the precise tile the Avatar will be teleported to on the opposing map. The Map Number condition is used to set which map the main character will appear at.
 
 
-6.15. Multi-map support
-
-Exult now supports multiple maps. To create new maps select New from the Map menu. You now have an option to copy information over from an existing map. The Terrain option allows you to retain the lay of the land. If this option isn't selected your new map will be entirely ocean. Fixed and Moveable objects allow you to retain the remaining objects from the previous map (Jeffrey's favourite idea is to entirely copy the current Exult map and create a new 'Bizarro-Brittania'). You can quickly switch between maps in game using the command 'ctrl-alt-t'.
-
-
 
 --------------------------------------------------------------------------------
 
@@ -782,7 +905,7 @@ If you want to create a new NPC you have to select Create NPC in the edit menu. 
 7.3. Basic NPC settings
 
 * Face #
- Drag and drop a face from Faces.vga in the main Exult Studio window to the face field in the NPC window.
+ Drag and drop a face from Faces.vga in the main Exult Studio window to the face field in the NPC window, or enter the face number or use the +/- buttons to select one.
 * Name
  Choose a name for your NPC.
 * Usecode
@@ -790,15 +913,16 @@ If you want to create a new NPC you have to select Create NPC in the edit menu. 
 * NPC #
  This cannot be changed.
 * Ident
- This is a number used in usecode in SI to differentiate between different NPC possibilities. It can be used to decide which set of conversation options some party members have, as well as making some ¨monster¨ NPCs have a more persistent identity despite not having a set NPC number
+ This is a number used in usecode in SI to differentiate between different NPC possibilities. It can be used to decide which set of conversation options some party members have, as well as making some "monster" NPCs have a more persistent identity despite not having a set NPC number
 * Shape #
- Either drag and drop a shape from shapes.vga into the line (or the black box to the right of it) or enter a shape number.
+ Either drag and drop a shape from shapes.vga into the line (or the black box to the right of it), enter a shape number or use the +/- buttons to select one.
 * Frame #
  The frame of the above given shape the NPC starts with.
 * Alignment
- Any NPC set to a neutral alignment will ignore the Avatar and friends, following their schedule until attacked. A "good" NPC will help the avatar in fights, but will also attack the Avatar if he is caught stealing or killing "good" NPCs. It will also attack evil Monsters or NPCs regardless of the Avatar.
- Any NPC set to hostile will immediately be attacked by the Avatar when you go into combat mode. Some NPCs will not talk to you or will even attack you on sight when set to hostile.
-
+ Any NPC set to a neutral alignment will follow their schedule until attacked but will call guards when witnessing the Avatar stealing or killing NPCs with the alignment "neutral" or "good".
+ A "good" NPC will help the avatar in fights, but will ignore theft, murder or being attacked. It will also attack evil Monsters or NPCs regardless of the Avatar.
+ Any NPC set to "evil" will immediately be attacked by the Avatar when you go into combat mode. Some NPCs will not talk to you or will even attack you on sight when set to evil.
+ "Chaotic" NPCs are a bit of a wild card, they will ignore theft or murder but will help other chaotic NPCs.
 * Attack Mode
  You can choose the mode in which the NPC attacks when it goes into combat. Choose between Nearest, Weakest, Strongest, Berserk, Protect, Defend, Flank, Flee, Random and Manual. We don't advice using Manual as for most NPCs you will not be able to actually change the attack mode manually.
 
@@ -818,9 +942,9 @@ The vital properties of an NPC are set in the Properties tab of the NPC Window.
  Maximum amount of mana you can have. Only useful for members of the party and if the game allows party members casting spells.
 * Training
  How much Training points the NPC has left and can use at trainers. Only useful for party members.
-* Experience
+* ExperienceOnly useful for party members.
 * Food Level
- How hungry is the NPC. Only relevant for party members. Normal NPCs don't starve and need to be fed.
+ How hungry is the NPC. Only relevant for party members. Normal NPCs don't starve and don't need to be fed.
 
 
 
@@ -883,70 +1007,110 @@ In this Tab you can set the schedule the NPC follows normally.
  With the button Set you can choose the schedule. Keep in mind that some schedules also require items, e.g. for the Blacksmith activity you need a smithy to work in. If there is no such item near the location you set, the NPC will use the next near item in the vicinity, for example the sleep activity will have the NPC wander to the next available bed.
  To clear the activity set it to --None--.
 * Location
- Enter the x and y coordinates of the place you want the NPC to follow his schedule at. Unfortunately you cannot (yet) set the z coordinate (on which floor of a house the schedule begins). By placing the Avatar at the spot for the scheduled activity and pressing the Game button, Exult Studio will fill out the coordinates.
+ Enter the x, y and z coordinates of the place you want the NPC to follow his schedule at. The z coordinate sets on which floor of a house the schedule begins. By placing the Avatar at the spot for the scheduled activity and pressing the Game button, Exult Studio will fill out the coordinates.
+ Another way to set the coordinates is to click "Set in game" and then click on the desired spot in Exult.
  Also by pressing 'F2' at a place, the cheat screen will show you the coordinates in hex and decimal and you can use either system to enter the location.
+* Locate
+ This will center the map on the location set for the schedule.
 
+
+
+7.7. NPC Presets
+
+You can save presets that you can apply to any NPC. These save all the properties of an NPC, except name and usecode.
+ To save a preset, set up an NPC the way you want it, enter a preset name and press the "New" button. To apply a preset to an NPC, select the preset from the dropdown list and press "Apply". Additionally you can export/import, clone, rename and delete presets.
+ With this you can quickly create a set of guards, shopkeepers or other commonly used NPCs once you made a preset.
 
 
 
 --------------------------------------------------------------------------------
 
-8. Basic map editing
-8.1. Learning the basics of map editing
+8. Basic editors
+8.1. Creating Combination files
+
+Create 'combination shapes', like a fence or an entire roof by selecting "Tools-New Combo" (see 4.5.). When you run Exult Studio the first time a file called combos.flx gets automatically created in the "Patch" folder. Choose the 'Pick for Combo' choice in the 'Modes' menu, and an empty window should pop up. In the game window, double-click a group of objects, and they should appear in the window - instead of doubleclicking an object you can also just keep pressing the right mouse button and swipe over all objects you want to add. You can then select an object there and tweak its position. When you are done hit apply and the combo gets temporally saved until you hit "Save all" or "Save - Save map".
+ You can drag and drop combinations into the game window.
+
+
+8.2. Custom Usecode
+
+As hinted at (see 1.3.) Usecode is actually what runs Ultima VII and therefore any game created with Exult Studio.
+ As of yet we do not have a Usecode editor/debugger. So writing your own Usecode is not that easy but OTOH not terribly hard.
+For an example of how Usecode may look like download our SF Island mod for BG from our download page.
+ In that zip you'll find a readme.txt which tells you how to run it.
+ You will also see two files called usecode.uc and usecode.
+Usecode.uc is the usecode script that will help you understand our usecode language.
+ When you run ucc (see 12.5.) with that file (e.g. "ucc -o usecode usecode.uc") you will get the file called usecode. This file 'usecode' should be the same as the one in the zip file.
+Marzo wrote an extensive tutorial at his website Seven Towers along with an up to date and extesnive list of intrinsics.
+ Some outdated and only available on the wayback machine documentation:
+ Wizardry Dragon and Marzo made a good list of intrinsics https://web.archive.org/web/20110711180447/http://www.thefeudallands.ca/srcdocs/files/intrinsics-uc.html and Pertex has written some documentation at http://web.archive.org/web/20071217233843/http://www.sophen.de/exult/ that might be able help you.
+
+
+
+--------------------------------------------------------------------------------
+
+9. Basic map editing
+9.1. Learning the basics of map editing
 
 The first thing one will probably want to do once they have Exult Studio running is to begin creating their own little world. The first step towards this is learning how to move objects and chunks, and placing items from Exult Studio into the game world. And the best way to learn is by using an existing game like BG or SI.
 
 
-8.2. Moving objects around
+9.2. Moving objects around
 
-Perhaps the simplest way of making your world truly unique is to start out by moving existing structures around. Move is the default option in Exult Studio, but to ensure you are in move mode select it from the mode menu. You know you are in map-editing mode when a red grid is highlighted across the world. You can select any object (notice the red highlighting of selected objects) with the mouse and move it around. This works using a simple drag and drop approach. Simply grab a tree with a right click and place it on the other side of your viewing area. The only thing you can't drag and drop are chucks, which are the large ground sections mapped by the red grid system. If you want to place one object on top of another, just drag it on top and release. If the object can be supported in that position it will stay there. For a brief guide on placing an object that won't have support, but will be floating see further down. You can also change an object's x and y coordinates by selecting the object and pressing 'ctrl+arrow keys'. An object's z coordinate can be changed by selecting the object and pressing 'ctrl+page up' or 'ctrl+page down'.
+Perhaps the simplest way of making your world truly unique is to start out by moving existing structures around. Move is the default option in Exult Studio, but to ensure you are in move mode select it from the mode menu. You know you are in map-editing mode when a red grid is highlighted across the world. You can select any object (notice the red highlighting of selected objects) with the mouse and move it around. This works using a simple drag and drop approach. Simply grab a tree with a right click and place it on the other side of your viewing area. The only thing you can't drag and drop are chunks, which are the large ground sections mapped by the red grid system. If you want to place one object on top of another, just drag it on top and release. If the object can be supported in that position it will stay there. For a brief guide on placing an object that won't have support, but will be floating see further down. You can also change an object's x and y coordinates by selecting the object and pressing 'ctrl-arrow keys'. An object's z coordinate can be changed by selecting the object and pressing 'ctrl-page up' or 'ctrl-page down'.
 
 
-8.3. How to place objects from Exult Studio
+9.3. How to place objects from Exult Studio
 
 This could not be simpler in Exult Studio. Simply select a shape from the shapes.vga menu and drag it into Exult. In Windows I personally prefer to drag the item onto the taskbar, hovering over the Exult window, wait for the window to switch and then place the item. Once you found where you would like the object to appear, simply let go of the mouse and the object is placed. If you're unhappy where you placed the object, simply drag and drop it somewhere else.
- On Windows you will get a green grid that will show you exactly where you can expect the object to show up. With the switch to SDL2's dropfile function we lost the green grid on other Operating Systems.
+ On dragging from Exult Studio you will get a green grid that will show you exactly where you can expect the object to show up.
 
 
 
-8.4. Mark, delete, copy, make multiple objects
+9.4. Mark, delete, copy, make multiple objects
 
 To mark multiple objects hold down 'ctrl' and click on the objects you want to mark. This is very useful when you want to handle a whole bunch of objects (like deleting, copying or multiplying objects).
-If you placed an object onto the world map that you now feel should be removed, select the object with your mouse and press 'ctrl+x' or select the cut option from the Exult Studio Menu.
- This will remove the object from the world and place it into memory (if you don't want to keep the object in memory simply press 'del' when it is selected). If you want to the object somewhere else, press 'ctrl+v' or select the paste option, this will create a set of crosshairs that you can use to place your new object. To create multiple copies of an object, select an object so it has a red outline and press 'ctrl+c' or select the copy option. You can now paste another copy of the object on the world using paste.
+If you placed an object onto the world map that you now feel should be removed, select the object with your mouse and press 'ctrl-x' or select the cut option from the Exult Studio Menu.
+ This will remove the object from the world and place it into memory (if you don't want to keep the object in memory simply press 'ctrl-DEL' when it is selected). If you want to place the object somewhere else, press 'ctrl-v' or select the paste option, this will create a set of crosshairs that you can use to place your new object. To create multiple copies of an object, select an object so it has a red outline and press 'ctrl-c' or select the copy option. You can now paste another copy of the object on the world using paste.
 
 
-8.5. Making floating objects like bridges
+9.5. Making floating objects like bridges
 
 So you want to create an unsupported section of balcony, or you want to make it look like that Kilrathi ship you just placed is actually hovering above the ground. To do this set the object's z height by changing the value in the grid height menu. If you want your character to be able to walk underneath an object it must be set 4 grid heights above the surface which your character is walking on. If you want your character to be able to walk on an object, the top of the object must be no more then 1-grid height above the surface the character is currently on.
 
 
 
-8.6. How to change the frame of an object
+9.6. How to change the frame of an object
 
-So you see an apple tree on the map, but you think you'd much rather have a palm tree. Exult Studio supports many different frames for each object. To change the frame of an object, select an object so it highlights red and select the "Basic Properties" option. The Exult Object box should appear. This gives you the option to select a different frame for the object to see what other frames this particular object has. The Exult Object option also allows you to manually set the height of an object that already exists on the map. Another way to select an objects frame, is to select the object from the shapes menu and then using the frames option in the lower right hand corner select just the frame you're looking for. Then you can then drag the object into your world normally.
+So you see an apple tree on the map, but you think you'd much rather have a palm tree. Exult Studio supports many different frames for each object. To change the frame of an object, select an object so it highlights red and select the "Basic Properties" option in the edit menu or just doubleclick the object while holding down 'ctrl'. The Exult Object box should appear. This gives you the option to select a different frame for the object to see what other frames this particular object has. The Exult Object option also allows you to manually set the height of an object that already exists on the map. Another way to select an objects frame, is to select the object from the shapes menu and then using the frames option in the lower right hand corner select just the frame you're looking for. Then you can then drag the object into your world normally.
+You can also manipulate selected object's frame with 'ctrl-KP+' and 'ctrl-KP-'.
+ And to rotate the object use 'ctrl-KP*'.
+ Furthermore you can use these shortcuts for several selected objects at once.
 
 
-8.7. How to change chunks (the big red outlined square)
+9.7. How to change chunks (the big red outlined square)
 
 To change the large pieces of map that are sandwiched between the red lines of the map-editing grid you have to place a chunk, instead of a shape. The various chunks available in Exult Studio are located under the heading U7chunks. The chunks are many large pieces of preformed landscape that help give the world a more consistent feel. They also make the job of editing the world somewhat easier. To place a chunk simply place it the same way that you would a shape, but keep in mind that chunks can only be placed within the red squared formed by the map-editing grid.
 
-There are a lot of interesting chunks already available in the chunks.vga file, but what if you want to make some minor changes to the design of a pre-made chunk? Maybe make the Britannia transport system a little more safe by painting a yellow line down the centre of each road chunk. By selecting the Edit terrain option you can change a chunk by placing objects directly onto a chunk, doing this permanently changes the chunk you are editing so be careful. It may not look it, but if you then select the chunk you edited from the chunks.vga menu the chunk you place will have the changes you made. Also be careful because when you edit a chunk you change every chunk in the game that is the same as the chunk you're editing. To solve this problem go into the chunks menu and right click the chunk you want to edit and select new, then duplicate. You now have two identical chunks. You can then place your new chunk onto the world and edit it how you like without editing the other chunks. You can now place this duplicate chunk wherever you like and it will have the changes you made.
+There are a lot of interesting chunks already available in the chunks.vga file, but what if you want to make some minor changes to the design of a pre-made chunk? Maybe make the Britannia transport system a little more safe by painting a yellow line down the centre of each road chunk.
+ By selecting the Edit terrain option you can change a chunk by placing objects directly onto a chunk, doing this permanently changes the chunk you are editing so be careful. It may not look it, but if you then select the chunk you edited from the chunks.vga menu the chunk you place will have the changes you made.
+ Also be careful because when you edit a chunk you change every chunk in the game that is the same as the chunk you're editing. To solve this problem go into the chunks menu and right click the chunk you want to edit and select new, then duplicate. You now have two identical chunks (with the new one being placed at the bottom of the list). You can then place your new chunk onto the world and edit it how you like without editing the other chunks.
+ You can now place this duplicate chunk wherever you like and it will have the changes you made.
 
 
-8.8. How to make a structures consisting of multiple objects
+9.8. How to make a structures consisting of multiple objects
 
 Many structures present in Exult consist of multiple objects. Examples of these are roofs, long sections of wall or fence. Constructing a roof can be a long and difficult process because it involves properly positioning multiple small objects and then manually setting each object's height. That's where the New Combos option located in the Tools menu comes in handy. Select the New Combos option and then enter the window where Exult is running. Your mouse will have become a cross hair. Double click on all the objects you plan on adding to your new object. In this example we're making a roof by double-clicking all sections of the roof.
 
 As you double-click each object, the selection appears in the combo window showing you exactly what you have selected. Now give the object a name and select Okay. The object will now be temporarily saved in the combos.flx menu. The object can now be placed on the map normally. If you make a combo you want to keep, make sure to save before quitting Exult Studio. You can continue editing your combos even after you originally finish them, by double right clicking them from the combo menu.
 
 
-8.9. More things you can do with Combos
+9.9. More things you can do with Combos
 
 One problem with the Exult Studio combo option is that when the combo is created many of the items are not in the rendering order you would want them to appear in game. To fix this problem, you can select individual items in the combo-builder window and by changing their viewing order you can make sure that all items appear exactly how you want them. You can also use the x,y,z coordinates to move individual items in your combo around to make sure that your combo looks exactly how you want. If you added an object to your combo that you don't wish to keep, simply select the item from the combo menu and press remove.
 
 
-8.10. Use the paint feature to quickly create a forest
+9.10. Use the paint feature to quickly create a forest
 
 The best way to create multiple objects fast and conveniently is to use the paint option. If you want to make a forest of trees fast, select the tree from the shapes menu and then select the paint option from the mode menu. Select the Exult window and you can now quickly place multiple objects with the green grid.
 
@@ -954,8 +1118,291 @@ The best way to create multiple objects fast and conveniently is to use the pain
 
 --------------------------------------------------------------------------------
 
-9. Miscellaneous
-9.1. Creating a boat, flying carpet, or horse drawn carriage
+10. Mods and patches
+10.1. Introduction to Mods and Patches
+
+With Exult Studio advancing more and more, there are now a small number mods and patches developed, both by Exult team members and other users. See FAQ.txt for a list.
+Patches are meant for what the name implies, little patches to the original game. Changing shapes, fixing or changing some usecode and such. Patches also have the limitation that you can only have one patch per original game installed.
+Mods on the other hand are more or less meant for heavy modifications of the original games. Changing the map layout, adding NPCs and objects, changing usecode and so on. You can have several mods installed which can be chosen from a convenient menu in Exult. Because of these advantages that mods have over patches, people now develop mods rather than patches.
+There are several important tidbits you need to know for mods and patches and are outlined below.
+
+
+10.2. Mod cfg files
+
+Creating your own mod or patch is quite simple with Exult Studio. First you need to create a new folder in the "Mods" folder located in your Exult installation directory. You can name this folder whatever you like, but it is best to give it a name that reflects the mod or patch you are creating.
+ Inside the mods folder you need to create a text file with the extension *.cfg, called the same name as your mod's folder. The folder name and the cfg name need to match their cases.
+ For example if your mod folder is called "FooBar", the cfg file needs to be called "FooBar.cfg".
+The cfg file needs to contain certain information about your mod or patch so that Exult can properly load it. Below is a sample cfg file with all possible settings and brief explanations of each entry.
+ Almost all entries are optional, but you need at least display_string and required_version is strongly recommended.
+<mod_info>
+  <mod_title>
+  short_title_of_mod
+
+									The short title of your mod that has to match with the mod's folder name.
+
+  </mod_title>
+  <display_string>
+  long title of mod
+
+									The long title of your mod as it will appear in the mod selection menu in Exult.
+
+  </display_string>
+  <required_version>
+  version number
+
+									The minimum version of Exult required for this mod.
+
+  </required_version>
+  <codepage>
+  ASCII
+
+									The character encoding used for this mod (usually don't change this).
+
+  </codepage>
+  <patch>
+  __MOD_PATH__/patch
+
+									The subfolder in the mod folder where all patch files are located.
+
+
+									Only use this if you want to change the folder name, default is "patch".
+
+  </patch>
+  <source>
+  __MOD_PATH__/source
+
+									The subfolder in the mod folder where all usecode source files are located.
+
+
+									Useful for the helper tool "Compile Usecode". Default is the "patch" folder.
+
+  </source>
+  <gamedat_path>
+  optional_path/gamedat
+
+									The folder Exult will use for game data files.
+
+
+									Only useful for developing your mod, otherwise it affects users of the mod.
+
+  </gamedat_path>
+  <savegame_path>
+  optional_path
+
+									The folder Exult will use for save game files.
+
+
+									Only useful for developing your mod, otherwise it affects users of the mod.
+
+  </savegame_path>
+  <skip_splash>
+  no
+
+									Skips the intro and doesn't display the "View Introduction" menu entry.
+
+  </skip_splash>
+  <menu_endgame>
+  yes
+
+									Doesn't display the "View Endgame" menu entry.
+
+  </menu_endgame>
+  <menu_credits>
+  yes
+
+									Doesn't display the "View Credits" menu entry.
+
+  </menu_credits>
+  <menu_quotes>
+  yes
+
+									Doesn't display the "View Quotes" menu entry.
+
+  </menu_quotes>
+  <show_display_string>
+  yes
+
+									Doesn't display the display string in the bottom right of the menu.
+
+  </show_display_string>
+  <force_digital_music>
+  yes
+
+									Forces the use of digital music instead of MIDI.
+
+
+									Useful if you change the digital music tracks in your mod.
+
+  </force_digital_music>
+</mod_info>
+
+
+10.3. Patching the digital OGG tracks
+
+If you want to customize your music tracks (in a mod or a patch) the only viable way is to use the OGG digital music tracks.
+ You can replace existing tracks by placing your own OGG files in the patch folder of your mod or patch. The files need to follow the naming scheme NNN.ogg.
+ Where NNN is the track number with leading zeros, e.g. 000.ogg for track 0, 010.ogg for track 10 and so on.
+ You can also add new tracks by using track numbers that don't exist in the original game, e.g. 100.ogg and higher, currently up to 255.
+Make sure to set the cfg option force_digital_music=yes to ensure that your mod or patch uses digital music, otherwise users might never hear your custom tracks.
+
+
+10.4. Hardcoded global flags
+
+Exult uses some hardcoded gloabl flags to ensure compatibility with the original games and some features of Exult itself.
+ These flags should most likely be avoided if your mod is a full game mod, unless you want to use it's hardcoded functions.
+* 0x3b = did_first_scene
+ Set after arriving in Britannia and Iolo's short talk.
+ With this unset the Avatar in BG might be invisible and some UI elements might be hidden.
+* 0x03 = si_did_first_scene
+ Set after arriving on Serpent Isle's shore and Iolo's short talk.
+ With this unset some UI elements in SI might be hidden.
+* 0x38 = failed_copy_protect
+ Set after failing the copy protection check, does have some consequences in the game.
+* 0x272 = doing_xenka_return
+ When this flag is set in SI, it will be immediately be unset again.
+
+The two did_first_scene flags can be utilized by mod creators to create an intro sequence before the actual game starts and be able to skip it by setting this global flag and querying it in their usecode.
+ The UI elements are only hidden when the Avatar is set to don't move, can't act and can't act charmed.
+
+
+
+--------------------------------------------------------------------------------
+
+11. Playscenes
+11.1. Playscenes Introduction
+
+Playscenes allow creating animated and/or text cutscenes using the media Exult knows how to handle. Namely FLIC animations, audio files OGG, WAV, VOC and also playback of a game's music and sfx tracks.
+Exult will automatically look for intro, endgame, quotes and credits cutscenes in a game's or a mod's patch folder (files: intro_info.txt, intro.flx, endgame_info.txt, etc.) and play these instead of the original.
+You can use these cutscenes in game with the UI_play_scene intrinsic (see SevenTowers for details).
+
+
+11.2. Script Format
+
+The script is loosely based on the format we use for de-hardcoded shape information. There are three possible sections:
+* version: Only used if we significantly alter the format and need to discard older scripts.
+* scene: For playing FLIC animations, audio and subtitles.
+* text: For displaying text, either as scrolling (bottom to top) or as pages that are shown with a delay. Audio can be played back as well.
+
+You can have several scene and text sections which will be played in the written order.
+
+
+11.3. Scene Section
+
+The scene section is for playing FLIC animations with audio and subtitles. Each line starts with a colon followed by the type and parameters separated by slashes.
+FLIC animations:
+:flic/index_number/frames_delay/fade_in/fade_out/end_delay
+* index_number: The order of files in the corresponding flx file.
+* frames_delay: Delay between FLIC frames in milliseconds. Use 0 to keep the delay read from the FLIC file, or any value to override it. Higher values make the animation slower.
+* fade_in/fade_out: Uses the first or last frame to fade in/out for the entered time in milliseconds.
+* end_delay: Adds a black screen at the end of the FLIC for the entered time in milliseconds.
+
+Audio playback:
+:sfx/sfx_number/start_time/stop_time/continue
+:track/track_number/start_time/stop_time/continue
+:ogg/index_number/start_time/stop_time/continue
+:wave/index_number/start_time/stop_time/continue
+:voc/index_number/start_time/stop_time/continue
+* index_number/sfx_number/track_number: Order in the flx file or track/sfx number.
+* start_time: Starts the audio at the time in milliseconds since the flic started playing.
+* stop_time: Stops the audio at the time in milliseconds since the flic started playing.
+* continue: Lets audio continue playing even though its scene section has finished playing.
+
+Note: When speech is disabled, VOCs will not play.
+Subtitles:
+:subtitle/index_number/start_time/line_number/font/flic_color/position/duration
+* index_number: Order of subtitle file in the flx.
+* start_time: When to display subtitle in milliseconds since flic started.
+* line_number: Subtitle texts use numbered lines (e.g., 001:\CTCentered text\nwith line break).
+* font: Font to use for display.
+* flic_color: Uses the entered number of the FLIC's palette.
+* position: 0=bottom (default), 1=center, 2=top.
+* duration: Time in milliseconds subtitle is shown (default is 2000ms).
+
+Subtitles use the same text formatting as the text section (see below). Additionally you can use \n for line breaks.
+
+
+11.4. Text Section
+
+The text section is for displaying text either as scrolling or in pages with delays. Audio can be played alongside.
+Text display:
+:text/index_number/font/color/scroll_or_delay
+* index_number: Order of text file in the flx.
+* font: Switches between Credits font and Hot font (same shape, different colors).
+* color: Color number (see below for available colors).
+* scroll_or_delay: 0 for scrolling text, 1 for blocks with 3000ms delay, or any number higher than 1 for custom delay in milliseconds.
+
+Credits font colors: 0=light orange, 1=bright orange, 2=green, 3=white, 4=bright pink, 5=white & grey screen, 6=bright green, 7=dark pink, 8=white & red screen, 9=white & dark purple screen, 10=pink, 11=pink & dark reddish screen, 12=menu blue, 13=green/yellow, 14=deep red, 15=yellow, 16=grey, 17=pink/brownred
+Hot font colors: 0=light orange, 1=orange, 2=green, 3=white/grey, 4=bright orange, 5=orange & grey screen, 6=yellow, 7=dark orange, 8=yellow & red screen, 9=yellow & dark purple screen, 10=dark orange, 11=dark orange & dark reddish screen, 12=lighter blue, 13=dark grey/yellow, 14=deep blue, 15=washed out pink, 16=bright green, 17=pink/brownred
+Note: The listed colors are for a BG game; in case of SI, the colors are different. You might need to test them.
+Audio playback:
+ Same as scene section: :sfx, :track, :ogg, :wave, :voc
+Text formatting:
+* Lines beginning with \C are centered.
+* Lines beginning with \L are left aligned to the right of the center.
+* Lines beginning with \R are right aligned to the left of the center.
+* Lines without these begin at the left with 10px margin.
+* Empty lines trigger a new page in delayed text or show as empty in scrolling text.
+
+
+
+11.5. Notes and Limitations
+
+* Audio volume is tied to the global volume set in the Volume Mixer. Track uses the music volume, sfx/wave/ogg use sound effects volume, and voc uses speech volume.
+* OGG files can and should be played regardless of the digital music setting, so ogg playback is treated as sfx playback.
+* Scrolling text only allows starting audio at the beginning as the textscroll function has no means to tell its state.
+* Scrolling text speed cannot be set but can be sped up by holding down 'SHIFT'.
+* 'ESC' stops the cutscene completely, while 'SPACE' skips to the next section.
+
+
+
+11.6. Examples
+
+Simple scene with one FLIC and background music:
+:flic/0/0/1000/1000/2000
+:track/1/0/0/1
+This plays the first FLIC (index 0) with fade in and out of 1 second each and a 2 second black screen at the end. The music track 1 starts at the beginning of the FLIC and continues playing after the FLIC ends.
+Scene with subtitles and sound effects:
+:flic/2/0/0/0/0
+:sfx/5/500/3000/0
+:subtitle/0/1000/1/1/3/0/4000
+This plays the third FLIC (index 2) with no fade or delays. The sound effect number 5 starts 500ms into the FLIC and stops at 3000ms. The first subtitle (index 0) is shown starting at 1000ms for 4 seconds in Hot font, flic color 3 at the bottom of the screen.
+Text section with scrolling text and VOC speech:
+:text/0/1/3/0
+:voc/0/0/0/0
+This displays the first text (index 0) in Hot font, color 3 as scrolling text. The first VOC (index 0) starts at the beginning of the text and plays until finished.
+
+
+11.7. Creating Scene FLX Files
+
+To create the FLX file you need expack from the Exult tools and for ease of use a build script.
+Example for an intro cutscene:
+1. In your patch folder or mod's data folder create intro_info.txt and the folder intro.
+2. Place all the files you need for your cutscene into the intro folder.
+ For example: animation1.flc, animation2.flc, music.ogg, sfx1.wav, voice1.voc, text1.txt, subtitles.txt
+3. Create a text file called intro.in in the intro folder and add all the files and point at where the flx should be created.
+4. Run expack -i intro.in
+
+The .in file format lists the output flx file on the first line, followed by all input files in order. For example, to create intro.flx in the parent directory:
+../intro.flx
+animation1.flc
+animation2.flc
+music.ogg
+sfx1.wav
+voice1.voc
+text1.txt
+subtitles.txt
+
+
+
+--------------------------------------------------------------------------------
+
+12. Miscellaneous
+12.1. Multi-map support
+
+Exult now supports multiple maps. To create new maps select New from the Map menu. You now have an option to copy information over from an existing map. The Terrain option allows you to retain the lay of the land. If this option isn't selected your new map will be entirely ocean. Fixed and Moveable objects allow you to retain the remaining objects from the previous map (Jeff's favourite idea is to entirely copy the current Exult map and create a new 'Bizarro-Brittania'). You can quickly switch between maps in game using the command 'ctrl-alt-t'.
+
+
+12.2. Creating a boat, flying carpet, or horse drawn carriage
 
 By double clicking on a barge (horse drawn carriage/magic carpet) in map editing mode one can alter the properties of the barge through the barge editor. The Barge Editor allows one to alter the size of a currently existing barge. By increasing the size of the Magic Carpet you can use the added space to create some sort of a flying battleship. Theoretically the maximum size of a barge is 100x100, but an object that large will fill the entire screen and become extremely difficult to steer.
 To create your own barge, you first need to chose Create Barge, select the dimensions of your barge and place them in the map. To create a magic carpet, place the small blue tiles from the magic carpet (shape# 840, frame 57) within the barge area and place the required number of seats on top of the magic carpet tiles. You now have your own custom carpet. Magic carpet tiles are only required for the seats your party will sit on, by expanding the area of the barge further you can create a custom area where you can place walls and other flooring tiles. Unfortunately there are limitations, all objects must be placed no more than four values in the vertical direction from the floor. For a craft to work you must have at least as many seats as party members.
@@ -963,7 +1410,7 @@ To create a cart you need only place a floor tile from the carriage (shape 652, 
 You can also create a ship by placing the deck (shape 700, frame 2) a chair, and an unfurled sail within a barge created on the water. You also need a deed for the boat. To create a boat deed need a scroll that has the same quality value as the sail of your boat.
 
 
-9.2. Importing and creating your own custom shapes
+12.3. Importing and creating your own custom shapes
 
 Importing a shape into Exult Studio is quite easy. Simply select the type of object you wish to create (shape, chunk, gump, etc.) and right-click on the display window and select New Shape or New Frame depending on which is pertinent. Once the new shape is created, right click on the new shape and select Import frame. Now select the desired shape from the folder. You must now save all in Exult Studio and both Exult Studio and Exult need to be restarted before the newly imported shape can be used in a game.
 Note
@@ -972,15 +1419,15 @@ Important
  For a shape to be compatible with Exult Studio it must be saved as a 255 colour interlaced .png/.shp file. RGB or grayscale images are not compatible. Transparent sections will remain transparent in Exult.
 
 
-9.3. How to create a custom font?
+12.4. How to create a custom font?
 
 For your convenience Exult Studio accepts .ttf (true type font) files, which is the standard file format for text in a Windows machine. Select new shape from fonts.vga, here you can either manually overwrite a single frame of a font or you can import an entire .ttf file by selecting the From font option. To overwrite an existing font set the shape of your newly imported font to that of a preexisting font. Unfortunately newly imported .ttf files don't have the correct offsets and you letters will look stuck together. To fix that you will have to manually edit all font frames to give them proper spacing.
 
 
-9.4. Other tools that might be useful
+12.5. Other tools that might be useful
 
 In the process of creating Exult the team came up with some useful tools that might help in editing/making a game.
- These can be built from the Exult source or you can download the Windows binary snapshot. The source and binary snapshot can be found at http://exult.info/download.php.
+ These can be built from the Exult source or you can download the Windows binary snapshot. The source and binary snapshot can be found at https://exult.info/download.html.
  The tools are:
 * mockup:
  This is a simple program that converts a 8 bpp indexed file into a u7map based on a colour and u7chunk association. See the manual.
@@ -997,34 +1444,14 @@ In the process of creating Exult the team came up with some useful tools that mi
 * textpack:
  can be used edit text flex files. See manual.
 * ucc:
- can be used to create custom usecode (see 5.3.).
+ can be used to create custom usecode (see 8.2.).
  See the manual.
 * The GIMP Plug-in:
  can be used for editing shapes in the GIMP. Handles multiframe Shape files. See http://www.gimp.org for information on the GIMP.
-* Photoshop Plug-in:
- can be used for editing shapes in Photoshop. Can't handle multiframe Shape files. And also can't handle indexed images with Alpha correctly.
 
 
 
-9.5. Porting Exult Studio to other platforms
-
-Currently Exult Studio runs on U*ix and Windows platforms. First it only ran on U*ix but with some effort by Colourless, Kirben and Mark Siewart it was successfully ported to Windows.
-A port to other platforms depends on when someone volunteers to do the work. There are three issues:
-* GTK+3 has to be ported to the platform.
-* Exult Studio uses sockets to communicate with Exult.
-* Recently we switched from using X drag'n'drop to SDL2's DropFile. For Windows Exult we are still using our own code.
- As an alternative to dragging objects, you can now select a shape, then insert it into the game window by left-clicking while holding the Shift key down.
-
-
-
-9.6. About this client/server stuff?
-
-A map-editor needs to provide the ability to display the game, place objects on the map, and move objects around. That functionality is already in Exult, and it makes sense to reuse it. So we could have made Exult a part of Exult Studio. However, Exult is already a huge program, and is getting unwieldy to work on.
-With this architecture, Exult Studio can have all the messy code for displaying/editing dialog boxes, while Exult only needs a little bit of work to handle requests.
-Also, I (Jeff) wanted to get a little experience programming with sockets:-)
-
-
-9.7. About this 'terrain-editing' stuff and why you can't just drag objects to where you want.
+12.6. About this 'terrain-editing' stuff and why you can't just drag objects to where you want.
 
 This confused me too, and I originally planned on doing away with it. But do a little arithmetic: Ultima VII's world has 3072x3072 tiles; that's over 9 million that need to be set. My guess is that they came up with the idea behind 'u7chunks' to save artists time and to give the map a consistent look.
 The basic idea is that each 'chunk' of flat terrain, 16x16 tiles, is stored in 'u7chunks', and is indexed by its position in this file (0, 1, 2, ...). The 'u7map' file specifies, for each 'chunk' in the Ultima VII map, which of the terrains is to be used. Since the entire map has 192x192 chunks, or a total of 36,864, and since 'u7chunks' has 3072 entries, each terrain is shared an average of over 10 times. When you go into map-editing mode in Exult, the numbers displayed are the indices from 'u7chunks'.
@@ -1037,7 +1464,7 @@ The challenge of writing a map-editor is keeping the above straight, and reading
 For a more detailed explanation, see Gary Thompson's paper, u7edit.txt, in our 'docs' folder.
 
 
-9.8. ifix and ireg reference chart
+12.7. ifix and ireg reference chart
 
 Crowley from our forum made this chart to easily reference the u7iregnn and u7ifixnn files in both BG and SI. Thanks a lot!
 
@@ -1046,7 +1473,25 @@ Crowley from our forum made this chart to easily reference the u7iregnn and u7if
 
 
 
-9.9. What's next?
+12.8. Porting Exult Studio to other platforms
+
+Currently Exult Studio runs on U*ix and Windows platforms. First it only ran on U*ix but with some effort by Colourless, Kirben and Mark Siewart it was successfully ported to Windows.
+A port to other platforms depends on when someone volunteers to do the work. There are three issues:
+* GTK+3 has to be ported to the platform.
+* Exult Studio uses sockets to communicate with Exult.
+* For drag'n'drop we switched to SDL's DropFile.
+ As an alternative to dragging objects, you can now select a shape, then insert it into the game window by left-clicking while holding the Shift key down.
+
+
+
+12.9. About this client/server stuff?
+
+A map-editor needs to provide the ability to display the game, place objects on the map, and move objects around. That functionality is already in Exult, and it makes sense to reuse it. So we could have made Exult a part of Exult Studio. However, Exult is already a huge program, and is getting unwieldy to work on.
+With this architecture, Exult Studio can have all the messy code for displaying/editing dialog boxes, while Exult only needs a little bit of work to handle requests.
+Also, I (Jeff) wanted to get a little experience programming with sockets:-)
+
+
+12.10. What's next?
 
 The next things to be implemented are:
 * Exult Studio needs to be able to automatically create palettes 1-n from palette 0 using the code from ipack.
@@ -1055,104 +1500,23 @@ The next things to be implemented are:
 
 
 
-9.10. Known Bugs with the Linux port
-
-* when you load games or mods with more than one map, Exult Studio has problems creating and saving the extra maps. This may no longer be an issue.
-
-
-
 
 --------------------------------------------------------------------------------
 
-10. Credits
-10.1. Thanks
+13. Credits
+13.1. Thanks
 
 * Colourless, Kirben and Mark Siewart invested a lot of effort to port Exult Studio to Windows.
+* Dragon Baroque who ported Exult Studio to GTK+3 (and currently working on porting to GTK4) and also made the cross platform drag and drop use SDL.
 
 
 
 
 --------------------------------------------------------------------------------
 
-11. Changes to the Documentation
-11.1. - 20 February 2021
+14. Changes to the Documentation
+14.1. - 21 January 2026
 
-* Changed links to our homepage to exult.info, SDL to SDL2, Mac OS X to macOS.
-* Updated all the menus and editors descriptions.
-* Many little changes to wordings and indentation.
-
-
-
-11.2. - 13 March 2016
-
-* 2.3. Step-by-step instructions to run Exult Studio GIT vs SVN.
-
-
-
-11.3. - 21 November 2013
-
-* 9.8. ifix and ireg reference chart finally added Crowley's ifix/ireg chart.
-
-
-
-11.4. - 19 February 2011
-
-* 2.6. Command line options added -c -m, added space between -x -g, even though it works without space as well.
-
-
-
-11.5. - 23 January 2011
-
-* 11. Changes to the Documentation moved to the bottom.
-* 2.6. Command line options added portable option.
-
-
-
-11.6. - 18 December 2010
-
-* 5.3. Custom Usecode added intriniscs docs from TFL and fixed the link to Pertex' site.
-* 9.10. Known Bugs with the Linux port the patch folder NEEDS to be writeable.
-
-
-
-11.7. - 11 March 2010
-
-* 2.1. Installation added Vista/W7 to the Windows list, Windows 95 is not supported.
-* 2.4. What you can do at the moment the patch folder NEEDS to be writeable.
-* 1.1. Windows 95 is not supported.
-
-
-
-11.8. - 01 March 2005
-
-* 4.3. Edit Create Barg added.
-* 4.6. Map added this menu option.
-* 6.2. The different types of eggs intermap egg added.
-* 6.14. Intermap eggs explains how to use this egg type.
-* 6.15. Multi-map support explained.
-* 9.1. Creating a boat, flying carpet, or horse drawn carriage added.
-* 9.2. Importing and creating your own custom shapes added.
-* 9.3. How to create a custom font? explained.
-
-
-
-11.9. - 23 May 2004
-
-* 3.4. Palettes files palette files are compatible with the Gimp.
-* 4.3. Edit note about map-editing operations.
-* 6.4. Properties of eggs some more infos.
-* 6.6. Schedules of Monsters and Creatures more on the patrol schedule.
-* 7.5. NPC Flags removed some unused flags.
-
-
-
-11.10. - 06 February 2004
-
-* 1.3. Terms we use in regard to Exult and Ultima VII some corrections by Willem.
-* 2.3. Step-by-step instructions to run Exult Studio some corrections.
-* 2.2. Running Exult Studio some corrections.
-* 3.3. Map files More right click options.
-* 7. NPC editing finally took on that task.
-
+A lot of changes, corrections, updates in the whole document.
 
 

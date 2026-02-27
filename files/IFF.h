@@ -21,12 +21,13 @@
 #ifndef IFF_H
 #define IFF_H
 
-#include <vector>
-#include <string>
-#include <cstring>
-#include "common_types.h"
 #include "U7file.h"
+#include "common_types.h"
 #include "exceptions.h"
+
+#include <cstring>
+#include <string>
+#include <vector>
 
 class DataSource;
 
@@ -36,28 +37,31 @@ class DataSource;
  */
 class IFF : public U7file {
 public:
-	struct  IFFhdr {
-		char    form_magic[4];
-		uint32  size;
-		char    data_type[4];
+	struct IFFhdr {
+		char   form_magic[4];
+		uint32 size;
+		char   data_type[4];
 	};
-	struct  IFFobject {
-		char    type[4];
-		uint32  size;
-		char    even;
+
+	struct IFFobject {
+		char   type[4];
+		uint32 size;
+		char   even;
 	};
-	struct  u7IFFobj {
-		char    name[8];
+
+	struct u7IFFobj {
+		char name[8];
 		// char    data[]; // Variable
 	};
 
 protected:
 	//  The IFF's header. ++++ Unused????
-	//IFFhdr    header;
+	// IFFhdr    header;
 	/// List of objects in the IFF file.
 	std::vector<Reference> object_list;
 
 	void index_file() override;
+
 	Reference get_object_reference(uint32 objnum) const override {
 		return object_list[objnum];
 	}
@@ -65,22 +69,21 @@ protected:
 public:
 	/// Basic constructor.
 	/// @param spec File name and object index pair.
-	explicit IFF(const File_spec &spec)
-		: U7file(spec)
-	{  }
+	explicit IFF(const File_spec& spec) : U7file(spec) {}
 
 	size_t number_of_objects() override {
 		return object_list.size();
 	}
-	const char *get_archive_type() override {
+
+	const char* get_archive_type() override {
 		return "IFF";
 	}
 
-	static bool is_iff(IDataSource *in);
+	static bool is_iff(IDataSource* in);
 	static bool is_iff(const std::string& fname);
 };
 
-using IFFFile = U7DataFile<IFF>;
+using IFFFile   = U7DataFile<IFF>;
 using IFFBuffer = U7DataBuffer<IFF>;
 
 #endif

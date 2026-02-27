@@ -25,28 +25,33 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #ifndef OBJSERIAL_H
 #define OBJSERIAL_H 1
 
-#include <string>
-#include "utils.h"
+#include "endianio.h"
 #include "servemsg.h"
 
+#include <string>
+
 class Serial_out {
-	unsigned char *&buf;
+	unsigned char*& buf;
+
 public:
-	Serial_out(unsigned char *&b) : buf(b)
-	{  }
+	Serial_out(unsigned char*& b) : buf(b) {}
+
 	template <typename T>
-	Serial_out &operator<<(T v) {
-		WriteN(buf, v);
+	Serial_out& operator<<(T v) {
+		little_endian::WriteN(buf, v);
 		return *this;
 	}
-	Serial_out &operator<<(bool v) {
-		*buf++ = (v ? 1 : 0);
+
+	Serial_out& operator<<(bool v) {
+		Write1(buf, (v ? 1 : 0));
 		return *this;
 	}
-	Serial_out &operator<<(std::string &s);
+
+	Serial_out& operator<<(std::string& s);
+
 	template <typename T>
-	Serial_out &operator<<(const T *v) {
-		(*this) << reinterpret_cast<uintptr>(v);
+	Serial_out& operator<<(const T* v) {
+		(*this) << reinterpret_cast<uintptr_t>(v);
 		return *this;
 	}
 };
@@ -55,23 +60,27 @@ public:
  *  Decode.
  */
 class Serial_in {
-	const unsigned char *&buf;
+	const unsigned char*& buf;
+
 public:
-	Serial_in(const unsigned char *&b) : buf(b)
-	{  }
+	Serial_in(const unsigned char*& b) : buf(b) {}
+
 	template <typename T>
-	Serial_in &operator<<(T &v) {
-		v = ReadN<T>(buf);
+	Serial_in& operator<<(T& v) {
+		v = little_endian::ReadN<T>(buf);
 		return *this;
 	}
-	Serial_in &operator<<(bool &v) {
-		v = *buf++ != 0;
+
+	Serial_in& operator<<(bool& v) {
+		v = Read1(buf) != 0;
 		return *this;
 	}
-	Serial_in &operator<<(std::string &s);
+
+	Serial_in& operator<<(std::string& s);
+
 	template <typename T>
-	Serial_in &operator<<(T *&v) {
-		uintptr val;
+	Serial_in& operator<<(T*& v) {
+		uintptr_t val;
 		(*this) << val;
 		v = reinterpret_cast<T*>(val);
 		return *this;
@@ -81,178 +90,118 @@ public:
 class Game_object;
 
 extern int Object_out(
-    int fd,             // Socket.
-    Exult_server::Msg_type id,  // Message id.
-    const Game_object *addr,     // Address.
-    int tx, int ty, int tz,     // Absolute tile coords.
-    int shape, int frame,
-    int quality,
-    std::string name
-);
+		int                    fd,      // Socket.
+		Exult_server::Msg_type id,      // Message id.
+		const Game_object*     addr,    // Address.
+		int tx, int ty, int tz,         // Absolute tile coords.
+		int shape, int frame, int quality, std::string name);
 extern bool Object_in(
-    const unsigned char *data,        // Data that was read.
-    int datalen,            // Length of data.
-    Game_object *&addr,        // Address.
-    int &tx, int &ty, int &tz,  // Absolute tile coords.
-    int &shape, int &frame,
-    int &quality,
-    std::string &name
-);
+		const unsigned char* data,       // Data that was read.
+		int                  datalen,    // Length of data.
+		Game_object*&        addr,       // Address.
+		int& tx, int& ty, int& tz,       // Absolute tile coords.
+		int& shape, int& frame, int& quality, std::string& name);
 
 class Container_game_object;
 
 extern int Container_out(
-    int fd,             // Socket.
-    const Container_game_object *addr,     // Address.
-    int tx, int ty, int tz,     // Absolute tile coords.
-    int shape, int frame,
-    int quality,
-    std::string name,
-    unsigned char resistance,
-    bool invisible, bool okay_to_take
-);
+		int                          fd,      // Socket.
+		const Container_game_object* addr,    // Address.
+		int tx, int ty, int tz,               // Absolute tile coords.
+		int shape, int frame, int quality, std::string name, unsigned char resistance, bool invisible, bool okay_to_take);
 extern bool Container_in(
-    const unsigned char *data,        // Data that was read.
-    int datalen,            // Length of data.
-    Container_game_object *&addr,        // Address.
-    int &tx, int &ty, int &tz,  // Absolute tile coords.
-    int &shape, int &frame,
-    int &quality,
-    std::string &name,
-    unsigned char &resistance,
-    bool &invisible, bool &okay_to_take
-);
+		const unsigned char*    data,       // Data that was read.
+		int                     datalen,    // Length of data.
+		Container_game_object*& addr,       // Address.
+		int& tx, int& ty, int& tz,          // Absolute tile coords.
+		int& shape, int& frame, int& quality, std::string& name, unsigned char& resistance, bool& invisible, bool& okay_to_take);
 
 class Barge_object;
 
 extern int Barge_object_out(
-    int fd,             // Socket.
-    const Barge_object *addr,     // Address.
-    int tx, int ty, int tz, // Absolute tile coords.
-    int shape, int frame,
-    int xtiles,
-    int ytiles,
-    int dir
-);
+		int                 fd,      // Socket.
+		const Barge_object* addr,    // Address.
+		int tx, int ty, int tz,      // Absolute tile coords.
+		int shape, int frame, int xtiles, int ytiles, int dir);
 extern bool Barge_object_in(
-    const unsigned char *data,        // Data that was read.
-    int datalen,            // Length of data.
-    Barge_object *&addr,        // Address.
-    int &tx, int &ty, int &tz,  // Absolute tile coords.
-    int &shape, int &frame,
-    int &xtiles,
-    int &ytiles,
-    int &dir
-);
+		const unsigned char* data,       // Data that was read.
+		int                  datalen,    // Length of data.
+		Barge_object*&       addr,       // Address.
+		int& tx, int& ty, int& tz,       // Absolute tile coords.
+		int& shape, int& frame, int& xtiles, int& ytiles, int& dir);
 
 class Egg_object;
 
 extern int Egg_object_out(
-    int fd,             // Socket.
-    const Egg_object *addr,     // Address.
-    int tx, int ty, int tz, // Absolute tile coords.
-    int shape, int frame,
-    int type,
-    int criteria,
-    int probability,
-    int distance,
-    bool nocturnal,
-    bool once,
-    bool hatched,
-    bool auto_reset,
-    int data1, int data2, int data3,
-    std::string str1
-);
+		int               fd,      // Socket.
+		const Egg_object* addr,    // Address.
+		int tx, int ty, int tz,    // Absolute tile coords.
+		int shape, int frame, int type, int criteria, int probability, int distance, bool nocturnal, bool once, bool hatched,
+		bool auto_reset, int data1, int data2, int data3, std::string str1);
 extern bool Egg_object_in(
-    const unsigned char *data,        // Data that was read.
-    int datalen,            // Length of data.
-    Egg_object *&addr,        // Address.
-    int &tx, int &ty, int &tz,  // Absolute tile coords.
-    int &shape, int &frame,
-    int &type,
-    int &criteria,
-    int &probability,
-    int &distance,
-    bool &nocturnal,
-    bool &once,
-    bool &hatched,
-    bool &auto_reset,
-    int &data1, int &data2, int &data3,
-    std::string &str1
-);
+		const unsigned char* data,       // Data that was read.
+		int                  datalen,    // Length of data.
+		Egg_object*&         addr,       // Address.
+		int& tx, int& ty, int& tz,       // Absolute tile coords.
+		int& shape, int& frame, int& type, int& criteria, int& probability, int& distance, bool& nocturnal, bool& once,
+		bool& hatched, bool& auto_reset, int& data1, int& data2, int& data3, std::string& str1);
 
-struct Serial_schedule {        // For passing a schedule change.
-	short time;         // 0-7 (3-hour period).
-	short type;         // Schedule type (mostly 0-31).
-	int tx, ty, tz;         // Tile to go to.
+struct Serial_schedule {    // For passing a schedule change.
+	short time;             // 0-7 (3-hour period).
+	short type;             // Schedule type (mostly 0-31).
+	int   tx, ty, tz;       // Tile to go to.
 };
 
 class Actor;
 
 int Npc_actor_out(
-    int fd,             // Socket.
-    const Actor *addr,     // Address.
-    int tx, int ty, int tz,     // Absolute tile coords.
-    int shape, int frame, int face,
-    std::string name,
-    short npc_num,
-    short ident,
-    int usecode,
-    std::string usecodefun,
-    int (&properties)[12],        // 12 entries.
-    short attack_mode,
-    short alignment,
-    unsigned long oflags,       // Object flags.
-    unsigned long xflags,       // Extra object flags.
-    unsigned long type_flags,   // Movement flags.
-    short num_schedules,        // # of schedule changes.
-    Serial_schedule *schedules  // Schedule changes.
+		int          fd,           // Socket.
+		const Actor* addr,         // Address.
+		int tx, int ty, int tz,    // Absolute tile coords.
+		int shape, int frame, int face, std::string name, short npc_num, short ident, int usecode, std::string usecodefun,
+		int (&properties)[12],    // 12 entries.
+		short attack_mode, short alignment,
+		unsigned long    oflags,           // Object flags.
+		unsigned long    xflags,           // Extra object flags.
+		unsigned long    type_flags,       // Movement flags.
+		short            num_schedules,    // # of schedule changes.
+		Serial_schedule* schedules         // Schedule changes.
 );
 bool Npc_actor_in(
-    const unsigned char *data,        // Data that was read.
-    int datalen,            // Length of data.
-    Actor *&addr,        // Address.
-    int &tx, int &ty, int &tz,  // Absolute tile coords.
-    int &shape, int &frame, int &face,
-    std::string &name,
-    short &npc_num,
-    short &ident,
-    int &usecode,
-    std::string &usecodefun,
-    int (&properties)[12],        // Must have room for 12.
-    short &attack_mode,
-    short &alignment,
-    unsigned long &oflags,      // Object flags.
-    unsigned long &xflags,      // Extra object flags.
-    unsigned long &type_flags,  // Movement flags.
-    short &num_schedules,       // # of schedule changes.
-    Serial_schedule *schedules  // Schedule changes.  Room for 8.
+		const unsigned char* data,       // Data that was read.
+		int                  datalen,    // Length of data.
+		Actor*&              addr,       // Address.
+		int& tx, int& ty, int& tz,       // Absolute tile coords.
+		int& shape, int& frame, int& face, std::string& name, short& npc_num, short& ident, int& usecode, std::string& usecodefun,
+		int (&properties)[12],    // Must have room for 12.
+		short& attack_mode, short& alignment,
+		unsigned long&   oflags,           // Object flags.
+		unsigned long&   xflags,           // Extra object flags.
+		unsigned long&   type_flags,       // Movement flags.
+		short&           num_schedules,    // # of schedule changes.
+		Serial_schedule* schedules         // Schedule changes.  Room for 8.
 );
 
 extern int Game_info_out(
-    int fd,             // Socket.
-    int version,            // Server/client version.
-    int edit_lift,          // Lift being edited.
-    int hide_lift,          // Lift being hidden.
-    bool map_editing,       // In 'map-editing' mode.
-    bool tile_grid,         // Showing tile grid.
-    bool map_modified,      // Map was changed.
-    int edit_mode           // Mode we're in.
+		int  fd,              // Socket.
+		int  version,         // Server/client version.
+		int  edit_lift,       // Lift being edited.
+		int  hide_lift,       // Lift being hidden.
+		bool map_editing,     // In 'map-editing' mode.
+		bool tile_grid,       // Showing tile grid.
+		bool map_modified,    // Map was changed.
+		int  edit_mode        // Mode we're in.
 );
 extern bool Game_info_in(
-    const unsigned char *data,        // Data that was read.
-    int datalen,            // Length of data.
-    int &version,           // Server/client version.
-    int &edit_lift,         // Lift being edited.
-    int &hide_lift,         // Lift being hidden.
-    bool &map_editing,      // In 'map-editing' mode.
-    bool &tile_grid,        // Showing tile grid.
-    bool &map_modified,     // Map was changed.
-    int &edit_mode          // Mode we're in.
+		const unsigned char* data,            // Data that was read.
+		int                  datalen,         // Length of data.
+		int&                 version,         // Server/client version.
+		int&                 edit_lift,       // Lift being edited.
+		int&                 hide_lift,       // Lift being hidden.
+		bool&                map_editing,     // In 'map-editing' mode.
+		bool&                tile_grid,       // Showing tile grid.
+		bool&                map_modified,    // Map was changed.
+		int&                 edit_mode        // Mode we're in.
 );
 
 #endif
-
-
-
-

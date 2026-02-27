@@ -21,12 +21,19 @@
 #ifndef UCDEBUGGING_H
 #define UCDEBUGGING_H
 
-#include <list>
 #include "ignore_unused_variable_warning.h"
+
+#include <list>
 
 class Stack_frame;
 
-enum Breakpoint_type { BP_anywhere, BP_location, BP_stepover, BP_finish };
+enum Breakpoint_type {
+	BP_anywhere,
+	BP_location,
+	BP_stepover,
+	BP_finish
+};
+
 // BP_anywhere: break on any instruction (for "step into")
 // BP_location: break on a specific code offset (function + ip)
 // BP_stepover: break on next instruction in same function (or previous func)
@@ -40,13 +47,13 @@ enum Breakpoint_type { BP_anywhere, BP_location, BP_stepover, BP_finish };
 
 class Breakpoint {
 public:
-	int id; // used to identify breakpoint to remote debugger
-	bool once; // delete when triggered
+	int  id;      // used to identify breakpoint to remote debugger
+	bool once;    // delete when triggered
 
 	virtual Breakpoint_type get_type() const = 0;
-	virtual ~Breakpoint() = default;
+	virtual ~Breakpoint()                    = default;
 
-	virtual bool check(Stack_frame *frame) const = 0;
+	virtual bool check(Stack_frame* frame) const = 0;
 
 	virtual void serialize(int fd) const = 0;
 
@@ -61,14 +68,15 @@ public:
 	Breakpoint_type get_type() const override {
 		return BP_anywhere;
 	}
-	bool check(Stack_frame *frame) const override {
+
+	bool check(Stack_frame* frame) const override {
 		ignore_unused_variable_warning(frame);
 		return true;
 	}
 
 	void serialize(int fd) const override {
 		ignore_unused_variable_warning(fd);
-	} // +++++ implement this?
+	}    // +++++ implement this?
 };
 
 class LocationBreakpoint : public Breakpoint {
@@ -78,63 +86,63 @@ public:
 	Breakpoint_type get_type() const override {
 		return BP_location;
 	}
-	bool check(Stack_frame *frame) const override;
+
+	bool check(Stack_frame* frame) const override;
 
 	void serialize(int fd) const override;
 
 private:
-
 	int functionid;
 	int ip;
 };
 
 class StepoverBreakpoint : public Breakpoint {
 public:
-	StepoverBreakpoint(Stack_frame *frame);
+	StepoverBreakpoint(Stack_frame* frame);
 
 	Breakpoint_type get_type() const override {
 		return BP_stepover;
 	}
-	bool check(Stack_frame *frame) const override;
+
+	bool check(Stack_frame* frame) const override;
 
 	void serialize(int fd) const override {
 		ignore_unused_variable_warning(fd);
-	} // +++++ implement this?
+	}    // +++++ implement this?
 
 private:
-
 	int call_chain;
 	int call_depth;
 };
 
 class FinishBreakpoint : public Breakpoint {
 public:
-	FinishBreakpoint(Stack_frame *frame);
+	FinishBreakpoint(Stack_frame* frame);
 
 	Breakpoint_type get_type() const override {
 		return BP_finish;
 	}
-	bool check(Stack_frame *frame) const override;
+
+	bool check(Stack_frame* frame) const override;
 
 	void serialize(int fd) const override {
 		ignore_unused_variable_warning(fd);
-	} // +++++ implement this?
+	}    // +++++ implement this?
 
 private:
 	int call_chain;
 	int call_depth;
 };
 
-
 class Breakpoints {
 public:
 	~Breakpoints();
 
-	void add(Breakpoint *breakpoint);
-	void remove(Breakpoint *breakpoint);
+	void add(Breakpoint* breakpoint);
+	void remove(Breakpoint* breakpoint);
 	bool remove(int id);
 
-	int check(Stack_frame *frame);
+	int check(Stack_frame* frame);
 
 	void transmit(int fd);
 
@@ -145,7 +153,7 @@ public:
 private:
 	static int lastID;
 
-	std::list<Breakpoint *> breaks;
+	std::list<Breakpoint*> breaks;
 };
 
 #endif

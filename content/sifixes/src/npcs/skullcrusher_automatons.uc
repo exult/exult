@@ -26,12 +26,13 @@
 
 // The first automaton in Skullcrusher is the one just inside the gate, NPC 190.
 // To test this, set flag 613 and open the sliding door via the rune match puzzle.
-void Guard17 object#(0x4be) () // Entrance Guard
-{
-	if (event == STARTED_TALKING)
-	{
-		script GUARD17 after 1 ticks
-		{	nohalt;					call Guard17;}
+void Guard17 object#(0x4be) () {
+	// Entrance Guard
+	if (event == STARTED_TALKING) {
+		script GUARD17 after 1 ticks {
+			nohalt;
+			call Guard17;
+		}
 	}
 	Guard17.original();
 }
@@ -39,12 +40,13 @@ void Guard17 object#(0x4be) () // Entrance Guard
 // Guard21 not included here because he has only Barks.
 
 // Automaton by the Serpent Gate, NPC 188.
-void Guard20 object#(0x4bc) () // Serpent Gate Guard
-{
-	if (event == STARTED_TALKING)
-	{
-		script GUARD20 after 3 ticks
-		{	nohalt;					call Guard20;}
+void Guard20 object#(0x4bc) () {
+	// Serpent Gate Guard
+	if (event == STARTED_TALKING) {
+		script GUARD20 after 3 ticks {
+			nohalt;
+			call Guard20;
+		}
 	}
 	Guard20.original();
 }
@@ -54,20 +56,19 @@ void Guard20 object#(0x4bc) () // Serpent Gate Guard
 
 // Second guard standing at the Eastern big brass doors that cannot be opened,
 // NPC 186. This re-implements his conversation to refer to his hammer not his blade.
-void Guard18 object#(0x4ba) () // East Big Doors Guard, southern one
-{
-	if (event == DOUBLECLICK && !GUARD18->get_item_flag(SI_ZOMBIE))
-	{
+void Guard18 object#(0x4ba) () {
+	// East Big Doors Guard, southern one
+	if (event == DOUBLECLICK && !GUARD18->get_item_flag(SI_ZOMBIE)) {
 		delayedBark(AVATAR, "@Hello!@", 5);
 		delayedBark(GUARD18, "@Intruder!@", 5);
 		GUARD18->set_schedule_type(TALK);
 	}
 
-	if ((event == SCRIPTED || event == STARTED_TALKING) && !GUARD18->get_item_flag(SI_ZOMBIE))
-	{
+	if ((event == SCRIPTED || event == STARTED_TALKING) && !GUARD18->get_item_flag(SI_ZOMBIE)) {
 		GUARD18->run_schedule();
 		GUARD18->clear_item_say();
-		UI_show_npc_face0(298); // Automaton face
+		// Automaton face
+		UI_show_npc_face0(298);
 
 		say("@These doors have been sealed by the Serpent of Order, and none shall enter. By approaching thus far, thou hath shown thyself to be mine enemy.@");
 		say("@Now I must kill thee, lest the Serpent judge me unworthy. Bless my hammer, master!@");
@@ -75,7 +76,7 @@ void Guard18 object#(0x4ba) () // East Big Doors Guard, southern one
 		delayedBark(GUARD19, "@Chaos dogs!@", 18);
 		attackParty(GUARD18);
 		attackParty(GUARD19);
-	}
-	else
+	} else {
 		Guard18.original();
+	}
 }

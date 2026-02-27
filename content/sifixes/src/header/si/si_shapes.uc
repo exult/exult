@@ -22,23 +22,59 @@
  *	2026-02-27 Added energy field by Knight Captain
  */
 
-enum animations
-{
-	ANIMATION_CLOUDS = 3,
-	ANIMATION_TELEPORT = 7
+//Sprite effects
+enum sprite_effects {
+	ANIMATION_BIG_BLAST			= 1,
+	ANIMATION_BIG_CLOUDS		= 2,
+	ANIMATION_CLOUDS			= 3,
+	ANIMATION_MEDIUM_BLAST		= 4,
+	ANIMATION_SMALL_BLAST		= 5,
+	ANIMATION_CLOUDS2			= 6,
+	ANIMATION_TELEPORT			= 7,
+	ANIMATION_DEATH_VORTEX		= 8,
+	ANIMATION_POOF				= 9,
+	ANIMATION_RED_DUST			= 11,
+	ANIMATION_FIREWORKS			= 12,
+	ANIMATION_GREEN_BUBBLES		= 13,
+	ANIMATION_SPARKLES			= 16,
+	ANIMATION_LIGHTNING			= 17,
+	ANIMATION_BLUE_BEADS		= 18,
+	ANIMATION_BURST_ARROW		= 19,
+	ANIMATION_PURPLE_BUBBLES	= 21,
+	ANIMATION_SWORD_STRIKE		= 23,
+	ANIMATION_MUSIC				= 24,
+	ANIMATION_TELEPORT2			= 26,
+	ANIMATION_SMALL_RING_BLAST	= 27,
+	ANIMATION_BIG_RING_BLAST	= 30,
+	ANIMATION_MEDIUM_RING_BLAST	= 31,
+	ANIMATION_RED_SWIRL			= 32,
+	ANIMATION_PULSATING_DISC	= 33,
+	ANIMATION_SERPENT_OVERLAY	= 39,
+	ANIMATION_LIGHTNING_BLUE	= 40,
+	ANIMATION_LIGHTNING_RED		= 41,
+	ANIMATION_LIGHTNING_YELLOW	= 42,
+	ANIMATION_LIGHTNING_GREEN	= 43,
+	ANIMATION_TURTLE_RISE		= 46,
+	ANIMATION_FROST_RING		= 47,
+	ANIMATION_REVIVING_SNAKE	= 48,
+	ANIMATION_EST_NUDI			= 50,
+	ANIMATION_GOLDEN_SPARKLE	= 51,
+	ANIMATION_PETRA_VISION		= 53,
+	ANIMATION_ORB_BURST			= 54,
+	ANIMATION_SWIRL_BARRIER		= 55,
+	ANIMATION_SLASH_BURST		= 56,
+	ANIMATION_VAMPIRE_RISING	= 61,
 };
 
 // Game engine items
-enum egg_shapes
-{
+enum egg_shapes {
 	SHAPE_EGG = 275,
 	SHAPE_USECODE_CONTAINER = 486,
 	SHAPE_PATH_EGG = 607
 };
 
 // Animals from Earth
-enum animals_shapes
-{
+enum animals_shapes {
 	SHAPE_PENGUIN = 298,
 	SHAPE_BROWN_BEAR = 302,
 	SHAPE_BOAR = 329,
@@ -64,8 +100,7 @@ enum animals_shapes
 	SHAPE_SHEEP = 970
 };
 
-enum monster_shapes
-{
+enum monster_shapes {
 	SHAPE_UNICORN = 375,					// Not used in SI?
 	SHAPE_ACID_SLUG = 491,
 	SHAPE_CORPSER = 499,
@@ -89,8 +124,7 @@ enum monster_shapes
 	SHAPE_MANSPIDER = 979
 };
 
-enum humanoid_monster_shapes
-{
+enum humanoid_monster_shapes {
 	SHAPE_MAGIC_GREMLIN = 363,
 	SHAPE_ICE_TROLL = 372,
 	SHAPE_RATMAN = 382,
@@ -105,8 +139,7 @@ enum humanoid_monster_shapes
 	SHAPE_FIRE_ELEMENTAL = 861
 };
 
-enum undead_shapes
-{
+enum undead_shapes {
 	SHAPE_GHOUL_CHILD = 312,
 	SHAPE_GHOST = 337,
 	SHAPE_MUMMY = 373,
@@ -118,8 +151,7 @@ enum undead_shapes
 	SHAPE_LICHE = 981						// Aram Dol
 };
 
-enum goblin_shapes
-{
+enum goblin_shapes {
 	SHAPE_GOBLIN_KING = 354,				// Pomdirgun
 	SHAPE_GOBLIN_478 = 478,					// Correct offsets, immune to lightning
 	SHAPE_GOBLIN_691 = 691,					// Correct offsets, vuln to magic, can't yell
@@ -129,8 +161,7 @@ enum goblin_shapes
 };
 
 // Weapons - Special
-enum special_weapon_shapes
-{
+enum special_weapon_shapes {
 	SHAPE_MAGEBANE_SWORD = 231,				// Magic damage, takes away opponent's magic
 	SHAPE_BRASS_HAMMER = 508,				// Used in Furnace Test
 	SHAPE_WOODEN_SWORD = 520,
@@ -157,8 +188,7 @@ enum special_weapon_shapes
 	SHAPE_ERINONS_AXE = 990
 };
 
-enum plain_weapon_shapes
-{
+enum plain_weapon_shapes {
 	SHAPE_STAFF = 241,
 	SHAPE_BLOWGUN = 563,
 	SHAPE_PITCHFORK = 589,					// Unused
@@ -193,8 +223,7 @@ enum plain_weapon_shapes
 	SHAPE_TONGS = 994
 };
 
-enum ammo_shapes
-{
+enum ammo_shapes {
 	SHAPE_MAGIC_BOLT = 417,
 	SHAPE_BURST_ARROW = 554,
 	SHAPE_MAGIC_ARROW = 556,
@@ -205,8 +234,7 @@ enum ammo_shapes
 	SHAPE_BOLT = 723
 };
 
-enum armor_shapes
-{
+enum armor_shapes {
 	SHAPE_CLOAK = 227,
 	SHAPE_MAGIC_HELM = 383,					// Includes Helm of Courage
 	SHAPE_RED_CLOAK = 403,					// Only 1 frame
@@ -247,8 +275,7 @@ enum armor_shapes
 	SHAPE_HELM_OF_LIGHT = 1013
 };
 
-enum money_shapes
-{
+enum money_shapes {
 	SHAPE_GOLD_COIN = 644,
 	SHAPE_GOLD_NUGGET = 645,
 	SHAPE_GOLD_BAR = 646,
@@ -259,8 +286,7 @@ enum money_shapes
 	SHAPE_GUILDER = 952
 };
 
-enum movable_item_shapes
-{
+enum movable_item_shapes {
 	SHAPE_MAP = 178,
 	SHAPE_LARGE_SKULL = 244,				// Bear and mysterious cat skulls
 	SHAPE_LARGE_SKELETON = 245,				// Bear and giant skeletons
@@ -357,8 +383,7 @@ enum movable_item_shapes
 	SHAPE_MAGIC_COMPASS = 988
 };
 
-enum dead_body_shapes
-{
+enum dead_body_shapes {
 	SHAPE_BODY_400 = 400,					// 30 frames
 	SHAPE_BODY_402 = 402,					// 31 frames with SS
 	SHAPE_BODY_414 = 414,					// Dead 3 companions
@@ -370,8 +395,7 @@ enum dead_body_shapes
 };
 
 // Most containers here
-enum container_shapes
-{
+enum container_shapes {
 	SHAPE_SHIPS_HOLD = 405,
 	SHAPE_LOCKED_CHEST = 522,
 	SHAPE_LOCKEDCHEST = 522,				// Legacy
@@ -385,8 +409,7 @@ enum container_shapes
 
 // Items that are too big to move by the player, or not intended to be moved.
 // H for Horizontal, V for Vertical
-enum too_big_to_move
-{
+enum too_big_to_move {
 	SHAPE_CASK_V = 258,
 	SHAPE_LOOM = 261,
 	SHAPE_MIRROR_V = 268,					// Tall mirror
@@ -398,6 +421,7 @@ enum too_big_to_move
 	SHAPE_TAPESTRY_V = 293,					// Includes paintings
 	SHAPE_HOLLOW_TREE = 297,
 	SHAPE_BARRIER = 301,					// Used at Shamino's Keep
+	SHAPE_METAL_WALL_EW = 303,
 	SHAPE_TROPHY_V = 311,
 	SHAPE_BASIN_H = 322,					// Rarely used
 	SHAPE_FOUNTAIN = 326,
@@ -474,17 +498,18 @@ enum too_big_to_move
 	SHAPE_TAPESTRY_H = 849,
 	SHAPE_FENCING_DUMMY = 860,
 	SHAPE_MOONGATE = 864,
+	SHAPE_METAL_WALL_NS = 876,
 	SHAPE_SHATTERED_STATUE = 881,
 	SHAPE_MONOLITH = 894,
 	SHAPE_FIRE_FIELD = 895,
 	SHAPE_SERPENT_SLOT = 927,
 	SHAPE_TELESCOPE = 934,
+	SHAPE_OPEN_METAL_WALL_NS = 935,
 	SHAPE_OPEN_SLIDING_DOOR_V = 936,
 	SHAPE_BRASS_WELL = 958
 };
 
-enum npc_shapes
-{
+enum npc_shapes {
 	SHAPE_MONK_RED_SASH = 179,
 	SHAPE_GWANI_1 = 214,
 	SHAPE_MAGE_IN_RED_GRAY_HAIR = 226,		// Melino

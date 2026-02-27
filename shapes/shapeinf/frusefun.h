@@ -27,9 +27,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "baseinf.h"
 #include "exult_constants.h"
-#include <string>
 
 #include <iosfwd>
+#include <string>
 
 class Shape_info;
 
@@ -38,90 +38,103 @@ class Shape_info;
  *  This is meant to be stored in a totally ordered vector.
  */
 class Frame_usecode_info : public Base_info {
-	short   frame;      // Frame for which this applies or -1 for any.
-	short   quality;    // First quality for which this applies or -1 for any.
-	int     usecode;    // Usecode function of the frame/quality at hand,
+	short frame;      // Frame for which this applies or -1 for any.
+	short quality;    // First quality for which this applies or -1 for any.
+	int   usecode;    // Usecode function of the frame/quality at hand,
 	// or -1 for default shape usecode.
-	std::string usecode_name;       // Name of usecode fun explicitly assigned.
+	std::string usecode_name;    // Name of usecode fun explicitly assigned.
 public:
 	friend class Shape_info;
 	Frame_usecode_info() = default;
-	Frame_usecode_info(short f, short q, int ui, const char *nm, bool p = false,
-	                   bool m = false, bool s = false, bool inv = false) {
+
+	Frame_usecode_info(short f, short q, int ui, const char* nm, bool p = false, bool m = false, bool s = false, bool inv = false) {
 		set(f, q, ui, nm, p, m, s, inv);
 	}
-	Frame_usecode_info(const Frame_usecode_info &other)
-		: Base_info(other), frame(other.frame), quality(other.quality), usecode(other.usecode),
-		  usecode_name(other.usecode_name) {
+
+	Frame_usecode_info(const Frame_usecode_info& other)
+			: Base_info(other), frame(other.frame), quality(other.quality), usecode(other.usecode),
+			  usecode_name(other.usecode_name) {
 		info_flags = other.info_flags;
 	}
+
 	// Read in from file.
-	bool read(std::istream &in, int version, Exult_Game game);
+	bool read(std::istream& in, int version, Exult_Game game);
 	// Write out.
-	void write(std::ostream &out, int shapenum, Exult_Game game);
-	void set(short f, short q, int ui, const char *nm, bool p = false,
-	         bool m = false, bool s = false, bool inv = false) {
-		frame = f;
-		quality = q;
-		usecode = ui;
+	void write(std::ostream& out, int shapenum, Exult_Game game);
+
+	void set(short f, short q, int ui, const char* nm, bool p = false, bool m = false, bool s = false, bool inv = false) {
+		frame        = f;
+		quality      = q;
+		usecode      = ui;
 		usecode_name = nm ? nm : "";
 		set_patch(p);
 		set_modified(m);
 		set_static(s);
 		set_invalid(inv);
 	}
+
 	void invalidate() {
 		usecode = -1;
 		usecode_name.clear();
 		set_invalid(true);
 	}
+
 	int get_frame() const {
 		return frame;
 	}
+
 	int get_quality() const {
 		return quality;
 	}
+
 	int get_usecode() const {
 		return usecode;
 	}
+
 	std::string get_usecode_name() const {
 		return usecode_name;
 	}
-	void set_usecode(int ui, const char *nm) {
-		if (usecode != ui ||
-		        (!nm && usecode_name.length()) || (nm && usecode_name != nm)) {
+
+	void set_usecode(int ui, const char* nm) {
+		if (usecode != ui || (!nm && usecode_name.length()) || (nm && usecode_name != nm)) {
 			set_modified(true);
 			usecode = ui;
-			if (nm)
+			if (nm) {
 				usecode_name = nm;
-			else
+			} else {
 				usecode_name.clear();
+			}
 		}
 	}
-	bool operator<(const Frame_usecode_info &other) const {
-		auto qual1 = static_cast<unsigned short>(quality);
-		auto qual2 = static_cast<unsigned short>(other.quality);
+
+	bool operator<(const Frame_usecode_info& other) const {
+		auto qual1  = static_cast<unsigned short>(quality);
+		auto qual2  = static_cast<unsigned short>(other.quality);
 		auto frame1 = static_cast<unsigned short>(frame);
 		auto frame2 = static_cast<unsigned short>(other.frame);
 		return (frame1 == frame2 && qual1 < qual2) || (frame1 < frame2);
 	}
-	bool operator==(const Frame_usecode_info &other) const {
+
+	bool operator==(const Frame_usecode_info& other) const {
 		return this == &other || (!(*this < other) && !(other < *this));
 	}
-	bool operator!=(const Frame_usecode_info &other) const {
+
+	bool operator!=(const Frame_usecode_info& other) const {
 		return !(*this == other);
 	}
-	Frame_usecode_info &operator=(const Frame_usecode_info &other) {
+
+	Frame_usecode_info& operator=(const Frame_usecode_info& other) {
 		if (this != &other) {
-			frame = other.frame;
-			quality = other.quality;
-			usecode = other.usecode;
+			frame        = other.frame;
+			quality      = other.quality;
+			usecode      = other.usecode;
 			usecode_name = other.usecode_name;
-			info_flags = other.info_flags;
+			info_flags   = other.info_flags;
 		}
 		return *this;
 	}
-	void set(const Frame_usecode_info &other) {
+
+	void set(const Frame_usecode_info& other) {
 		// Assumes *this == other.
 		// No need to guard against self-assignment.
 		// Do NOT copy modified or static flags.
@@ -129,7 +142,11 @@ public:
 		set_invalid(other.is_invalid());
 		set_usecode(other.usecode, other.usecode_name.c_str());
 	}
-	enum { is_binary = 0, entry_size = 0 };
+
+	enum {
+		is_binary  = 0,
+		entry_size = 0
+	};
 };
 
 #endif

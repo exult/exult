@@ -22,25 +22,28 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
-#include "utils.h"
-#include "exult_constants.h"
 #include "expinf.h"
+
+#include "exult_constants.h"
 #include "ignore_unused_variable_warning.h"
+#include "utils.h"
+
 using std::istream;
 
 bool Explosion_info::read(
-    std::istream &in,   // Input stream.
-    int version,        // Data file version.
-    Exult_Game game     // Loading BG file.
+		std::istream& in,         // Input stream.
+		int           version,    // Data file version.
+		Exult_Game    game        // Loading BG file.
 ) {
 	ignore_unused_variable_warning(version, game);
 	sprite = ReadInt(in);
-	if (sprite == -0xff) {  // means delete entry.
+	if (sprite == -0xff) {    // means delete entry.
 		set_invalid(true);
 		return true;
 	}
 	sfxnum = ReadInt(in, -1);
-	if (sfxnum == 255)
+	if (sfxnum == 255) {
 		sfxnum = -1;
+	}
 	return true;
 }

@@ -20,40 +20,48 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #ifndef COREMIDIDRIVER_H_INCLUDED
 #define COREMIDIDRIVER_H_INCLUDED
 
-#if defined(MACOSX) || defined(__IPHONEOS__)
-#define USE_CORE_MIDI
+#if !defined(USE_CORE_MIDI) && (defined(MACOSX) || defined(SDL_PLATFORM_IOS))
+#	define USE_CORE_MIDI
+#endif
 
-#include "LowLevelMidiDriver.h"
+#ifdef USE_CORE_MIDI
+#	include "LowLevelMidiDriver.h"
 
-#include <CoreMIDI/CoreMIDI.h>
+#	include <CoreMIDI/CoreMIDI.h>
 
-class CoreMidiDriver : public LowLevelMidiDriver
-{
+class CoreMidiDriver : public LowLevelMidiDriver {
+	MIDIClientRef   mClient;
+	MIDIPortRef     mOutPort;
+	MIDIEndpointRef mDest;
 
-	MIDIClientRef	mClient;
-	MIDIPortRef		mOutPort;
-	MIDIEndpointRef	mDest;
+	static const MidiDriverDesc desc;
 
-	static const MidiDriverDesc	desc;
-	static MidiDriver *createInstance() {
-		return new CoreMidiDriver();
+	static std::shared_ptr<MidiDriver> createInstance() {
+		return std::make_shared<CoreMidiDriver>();
 	}
 
 public:
-	static const MidiDriverDesc* getDesc() { return &desc; }
+	static const MidiDriverDesc* getDesc() {
+		return &desc;
+	}
+
+	std::vector<ConfigSetting_widget::Definition> GetSettings() override;
+
+	bool isRealMT32Supported() const override {
+		return true;
+	}
 
 	CoreMidiDriver();
-	~CoreMidiDriver();
+	~CoreMidiDriver() override;
 
 protected:
-	int			open() override;
-	void		close() override;
-	void		send(uint32 message) override;
-	void		send_sysex(uint8 status, const uint8 *msg, uint16 length) override;
-	void		increaseThreadPriority() override;
-	void		yield() override;
+	int  open() override;
+	void close() override;
+	void send(uint32 message) override;
+	void send_sysex(uint8 status, const uint8* msg, uint16 length) override;
+	void increaseThreadPriority() override;
 };
 
-#endif //MACOSX
+#endif    // MACOSX
 
-#endif //COREMIDIDRIVER_H_INCLUDED
+#endif    // COREMIDIDRIVER_H_INCLUDED

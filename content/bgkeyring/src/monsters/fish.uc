@@ -24,21 +24,20 @@
 //out of the water (using unimplemented animations from the original)
 
 const int SOUND_FISH = 40;	//splashy sound
-void Fish shape#(0x1FD) ()
-{
-	if (event == PROXIMITY)
-	{
+void Fish shape#(0x1FD) () {
+	if (event == PROXIMITY) {
 		var frames;
-		//use unrotated (north-facing) animation set
-		if (UI_get_item_frame(item) < 16)
+		if (UI_get_item_frame(item) < 16) {
+			//use unrotated (north-facing) animation set
 			frames = [14, 13, 5, 15, 0];
-		//use rotated (south-facing) animation set (slightly different order too)
-		else
+		} else {
+			//use rotated (south-facing) animation set (slightly different order too)
 			frames = [30, 21, 29, 31, 16];
+		}
 
-		script item
-		{
-			call freeze; //keep the fish from swimming during sequence
+		script item {
+			//keep the fish from swimming during sequence
+			call freeze;
 			//(according to their schedule)
 
 			frame frames[1];
@@ -50,7 +49,8 @@ void Fish shape#(0x1FD) ()
 			wait 1;
 			frame frames[5];
 
-			call unfreeze; //let it swim around again
+			//let it swim around again
+			call unfreeze;
 		}
 	}
 }

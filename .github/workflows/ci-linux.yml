@@ -4,7 +4,7 @@ on:
   push:
     paths:
       - "**"
-      - "!android"
+      - "!android/**"
       - "!docs/**"
       - "docs/Makefile.am"
       - "!ios/**"
@@ -30,7 +30,7 @@ on:
   pull_request:
     paths:
       - "**"
-      - "!android"
+      - "!android/**"
       - "!docs/**"
       - "docs/Makefile.am"
       - "!ios/**"
@@ -57,13 +57,15 @@ on:
 jobs:
   notify:
     name: Exult-CI (IRC & Discord notification)
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-latest
+    continue-on-error: true
     needs:
       - ci-linux
     if: ${{ always() && (github.repository_owner == 'exult' && github.event_name != 'pull_request') }}
     steps:
       - name: IRC success notification (ircs://irc.libera.chat:6697/#exult)
         uses: Gottox/irc-message-action@v2
+        continue-on-error: true
         if: needs.ci-linux.result == 'success'
         with:
           server: irc.libera.chat
@@ -74,6 +76,7 @@ jobs:
           message: "\x0313exult\x03/\x0306${{ github.ref }}\x03 \x0314${{ github.sha }}\x03 https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }} The Linux build \x033succeeded\x03."
       - name: IRC failure notification (ircs://irc.libera.chat:6697/#exult)
         uses: Gottox/irc-message-action@v2
+        continue-on-error: true
         if: needs.ci-linux.result != 'success'
         with:
           server: irc.libera.chat
@@ -84,22 +87,24 @@ jobs:
           message: "\x0313exult\x03/\x0306${{ github.ref }}\x03 \x0314${{ github.sha }}\x03 https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }} The Linux build \x034failed\x03."
       - name: Discord success notification
         uses: rjstone/discord-webhook-notify@v1
+        continue-on-error: true
         if: needs.ci-linux.result == 'success'
         with:
           severity: info
-          username: github-actions
-          webhookURL: ${{ secrets.DISCORD_WEBHOOK }}
-          text: "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
-          details: "The Linux build succeeded."
+          webhookUrl: ${{ secrets.DISCORD_WEBHOOK }}
+          username: Exult github-actions
+          avatarUrl: https://avatars.githubusercontent.com/u/15114538?s=200&v=4
+          text: '**[The Linux build succeeded:](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})**'
       - name: Discord failure notification
         uses: rjstone/discord-webhook-notify@v1
+        continue-on-error: true
         if: needs.ci-linux.result != 'success'
         with:
           severity: error
-          username: github-actions
-          webhookURL: ${{ secrets.DISCORD_WEBHOOK }}
-          text: "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
-          details: "The Linux build failed."
+          webhookUrl: ${{ secrets.DISCORD_WEBHOOK }}
+          username: Exult github-actions
+          avatarUrl: https://avatars.githubusercontent.com/u/15114538?s=200&v=4
+          text: '**[The Linux build failed:](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})**'
   ci-linux:
     runs-on: ubuntu-latest
     strategy:
@@ -126,22 +131,49 @@ jobs:
             sudo apt-fast update
           fi
           sudo apt-fast install -y \
-            zlib1g-dev libogg-dev libvorbis-dev libasound2-dev libfluidsynth-dev libsdl2-dev libpng-dev libfreetype6-dev libgtk2.0-dev libgtk-3-dev \
-            libgdk-pixbuf2.0-dev libxml2-dev bison flex timidity libgimp2.0-dev
-      - name: Checkout code
-        uses: actions/checkout@master
-      - name: Run autogen
+            zlib1g-dev libogg-dev libvorbis-dev libasound2-dev libfluidsynth-dev libsdl2-dev libsdl2-image-dev libpng-dev libfreetype6-dev libgtk2.0-dev libgtk-3-dev \
+            libgdk-pixbuf2.0-dev libxml2-dev bison flex timidity libgimp2.0-dev libicu-dev autoconf-archive \
+            cmake libusb-1.0-0 libusb-1.0-0-dev libunwind-dev ffmpeg libavcodec-dev libavdevice-dev libavfilter-dev libavformat-dev libavutil-dev libpostproc-dev libswresample-dev libswscale-dev
+      - name: Checkout SDL 3
+        uses: actions/checkout@v4
+        with:
+          repository: libsdl-org/SDL
+          path: SDL3
+          ref: release-3.2.14
+      - name: Install SDL 3
         run: |
-          chmod a+x ./autogen.sh
-          ./autogen.sh
+          cd SDL3
+          mkdir -p build
+          cmake -B build -S .
+          cmake --build build
+          sudo cmake --install build
+      - name: Checkout SDL_image 3
+        uses: actions/checkout@v4
+        with:
+          repository: libsdl-org/SDL_image
+          path: SDL3_image
+          ref: release-3.2.4
+      - name: Install SDL_image 3
+        run: |
+          cd SDL3_image
+          mkdir -p build
+          cmake -B build -S .
+          cmake --build build
+          sudo cmake --install build
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Run autoreconf
+        run: |
+          autoreconf -v -i
       - name: Configure
         env:
           OVERRIDE_CC: ${{ matrix.cc }}
           OVERRIDE_CXX: ${{ matrix.cxx }}
         run: |
           ./configure --with-debug=extreme --enable-exult-studio --enable-exult-studio-support --enable-compiler --enable-gimp-plugin \
-            --enable-zip-support --enable-shared --enable-midi-sfx --enable-gnome-shp-thumbnailer --enable-data --enable-mods \
-            --with-usecode-debugger=yes --enable-usecode-container --enable-nonreadied-objects --disable-oggtest --disable-vorbistest \
+            --enable-zip-support --enable-shared --enable-midi-sfx --enable-shp-thumbnailer --enable-data --enable-mods \
+            --with-usecode-debugger=yes --enable-usecode-container --enable-nonreadied-objects \
+            --enable-aseprite-plugin \
             CXX=${OVERRIDE_CXX} CC=${OVERRIDE_CC}
       - name: Build
         run: make -j 2

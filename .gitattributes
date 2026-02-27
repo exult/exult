@@ -66,10 +66,14 @@
 *.h			text diff=cpp
 *.hh 		text diff=cpp
 *.hpp		text diff=cpp
+*.m			text diff=objc
+*.mm		text diff=objc
 *.ll		text diff=cpp
 *.rc		text
 *.uc		text
 *.yy		text diff=cpp
+
+*.java		test diff=java
 
 Changelog	text
 Makefile*	text
@@ -81,3 +85,11 @@ INSTALL		text
 NEWS		text
 README*		text
 
+*.pbxproj	text
+*.xcscheme	text diff=xml
+*.vcxproj.filters	text diff=xml
+
+Makefile.am eol=lf
+Makefile.in eol=lf
+configure.ac eol=lf
+flx.in eol=lf

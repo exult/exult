@@ -24,7 +24,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
 #ifndef INCL_CITERATE
-#define INCL_CITERATE   1
+#define INCL_CITERATE 1
 
 #include "rect.h"
 
@@ -34,17 +34,15 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *  touches.
  */
 class Chunk_intersect_iterator {
-	TileRect tiles;        // Original rect, shifted -cx, -cy.
-	int start_tx;           // Saves start of tx in tiles.
+	TileRect tiles;       // Original rect, shifted -cx, -cy.
+	int      start_tx;    // Saves start of tx in tiles.
 	// Chunk #'s covered:
 	int startcx, stopcx, stopcy;
-	int curcx, curcy;       // Next chunk to return.
+	int curcx, curcy;    // Next chunk to return.
 public:
-	Chunk_intersect_iterator(TileRect const &t) : tiles(t),
-		startcx(t.x / c_tiles_per_chunk),
-		stopcx(INCR_CHUNK((t.x + t.w - 1) / c_tiles_per_chunk)),
-		stopcy(INCR_CHUNK((t.y + t.h - 1) / c_tiles_per_chunk)),
-		curcy(t.y / c_tiles_per_chunk) {
+	Chunk_intersect_iterator(const TileRect& t)
+			: tiles(t), startcx(t.x / c_tiles_per_chunk), stopcx(INCR_CHUNK((t.x + t.w - 1) / c_tiles_per_chunk)),
+			  stopcy(INCR_CHUNK((t.y + t.h - 1) / c_tiles_per_chunk)), curcy(t.y / c_tiles_per_chunk) {
 		curcx = startcx;
 		tiles.shift(-curcx * c_tiles_per_chunk, -curcy * c_tiles_per_chunk);
 		start_tx = tiles.x;
@@ -54,26 +52,28 @@ public:
 			curcy = stopcy;
 		}
 	}
+
 	// Intersect is ranged within chunk.
-	int get_next(TileRect &intersect, int &cx, int &cy) {
-		if (curcx == stopcx) {  // End of row?
-			if (curcy == stopcy)
+	int get_next(TileRect& intersect, int& cx, int& cy) {
+		if (curcx == stopcx) {    // End of row?
+			if (curcy == stopcy) {
 				return 0;
-			else {
+			} else {
 				tiles.y -= c_tiles_per_chunk;
 				tiles.x = start_tx;
-				curcy = INCR_CHUNK(curcy);
-				if (curcy == stopcy)
+				curcy   = INCR_CHUNK(curcy);
+				if (curcy == stopcy) {
 					return 0;
+				}
 				curcx = startcx;
 			}
 		}
 		const TileRect cr(0, 0, c_tiles_per_chunk, c_tiles_per_chunk);
 		// Intersect given rect. with chunk.
 		intersect = cr.intersect(tiles);
-		cx = curcx;
-		cy = curcy;
-		curcx = INCR_CHUNK(curcx);
+		cx        = curcx;
+		cy        = curcy;
+		curcx     = INCR_CHUNK(curcx);
 		tiles.x -= c_tiles_per_chunk;
 		return 1;
 	}

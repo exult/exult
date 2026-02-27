@@ -210,7 +210,7 @@ void Dominik object#(0x565) ()
 		case "Name" (remove):
 			say("Dominik");
 		case "Job":
-			faqcnt = faqcnt + 1;
+			faqcnt += 1;
 			if (faqcnt == 1)
 				{
 				say("Please see the FAQ.");
@@ -428,8 +428,8 @@ void Amy object#(0x568) ()
 					say("Some people refer to him as Arthuris Dragon or wjp. " +
 					    "He's working on some strange magical device.");
 				case "Colourless" (remove):
-					say("He's also a member of that mystical group called The Dragons. " +
-					    "Among other things he works with Willem on this magical device.");
+					say("She's also a member of that mystical group called The Dragons. " +
+					    "Among other things she works with Willem on this magical device.");
 				case "Fingolfin" (remove):
 					say("If he's not working on other things he helps other members of this group.");
 				case "Darke" (remove):
@@ -437,7 +437,7 @@ void Amy object#(0x568) ()
 					    "Unfortunately he is also getting slowly as mad as Dr.Code.");
 				case "Dominus" (remove):
 					say("Don't bother talking to him. " +
-					    "He's always refering to some book called FAQ which no one ever read.");
+					    "He's always referring to some book called FAQ which no one ever read.");
 				case "EsBee-Ex" (remove):
 					say("EsBee-Ex is a gargoyle. He believes his twin brother is evil.");
 				case "Nobody":
@@ -482,9 +482,9 @@ void Colourless object#(0x569) ()
 		case "Willem?" (remove):
 			say("He's somewhere around here.");
 		case "Do you know Pyro-X?" (remove):
-			say("Yes, I know him. He's responsible for many explosions in Britania. " +
+			say("Yes, I know him. He's responsible for many explosions in Britannia. " +
 			    "To hide this he calls himself EsBee-Ex and says all those crimes were " +
-			    "comitted by his so called Evil Twin,");
+			    "committed by his so called Evil Twin,");
 			gflags[ASKED_KNOW_PYRO] = true;
 		}
 	item.hide();
@@ -559,30 +559,30 @@ void Darke object#(0x56A) ()
 			    " The silly thing thinks it's 'Colourless', but everyone knows it's just transparent.");
 			add("Colourless?");
 		case "Colourless?" (remove):
-			say("One of those dragon things. Rather puny in size in comparison to his racial cousins," +
-			    " but generally non-threatening, although he does tend to threaten and bluster a lot." +
-			    " Especially when I paint him in fluro colours.");
+			say("One of those dragon things. Rather puny in size in comparison to her racial cousins," +
+			    " but generally non-threatening, although she does tend to threaten and bluster a lot." +
+			    " Especially when I paint her in fluro colours.");
 			add("Threaten?");
 		case "Threaten?" (remove):
 			say("More of a bluster and intimidation really. Just general gripes like," +
 			    " 'don't do that' and _continual_ complaints about my colour pallete choices" +
-			    " when I'm decorating him. He's such an incredibly picky dragon.");
+			    " when I'm decorating her. She's such an incredibly picky dragon.");
 			add("Decorating?");
 		case "Decorating?" (remove):
 			say("Nothing fancy, just adding a few dashes of colour to an otherwise drab" +
 			    " and dreary 'transparent'coloured dragon");
 			add("Drab?");
 		case "Drab?" (remove):
-			say("Well he's just a little dull and monotonous, no real differences in his" +
+			say("Well she's just a little dull and monotonous, no real differences in his" +
 			    " colour over his entire body." +
-			    " I think giving him say, yellow wings, green paws, and a red muzzle would look rather cute.");
+			    " I think giving her say, yellow wings, green paws, and a red muzzle would look rather cute.");
 			add("Cute?");
 		case "Cute?" (remove):
 			say("Well... really it's more close to 'handsome' then 'cute'." +
-			    " But since he lacks a nice coat of fur, he can't really be handsome," +
+			    " But since she lacks a nice coat of fur, she can't really be handsome," +
 			    " so cute in a pet-iguana-that's-rather-larger-" +
 				" than-an-iguana-and-doesn't-eat-insects" +
-			    " kind of way, he's rather stuck at.");
+			    " kind of way, she's rather stuck at.");
 			add("Fur?");
 		case "Fur?" (remove):
 			say("Unfortunately I must heed the call of sleep now. Goodnight.");

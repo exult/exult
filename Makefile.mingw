@@ -28,10 +28,44 @@ endef
 # Base of the exult source
 SRC:=.
 
-ifneq (,$(findstring /mingw64,$(MSYSTEM_PREFIX)))
+# Choose Architecture and Compiler based on $(MSYSTEM), use 64 bits GCC by default.
+ifeq ($(MSYSTEM),MINGW64)
+	ARCHTYPE:=-march=x86-64
 	ARCHFLAGS:=-m64
-else
+	CC:=gcc
+	CXX:=g++
+else ifeq ($(MSYSTEM),MINGW32)
+	ARCHTYPE:=-march=i686
 	ARCHFLAGS:=-m32
+	CC:=gcc
+	CXX:=g++
+else ifeq ($(MSYSTEM),CLANG64)
+	ARCHTYPE:=-march=x86-64
+	ARCHFLAGS:=-m64
+	CC:=clang
+	CXX:=clang++
+else ifeq ($(MSYSTEM),CLANG32)
+	ARCHTYPE:=-march=i686
+	ARCHFLAGS:=-m32
+	CC:=clang
+	CXX:=clang++
+else ifeq ($(MSYSTEM),UCRT64)
+	ARCHTYPE:=-march=x86-64
+	ARCHFLAGS:=-m64
+	CC:=gcc
+	CXX:=g++
+else ifeq ($(MSYSTEM),CLANGARM64)
+# march=native should not be used when building official releases
+# so if we start making official ARM build this needs to be changed
+	ARCHTYPE:=-march=native
+	ARCHFLAGS:=-m64
+	CC:=clang
+	CXX:=clang++
+else
+	ARCHTYPE:=-march=x86-64
+	ARCHFLAGS:=-m64
+	CC:=gcc
+	CXX:=g++
 endif
 
 ifdef USE_CONSOLE
@@ -42,20 +76,20 @@ else
 	SYSFLAGS:=
 endif
 
-SDL_CFLAGS:=$(shell pkg-config --cflags-only-I SDL2)
+SDL_CFLAGS:=$(shell pkg-config --cflags-only-I sdl3)
 ### We want to do our own stdout/stderr redirection, thank you.
-#SDL_LIBS:=$(shell pkg-config --libs SDL2)
-SDL_LIBS:=$(shell pkg-config --libs SDL2)
+#SDL_LIBS:=$(shell pkg-config --libs sdl3)
+SDL_LIBS:=$(shell pkg-config --libs sdl3)
 # -lwinmm
 
-SDL_IMAGE_LIBS:=$(shell pkg-config --libs SDL2_image) $(shell pkg-config --libs SDL2_image)
+SDL_IMAGE_LIBS:=$(shell pkg-config --libs sdl3-image)
 #-lpng -ltiff -ljpeg -lwebp -lz
 
 ### Uncomment these 2 lines, and comment out the 2 above if you want to build
 ### Exult as a console Win32 application. This is unsupported and is somewhat
 ### of a hack.
-#SDL_LIBS:=$(shell pkg-config --libs-only-L SDL2) $(shell pkg-config --libs-only-l SDL2) -mconsole
-#SDL_CFLAGS:=$(shell pkg-config --cflags SDL2)
+#SDL_LIBS:=$(shell pkg-config --libs-only-L sdl3) $(shell pkg-config --libs-only-l sdl3) -mconsole
+#SDL_CFLAGS:=$(shell pkg-config --cflags sdl3)
 
 ### Zip File support. Comment out if ZLib isn't installed
 ### Modify paths, if required
@@ -71,6 +105,11 @@ endif
 FLUIDSYNTH_LIBS:=$(shell pkg-config --libs fluidsynth)
 FLUIDSYNTH_CFLAGS:=-DUSE_FLUIDSYNTH_MIDI
 
+### TIMIDITY libs, for Exult.
+# If this doesn't work, insert output of `pkg-config --libs libtimidity` manually
+TIMIDITY_LIBS:=$(shell pkg-config --libs libtimidity)
+TIMIDITY_CFLAGS:=-DUSE_TIMIDITY_MIDI
+
 ### GTK+ libs and includes, for Exult Studio.
 # If this doesn't work, insert output of `pkg-config --cflags gtk+-win32-2.0` manually
 GTK_INCLUDES:=$(shell pkg-config --cflags gtk+-3.0)
@@ -83,15 +122,30 @@ FREETYPE2_INCLUDES:=$(shell pkg-config --cflags freetype2)
 # If this doesn't work, insert output of 'pkg-config --libs freetype2' manually
 FREETYPE2_LIBS:=$(shell pkg-config --libs freetype2)
 
+### ICU libs and includes, for Exult Studio.
+# If this doesn't work, insert output of 'pkg-config --cflags icu-uc' manually
+ICU_INCLUDES:=$(shell pkg-config --cflags icu-uc)
+# If this doesn't work, insert output of 'pkg-config --libs icu-uc' manually
+ICU_LIBS:=$(shell pkg-config --libs icu-uc)
+
 ### Combined Exult Studio includes and libs.
-ES_INCLUDES:=$(GTK_INCLUDES) $(FREETYPE2_INCLUDES)
-ES_LIBS:=$(GTK_LIBS) $(FREETYPE2_LIBS) $(ZIP_LIBS) -lpng -luuid -lole32 -lwinmm -lws2_32 $(SUBSYSTEM)
+ES_INCLUDES:=$(GTK_INCLUDES) $(FREETYPE2_INCLUDES) $(ICU_INCLUDES)
+ES_LIBS:=$(GTK_LIBS) $(FREETYPE2_LIBS) $(ICU_LIBS) $(ZIP_LIBS) -lpng -luuid -lole32 -lwinmm -lws2_32 $(SUBSYSTEM)
 
 ### GIMP libs and includes, for the GIMP plugin.
-# If this doesn't work, insert output of 'gimptool --cflags' manually
-GIMP_INCLUDES:=$(shell pkg-config --cflags gimpui-2.0 gtk+-2.0)
-# If this doesn't work, insert output of 'gimptool --libs' manually
+GIMP3_INSTALLED:=$(shell pkg-config --silence-errors --cflags gimpui-3.0)
+GIMP2_INSTALLED:=$(shell pkg-config --silence-errors --cflags gimpui-2.0)
+ifneq ($(GIMP3_INSTALLED),$())
+PLUGIN_SRC:=u7shp
+GIMP_INCLUDES:=$(GIMP3_INSTALLED)
+GIMP_LIBS:=$(shell pkg-config --libs gimpui-3.0)
+else
+ifneq ($(GIMP2_INSTALLED),$())
+PLUGIN_SRC:=u7shp-old
+GIMP_INCLUDES:=$(GIMP2_INSTALLED)
 GIMP_LIBS:=$(shell pkg-config --libs gimpui-2.0)
+endif
+endif
 
 ### Ogg vorbis inclides
 OGG_INCLUDES:=$(shell pkg-config --cflags ogg vorbis vorbisfile)
@@ -119,19 +173,11 @@ ifdef DEBUG
 	DEF_DEBUG:=-DDEBUG
 endif
 
-ifdef USECODE_CONTAINER
-	SHOW_USECODE_CONTAINER:=-DSHOW_USECODE_CONTAINER
-endif
-
 ifdef USECODE_DEBUGGER
 	USE_USECODE_DEBUGGER:=-DUSECODE_DEBUGGER
 endif
 
-ifdef SHOW_NONREADIED_OBJECTS
-	USE_SHOW_NONREADIED_OBJECTS:=-DSHOW_NONREADIED_OBJECTS
-endif
-
-USING_SJLJ_EXCEPTIONS:=$(findstring --enable-sjlj-exceptions, $(shell gcc -v 2>&1))
+USING_SJLJ_EXCEPTIONS:=$(findstring --enable-sjlj-exceptions, $(shell $(CC) -v 2>&1))
 ifeq ($(USING_SJLJ_EXCEPTIONS),$())
 	MTHREADS:=
 else
@@ -140,7 +186,7 @@ else
 	MTHREADS:=-mthreads
 endif
 
-EXTRA_OPTIONS:=$(DEBUG_LEVEL) $(DEF_DEBUG) $(SHOW_USECODE_CONTAINER) $(USE_USECODE_DEBUGGER) $(USE_SHOW_NONREADIED_OBJECTS)
+EXTRA_OPTIONS:=$(DEBUG_LEVEL) $(DEF_DEBUG) $(USE_USECODE_DEBUGGER)
 
 ifndef OPT_LEVEL
 	OPT_LEVEL:=-O2
@@ -150,11 +196,145 @@ ifdef DEBUG_SYMBOLS
 	OPT_LEVEL:=-Og
 endif
 
+ifeq (n,$(findstring n,$(firstword -$(MAKEFLAGS))))
+	# run with -n / --dry-run
+	# Have ALSA headers for clangd checks.
+	# Expected structure is:
+	# - '$(WITH_ALSA_HEADERS)/alsa' directory with headers
+	# You can nab the headers from https://github.com/alsa-project/alsa-lib
+	# and generate "asoundlib.h".
+	ifdef WITH_ALSA_HEADERS
+		ALSA_CFLAGS:=-DUSE_ALSA_MIDI=1 -isystem $(WITH_ALSA_HEADERS)
+	else
+		ALSA_CFLAGS:=
+	endif
+	# Have Android NDK headers for clangd checks.
+	# Nab the NDK from https://github.com/android/ndk and define the variable
+	# WITH_ANDROID_HEADERS to point to the following NDK directory:
+	#   toolchains/llvm/prebuilt/windows-x86_64/sysroot/usr/include
+	# Then inside this dir, create symlinks to:
+	# - $(MSYSTEM_PREFIX)/include/SDL3
+	# - $(MSYSTEM_PREFIX)/include/ogg
+	# - $(MSYSTEM_PREFIX)/include/vorbis
+	ifdef WITH_ANDROID_HEADERS
+		ANDROID_CFLAGS:=-target x86_64-linux-android28 \
+			-DANDROID -fdata-sections -ffunction-sections -funwind-tables \
+			-fstack-protector-strong -no-canonical-prefixes $(ARCHTYPE) \
+			-isystem $(MSYSTEM_PREFIX)/include/c++/v1 \
+			-isystem $(WITH_ANDROID_HEADERS) \
+			-isystem $(WITH_ANDROID_HEADERS)/x86_64-linux-android \
+			-I$(SRC)/android/lib/include -I$(SRC)/android/app/src/main/cpp
+		ANDROID_OBJS:=\
+			android/app/src/main/cpp/android_log_streambuf.o \
+			android/app/src/main/cpp/exult_android_main.o \
+			android/lib/src/TouchUI_Android.o
+	else
+		ANDROID_CFLAGS:=
+		ANDROID_OBJS:=
+	endif
+	# Have MacOS headers for clangd checks.
+	# Expected structure is:
+	# - '$(WITH_MACOS_HEADERS)/Frameworks' directory with per-framework headers
+	# - '$(WITH_MACOS_HEADERS)/usr/include' directory with OSX headers
+	# For this, nab a framework from https://github.com/phracker/MacOSX-SDKs
+	# and make symlinks with the appropriate structure.
+	ifdef WITH_MACOS_HEADERS
+		MACOS_CFLAGS:=-target x86_64-apple-macosx10.11 -fno-common \
+			-D_THREAD_SAFE -DMACOSX -DUSE_CORE_AUDIO_MIDI -DUSE_CORE_MIDI \
+			-isystem $(MSYSTEM_PREFIX)/include/c++/v1 \
+			-isystem $(WITH_MACOS_HEADERS)/Frameworks \
+			-isystem $(WITH_MACOS_HEADERS)/usr/include
+	else
+		MACOS_CFLAGS:=
+	endif
+	# Have iOS headers for clangd checks.
+	# Expected structure is:
+	# - '$(WITH_IOS_HEADERS)/Frameworks' directory with per-framework headers
+	# - '$(WITH_IOS_HEADERS)/usr/include' directory with OSX headers
+	# For this, nab a framework from https://github.com/xybp888/iOS-SDKs and
+	# make symlinks with the appropriate structure.
+	ifdef WITH_IOS_HEADERS
+		IOS_CFLAGS:=-target arm64-apple-ios12.0 -fmessage-length=0 \
+			-fdiagnostics-show-note-include-stack -fmacro-backtrace-limit=0 \
+			-fobjc-weak -fpascal-strings -fno-common -fvisibility-inlines-hidden \
+			-DSDL_PLATFORM_IOS=1 -DUSE_CORE_AUDIO_MIDI -DUSE_CORE_MIDI \
+			-DMAC_OS_X_VERSION_MIN_REQUIRED=101100 \
+			-D__AVAILABILITY_MACROS_USES_AVAILABILITY=0 \
+			-DOBJC_OLD_DISPATCH_PROTOTYPES=0 -D_THREAD_SAFE \
+			-isystem $(MSYSTEM_PREFIX)/include/c++/v1 \
+			-isystem $(WITH_IOS_HEADERS)/Frameworks \
+			-isystem $(WITH_IOS_HEADERS)/usr/include
+		IOS_OBJS:=\
+			ios/ios_utils.o \
+			ios/GamePadView.o
+	else
+		IOS_CFLAGS:=
+		IOS_OBJS:=
+	endif
+	# Force enable /dev/sequencer midi driver for clangd checks.
+	ifdef WANT_UNIXSEQ
+		UNIXSEQ_CFLAGS:=-DUSE_UNIX_SEQ_MIDI=1
+	else
+		UNIXSEQ_CFLAGS:=
+	endif
+else
+	# not run with -n / --dry-run
+	ALSA_CFLAGS:=
+	ANDROID_CFLAGS:=
+	ANDROID_OBJS:=
+	MACOS_CFLAGS:=
+	IOS_CFLAGS:=
+	IOS_OBJS:=
+	UNIXSEQ_CFLAGS:=
+endif
+
+ifeq ($(CC),clang)
 WARNINGS := \
 	-Wall \
 	-Wextra \
 	-Wpedantic \
-	-Wc++14-compat \
+	-Wc++17-compat \
+	-Wc++20-compat \
+	-Walloca \
+	-Wcast-align \
+	-Wcast-qual \
+	-Wctor-dtor-privacy \
+	-Wdeprecated-copy-dtor \
+	-Wdisabled-optimization \
+	-Wextra-semi \
+	-Wformat-nonliteral \
+	-Wformat-security \
+	-Wformat-y2k \
+	-Winvalid-pch \
+	-Wmismatched-tags \
+	-Wmissing-include-dirs \
+	-Wmultichar \
+	-Wno-deprecated-declarations \
+	-Wnon-virtual-dtor \
+	-Wnull-dereference \
+	-Wold-style-cast \
+	-Woverloaded-virtual \
+	-Wpacked \
+	-Wredundant-decls \
+	-Wregister \
+	-Wstack-protector \
+	-Wsuggest-override \
+	-Wsynth \
+	-Wundef \
+	-Wzero-as-null-pointer-constant \
+	-Warray-bounds \
+	-Wformat-overflow \
+	-Wformat-truncation \
+	-Wformat=2 \
+	-Wimplicit-fallthrough \
+	-Wshift-overflow \
+	-Wstrict-overflow=2 \
+	-Wunused-const-variable
+else
+WARNINGS := \
+	-Wall \
+	-Wextra \
+	-Wpedantic \
 	-Wc++17-compat \
 	-Wc++20-compat \
 	-Walloc-zero \
@@ -167,10 +347,8 @@ WARNINGS := \
 	-Wcomma-subscript \
 	-Wconditionally-supported \
 	-Wctor-dtor-privacy \
-	-Wdate-time \
 	-Wdeprecated-copy-dtor \
 	-Wdisabled-optimization \
-	-Wdouble-promotion \
 	-Wduplicated-branches \
 	-Wduplicated-cond \
 	-Wextra-semi \
@@ -217,17 +395,17 @@ WARNINGS := \
 	-Wstrict-overflow=2 \
 	-Wstringop-overflow=4 \
 	-Wunused-const-variable=1
+endif
 
-CXXFLAGS:=-MMD -std=c++14 -fdiagnostics-color=always $(ARCHFLAGS) $(strip $(OPT_LEVEL) $(WARNINGS) -mms-bitfields)
+CXXFLAGS:=-MMD -std=c++17 -fdiagnostics-color=always $(ARCHFLAGS) $(ARCHTYPE) $(strip $(OPT_LEVEL) $(WARNINGS) -mms-bitfields)
 
-LDFLAGS:=$(ARCHFLAGS)
-LIBS:=-lmingw32 $(SDL_LIBS) $(ZIP_LIBS) -lpng $(OGG_LIBS) $(FLUIDSYNTH_LIBS) $(MT32EMU_LIBS) -ldsound -luuid -lole32 -lwinmm -lws2_32 $(SUBSYSTEM) $(MTHREADS)
+LDFLAGS:=$(ARCHFLAGS) $(ARCHTYPE)
+LIBS:=-lmingw32 $(SDL_LIBS) $(ZIP_LIBS) -lpng $(OGG_LIBS) $(FLUIDSYNTH_LIBS) $(TIMIDITY_LIBS) $(MT32EMU_LIBS) -ldsound -luuid -lole32 -lwinmm -lws2_32 -lDbghelp $(SUBSYSTEM) $(MTHREADS)
 
 EXEC:=Exult.exe
 EXEEXT:=.exe
 LIBEXT:=.dll
 
-EXP_FILE:=exult_studio.exp
 SERVER_OBJS:=\
 	server/objserial.o \
 	server/servemsg.o \
@@ -242,6 +420,7 @@ ES_SERVER_OBJS:=\
 	server/servewin32.o
 
 MAPEDIT_OBJS:=\
+	mapedit/audiotest.o \
 	mapedit/bargeedit.o \
 	mapedit/chunklst.o \
 	mapedit/combo.o \
@@ -254,6 +433,7 @@ MAPEDIT_OBJS:=\
 	mapedit/maps.o \
 	mapedit/npcedit.o \
 	mapedit/npclst.o \
+	mapedit/npcpresets.o \
 	mapedit/objbrowse.o \
 	mapedit/objedit.o \
 	mapedit/paledit.o \
@@ -262,6 +442,7 @@ MAPEDIT_OBJS:=\
 	mapedit/shapefile.o \
 	mapedit/shapegroup.o \
 	mapedit/shapelst.o \
+	mapedit/shapepresets.o \
 	mapedit/studio.o \
 	mapedit/ucbrowse.o \
 	usecode/ucsymtbl.o
@@ -306,6 +487,7 @@ ES_SHAPES_OBJS:=\
 	shapes/shapeinf/frnameinf.o \
 	shapes/shapeinf/frflags.o \
 	shapes/shapeinf/frusefun.o \
+	shapes/shapeinf/gumpinf.o \
 	shapes/shapeinf/lightinf.o \
 	shapes/shapeinf/monstinf.o \
 	shapes/shapeinf/npcdollinf.o \
@@ -314,14 +496,18 @@ ES_SHAPES_OBJS:=\
 	shapes/shapeinf/warminf.o \
 	shapes/shapeinf/weaponinf.o
 
+WIN32_OBJS:=\
+	win32/crash.o
+
+OBJS += $(WIN32_OBJS)
+
+MODS = bgkeyring islefaq sifixes
+
 define copy_dlls_for_exe
 	for ff in $$($(MSYSTEM_PREFIX)/bin/ntldd -R $(1) | tr '\\' '/' | grep -io '[A-Za-z]:/.*$(MSYSTEM_PREFIX)/.\+\.dll' | sort -u); do cp $$ff $(2)/$$(basename $$ff); done
 endef
 
 include Makefile.common
-
-CXX:=g++
-CC:=gcc
 
 CPPFLAGS:=$(strip -DVERSION=\"$(VERSION)\" -DEXULT_DATADIR=\"data\" \
 	-DNOMINMAX=1 -D_USE_MATH_DEFINES -DHAVE_NETDB_H=0 $(SYSFLAGS) \
@@ -332,10 +518,13 @@ CPPFLAGS:=$(strip -DVERSION=\"$(VERSION)\" -DEXULT_DATADIR=\"data\" \
 	-I$(SRC) -I$(SRC)/audio -I$(SRC)/audio/midi_drivers -I$(SRC)/conf -I$(SRC)/data \
 	-I$(SRC)/files -I$(SRC)/files/zip -I$(SRC)/gamemgr -I$(SRC)/gumps -I$(SRC)/headers \
 	-I$(SRC)/imagewin -I$(SRC)/ios/include -I$(SRC)/objs -I$(SRC)/pathfinder -I$(SRC)/server \
-	-I$(SRC)/shapes -I$(SRC)/tools -I$(SRC)/usecode -I$(SRC)/usecode/compiler \
-	-I$(SRC)/usecode/ucxt/include -I$(SRC)/mapedit -I$(SRC)/shapes/shapeinf \
-	$(call make_system, $(call clean_includes, $(FLUIDSYNTH_CFLAGS) $(SDL_CFLAGS) $(ZIP_CFLAGS) $(MT32EMU_CFLAGS) $(ES_INCLUDES))) \
+	-I$(SRC)/shapes -I$(SRC)/tools -I$(SRC)/usecode -I$(SRC)/tools/compiler \
+	-I$(SRC)/tools/ucxt/include -I$(SRC)/mapedit -I$(SRC)/shapes/shapeinf \
+	$(call make_system, $(call clean_includes, $(FLUIDSYNTH_CFLAGS) $(TIMIDITY_CFLAGS) $(SDL_CFLAGS) $(ZIP_CFLAGS) $(MT32EMU_CFLAGS) $(ES_INCLUDES))) \
 	$(EXTRA_OPTIONS))
+ifneq ($(ANDROID_CFLAGS),)
+CPPFLAGS += $(ANDROID_CFLAGS)
+endif
 
 PLUGIN_CPPFLAGS:=$(strip -DVERSION=\"$(VERSION)\" -DEXULT_DATADIR=\"data\" \
 	-DNOMINMAX=1 -D_USE_MATH_DEFINES -DHAVE_NETDB_H=0 $(SYSFLAGS) \
@@ -346,24 +535,26 @@ PLUGIN_CPPFLAGS:=$(strip -DVERSION=\"$(VERSION)\" -DEXULT_DATADIR=\"data\" \
 	-I$(SRC) -I$(SRC)/audio -I$(SRC)/audio/midi_drivers -I$(SRC)/conf -I$(SRC)/data \
 	-I$(SRC)/files -I$(SRC)/files/zip -I$(SRC)/gamemgr -I$(SRC)/gumps -I$(SRC)/headers \
 	-I$(SRC)/imagewin -I$(SRC)/ios/include -I$(SRC)/objs -I$(SRC)/pathfinder -I$(SRC)/server \
-	-I$(SRC)/shapes -I$(SRC)/tools -I$(SRC)/usecode -I$(SRC)/usecode/compiler \
-	-I$(SRC)/usecode/ucxt/include -I$(SRC)/mapedit -I$(SRC)/shapes/shapeinf \
+	-I$(SRC)/shapes -I$(SRC)/tools -I$(SRC)/usecode -I$(SRC)/tools/compiler \
+	-I$(SRC)/tools/ucxt/include -I$(SRC)/mapedit -I$(SRC)/shapes/shapeinf \
 	$(call make_system, $(call clean_includes, $(GIMP_INCLUDES))) \
 	$(EXTRA_OPTIONS))
 
-CFLAGS:=-MMD -fdiagnostics-color=always $(ARCHFLAGS) $(strip $(OPT_LEVEL) -Wall -Wextra -pedantic -mms-bitfields) \
+CFLAGS:=-MMD -fdiagnostics-color=always $(ARCHFLAGS) $(ARCHTYPE) $(strip $(OPT_LEVEL) -Wall -Wextra -pedantic -mms-bitfields) \
 	$(call make_system, $(call clean_includes, $(GIMP_INCLUDES)))
 
-OBJECTS:=$(OBJS) $(TOOL_OBJS) $(ES_OBJS) mapedit/u7shp.o
+OBJECTS:=$(OBJS) $(TOOL_OBJS) $(ES_OBJS) tools/gimp_plugin/u7shp.o tools/aseprite_plugin/exult_shp.o
 
-MISC_OBJS:=exultstudioico.o windrag.o
+MISC_OBJS:=exultstudioico.o
 
 ES_OBJS:=$(MAPEDIT_OBJS) $(ES_FILES_OBJS) $(ES_GAMEMGR_OBJS) $(ES_IMAGEWIN_OBJS) $(ES_SHAPES_OBJS) \
 	$(ES_SERVER_OBJS) $(CONF_OBJS) $(MISC_OBJS) $(ZIP_OBJS)
 
-TOOL_EXES:=expack$(EXEEXT) cmanip$(EXEEXT) ipack$(EXEEXT) mklink$(EXEEXT) mockup$(EXEEXT) rip$(EXEEXT) \
-	shp2pcx$(EXEEXT) smooth$(EXEEXT) splitshp$(EXEEXT) textpack$(EXEEXT) wuc$(EXEEXT) u7voice2syx$(EXEEXT) \
-	ucc$(EXEEXT) libsmooth_randomize$(LIBEXT) libsmooth_smooth$(LIBEXT) libsmooth_stream$(LIBEXT)
+# Gather together at the end the SDL3_image dependent executables
+TOOL_EXES:=expack$(EXEEXT) cmanip$(EXEEXT) ipack$(EXEEXT) mklink$(EXEEXT) rip$(EXEEXT) \
+	shp2pcx$(EXEEXT)  splitshp$(EXEEXT) textpack$(EXEEXT) wuc$(EXEEXT) u7voice2syx$(EXEEXT) \
+	ucc$(EXEEXT) \
+	mockup$(EXEEXT) smooth$(EXEEXT) libsmooth_randomize$(LIBEXT) libsmooth_smooth$(LIBEXT) libsmooth_stream$(LIBEXT)
 
 exultico.o: win32/exultico.rc win32/exult.ico win32/exult.exe.manifest
 	windres --include-dir win32 win32/exultico.rc exultico.o
@@ -371,22 +562,37 @@ exultico.o: win32/exultico.rc win32/exult.ico win32/exult.exe.manifest
 exconfig_rc.o: win32/exconfig.rc
 	windres --include-dir win32 win32/exconfig.rc exconfig_rc.o
 
-exconfig.dll: win32/exconfig.def $(FILE_OBJS) $(CONF_OBJS) exconfig_rc.o win32/exconfig.o
-	$(CXX) $(LDFLAGS) -shared -o $@ $(filter-out $<,$^) --def $< -static -lstdc++ -Wl,--add-stdcall-alias -Wl,--dynamicbase
+exconfig.dll: $(FILE_OBJS) $(CONF_OBJS) exconfig_rc.o win32/exconfig.o
+	$(CXX) $(LDFLAGS) -shared -o $@ $^ -static -lstdc++ -Wl,--dynamicbase
 
-exult_studio$(EXEEXT): $(BG_PAPERDOLL) $(FLEXES) $(ES_OBJS) $(EXP_FILE)
-	$(CXX) $(LDFLAGS) $(EXP_FILE) -o $@ $(ES_OBJS) $(ES_LIBS)
-
-$(EXP_FILE): $(ES_OBJS)
-	dlltool --output-exp $@ $(ES_OBJS) -D exult_studio$(EXEEXT)
+exult_studio$(EXEEXT): $(BG_PAPERDOLL) $(FLEXES) $(ES_OBJS)
+	$(CXX) $(LDFLAGS) -o $@ $(ES_OBJS) $(ES_LIBS)
 
 exultstudioico.o: $(SRC)/win32/exultstudioico.rc $(SRC)/win32/exultstudio.ico win32/exult_studio.exe.manifest
 	windres --include-dir $(SRC)/win32 $(SRC)/win32/exultstudioico.rc $@
 
-mapedit/u7shp.o: CPPFLAGS:=$(PLUGIN_CPPFLAGS)
+playscene.o: data/exult_flx.h
 
-u7shp$(EXEEXT) : mapedit/u7shp.o $(FILE_OBJS) shapes/vgafile.o imagewin/ibuf8.o imagewin/imagebuf.o
-	$(CXX) $(LDFLAGS) -o $(@) $+ $(GIMP_LIBS) -mwindows
+mapedit/shapefile.o: data/exult_flx.h
+
+ifneq ($(PLUGIN_SRC),$())
+tools/gimp_plugin/u7shp.o: tools/gimp_plugin/$(PLUGIN_SRC).cc
+	$(CXX) $(CXXFLAGS) $(PLUGIN_CPPFLAGS) -c -o $(@) tools/gimp_plugin/$(PLUGIN_SRC).cc
+else
+tools/gimp_plugin/u7shp.o:
+	$(error Neither Gimp 3 nor Gimp 2 is installed, cannot build the Gimp plugin)
+endif
+# The libgexiv2 is a GLib wrapper for the Exiv2 metadata library, that the Plugin does not need.
+# It exports some std::string symbols from the libstdc++, so the Plugin gets linking or loading errors.
+# => Remove the libgexiv2 from the library list ( Feb 2025 ).
+u7shp$(EXEEXT) : tools/gimp_plugin/u7shp.o $(FILE_OBJS) shapes/vgafile.o imagewin/ibuf8.o imagewin/imagebuf.o
+	$(CXX) $(LDFLAGS) -o $(@) $+ $(subst -lgexiv2,,$(GIMP_LIBS)) -mwindows
+
+tools/aseprite_plugin/exult_shp.o: tools/aseprite_plugin/exult_shp.cc
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c -o $(@) $<
+
+exult_shp$(EXEEXT): tools/aseprite_plugin/exult_shp.o $(FILE_OBJS) shapes/vgafile.o imagewin/ibuf8.o imagewin/imagebuf.o
+	$(CXX) $(LDFLAGS) -o $@ $+ -lpng -mwindows
 
 install: $(EXEC)
 	mkdir -p $(U7PATH)
@@ -406,8 +612,28 @@ debug: $(EXEC)
 	cp data/exult_bg.flx $(U7PATH)/data
 	cp data/exult_si.flx $(U7PATH)/data
 
+mods: tools
+	for mod in $(MODS); do \
+	pushd content/$${mod}; \
+	$(MAKE) -f Makefile.mingw $${mod}dir=build install; \
+	cd build; \
+	rm -f ../../../$${mod}.zip; \
+	zip -r  ../../../$${mod}.zip .; \
+	popd; \
+	done
+
+modsclean:
+	for mod in $(MODS); do \
+	pushd content/$${mod}; \
+	$(MAKE) -f Makefile.mingw $${mod}dir=build clean; \
+	popd; \
+	rm -r -f content/$${mod}/build; \
+	rm -f $${mod}.zip;  \
+	done
+
+
 dist:   U7PATH:=$(DISTPATH)/Exult-$(MSYSTEM_CARCH)
-dist:   $(EXEC) exconfig.dll install
+dist:   $(EXEC) exconfig.dll install Exult\ Source\ Code.url mods
 	mkdir -p $(DISTPATH)
 	cp AUTHORS $(U7PATH)/AUTHORS.txt
 	cp ChangeLog $(U7PATH)/ChangeLog.txt
@@ -416,37 +642,56 @@ dist:   $(EXEC) exconfig.dll install
 	cp docs/faq.html $(U7PATH)
 	mkdir -p $(U7PATH)/images
 	cp docs/images/*.gif $(U7PATH)/images
+	cp docs/images/*.svg $(U7PATH)/images
 	cp docs/images/docs*.png $(U7PATH)/images
 	cp NEWS $(U7PATH)/NEWS.txt
 	cp README $(U7PATH)/README.txt
 	cp docs/ReadMe.html $(U7PATH)
-	cp README.win32 $(U7PATH)/README.win32.txt
+	cp README.windows $(U7PATH)/README.windows.txt
 	cp win32/README-SDL.txt $(U7PATH)/README-SDL.txt
 	cp data/bg/defaultkeys.txt $(U7PATH)/bgdefaultkeys.txt
 	cp data/si/defaultkeys.txt $(U7PATH)/sidefaultkeys.txt
 	u2d $(U7PATH)/*.txt
 	strip exconfig.dll -o $(DISTPATH)/exconfig-$(MSYSTEM_CARCH).dll
 	cp win32/exult_installer.iss $(DISTPATH)
+	mkdir -p $(DISTPATH)/mods
+	for mod in $(MODS); do \
+	cp $${mod}.zip $(DISTPATH)/mods; \
+	done
+	cp Exult\ Source\ Code.url $(U7PATH)
+
+git_revision :=$(shell git rev-parse HEAD)
+git_tag :=$(shell git tag -l --points-at HEAD)
+Exult\ Source\ Code.url:
+	echo "[InternetShortcut]" > Exult\ Source\ Code.url
+ifneq  ($(git_tag),)
+	echo URL=https://github.com/exult/exult/tree/$(git_tag) >> Exult\ Source\ Code.url
+else ifneq ($(git_revision),)
+	echo URL=https://github.com/exult/exult/tree/$(git_revision) >> Exult\ Source\ Code.url
+else
+	echo URL=https://github.com/exult/exult/ >> Exult\ Source\ Code.url
+endif
+	echo Iconfile=https://exult.sourceforge.io/favicon.ico >> Exult\ Source\ Code.url
+	echo IconIndex=0  >> Exult\ Source\ Code.url
 
 toolsinstall: tools
 	mkdir -p $(U7PATH)
 	mkdir -p $(U7PATH)/tools
 	strip ucxt$(EXEEXT) -o $(U7PATH)/ucxt$(EXEEXT)
 	for ff in $(TOOL_EXES); do strip $$ff -o $(U7PATH)/tools/$$ff; done
-	$(call copy_dlls_for_exe, ucxt$(EXEEXT), $(U7PATH))
-	$(call copy_dlls_for_exe, $(TOOL_EXES), $(U7PATH)/tools)
+	$(call copy_dlls_for_exe, ucxt$(EXEEXT) $(TOOL_EXES), $(U7PATH))
 	mkdir -p $(U7PATH)/data
-	cp usecode/ucxt/data/events.data $(U7PATH)/data
-	cp usecode/ucxt/data/flags.data $(U7PATH)/data
-	cp usecode/ucxt/data/u7opcodes.data $(U7PATH)/data
-	cp usecode/ucxt/data/u7misc.data $(U7PATH)/data
+	cp tools/ucxt/data/events.data $(U7PATH)/data
+	cp tools/ucxt/data/flags.data $(U7PATH)/data
+	cp tools/ucxt/data/u7opcodes.data $(U7PATH)/data
+	cp tools/ucxt/data/u7misc.data $(U7PATH)/data
 	cp data/bginclude.uc $(U7PATH)/data
 	cp data/u7bgintrinsics.data $(U7PATH)/data
 	cp data/u7siintrinsics.data $(U7PATH)/data
 	cp data/u7sibetaintrinsics.data $(U7PATH)/data
 
 toolsdist: U7PATH:=$(DISTPATH)/Tools-$(MSYSTEM_CARCH)
-toolsdist: tools toolsinstall
+toolsdist: tools toolsinstall Exult\ Source\ Code.url
 	mkdir -p $(DISTPATH)
 	cp tools/expack.txt $(U7PATH)/tools
 	cp tools/intrins1.txt $(U7PATH)/tools
@@ -459,16 +704,18 @@ toolsdist: tools toolsinstall
 	cp tools/u7siflag.txt $(U7PATH)/tools
 	cp tools/ucformat.txt $(U7PATH)/tools
 	cp docs/ucc.txt $(U7PATH)/tools
-	cp mapedit/tools/mockup/README $(U7PATH)/tools/mockup.txt
-	cp mapedit/tools/mockup/mappings.txt $(U7PATH)/tools
-	cp mapedit/tools/mockup/mappings_alternative.txt $(U7PATH)/tools
-	cp mapedit/tools/mockup/map.png $(U7PATH)/tools
-	cp mapedit/tools/smooth/README $(U7PATH)/tools/smooth.txt
-	cp mapedit/tools/smooth/rough.bmp $(U7PATH)/tools
-	cp mapedit/tools/smooth/smoothed.bmp $(U7PATH)/tools
-	cp usecode/ucxt/README $(U7PATH)/ucxt.txt
-	cp usecode/ucxt/ucxtread.txt $(U7PATH)
+	cp tools/mockup/README $(U7PATH)/tools/mockup.txt
+	cp tools/mockup/mappings.txt $(U7PATH)/tools
+	cp tools/mockup/mappings_alternative.txt $(U7PATH)/tools
+	cp tools/mockup/map.png $(U7PATH)/tools
+	cp tools/smooth/README $(U7PATH)/tools/smooth.txt
+	cp tools/smooth/smooth.conf $(U7PATH)/tools
+	cp tools/smooth/rough.bmp $(U7PATH)/tools
+	cp tools/smooth/smoothed.bmp $(U7PATH)/tools
+	cp tools/ucxt/Docs/README $(U7PATH)/ucxt.txt
+	cp tools/ucxt/Docs/ucxtread.txt $(U7PATH)
 	cp AUTHORS $(U7PATH)/AUTHORS.txt
+	cp Exult\ Source\ Code.url $(U7PATH)
 	cp COPYING $(U7PATH)/COPYING.txt
 	cp win32/README-SDL.txt $(U7PATH)/tools/README-SDL.txt
 	u2d $(U7PATH)/*.txt
@@ -476,14 +723,13 @@ toolsdist: tools toolsinstall
 	cp win32/exult_tools_installer.iss $(DISTPATH)
 
 studioclean:
-	rm -f $(ES_OBJS) $(ES_OBJS:%.o=%.d) $(EXP_FILE) exult_studio$(EXEEXT)
+	rm -f $(ES_OBJS) $(ES_OBJS:%.o=%.d) exult_studio$(EXEEXT)
 
 studio: exult_studio$(EXEEXT)
 
 studioinstall: exult_studio$(EXEEXT)
 	mkdir -p $(U7PATH)
 	strip exult_studio$(EXEEXT) -o $(U7PATH)/exult_studio$(EXEEXT)
-	$(call copy_dlls_for_exe, exult_studio$(EXEEXT), $(U7PATH))
 	mkdir -p $(U7PATH)/data
 	cp mapedit/exult_studio.glade $(U7PATH)/data
 	mkdir -p $(U7PATH)/data/estudio
@@ -496,47 +742,71 @@ studioinstall: exult_studio$(EXEEXT)
 	gdk-pixbuf-query-loaders --update-cache
 	cp $(MSYSTEM_PREFIX)/lib/gdk-pixbuf-2.0/2.10.0/loaders.cache $(U7PATH)/lib/gdk-pixbuf-2.0/2.10.0
 	cp $(MSYSTEM_PREFIX)/lib/gdk-pixbuf-2.0/2.10.0/loaders/*.dll $(U7PATH)/lib/gdk-pixbuf-2.0/2.10.0/loaders
+	$(call copy_dlls_for_exe, exult_studio$(EXEEXT) $(wildcard $(MSYSTEM_PREFIX)/lib/gdk-pixbuf-2.0/2.10.0/loaders/*.dll), $(U7PATH))
 	mkdir -p $(U7PATH)/share/glib-2.0/schemas
 	cp $(MSYSTEM_PREFIX)/share/glib-2.0/schemas/gschemas.compiled $(U7PATH)/share/glib-2.0/schemas
 	mkdir -p $(U7PATH)/share/icons
 	cp -R $(MSYSTEM_PREFIX)/share/icons/Adwaita $(MSYSTEM_PREFIX)/share/icons/hicolor $(U7PATH)/share/icons
+	cp -R desktop/exult_warning.svg $(U7PATH)/share/icons/hicolor/scalable/apps
+	cp -R desktop/exult_warning.png $(U7PATH)/share/icons/hicolor/512x512/apps
+	gtk-update-icon-cache -f $(U7PATH)/share/icons/hicolor
 	mkdir -p $(U7PATH)/share/gtk-3.0
 	echo "[Settings]" > $(U7PATH)/share/gtk-3.0/settings.ini
 
 studiodist: U7PATH:=$(DISTPATH)/Studio-$(MSYSTEM_CARCH)
-studiodist: exult_studio$(EXEEXT) studioinstall
+studiodist: exult_studio$(EXEEXT) studioinstall  Exult\ Source\ Code.url
 	mkdir -p $(DISTPATH)
 	cp docs/exult_studio.html $(U7PATH)
 	cp docs/exult_studio.txt $(U7PATH)
 	mkdir -p $(U7PATH)/images
 	cp docs/images/*.gif $(U7PATH)/images
+	cp docs/images/*.svg $(U7PATH)/images
 	cp docs/images/studio*.png $(U7PATH)/images
 	cp AUTHORS $(U7PATH)/AUTHORS.txt
 	cp COPYING $(U7PATH)/COPYING.txt
+	cp Exult\ Source\ Code.url $(U7PATH)
 	u2d $(U7PATH)/*.txt
 	cp win32/exult_studio_installer.iss $(DISTPATH)
 
 pluginclean:
-	rm -f u7shp$(EXEEXT) mapedit/u7shp.o mapedit/u7shp.d
+	rm -f u7shp$(EXEEXT) tools/gimp_plugin/u7shp.o tools/gimp_plugin/u7shp.d
 
 plugin: u7shp$(EXEEXT)
 
 plugininstall: plugin
 	mkdir -p $(GIMPPATH)
 	strip u7shp$(EXEEXT) -o $(GIMPPATH)/u7shp$(EXEEXT)
-	# Note: Gimp has everything a plugin needs already, so we don't
-	# need to ship anything else really.
+	# Note: Gimp has almost everything a plugin needs already, so we don't
+	# need to do this step.
 	#$(call copy_dlls_for_exe, u7shp$(EXEEXT), $(GIMPPATH))
+	# We do need the GCC runtime (for a GCC built plugin) and the C++ libraries, in case Gimp 3 is built with another compiler than the plugin.
+	for ff in $$($(MSYSTEM_PREFIX)/bin/ntldd u7shp$(EXEEXT) | grep -oE 'libgcc_s_seh-1\.dll|libgcc_s_dw2-1\.dll|libstdc\+\+-6\.dll|libc\+\+\.dll' | sort -u); do cp -v $(MSYSTEM_PREFIX)/bin/$$ff $(GIMPPATH)/$$ff; done
 
 plugindist: GIMPPATH:=$(DISTPATH)/GimpPlugin-$(MSYSTEM_CARCH)
 plugindist: plugin plugininstall
 	mkdir -p $(DISTPATH)
-	cp mapedit/gimpwin32.txt $(GIMPPATH)
+	cp tools/gimp_plugin/gimpwin32.txt $(GIMPPATH)
 	u2d $(GIMPPATH)/*.txt
 	cp win32/exult_shpplugin_installer.iss $(DISTPATH)
 
-allclean: clean toolsclean studioclean
+aseprite-pluginclean:
+	rm -f exult_shp$(EXEEXT) tools/aseprite_plugin/exult_shp.o tools/aseprite_plugin/exult_shp.d
+
+aseprite-plugin: exult_shp$(EXEEXT)
+
+aseprite-plugindist: ASEPRITEPATH:=$(DISTPATH)/AsepritePlugin-$(MSYSTEM_CARCH)
+aseprite-plugindist: aseprite-plugin
+	mkdir -p $(ASEPRITEPATH)
+	strip exult_shp$(EXEEXT) -o $(ASEPRITEPATH)/exult_shp$(EXEEXT)
+	cp tools/aseprite_plugin/main.lua $(ASEPRITEPATH)
+	cp tools/aseprite_plugin/package.json $(ASEPRITEPATH)
+	cp tools/aseprite_plugin/Readme.txt $(ASEPRITEPATH)
+	cp tools/aseprite_plugin/u7.pal $(ASEPRITEPATH)
+	$(call copy_dlls_for_exe, $(ASEPRITEPATH)/exult_shp$(EXEEXT), $(ASEPRITEPATH))
+
+allclean: clean toolsclean studioclean modsclean pluginclean aseprite-pluginclean
 	rm -f exconfig.dll exconfig_rc.o win32/exconfig.o
+	rm -f Exult\ Source\ Code.url
 
 allinstall: install toolsinstall studioinstall
 

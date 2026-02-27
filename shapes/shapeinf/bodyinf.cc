@@ -22,20 +22,22 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
-#include "utils.h"
-#include "exult_constants.h"
 #include "bodyinf.h"
+
+#include "exult_constants.h"
 #include "ignore_unused_variable_warning.h"
+#include "utils.h"
+
 using std::istream;
 
 bool Body_info::read(
-    std::istream &in,   // Input stream.
-    int version,        // Data file version.
-    Exult_Game game     // Loading BG file.
+		std::istream& in,         // Input stream.
+		int           version,    // Data file version.
+		Exult_Game    game        // Loading BG file.
 ) {
 	ignore_unused_variable_warning(version, game);
 	bshape = ReadInt(in);
-	if (bshape == -0xff) {  // means delete entry.
+	if (bshape == -0xff) {    // means delete entry.
 		set_invalid(true);
 		return true;
 	}

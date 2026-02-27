@@ -3,26 +3,26 @@
 # It may require a little tweaking. (paths)
 
 # Where is Ultima 7 installed
-U7PATH=C:/Ultima7
+U7PATH:=C:/Ultima7
 
 # Base of the exult source
-SRC=../..
+SRC:=../..
 
-srcdir=.
+srcdir:=.
 
-UCCDIR=$(SRC)
-UCC=$(UCCDIR)/ucc.exe
+UCCDIR:=$(SRC)
+UCC:=$(UCCDIR)/ucc.exe
 
-EXPACKDIR=$(SRC)
-EXPACK=$(EXPACKDIR)/expack.exe
+EXPACKDIR:=$(SRC)
+EXPACK:=$(EXPACKDIR)/expack.exe
 
-sidir=$(U7PATH)/silverseed/mods
+sidir:=$(U7PATH)/silverseed/mods
 
-USECODE_OBJECTS = \
-	usecode.uc	
+USECODE_OBJECTS :=	\
+	usecode.uc
 
-CLEANFILES = \
-	usecode	
+CLEANFILES :=	\
+	usecode
 
 all: usecode
 
@@ -31,7 +31,7 @@ install: all
 	cp curecantra.cfg $(sidir)/curecantra.cfg
 	mkdir -p $(sidir)/curecantra/
 	cp usecode $(sidir)/curecantra/usecode
-
+	cp ./../../COPYING $(sidir)/curecantra/License.txt
 
 uninstall:
 	rm -f $(sidir)/curecantra.cfg

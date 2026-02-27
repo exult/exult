@@ -5,7 +5,7 @@ on:
     branches: ["master"]
     paths:
       - "**"
-      - "!android"
+      - "!android/**"
       - "!docs/**"
       - "docs/Makefile.am"
       - "!ios/**"
@@ -33,7 +33,7 @@ on:
     branches: ["master"]
     paths:
       - "**"
-      - "!android"
+      - "!android/**"
       - "!docs/**"
       - "docs/Makefile.am"
       - "!ios/**"
@@ -77,23 +77,8 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       # Initializes the CodeQL tools for scanning.
-      - name: Initialize CodeQL
-        uses: github/codeql-action/init@v2
-        with:
-          languages: ${{ matrix.language }}
-          # If you wish to specify custom queries, you can do so here or in a config file.
-          # By default, queries listed here will override any specified in a config file.
-          # Prefix the list here with "+" to use these queries and those in the config file.
-
-          # Details on CodeQL's query packs refer to : https://docs.github.com/en/code-security/code-scanning/automatically-scanning-your-code-for-vulnerabilities-and-errors/configuring-code-scanning#using-queries-in-ql-packs
-          # queries: security-extended,security-and-quality
-      # ℹ️ Command-line programs to run using the OS shell.
-      # 📚 See https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#jobsjob_idstepsrun
-
-      #   If the Autobuild fails above, remove it and uncomment the following three lines.
-      #   modify them (or add more) to build your code if your project, please refer to the EXAMPLE below for guidance.
       - name: Install dependencies
         run: |
           if ! apt-fast -- help &> /dev/null; then
@@ -107,20 +92,67 @@ jobs:
             sudo apt-fast update
           fi
           sudo apt-fast install -y \
-            zlib1g-dev libogg-dev libvorbis-dev libasound2-dev libfluidsynth-dev libsdl2-dev libpng-dev libfreetype6-dev libgtk2.0-dev libgtk-3-dev \
-            libgdk-pixbuf2.0-dev libxml2-dev bison flex timidity libgimp2.0-dev
-      - name: Run autogen
+            zlib1g-dev libogg-dev libvorbis-dev libasound2-dev libfluidsynth-dev libsdl2-dev libsdl2-image-dev libpng-dev libfreetype6-dev libgtk2.0-dev libgtk-3-dev \
+            libgdk-pixbuf2.0-dev libxml2-dev bison flex timidity libgimp2.0-dev autoconf-archive \
+            cmake libusb-1.0-0 libusb-1.0-0-dev libunwind-dev ffmpeg libavcodec-dev libavdevice-dev libavfilter-dev libavformat-dev libavutil-dev libpostproc-dev libswresample-dev libswscale-dev
+      - name: Checkout SDL 3
+        uses: actions/checkout@v4
+        with:
+          repository: libsdl-org/SDL
+          path: SDL3
+          ref: release-3.2.14
+      - name: Install SDL 3
         run: |
-          chmod a+x ./autogen.sh
-          ./autogen.sh
+          cd SDL3
+          mkdir -p build
+          cmake -B build -S .
+          cmake --build build
+          sudo cmake --install build
+          cd ..
+          rm -r -f SDL3
+      - name: Checkout SDL_image 3
+        uses: actions/checkout@v4
+        with:
+          repository: libsdl-org/SDL_image
+          path: SDL3_image
+          ref: release-3.2.4
+      - name: Install SDL_image 3
+        run: |
+          cd SDL3_image
+          mkdir -p build
+          cmake -B build -S .
+          cmake --build build
+          sudo cmake --install build
+          cd ..
+          rm -r -f SDL3_image
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: ${{ matrix.language }}
+          build-mode: manual
+          # If you wish to specify custom queries, you can do so here or in a config file.
+          # By default, queries listed here will override any specified in a config file.
+          # Prefix the list here with "+" to use these queries and those in the config file.
+
+          # Details on CodeQL's query packs refer to : https://docs.github.com/en/code-security/code-scanning/automatically-scanning-your-code-for-vulnerabilities-and-errors/configuring-code-scanning#using-queries-in-ql-packs
+          queries: security-extended,security-and-quality
+      # ℹ️ Command-line programs to run using the OS shell.
+      # 📚 See https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#jobsjob_idstepsrun
+
+      #   If the Autobuild fails above, remove it and uncomment the following three lines.
+      #   modify them (or add more) to build your code if your project, please refer to the EXAMPLE below for guidance.
+      - name: Run autoreconf
+        run: |
+          autoreconf -v -i
       - name: Configure
         run: |
           ./configure --with-debug=extreme --enable-exult-studio --enable-exult-studio-support --enable-compiler --enable-gimp-plugin \
-            --enable-zip-support --enable-shared --enable-midi-sfx --enable-gnome-shp-thumbnailer --enable-data --enable-mods \
-            --with-usecode-debugger=yes --enable-usecode-container --enable-nonreadied-objects --disable-oggtest --disable-vorbistest
+            --enable-zip-support --enable-shared --enable-midi-sfx --enable-shp-thumbnailer --enable-data --enable-mods \
+            --with-usecode-debugger=yes --enable-usecode-container --enable-nonreadied-objects \
+            --enable-aseprite-plugin
       - name: Build
         run: make -j 2
       - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@v2
+        uses: github/codeql-action/analyze@v3
         with:
           category: "/language:${{matrix.language}}"

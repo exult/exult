@@ -36,6 +36,9 @@ extern void makePartyFaceNPC object#(0x7D1) ();
 // Makes NPC face Avatar:
 extern void faceAvatar object#(0x7D2) ();
 
+// Generic party automaton dialog:
+extern void partyAutomaton 0x809 ();
+
 // Resurrects Iolo, Shamino and Dupre and adds them back to the party
 extern void resurrectCompanions 0x86D ();
 
@@ -46,7 +49,7 @@ extern void xenkaReturns 0x8F4 ();
 extern void xenkanMonkDies 0x8F5 (var monk);
 
 // Returns true is point is inside rectangle
-extern var pointInsideRect 0x8F8 (var point, var upperleft, var lowerright);
+extern var pointInsideRect 0x8F8 (struct<Position2D> point, struct<Position2D> upperleft, struct<Position2D> lowerright);
 
 // List of dead bodies nearby:
 extern var getNearbyBodies 0x8FB ();
@@ -62,6 +65,14 @@ extern var getDoorState 0x906 (var door);
 // state 0 = unlocked, state 1 = swung open, state 2 is locked and
 // state 3 is magically locked
 extern void setDoorState 0x907 (var door, var state);
+
+// Presses switch/pulls lever and alters state of nearby sliding doors.
+// Does several additional things, such as checking for Skullcrusher password
+// for the appropriate door, etc.
+// If mode == 0, closes opened sliding doors.
+// If mode == 1, opens closed sliding doors.
+// If mode == SHAPE_ANY, toggles sliding doors.
+extern void changeSlidingDoorState 0x924 (var lever, var mode);
 
 extern void usecodeStartSpeechWrapper 0x922 (var track);
 extern var exchangedItemList 0x92C (var index);
@@ -156,6 +167,9 @@ extern var getOuterContainer 0x99E (var obj);
 // of numbers (num1 and num2) into a number 0-31 then returns the path egg with
 // the corresponding frame. Returned path eggs come from the Usecode Container.
 extern var getPathEgg 0x9A0 (var num1, var num2);
+
+// Remove all items from a container, then removes the container.
+extern void removeAllItemsAndContainer 0x9A3 (var obj);
 
 // Returns an array containing the index of all instances of
 // element in the array:

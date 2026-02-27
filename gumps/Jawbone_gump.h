@@ -28,27 +28,25 @@ class Jawbone_object;
 
 class Jawbone_gump : public Gump {
 public:
-	Jawbone_gump(Jawbone_object *cont, int initx, int inity);
+	Jawbone_gump(Jawbone_object* cont, int initx, int inity);
 
 	// Find the object the mouse is over
-	Game_object *find_object(int mx, int my) override;
+	Game_object* find_object(int mx, int my) override;
 
 	// Add object.
-	bool add(Game_object *obj, int mx = -1, int my = -1,
-	        int sx = -1, int sy = -1, bool dont_check = false,
-	        bool combine = false) override;
+	bool add(Game_object* obj, int mx = -1, int my = -1, int sx = -1, int sy = -1, bool dont_check = false, bool combine = false)
+			override;
 
 	// Paint it and its contents.
 	void paint() override;
 
 private:
-	void set_to_spot(Game_object *obj, int sx, int sy);
+	void set_to_spot(Game_object* obj, int sx, int sy);
 	void paint_tooth(int index);
 
-	bool on_tooth(int sx, int sy, int index); // is spot on tooth?
+	bool on_tooth(int sx, int sy, int index);    // is spot on tooth?
 
-	Jawbone_object *jawbone;
-
+	Jawbone_object* jawbone;
 };
 
 #endif

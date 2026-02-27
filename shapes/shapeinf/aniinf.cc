@@ -22,10 +22,12 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
-#include "utils.h"
-#include "exult_constants.h"
 #include "aniinf.h"
+
+#include "exult_constants.h"
 #include "ignore_unused_variable_warning.h"
+#include "utils.h"
+
 using std::istream;
 
 /*
@@ -35,36 +37,34 @@ using std::istream;
  */
 
 bool Animation_info::read(
-    std::istream &in,   // Input stream.
-    int version,        // Data file version.
-    Exult_Game game     // Loading BG file.
+		std::istream& in,         // Input stream.
+		int           version,    // Data file version.
+		Exult_Game    game        // Loading BG file.
 ) {
 	ignore_unused_variable_warning(game);
-	if (version < 5)    // Not compatible with old system.
+	if (version < 5) {    // Not compatible with old system.
 		return false;
+	}
 	const int ty = ReadInt(in);
-	if (ty == -0xff) {  // means delete entry.
+	if (ty == -0xff) {    // means delete entry.
 		set_invalid(true);
 		return true;
 	}
-	set(static_cast<AniType>(ty), ReadInt(in));     // Sensible defaults.
+	set(static_cast<AniType>(ty), ReadInt(in));    // Sensible defaults.
 	if (type != FA_HOURLY) {
 		// We still have things to read.
 		frame_delay = ReadInt(in);
-		sfx_delay = ReadInt(in);
+		sfx_delay   = ReadInt(in);
 		if (type == FA_LOOPING) {
 			freeze_first = ReadInt(in);
-			recycle = ReadInt(in);
+			recycle      = ReadInt(in);
 		}
 	}
 	return true;
 }
 
-Animation_info *Animation_info::create_from_tfa(
-    int type,
-    int nframes
-) {
-	auto *inf = new Animation_info();
+Animation_info* Animation_info::create_from_tfa(int type, int nframes) {
+	auto* inf = new Animation_info();
 
 	switch (type) {
 	case 0:
@@ -87,7 +87,7 @@ Animation_info *Animation_info::create_from_tfa(
 		inf->set(FA_LOOPING, nframes, 6);
 		break;
 	case 11:
-		inf->set(FA_LOOPING, nframes, nframes-1, 0);
+		inf->set(FA_LOOPING, nframes, nframes - 1, 0);
 		break;
 	case 12:    // Slow advance.
 	case 14:    // Grandfather clock.

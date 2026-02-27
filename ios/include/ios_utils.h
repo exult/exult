@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2015 Chaoji Li
- * Copyright (C) 2015-2022 The Exult Team
+ * Copyright (C) 2015-2025 The Exult Team
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -23,17 +23,24 @@
 
 #include "touchui.h"
 
-class TouchUI_iOS: public TouchUI {
+class TouchUI_iOS : public TouchUI {
 public:
 	TouchUI_iOS();
-	void promptForName(const char *name) final;
 	void showGameControls() final;
 	void hideGameControls() final;
 	void showButtonControls() final;
 	void hideButtonControls() final;
+	void showPauseControls() final;
+	void hidePauseControls() final;
 	void onDpadLocationChanged() final;
 };
 
-const char* ios_get_documents_dir();
+const char* IOSGetDocumentsDir();
+
+extern "C" {
+void        iOS_SetupQuickActions();
+const char* iOS_GetLaunchGameFlag();
+void        iOS_ClearLaunchGameFlag();
+}
 
 #endif

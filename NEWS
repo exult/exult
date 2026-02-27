@@ -1,3 +1,65 @@
+05/11/25	v1.12
+
+		Fixed crash in SI training.
+		Running against doors properly opens and closes them.
+		Scrolls in SI are now properly displayed.
+		Schedules eat-at-inn and desk work were broken.
+		Antimagic rain caused by the cube generator is now dissipating fast enough.
+		Fixed using too close objects.
+		Polymorphed NPCs will revert back to their original bodies when they died.
+		List field fights in SI are now properly handled.
+		Mini status icons in face stats.
+		Emergency savegame and crashlog creation on Windows.
+		New higer resolution icons for Exult and Exult Studio.
+		Better graphics for the uncut SI intro.
+		Several MIDI music fixes.
+		Advanced Audio Settings for the MIDI drivers that individuallyallows choosing
+		which soundfont to use, MIDI conversion, chorus and reverb.
+		You can now use FluidLite instead of FluidSynth when compiling Exult.
+		Bilinear scaler fixes and refactor.
+		With bigger game resolutions the party speed changes sooner.
+		The Android port now allows to download games and mods you want to install.
+		The GIMP 3.0 plug-in for SHP files.
+		Aseprite plug-in for SHP files.
+
+		Known issues:
+
+		Exult does not return to the game menu after beating the game (instead it quits)
+		Some schedules need more detailed love
+		Several bugs that need more in depth looking at but no plot stopping bugs
+
+
+09/09/24	v1.10
+
+		The Android port is now fully working
+		The Windows installer now offers to install several mods
+		New Volume Mixer to set individual volumes for music, sfx and speech
+		Cheat Screen overhauled so the options can now be activated by clicking or touching
+		Much improved combat:
+			- Default attack mode “nearest” and attack mode “random” will try to select an enemy that is not already targeted by a party member
+			- Implemented a version of berserk with a bit of chaos (but not as much as random)
+			- Faking defend by selecting weakest enemy when low health, nearest otherwise
+			- more blood
+		Better detecting of clicks on gumps over the shortcutbar to prevent accidental triggering of a shortcut
+		mt32emu driver resampling fix
+		Endgames now wait for ingame speech to finish
+		Background sound effect music tracks are less annoying and disabled for FMOpl music driver
+		Music looping improved
+		Exult Studio allows zooming of the shapes view
+		Fixed a crash when swapping weapons in combat
+		Fixed random crash on sleeping past midnight in Britain
+		Attacking locked doors did not work
+		Immobile NPCs were able to move (e.g. Reapers)
+		Enemies poison now
+
+		Known issues:
+
+		Antimagic rain caused by the cube generator is not dissipating as fast as it should
+		Exult does not return to the game menu after beating the game (instead it quits)
+		Some schedules need more detailed love
+		Several bugs that need more in depth looking at but no plot stopping bugs
+
+
 04/16/22	v1.8
 
 		Windows builds are by default 64bit

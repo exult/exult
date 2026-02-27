@@ -1,0 +1,89 @@
+Info on how to compile smooth is in the file INSTALL.
+Info on the authors is in the file AUTHORS
+ChangeLog contains the changes in reversed chronological order
+This program is licenced under the GPL
+
+
+smooth is a program used to help in the creation of maps for Exult
+games. Exult is an engine to run Ultima VII on modern hardware but
+can run self-made games as well.
+
+The creation of a map is a fairly complex thing to do, since the map
+is 24576x24576 pixels. Fortunately, the map is made of reused chunks
+which are squares of 128 pixels, so we need only a map of 192x192
+chunk. There is a hard limit of chunks that can be used of 256. It
+makes sense then to use an indexed image (less than 256 colours) with
+reused colours, each representing a chunk and to convert this image
+into a map, thanks to an association chunk <-> colour. The tool to do
+this is called mockup and is also part of the Exult tools.
+
+It is noteworthy that even creating such a map is a difficult
+task. Either a lots of manual work in done on the image itself, or a
+simple image is created, but the real map needs to be adjusted with
+ExultStudio. In order to reduce this work and to automate tasks (thus
+reducing errors), smooth has been created. smooth takes an image as
+input and creates an image as output, making automatic changes thanks
+to a config file. The changes that can be made for instance are:
+* randomizing: to make a area (based on colour) appear in random colour
+(from a pool set in the config file). Useful for forest for instance
+* streamlining: transform a single colour representing a road into
+adjusted colours to reflect the changes in direction. Usually, a chunk
+for a east-west road piece is different than one for a north-south
+piece.
+* smoothlining: when 2 colours are beside each other, representing 2
+chunk types, it is better if the transition from one to the other is
+smooth. For instance, water and land would look better with a shore
+between the two.
+
+smooth uses a config file to know how to convert one colour into
+another based on what is around or on what change to make.
+Each section starts with [name]. A comment starts with a ';' or a '#'.
+Each line in a section starts with the slave colour, that is, the
+colour to transform into something else. This something else is found
+somewhere in the rest of the line. Which one is picked depends on
+which section it is in, and what the surrounding factors are or just
+chance, as in the randomize section.
+
+Most of the time, the order in which the colours are put in the config
+file matter. If you happen to change the colours in the config file,
+make sure you adapt accordingly the file "mapping.txt" from mockup.
+
+
+Modes of operation
+==================
+
+ -i Inputfile
+ graphic file to smooth. Must be an 8bit (<256 colors) indexed bmp
+ or png file, sized 192x192 pixel.
+
+ -o Outputfile
+ genrated graphic file, will always be in bmp format.
+
+ -c Configfile
+ By default smooth wil use the file "smooth.conf" but with this
+ you can tell it to use any other text file.
+
+ -d Debug level
+ Level of verbosity of smooth. 0 (default) - 4.
+
+
+EXAMPLES
+========
+
+smooth
+This will try to use the input file rough.bmp with the config
+file smooth.conf to generate the file smoothed.bmp.
+
+smooth -i foo.bmp -c config.txt -o bar.bmp -d 4
+This will use the input file foo.bmp with the config file
+config.txt to generate the file bar.bmp with the highest verbosity.
+
+
+BUGS
+====
+
+ - The randomizer plugin broke some time ago, so if you have a [randomizer]
+   section, smooth will silently abort generating the output file.
+
+ - With the port to SDL2 something broke in smooth and thus it isn't
+   working at the moment.

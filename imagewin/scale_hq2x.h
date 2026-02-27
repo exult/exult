@@ -20,7 +20,7 @@
  */
 
 #ifndef INCL_SCALE_HQ2X_H
-#define INCL_SCALE_HQ2X_H   1
+#define INCL_SCALE_HQ2X_H 1
 
 #ifdef USE_HQ2X_SCALER
 
@@ -30,85 +30,86 @@
  ** are used anyway.
  **/
 
-#include "scale_hqnx.h"
+#	include "scale_hqnx.h"
 
 /*
  *  2X scaler.
  */
-#define PIXEL00_0     StoreRGB<PTYPES>(to, c[5], manip);
-#define PIXEL00_10    Interp1<PTYPES>(to, c[5], c[1], manip);
-#define PIXEL00_11    Interp1<PTYPES>(to, c[5], c[4], manip);
-#define PIXEL00_12    Interp1<PTYPES>(to, c[5], c[2], manip);
-#define PIXEL00_20    Interp2<PTYPES>(to, c[5], c[4], c[2], manip);
-#define PIXEL00_21    Interp2<PTYPES>(to, c[5], c[1], c[2], manip);
-#define PIXEL00_22    Interp2<PTYPES>(to, c[5], c[1], c[4], manip);
-#define PIXEL00_60    Interp6<PTYPES>(to, c[5], c[2], c[4], manip);
-#define PIXEL00_61    Interp6<PTYPES>(to, c[5], c[4], c[2], manip);
-#define PIXEL00_70    Interp7<PTYPES>(to, c[5], c[4], c[2], manip);
-#define PIXEL00_90    Interp9<PTYPES>(to, c[5], c[4], c[2], manip);
-#define PIXEL00_100   Interp10<PTYPES>(to, c[5], c[4], c[2], manip);
-#define PIXEL01_0     StoreRGB<PTYPES>(to+1, c[5], manip);
-#define PIXEL01_10    Interp1<PTYPES>(to+1, c[5], c[3], manip);
-#define PIXEL01_11    Interp1<PTYPES>(to+1, c[5], c[2], manip);
-#define PIXEL01_12    Interp1<PTYPES>(to+1, c[5], c[6], manip);
-#define PIXEL01_20    Interp2<PTYPES>(to+1, c[5], c[2], c[6], manip);
-#define PIXEL01_21    Interp2<PTYPES>(to+1, c[5], c[3], c[6], manip);
-#define PIXEL01_22    Interp2<PTYPES>(to+1, c[5], c[3], c[2], manip);
-#define PIXEL01_60    Interp6<PTYPES>(to+1, c[5], c[6], c[2], manip);
-#define PIXEL01_61    Interp6<PTYPES>(to+1, c[5], c[2], c[6], manip);
-#define PIXEL01_70    Interp7<PTYPES>(to+1, c[5], c[2], c[6], manip);
-#define PIXEL01_90    Interp9<PTYPES>(to+1, c[5], c[2], c[6], manip);
-#define PIXEL01_100   Interp10<PTYPES>(to+1, c[5], c[2], c[6], manip);
-#define PIXEL10_0     StoreRGB<PTYPES>(to+dline_pixels, c[5], manip);
-#define PIXEL10_10    Interp1<PTYPES>(to+dline_pixels, c[5], c[7], manip);
-#define PIXEL10_11    Interp1<PTYPES>(to+dline_pixels, c[5], c[8], manip);
-#define PIXEL10_12    Interp1<PTYPES>(to+dline_pixels, c[5], c[4], manip);
-#define PIXEL10_20    Interp2<PTYPES>(to+dline_pixels, c[5], c[8], c[4], manip);
-#define PIXEL10_21    Interp2<PTYPES>(to+dline_pixels, c[5], c[7], c[4], manip);
-#define PIXEL10_22    Interp2<PTYPES>(to+dline_pixels, c[5], c[7], c[8], manip);
-#define PIXEL10_60    Interp6<PTYPES>(to+dline_pixels, c[5], c[4], c[8], manip);
-#define PIXEL10_61    Interp6<PTYPES>(to+dline_pixels, c[5], c[8], c[4], manip);
-#define PIXEL10_70    Interp7<PTYPES>(to+dline_pixels, c[5], c[8], c[4], manip);
-#define PIXEL10_90    Interp9<PTYPES>(to+dline_pixels, c[5], c[8], c[4], manip);
-#define PIXEL10_100   Interp10<PTYPES>(to+dline_pixels, c[5], c[8], c[4], manip);
-#define PIXEL11_0     StoreRGB<PTYPES>(to+dline_pixels+1, c[5], manip);
-#define PIXEL11_10    Interp1<PTYPES>(to+dline_pixels+1, c[5], c[9], manip);
-#define PIXEL11_11    Interp1<PTYPES>(to+dline_pixels+1, c[5], c[6], manip);
-#define PIXEL11_12    Interp1<PTYPES>(to+dline_pixels+1, c[5], c[8], manip);
-#define PIXEL11_20    Interp2<PTYPES>(to+dline_pixels+1, c[5], c[6], c[8], manip);
-#define PIXEL11_21    Interp2<PTYPES>(to+dline_pixels+1, c[5], c[9], c[8], manip);
-#define PIXEL11_22    Interp2<PTYPES>(to+dline_pixels+1, c[5], c[9], c[6], manip);
-#define PIXEL11_60    Interp6<PTYPES>(to+dline_pixels+1, c[5], c[8], c[6], manip);
-#define PIXEL11_61    Interp6<PTYPES>(to+dline_pixels+1, c[5], c[6], c[8], manip);
-#define PIXEL11_70    Interp7<PTYPES>(to+dline_pixels+1, c[5], c[6], c[8], manip);
-#define PIXEL11_90    Interp9<PTYPES>(to+dline_pixels+1, c[5], c[6], c[8], manip);
-#define PIXEL11_100   Interp10<PTYPES>(to+dline_pixels+1, c[5], c[6], c[8], manip);
+#	define PIXEL00_0   StoreRGB<PTYPES>(to, c[5], manip);
+#	define PIXEL00_10  Interp1<PTYPES>(to, c[5], c[1], manip);
+#	define PIXEL00_11  Interp1<PTYPES>(to, c[5], c[4], manip);
+#	define PIXEL00_12  Interp1<PTYPES>(to, c[5], c[2], manip);
+#	define PIXEL00_20  Interp2<PTYPES>(to, c[5], c[4], c[2], manip);
+#	define PIXEL00_21  Interp2<PTYPES>(to, c[5], c[1], c[2], manip);
+#	define PIXEL00_22  Interp2<PTYPES>(to, c[5], c[1], c[4], manip);
+#	define PIXEL00_60  Interp6<PTYPES>(to, c[5], c[2], c[4], manip);
+#	define PIXEL00_61  Interp6<PTYPES>(to, c[5], c[4], c[2], manip);
+#	define PIXEL00_70  Interp7<PTYPES>(to, c[5], c[4], c[2], manip);
+#	define PIXEL00_90  Interp9<PTYPES>(to, c[5], c[4], c[2], manip);
+#	define PIXEL00_100 Interp10<PTYPES>(to, c[5], c[4], c[2], manip);
+#	define PIXEL01_0   StoreRGB<PTYPES>(to + 1, c[5], manip);
+#	define PIXEL01_10  Interp1<PTYPES>(to + 1, c[5], c[3], manip);
+#	define PIXEL01_11  Interp1<PTYPES>(to + 1, c[5], c[2], manip);
+#	define PIXEL01_12  Interp1<PTYPES>(to + 1, c[5], c[6], manip);
+#	define PIXEL01_20  Interp2<PTYPES>(to + 1, c[5], c[2], c[6], manip);
+#	define PIXEL01_21  Interp2<PTYPES>(to + 1, c[5], c[3], c[6], manip);
+#	define PIXEL01_22  Interp2<PTYPES>(to + 1, c[5], c[3], c[2], manip);
+#	define PIXEL01_60  Interp6<PTYPES>(to + 1, c[5], c[6], c[2], manip);
+#	define PIXEL01_61  Interp6<PTYPES>(to + 1, c[5], c[2], c[6], manip);
+#	define PIXEL01_70  Interp7<PTYPES>(to + 1, c[5], c[2], c[6], manip);
+#	define PIXEL01_90  Interp9<PTYPES>(to + 1, c[5], c[2], c[6], manip);
+#	define PIXEL01_100 Interp10<PTYPES>(to + 1, c[5], c[2], c[6], manip);
+#	define PIXEL10_0   StoreRGB<PTYPES>(to + dline_pixels, c[5], manip);
+#	define PIXEL10_10  Interp1<PTYPES>(to + dline_pixels, c[5], c[7], manip);
+#	define PIXEL10_11  Interp1<PTYPES>(to + dline_pixels, c[5], c[8], manip);
+#	define PIXEL10_12  Interp1<PTYPES>(to + dline_pixels, c[5], c[4], manip);
+#	define PIXEL10_20  Interp2<PTYPES>(to + dline_pixels, c[5], c[8], c[4], manip);
+#	define PIXEL10_21  Interp2<PTYPES>(to + dline_pixels, c[5], c[7], c[4], manip);
+#	define PIXEL10_22  Interp2<PTYPES>(to + dline_pixels, c[5], c[7], c[8], manip);
+#	define PIXEL10_60  Interp6<PTYPES>(to + dline_pixels, c[5], c[4], c[8], manip);
+#	define PIXEL10_61  Interp6<PTYPES>(to + dline_pixels, c[5], c[8], c[4], manip);
+#	define PIXEL10_70  Interp7<PTYPES>(to + dline_pixels, c[5], c[8], c[4], manip);
+#	define PIXEL10_90  Interp9<PTYPES>(to + dline_pixels, c[5], c[8], c[4], manip);
+#	define PIXEL10_100 Interp10<PTYPES>(to + dline_pixels, c[5], c[8], c[4], manip);
+#	define PIXEL11_0   StoreRGB<PTYPES>(to + dline_pixels + 1, c[5], manip);
+#	define PIXEL11_10  Interp1<PTYPES>(to + dline_pixels + 1, c[5], c[9], manip);
+#	define PIXEL11_11  Interp1<PTYPES>(to + dline_pixels + 1, c[5], c[6], manip);
+#	define PIXEL11_12  Interp1<PTYPES>(to + dline_pixels + 1, c[5], c[8], manip);
+#	define PIXEL11_20  Interp2<PTYPES>(to + dline_pixels + 1, c[5], c[6], c[8], manip);
+#	define PIXEL11_21  Interp2<PTYPES>(to + dline_pixels + 1, c[5], c[9], c[8], manip);
+#	define PIXEL11_22  Interp2<PTYPES>(to + dline_pixels + 1, c[5], c[9], c[6], manip);
+#	define PIXEL11_60  Interp6<PTYPES>(to + dline_pixels + 1, c[5], c[8], c[6], manip);
+#	define PIXEL11_61  Interp6<PTYPES>(to + dline_pixels + 1, c[5], c[6], c[8], manip);
+#	define PIXEL11_70  Interp7<PTYPES>(to + dline_pixels + 1, c[5], c[6], c[8], manip);
+#	define PIXEL11_90  Interp9<PTYPES>(to + dline_pixels + 1, c[5], c[6], c[8], manip);
+#	define PIXEL11_100 Interp10<PTYPES>(to + dline_pixels + 1, c[5], c[6], c[8], manip);
 
 template <class Dest_pixel, class Manip_pixels>
 void Scale_Hq2x(
-    unsigned char *source,      // ->source pixels.
-    int srcx, int srcy,     // Start of rectangle within src.
-    int srcw, int srch,     // Dims. of rectangle.
-    int sline_pixels,       // Pixels (words)/line for source.
-    int sheight,            // Source height.
-    Dest_pixel *dest,       // ->dest pixels.
-    int dline_pixels,       // Pixels (words)/line for dest.
-    const Manip_pixels &manip   // Manipulator methods.
+		unsigned char* source,               // ->source pixels.
+		int srcx, int srcy,                  // Start of rectangle within src.
+		int srcw, int srch,                  // Dims. of rectangle.
+		int                 sline_pixels,    // Pixels (words)/line for source.
+		int                 sheight,         // Source height.
+		Dest_pixel*         dest,            // ->dest pixels.
+		int                 dline_pixels,    // Pixels (words)/line for dest.
+		const Manip_pixels& manip            // Manipulator methods.
 ) {
-	int i;
-	int j;
-	int prevline;
-	int nextline;
-	int w[10];
-	int c[10];
-	int yuv[10];
-	const int stopy = srcy + srch;
-	int stopx = srcx + srcw;
-	unsigned char *from = source + srcy * sline_pixels + srcx;
-	Dest_pixel *to = dest + 2 * srcy * dline_pixels + 2 * srcx;
+	int            i;
+	int            j;
+	int            prevline;
+	int            nextline;
+	int            w[10];
+	int            c[10];
+	int            yuv[10];
+	const int      stopy = srcy + srch;
+	int            stopx = srcx + srcw;
+	unsigned char* from  = source + srcy * sline_pixels + srcx;
+	Dest_pixel*    to    = dest + 2 * srcy * dline_pixels + 2 * srcx;
 
-	if (stopx > sline_pixels)
+	if (stopx > sline_pixels) {
 		stopx = sline_pixels;
+	}
 
 	//   +----+----+----+
 	//   |      |       |       |
@@ -122,17 +123,22 @@ void Scale_Hq2x(
 	//   +----+----+----+
 
 	for (j = srcy; j < stopy; j++) {
-		unsigned char *from0 = from;        // Save start of line.
-		Dest_pixel *to0 = to;
+		unsigned char* from0 = from;    // Save start of line.
+		Dest_pixel*    to0   = to;
 
-		if (j > 0)            prevline = -sline_pixels;
-		else prevline = 0;
-		if (j < sheight - 1) nextline = sline_pixels;
-		else nextline = 0;
+		if (j > 0) {
+			prevline = -sline_pixels;
+		} else {
+			prevline = 0;
+		}
+		if (j < sheight - 1) {
+			nextline = sline_pixels;
+		} else {
+			nextline = 0;
+		}
 
 		for (i = srcx; i < stopx; i++) {
-			int pattern = hqx_init(w, c, yuv, from, i, sline_pixels,
-			                       prevline, nextline, manip);
+			int pattern = hqx_init(w, c, yuv, from, i, sline_pixels, prevline, nextline, manip);
 			switch (pattern) {
 			case 0:
 			case 1:
@@ -2089,10 +2095,10 @@ void Scale_Hq2x(
 			to += 2;
 		}
 		from = from0 + sline_pixels;
-		to = to0 + 2 * dline_pixels;
+		to   = to0 + 2 * dline_pixels;
 	}
 }
 
-#endif //USE_HQ2X_SCALER
+#endif    // USE_HQ2X_SCALER
 
-#endif //INCL_SCALE_HQ2X_H
+#endif    // INCL_SCALE_HQ2X_H

@@ -27,7 +27,7 @@ file(APPEND ${ENVFILE} "export CXX=${ANDROID_TOOLCHAIN_ROOT}/bin/${TRIPLE}-clang
 file(APPEND ${ENVFILE} "export AR=${ANDROID_TOOLCHAIN_ROOT}/bin/llvm-ar\n")
 file(APPEND ${ENVFILE} "export RANLIB=${ANDROID_TOOLCHAIN_ROOT}/bin/llvm-ranlib\n")
 file(APPEND ${ENVFILE} "export PKG_CONFIG_PATH=${DEPENDENCIES_INSTALL_DIR}/lib/pkgconfig:$PKG_CONFIG_PATH\n")
-file(APPEND ${ENVFILE} "export LDFLAGS=\"${ANDROID_LINKER_FLAGS} ${LDFLAGS}\"\n")
+file(APPEND ${ENVFILE} "export LDFLAGS=\"${ANDROID_LINKER_FLAGS} ${LDFLAGS} $($CC -print-libgcc-file-name)\"\n")
 
 string(TOUPPER ${CMAKE_BUILD_TYPE} BUILD_TYPE)
 file(APPEND ${ENVFILE} "export CFLAGS=\"${CMAKE_C_FLAGS_${BUILD_TYPE}}\"\n")
@@ -55,8 +55,10 @@ ProcessorCount(NCPU)
 
 # Pull in dependencies
 include(ExternalProject)
+#add_subdirectory("fluidlite")
 add_subdirectory("ogg")
 add_subdirectory("vorbis")
+add_subdirectory("fluidsynth")
 add_subdirectory("mt32emu")
 add_subdirectory("sdl")
 add_subdirectory("exult")

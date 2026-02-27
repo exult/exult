@@ -1,10 +1,10 @@
 
 bundle_name = Exult.app
 studio_name = Exult_Studio.app
-exult_studio = $(top_srcdir)/mapedit/exult_studio$(EXEEXT)
+exult_studio = $(top_builddir)/mapedit/exult_studio$(EXEEXT)
 
-$(top_srcdir)/mapedit/exult_studio$(EXEEXT):
-	+(cd $(top_srcdir)/mapedit;$(MAKE) exult_studio$(EXEEXT))
+$(top_builddir)/mapedit/exult_studio$(EXEEXT):
+	+(cd $(top_builddir)/mapedit;$(MAKE) exult_studio$(EXEEXT))
 
 bundle: ${EXE_TARGET}
 	mkdir -p $(bundle_name)/Contents/MacOS
@@ -22,23 +22,49 @@ bundle: ${EXE_TARGET}
 	$(INSTALL_DATA) $(srcdir)/FAQ $(bundle_name)/Contents/Documents
 	$(INSTALL_DATA) $(srcdir)/NEWS $(bundle_name)/Contents/Documents
 	$(INSTALL_DATA) $(srcdir)/README $(bundle_name)/Contents/Documents
-	$(INSTALL_DATA) $(srcdir)/README.MacOSX $(bundle_name)/Contents/Documents
+	$(INSTALL_DATA) $(srcdir)/README.macOS $(bundle_name)/Contents/Documents
 if WITH_OSX_CODE_SIGNATURE
-	codesign --options runtime --deep --timestamp -f -s "$(OSX_CODE_SIGNATURE)" $(bundle_name)
+	  codesign \
+	  --options runtime \
+	  --deep \
+	  --timestamp \
+	  --strip-disallowed-xattrs \
+	  -f -s "$(OSX_CODE_SIGNATURE)" \
+	  $(bundle_name)
 endif
 
 bundle_shared: bundle
-	dylibbundler -od -b -x $(bundle_name)/Contents/MacOS/$(bin_PROGRAMS) -d $(bundle_name)/Contents/Resources/lib -p @executable_path/../Resources/lib -i /usr/lib
+	dylibbundler -ns -od -b \
+	  -x $(bundle_name)/Contents/MacOS/$(bin_PROGRAMS) \
+	  -d $(bundle_name)/Contents/Resources/lib \
+	  -p @executable_path/../Resources/lib \
+	  -i /usr/lib
 if WITH_OSX_CODE_SIGNATURE
-	codesign --options runtime --timestamp -f -s "$(OSX_CODE_SIGNATURE)" $(bundle_name)/contents/resources/lib/*.dylib
+	  codesign \
+	  --options runtime \
+	  --timestamp \
+	  --strip-disallowed-xattrs \
+	  -f -s "$(OSX_CODE_SIGNATURE)" \
+	  $(bundle_name)/Contents/Resources/lib/*.dylib
 endif
 
 studiobundle: $(exult_studio)
-	SOURCE=$(abs_top_srcdir) gtk-mac-bundler ./macosx/exult_studio.bundle
+	SOURCE=$(abs_top_srcdir) BUILD_DIR=$(abs_top_builddir) gtk-mac-bundler $(srcdir)/macosx/exult_studio.bundle
 if WITH_OSX_CODE_SIGNATURE
-	codesign --options runtime --deep --timestamp -f -s "$(OSX_CODE_SIGNATURE)" --entitlements ./macosx/exult_studio_entitlements.plist $(studio_name)
-	codesign --options runtime --timestamp -f -s "$(OSX_CODE_SIGNATURE)" $(studio_name)/contents/resources/lib/*.dylib
-	codesign --options runtime --timestamp -f -s "$(OSX_CODE_SIGNATURE)" $(studio_name)/Contents/Resources/lib/gdk-pixbuf-2.0/2.10.0/loaders/*.so
+	codesign \
+	  --options runtime \
+	  --timestamp \
+	  --strip-disallowed-xattrs \
+	  -f -s "$(OSX_CODE_SIGNATURE)" \
+	  $(studio_name)/Contents/Resources/lib/*.dylib \
+	  $(studio_name)/Contents/Resources/lib/gdk-pixbuf-2.0/2.10.0/loaders/*.so
+	codesign \
+	  --options runtime \
+	  --deep \
+	  --timestamp \
+	  --strip-disallowed-xattrs \
+	  -f -s "$(OSX_CODE_SIGNATURE)" \
+	  $(studio_name)
 endif
 
 # Don't try to build/install the MacOS bundle if we are building libexult
@@ -54,26 +80,44 @@ osxdmg: bundle
 	cp $(srcdir)/AUTHORS ./Exult-snapshot/Authors
 	cp $(srcdir)/COPYING ./Exult-snapshot/License
 	cp $(srcdir)/NEWS ./Exult-snapshot/News
-	cp $(srcdir)/README.MacOSX ./Exult-snapshot/ReadMe.MacOSX
+	cp $(srcdir)/README.macOS ./Exult-snapshot/ReadMe.macOS
 	cp $(srcdir)/docs/ReadMe.html ./Exult-snapshot/ReadMe.html
 	cp $(srcdir)/docs/faq.html ./Exult-snapshot/FAQ.html
 	cp $(srcdir)/docs/images/docs*.* ./Exult-snapshot/images
 	cp $(srcdir)/docs/images/*.gif ./Exult-snapshot/images
-	cp $(srcdir)/macosx/diskback.png ./Exult-snapshot/images/diskback.png
-	cp $(srcdir)/macosx/DS_Store ./Exult-snapshot/.DS_Store
-	ln -s /Applications "./Exult-snapshot/Drag'n'drop here"
-	echo "[InternetShortcut]\nURL=https://github.com/exult/exult/commit/$(REVISION)" > "./Exult-snapshot/Git $(REVISION).url"
-	SetFile -a V ./Exult-snapshot/.DS_Store
+	cp $(srcdir)/docs/images/*.svg ./Exult-snapshot/images
+	ln -s -f /Applications "./Exult-snapshot/Drag'n'drop here"
+	echo "[InternetShortcut]\nURL=https://github.com/exult/exult/commit/$(REVISION)" > "./Exult-snapshot/Git revision.url"
 	SetFile -a V ./Exult-snapshot/images
 	SetFile -t ttro -c ttxt ./Exult-snapshot/Authors
 	SetFile -t ttro -c ttxt ./Exult-snapshot/License
 	SetFile -t ttro -c ttxt ./Exult-snapshot/News
-	SetFile -t ttro -c ttxt ./Exult-snapshot/ReadMe.MacOSX
+	SetFile -t ttro -c ttxt ./Exult-snapshot/ReadMe.macOS
+	SetFile -a E ./Exult-snapshot/ReadMe.html
+	SetFile -a E ./Exult-snapshot/FAQ.html
+	SetFile -a E "./Exult-snapshot/Git revision.url"
 	cp -R $(bundle_name) ./Exult-snapshot/
-	hdiutil create -ov -format UDZO -imagekey zlib-level=9 -fs HFS+ \
-					-srcfolder Exult-snapshot \
-					-volname "Exult Git snapshot" \
-					Exult-snapshot.dmg
+	create-dmg \
+	  --volname "Exult Git Snapshot" \
+	  --volicon "$(srcdir)/macosx/exult.icns" \
+	  --background "$(srcdir)/macosx/diskback.png" \
+	  --window-pos 200 120 \
+	  --window-size 685 545 \
+	  --text-size 14 \
+	  --icon-size 100 \
+	  --icon "Exult.app" 310 90 \
+	  --icon "Drag'n'drop here" 554 90 \
+	  --icon "Git revision.url" 80 90 \
+	  --icon "ReadMe.html" 80 395 \
+	  --icon "FAQ.html" 177 395 \
+	  --icon "News" 274 395 \
+	  --icon "License" 371 395 \
+	  --icon "Authors" 468 395 \
+	  --icon "ReadMe.macOS" 564 395 \
+	  --hdiutil-quiet \
+	  --no-internet-enable \
+	  "Exult-snapshot.dmg" \
+	  "./Exult-snapshot/"
 	rm -rf Exult-snapshot
 
 studiodmg: studiobundle
@@ -81,24 +125,208 @@ studiodmg: studiobundle
 	mkdir -p ./Studio-snapshot/images
 	cp $(srcdir)/AUTHORS ./Studio-snapshot/Authors
 	cp $(srcdir)/COPYING ./Studio-snapshot/License
-	cp $(srcdir)/README.MacOSX ./Studio-snapshot/ReadMe.MacOSX
-	cp $(srcdir)/docs/exult_studio.html ./Studio-snapshot/Exult_Studio.html
+	cp $(srcdir)/README.macOS ./Studio-snapshot/ReadMe.macOS
+	cp $(srcdir)/docs/exult_studio.html ./Studio-snapshot/Manual.html
 	cp $(srcdir)/docs/images/studio*.* ./Studio-snapshot/images
 	cp $(srcdir)/docs/images/*.gif ./Studio-snapshot/images
-	cp $(srcdir)/macosx/diskback.png ./Studio-snapshot/images/diskback.png
-	cp $(srcdir)/macosx/exult_studio_DS_Store ./Studio-snapshot/.DS_Store
-	ln -s /Applications "./Studio-snapshot/Drag'n'drop here"
-	echo "[InternetShortcut]\nURL=https://github.com/exult/exult/commit/$(REVISION)" > "./Studio-snapshot/Git $(REVISION).url"
-	SetFile -a V ./Studio-snapshot/.DS_Store
+	cp $(srcdir)/docs/images/*.svg ./Studio-snapshot/images
+	ln -s -f /Applications "./Studio-snapshot/Drag'n'drop here"
+	echo "[InternetShortcut]\nURL=https://github.com/exult/exult/commit/$(REVISION)" > "./Studio-snapshot/Git revision.url"
 	SetFile -a V ./Studio-snapshot/images
 	SetFile -t ttro -c ttxt ./Studio-snapshot/Authors
 	SetFile -t ttro -c ttxt ./Studio-snapshot/License
+	SetFile -t ttro -c ttxt ./Studio-snapshot/ReadMe.macOS
+	SetFile -a E ./Studio-snapshot/Manual.html
+	SetFile -a E "./Studio-snapshot/Git revision.url"
 	cp -R $(studio_name) ./Studio-snapshot/
-	hdiutil create -ov -format UDZO -imagekey zlib-level=9 -fs HFS+ \
-					-srcfolder Studio-snapshot \
-					-volname "Exult Studio Git snapshot" \
-					ExultStudio-snapshot.dmg
+	create-dmg \
+	  --volname "Exult Studio Git Snapshot" \
+	  --volicon "$(srcdir)/macosx/exult_studio.icns" \
+	  --background "$(srcdir)/macosx/diskback.png" \
+	  --window-pos 200 120 \
+	  --window-size 685 545 \
+	  --text-size 14 \
+	  --icon-size 100 \
+	  --icon "Exult_Studio.app" 295 90 \
+	  --icon "Drag'n'drop here" 554 90 \
+	  --icon "Git revision.url" 80 90 \
+	  --icon "Manual.html" 164 395 \
+	  --icon "License" 260 395 \
+	  --icon "Authors" 356 395 \
+	  --icon "ReadMe.macOS" 452 395 \
+	  --hdiutil-quiet \
+	  --no-internet-enable \
+	  "ExultStudio-snapshot.dmg" \
+	  "./Studio-snapshot/"
 	rm -rf Studio-snapshot
+
+if GIMP3_PLUGIN
+u7shp: u7shp-deps
+	$(MAKE) -C tools/gimp_plugin u7shp$(EXEEXT)
+
+u7shp-deps:
+	$(MAKE) -C imagewin libimagewin.la  
+	$(MAKE) -C shapes libshapes.la
+	$(MAKE) -C files libu7file.la
+
+gimp_package:
+	test -f ./tools/gimp_plugin/u7shp$(EXEEXT) || $(MAKE) u7shp
+	mkdir -p package
+	mkdir -p ./package/plugin
+	mkdir -p ./package/script
+	mkdir -p ./package/res
+	install_name_tool \
+	  -add_rpath /Applications/GIMP.app/Contents/Resources/ \
+	  ./tools/gimp_plugin/u7shp
+	$(INSTALL_PROGRAM) ./tools/gimp_plugin/u7shp$(EXEEXT) ./package/plugin/
+	cp $(srcdir)/tools/gimp_plugin/gimpmacos.txt ./package/plugin/ReadMe.txt
+	cp $(srcdir)/macosx/gimp_plugin_postinstall ./package/script/postinstall
+	cp $(srcdir)/desktop/exult.png ./package/res
+	cp $(srcdir)/COPYING ./package/res
+	chmod +x ./package/script/postinstall
+if WITH_OSX_CODE_SIGNATURE
+	codesign \
+	  --options runtime \
+	  --timestamp \
+	  --strip-disallowed-xattrs \
+	  --entitlements $(srcdir)/macosx/gimp_plugin_entitlements.plist \
+	  -f -s "$(OSX_CODE_SIGNATURE)" \
+	  ./package/plugin/u7shp
+endif
+	pkgbuild \
+	  --nopayload \
+	  --identifier info.exult.shp.pkg \
+	  --scripts ./package/script \
+	  --root ./package/plugin \
+	  ./plugin.pkg
+	productbuild \
+	  --distribution $(srcdir)/macosx/gimp_plugin_distribution.xml \
+	  --resources ./package/res \
+	  ./Gimp30plugin.pkg
+if WITH_OSX_INSTALLER_SIGNATURE
+	productsign \
+	  --timestamp \
+	  --sign "$(OSX_INSTALLER_SIGNATURE)" \
+	  ./Gimp30plugin.pkg \
+	  ./signed_Gimp30plugin.pkg
+endif
+	-rm -rf ./package
+	-rm -rf ./plugin.pkg
+endif
+
+if BUILD_ASEPRITE_PLUGIN
+exult_shp: exult_shp-deps
+	$(MAKE) -C tools/aseprite_plugin exult_shp$(EXEEXT)
+
+exult_shp-deps:
+	$(MAKE) -C imagewin libimagewin.la  
+	$(MAKE) -C shapes libshapes.la
+	$(MAKE) -C files libu7file.la
+
+aseprite_package:
+	test -f ./tools/aseprite_plugin/exult_shp$(EXEEXT) || $(MAKE) exult_shp
+	mkdir -p aseprite
+	$(INSTALL_PROGRAM) ./tools/aseprite_plugin/exult_shp$(EXEEXT) ./aseprite/
+	dylibbundler -cd -b -ns -of \
+	  -x ./aseprite/exult_shp \
+	  -d ./aseprite \
+	  -p @executable_path/ \
+	  -i /usr/lib
+	cp $(srcdir)/tools/aseprite_plugin/Readme.txt ./aseprite/
+	cp $(srcdir)/tools/aseprite_plugin/main.lua ./aseprite/
+	cp $(srcdir)/tools/aseprite_plugin/package.json ./aseprite/
+	cp $(srcdir)/tools/aseprite_plugin/u7.pal ./aseprite/
+if WITH_OSX_CODE_SIGNATURE
+	codesign \
+	  --options runtime \
+	  --timestamp \
+	  --strip-disallowed-xattrs \
+	  --entitlements $(srcdir)/macosx/gimp_plugin_entitlements.plist \
+	  -f -s "$(OSX_CODE_SIGNATURE)" \
+	  ./aseprite/exult_shp
+	codesign \
+	  --options runtime \
+	  --timestamp \
+	  --strip-disallowed-xattrs \
+	  -f -s "$(OSX_CODE_SIGNATURE)" \
+	  ./aseprite/*.dylib
+endif
+	zip -rj ./exult_shp_macos.aseprite-extension ./aseprite
+	-rm -rf ./aseprite
+endif
+
+if BUILD_TOOLS
+tools_package:
+	mkdir -p toolspack/data
+	strip ./tools/cmanip -o ./toolspack/cmanip
+	strip ./tools/expack -o ./toolspack/expack
+	strip ./tools/ipack -o ./toolspack/ipack
+	strip ./tools/mklink -o ./toolspack/mklink
+	strip ./tools/rip -o ./toolspack/rip
+	strip ./tools/shp2pcx -o ./toolspack/shp2pcx
+	strip ./tools/splitshp -o ./toolspack/splitshp
+	strip ./tools/textpack -o ./toolspack/textpack
+	strip ./tools/u7voice2syx -o ./toolspack/u7voice2syx
+	strip ./tools/wuc -o ./toolspack/wuc
+	strip ./tools/compiler/ucc -o ./toolspack/ucc
+	strip ./tools/ucxt/head2data -o ./toolspack/head2data
+	strip ./tools/ucxt/src/ucxt -o ./toolspack/ucxt
+	strip ./tools/mockup/mockup -o ./toolspack/mockup
+	strip ./tools/smooth/smooth -o ./toolspack/smooth
+	cp ./tools/smooth/*.so ./toolspack/
+	cp $(srcdir)/tools/*.txt ./toolspack
+	cp $(srcdir)/tools/README ./toolspack
+	cp $(srcdir)/tools/mockup/*.txt ./toolspack
+	cp $(srcdir)/tools/mockup/map.png ./toolspack
+	cp $(srcdir)/tools/mockup/README ./toolspack/mockup.txt
+	cp $(srcdir)/tools/mockup/LICENCE ./toolspack/LICENCE.txt
+	cp $(srcdir)/tools/smooth/README ./toolspack/smooth.txt
+	cp $(srcdir)/tools/smooth/smooth.conf ./toolspack
+	cp $(srcdir)/tools/smooth/*.bmp ./toolspack
+	cp $(srcdir)/docs/ucc.txt ./toolspack
+	cp $(srcdir)/tools/ucxt/data/*.data ./toolspack/data
+	cp $(srcdir)/data/bginclude.uc ./toolspack/data
+	cp ./tools/ucxt/data/*.data ./toolspack/data
+	dylibbundler -cd -b -ns -of -od \
+	  -x ./toolspack/ipack \
+	  -x ./toolspack/ucxt \
+	  -x ./toolspack/mockup \
+	  -x ./toolspack/smooth \
+	  -x ./toolspack/libsmooth_randomize.so \
+	  -x ./toolspack/libsmooth_smooth.so \
+	  -x ./toolspack/libsmooth_stream.so \
+	  -d ./toolspack/libs \
+	  -p @executable_path/libs/ \
+	  -i /usr/lib
+if WITH_OSX_CODE_SIGNATURE
+	codesign \
+	  --options runtime \
+	  --timestamp \
+	  --strip-disallowed-xattrs \
+	  -f -s "$(OSX_CODE_SIGNATURE)" \
+	  ./toolspack/ipack \
+	  ./toolspack/expack \
+	  ./toolspack/cmanip \
+	  ./toolspack/expack \
+	  ./toolspack/ipack \
+	  ./toolspack/mklink \
+	  ./toolspack/rip \
+	  ./toolspack/shp2pcx \
+	  ./toolspack/splitshp \
+	  ./toolspack/textpack \
+	  ./toolspack/u7voice2syx \
+	  ./toolspack/wuc \
+	  ./toolspack/ucc \
+	  ./toolspack/head2data \
+	  ./toolspack/ucxt \
+	  ./toolspack/mockup \
+	  ./toolspack/smooth \
+	  ./toolspack/*.so \
+	  ./toolspack/libs/*.dylib
+endif
+	(cd ./toolspack && zip -r ../exult_tools_macOS.zip .)
+	-rm -rf ./toolspack
+endif
 
 clean-local:
 	-rm -f Exult-snapshot.dmg
@@ -107,3 +335,7 @@ clean-local:
 	-rm -f tmpicnsES.rsrc
 	-rm -rf $(bundle_name)
 	-rm -rf $(studio_name)
+	-rm -f Gimp30plugin.pkg
+	-rm -f signed_Gimp30plugin.pkg
+	-rm -f exult_shp_macos.aseprite-extension
+	-rm -f exult_tools_macOS.zip

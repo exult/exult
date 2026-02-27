@@ -20,57 +20,51 @@
  *	Last Modified: 2006-03-19
  */
 
-void Hammer shape#(0x26F) ()
-{
+void Hammer shape#(0x26F) () {
 	//Hammer was doubleclicked, use it on something
-	if (event == DOUBLECLICK)
-	{
+	if (event == DOUBLECLICK) {
 		//Hammer is not readied
-		if (!AVATAR->is_readied(BG_WEAPON_HAND, SHAPE_HAMMER, FRAME_ANY))
-		{
+		if (!AVATAR->is_readied(BG_WEAPON_HAND, SHAPE_HAMMER, FRAME_ANY)) {
 			randomPartySay("@Thou must wield the hammer in thine hand to use it.@");
 			return;
 		}
 
-		UI_close_gumps();	//clear the view
-		var target = UI_click_on_item();
+		//clear the view
+		UI_close_gumps();
+		struct<ObjPos> target = UI_click_on_item();
 		var target_shape = target->get_item_shape();
 
 		var swordblank;
 		var anvil;
 		//used on swordblank, make sure the swordblank is on an anvil
-		if (target_shape == SHAPE_SWORDBLANK)
-		{
+		if (target_shape == SHAPE_SWORDBLANK) {
 			swordblank = target;
 			anvil = target->find_nearest(SHAPE_ANVIL, 3);
-			if (anvil)
-			{
-				//The sword is correctly positioned: go to the anvil,
-				//and call useHammerOnSwordblank()
-				if (onAnvil(swordblank, anvil))
+			if (anvil) {
+				if (onAnvil(swordblank, anvil)) {
+					//The sword is correctly positioned: go to the anvil,
+					//and call useHammerOnSwordblank()
 					gotoObject(anvil, 0, 2, 0, useHammerOnSwordblank, swordblank, SCRIPTED);
-				//Otherwise, advise the player to adjust its position
-				else
+				} else {
+					//Otherwise, advise the player to adjust its position
 					randomPartySay("@Thou shouldst place the blade squarely upon the anvil.@");
-			}
-			else
+				}
+			} else {
 				randomPartySay("Thou must place the blade upon an anvil before hammering it.");
-		}
-
-		//used on anvil, make sure there's a swordblank on top of it
-		else if (target_shape == SHAPE_ANVIL)
-		{
+			}
+		} else if (target_shape == SHAPE_ANVIL) {
+			//used on anvil, make sure there's a swordblank on top of it
 			swordblank = target->find_nearest(SHAPE_SWORDBLANK, 3);
 			anvil = target;
-			if (swordblank)
-			{
-				//The sword is correctly positioned: go to the anvil,
-				//and call useHammerOnSwordblank()
-				if (onAnvil(swordblank, anvil))
+			if (swordblank) {
+				if (onAnvil(swordblank, anvil)) {
+					//The sword is correctly positioned: go to the anvil,
+					//and call useHammerOnSwordblank()
 					gotoObject(anvil, 0, 2, 0, useHammerOnSwordblank, swordblank, SCRIPTED);
-				//Otherwise, advise the player to adjust its position
-				else
+				} else {
+					//Otherwise, advise the player to adjust its position
 					randomPartySay("@Thou shouldst place the blade squarely upon the anvil.@");
+				}
 			}
 		}
 	}

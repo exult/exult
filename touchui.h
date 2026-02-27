@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2015  Chaoji Li
- * Copyright (C) 2015-2022  The Exult Team
+ * Copyright (C) 2015-2025  The Exult Team
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -24,8 +24,12 @@
 #ifdef __GNUC__
 #	pragma GCC diagnostic push
 #	pragma GCC diagnostic ignored "-Wold-style-cast"
+#	pragma GCC diagnostic ignored "-Wzero-as-null-pointer-constant"
+#	if !defined(__llvm__) && !defined(__clang__)
+#		pragma GCC diagnostic ignored "-Wuseless-cast"
+#	endif
 #endif    // __GNUC__
-#include <SDL.h>
+#include <SDL3/SDL.h>
 #ifdef __GNUC__
 #	pragma GCC diagnostic pop
 #endif    // __GNUC__
@@ -35,19 +39,24 @@
 class TouchUI {
 public:
 	static uint32 eventType;
+
 	enum {
-		EVENT_CODE_INVALID = 0,
+		EVENT_CODE_INVALID    = 0,
 		EVENT_CODE_TEXT_INPUT = 1
 	};
-	static void onTextInput(const char *text);
+
+	static void onTextInput(const char* text);
+	static void startTextInput(SDL_Window* window);
+	static void setTextInputArea(SDL_Window* window, int gx1, int gy1, int gx2, int gy2);
 
 	TouchUI();
-	virtual ~TouchUI() = default;
-	virtual void promptForName(const char *name) = 0;
-	virtual void showGameControls() = 0;
-	virtual void hideGameControls() = 0;
-	virtual void showButtonControls() = 0;
-	virtual void hideButtonControls() = 0;
+	virtual ~TouchUI()                   = default;
+	virtual void showGameControls()      = 0;
+	virtual void hideGameControls()      = 0;
+	virtual void showButtonControls()    = 0;
+	virtual void hideButtonControls()    = 0;
+	virtual void showPauseControls()     = 0;
+	virtual void hidePauseControls()     = 0;
 	virtual void onDpadLocationChanged() = 0;
 };
 

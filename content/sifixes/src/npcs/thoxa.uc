@@ -21,8 +21,7 @@
  *	original, I was *forced* to reimplement the entire function. Sad...
  */
 
-void Thoxa object#(0x4D3) ()
-{
+void Thoxa object#(0x4D3) () {
 	var avatarlocation;
 	var title;
 	var met_thoxa;
@@ -30,20 +29,19 @@ void Thoxa object#(0x4D3) ()
 	var index;
 	var max;
 	var npc;
-	var pos;
+	struct<Position> pos;
 	var var000E;
 
 	avatarlocation = getAvatarLocationID();
 	met_thoxa = get_item_flag(MET);
 
 	title = "son";
-	if (UI_is_pc_female())
+	if (UI_is_pc_female()) {
 		title = "daughter";
+	}
 
-	if (event == DOUBLECLICK)
-	{
-		if (KARNAX->get_npc_id() != 0)
-		{
+	if (event == DOUBLECLICK) {
+		if (KARNAX->get_npc_id() != 0) {
 			item_say("@Not now...@");
 			abort;
 		}
@@ -51,16 +49,12 @@ void Thoxa object#(0x4D3) ()
 		item->makePartyFaceNPC();
 		delayedBark(item, "@Yes, my " + title + "?@", 2);
 		set_schedule_type(TALK);
-	}
-
-	else if (event == STARTED_TALKING)
-	{
+	} else if (event == STARTED_TALKING) {
 		run_schedule();
 		clear_item_say();
 		show_npc_face0(0);
 		if ((avatarlocation == MONITOR) && gflags[AVATAR_GOT_SHORT_STICK] &&
-		    !gflags[DUPRE_IS_TOAST])
-		{
+		    !gflags[DUPRE_IS_TOAST]) {
 			say("@It is written that 'The Hero from Another World shall face the end as the beginning'! Thou didst enter our land with thy three companions, they must be present at the final moment to forestall disaster!@");
 			delayedBark(item, "@I shall pray for thee!@", 0);
 
@@ -70,13 +64,12 @@ void Thoxa object#(0x4D3) ()
 			// How it is done in the original:
 			/*
 			companions = [IOLO, SHAMINO, DUPRE];
-			for (npc in companions with index to max)
-			{
-				if (!npc->npc_nearby())
-				{
+			for (npc in companions with index to max) {
+				if (!npc->npc_nearby()) {
 					npc->approach_avatar(80, 40);
-					if (!(npc->get_schedule_type() == FOLLOW_AVATAR))
+					if (!(npc->get_schedule_type() == FOLLOW_AVATAR)) {
 						npc->add_to_party();
+					}
 				}
 			}
 			*/
@@ -90,31 +83,26 @@ void Thoxa object#(0x4D3) ()
 		// check to see if the banes have been released, so the companions can
 		// no longer be brought back this way:
 		if (pointInsideRect(pos, [0x914, 0x1BB], [0x939, 0x1D9]) &&
-		    !gflags[BANES_RELEASED])
-		{
+		    !gflags[BANES_RELEASED]) {
 			say("@Thou must not enter this door without thy three stalwart companions, Hero from Another World!@");
 			say("@It matters not if any others venture with thee, but through this portal the four must pass!@");
 			say("@I shall act as a channel for the power to restore thy group as it should be.@");
 			resurrectCompanions();
-			script item
-			{
+			script item {
 				nohalt;
-				call gwaniChild; // See the note in "headers/si_externals.uc"
+				// See the note in "headers/si_externals.uc"
+				call gwaniChild;
 			}
 			abort;
 		}
 
 		say("@We meet again. Thy destiny draws near quickly... How may I be of service to thee?@");
 
-		if (areThereBodiesNearby())
-		{
+		if (areThereBodiesNearby()) {
 			say("@Oh! One of thy friends hath met an untimely end. This should not be... [@If thou art ready to see thy friend again, merely ask and I will return them to thee.@");
 			add("resurrection");
-		}
-		else
-		{
-			if ((avatarlocation == MONK_ISLE) && (!met_thoxa))
-			{
+		} else {
+			if ((avatarlocation == MONK_ISLE) && (!met_thoxa)) {
 				say("@Welcome to Monk Isle, my ", title, ".@");
 				say("@Thou mayest tarry with us for as long as thou dost wish, but remember... The Sands of Time wait for no one, not even thee.@");
 				say("@Whilst thou art here, thou wilt learn that the life of a monk is governed by the bells. Not all of our membership may speak to thee, the novices are bound by a vow of silence to help them better contemplate the mysteries.@");
@@ -123,20 +111,19 @@ void Thoxa object#(0x4D3) ()
 		}
 
 		if (gflags[TALKED_TO_GREAT_HIEROPHANT] &&
-		    !gflags[TALKED_TO_CHAOS_HIEROPHANT])
-		{
+		    !gflags[TALKED_TO_CHAOS_HIEROPHANT]) {
 			say("@I see... Thou hast made great progress in thy quest, my ",
 				title, ". But before thou canst continue, thou must seek the wisdom of the last child of Chaos. He alone holds the key to the location of the Chaos Hierophant.@");
 
-			if (SETHYS->get_item_flag(MET))
+			if (SETHYS->get_item_flag(MET)) {
 				say("@Thou didst meet him in his imprisonment, my ", title,
 					". Yet he remains a prisoner out of time. Seek him within the Shrine that is his home.@");
-			else
+			} else {
 				say("@He remains a prisoner out of time, imprisoned within the Shrine that is his home.@");
+			}
 		}
 		add("bye");
-		converse (0)
-		{
+		converse (0) {
 			case "return" (remove):
 				say("@Xenka disappeared several centuries ago. No one knows where she went.@");
 				say("@However, in her writings, Xenka hath promised to return to us when the end is near. She will then guide us once more.@");
@@ -149,11 +136,11 @@ void Thoxa object#(0x4D3) ()
 				add("doom");
 
 			case "doom" (remove):
-				if (gflags[BANES_RELEASED])
+				if (gflags[BANES_RELEASED]) {
 					say("@If thou dost fail in thy quest, our world will end... ripped apart by the storms and earthquakes that doth now plague it.@");
-
-				else
+				} else {
 					say("@If thou dost fail in thy quest, our world will end... ripped apart by the earthquakes that will soon plague it.@");
+				}
 
 			case "bells" (remove):
 				say("@They toll, though no one rings them. And it is said that when all the bells toll it will signal Xenka's return. Until then, they signal the order of our daily life. From Chapel to field, from field to the library, and so on.@");
@@ -177,38 +164,33 @@ void Thoxa object#(0x4D3) ()
 				say("@I fear that I do not know all we possess. Thou art free to look, of course. But if thou hast specific questions, thou shouldst direct them to Miggim.@");
 
 			case "visitors" (remove):
-				if (npcNearbyAndVisible(GWENNO))
-				{
-					if (!GWENNO->get_item_flag(SI_ZOMBIE))
+				if (npcNearbyAndVisible(GWENNO)) {
+					if (!GWENNO->get_item_flag(SI_ZOMBIE)) {
 						say("@Such visitors are rare, for the journey here is not an easy one. As I remember it, Gwenno was our last visitor.@");
-
-					else
+					} else {
 						say("@Such visitors are rare, for the journey here is not an easy one. As I remember it, our last visitor was poor Gwenno.@");
-				}
-				else
+					}
+				} else {
 					say("@Such visitors are rare, for the journey here is not an easy one. As I remember it, our last visitor was that woman, Gwenno.@");
+				}
 
 				add("Gwenno");
 
 			case "Gwenno" (remove):
-				if (npcNearbyAndVisible(GWENNO))
-				{
-					if (!GWENNO->get_item_flag(SI_ZOMBIE))
-					{
+				if (npcNearbyAndVisible(GWENNO)) {
+					if (!GWENNO->get_item_flag(SI_ZOMBIE)) {
 						message("@It is a pleasure having her here, my ");
 						message(title);
 						message(", now that her proper state of mind hath been restored.@");
 						say();
 						say("@I hope to speak with Gwenno about her time with the Ice People. It would be most instructive, I am sure.@");
-					}
-					else
-					{
+					} else {
 						say("@'Tis a pity to see her so undone. I hope that thou canst find a way to restore her to her proper state of mind soon.@");
 						say("@I had hoped to be able to speak with her about her time with the Ice People. It would be most instructive, I am sure.@");
 					}
-				}
-				else
+				} else {
 					say("@She stayed with us for a short period of time. I think that she was seeking information concerning the Ice People of the north. But thou shouldst speak with Miggim... Gwenno spent most of her time within the library.@");
+				}
 
 				add("Ice People");
 
@@ -228,8 +210,7 @@ void Thoxa object#(0x4D3) ()
 				say();
 
 			case "bye":
-				if (avatarlocation == MONK_ISLE)
-				{
+				if (avatarlocation == MONK_ISLE) {
 					UI_remove_npc_face0();
 					delayedBark(AVATAR, "@Goodbye!@", 0);
 					delayedBark(item, "@Fortune!@", 2);
@@ -239,14 +220,14 @@ void Thoxa object#(0x4D3) ()
 				say("@I must return to Monk Isle.@");
 				UI_remove_npc_face0();
 				pos = get_object_position();
-				pos[X] = (pos[X] - (pos[Z] / 2));
-				pos[Y] = (pos[Y] - (pos[Z] / 2));
-				UI_sprite_effect(0x7, pos[X], pos[Y], 0, 0, 0, -1);
+				pos.x -= (pos.z / 2);
+				pos.y -= (pos.z / 2);
+				UI_sprite_effect(ANIMATION_TELEPORT, pos.x, pos.y, 0, 0, 0, -1);
 				UI_play_sound_effect(0x51);
 				remove_npc();
 				abort;
 		}
-	}
-	else if (event == DEATH)
+	} else if (event == DEATH) {
 		xenkanMonkDies(item);
+	}
 }

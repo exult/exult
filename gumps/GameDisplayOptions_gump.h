@@ -1,5 +1,5 @@
 /*
-Copyright (C) 2001-2022 The Exult Team
+Copyright (C) 2001-2024 The Exult Team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -29,35 +29,43 @@ class Gump_button;
 
 class GameDisplayOptions_gump : public Modal_gump {
 private:
-	int facestats;
-	int sc_enabled;
-	int sc_outline;
-	bool sb_hide_missing;
+	int                      facestats;
+	int                      sc_enabled;
+	int                      sc_outline;
+	bool                     sb_hide_missing;
 	std::vector<std::string> sc_outline_txt;
-	int text_bg;
-	int smooth_scrolling;
-	bool usecode_intro;
-	bool extended_intro;
-	bool menu_intro;
-	int paperdolls;
+	int                      text_bg;
+	int                      smooth_scrolling;
+	bool                     usecode_intro;
+	bool                     extended_intro;
+	bool                     menu_intro;
+	int                      paperdolls;
+	int                      language;
+	int                      fonts;
 
 	enum button_ids {
-	    id_first = 0,
-	    id_ok = id_first,
-	    id_cancel,
-	    id_help,
-	    id_facestats,
-	    id_sc_enabled,
-	    id_sc_outline,
-	    id_sb_hide_missing,
-	    id_text_bg,
-	    id_smooth_scrolling,
-	    id_menu_intro,
-	    id_usecode_intro,
-	    id_extended_intro,
-	    id_paperdolls,
-	    id_count
+		id_first = 0,
+		id_ok    = id_first,
+		id_help,
+		id_cancel,
+		id_first_setting,
+		id_facestats = id_first_setting,
+		id_sc_enabled,
+		id_sc_outline,
+		id_sb_hide_missing,
+		id_text_bg,
+		id_smooth_scrolling,
+		id_menu_intro,
+		id_usecode_intro,
+		id_extended_intro,
+		id_paperdolls,
+		id_android_autolaunch,
+		id_language,
+		id_fonts,
+
+		id_count
 	};
+
 	std::array<std::unique_ptr<Gump_button>, id_count> buttons;
 
 public:
@@ -66,10 +74,6 @@ public:
 	// Paint it and its contents.
 	void paint() override;
 	void close() override;
-
-	// Handle events:
-	bool mouse_down(int mx, int my, int button) override;
-	bool mouse_up(int mx, int my, int button) override;
 
 	void build_buttons();
 
@@ -88,6 +92,14 @@ public:
 
 	void toggle_sc_outline(int state) {
 		sc_outline = state;
+	}
+
+	void toggle_language(int state) {
+		language = state;
+	}
+
+	void toggle_fonts(int state) {
+		fonts = state;
 	}
 
 	void toggle_sb_hide_missing(int state) {
@@ -117,6 +129,20 @@ public:
 	void toggle_paperdolls(int state) {
 		paperdolls = state;
 	}
+
+private:
+	int android_autolaunch;
+	static bool (*Android_getAutoLaunch)();
+	static void (*Android_setAutoLaunch)(bool);
+
+public:
+	void toggle_android_launcher(int state) {
+		android_autolaunch = state;
+	}
+
+	static void SetAndroidAutoLaunchFPtrs(void (*setter)(bool), bool (*getter)());
+
+	Gump_button* on_button(int mx, int my) override;
 };
 
 #endif

@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Copyright (C) 2000-2025 The Exult Team -->
+
+<svg
+   width="512"
+   height="512"
+   viewBox="0 0 106 106"
+   version="1.1"
+   id="svg1"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs1" />
+  <g
+     id="ankh_on_red"
+     label="Ankh on red">
+    <!-- Two disks : Left point, direct rotation to bottom, right, top, left -->
+    <path
+       id="outer_disk"
+       d="
+ M -53,  0
+ A  53, 53 0 0 0   0,  53
+ A  53, 53 0 0 0  53,   0
+ A  53, 53 0 0 0   0, -53
+ A  53, 53 0 0 0 -53,   0
+ Z"
+       style="fill:#660000;fill-opacity:1"
+       transform="translate( 53, 53 )" />
+    <path
+       id="inner_disk"
+       d="
+ M -45,  0
+ A  45, 45 0 0 0   0,  45
+ A  45, 45 0 0 0  45,   0
+ A  45, 45 0 0 0   0, -45
+ A  45, 45 0 0 0 -45,   0
+ Z"
+       style="fill:#cc0000;fill-opacity:1"
+       transform="translate( 53, 53 )" />
+    <!-- Ankh outside : Left    point, direct  rotation by bottom to right  point -->
+    <!-- Ankh  inside : Bottom  point, inverse rotation by top    to bottom point -->
+    <path
+       id="ankh"
+       d="
+ M -24,   0
+ C -21,   3 -19,   5 -18,   8
+ C -13,   5  -9,   5  -3,   5
+ C  -3,   8  -2,  29  -8,  34
+ C  -5,  37  -1,  42   0,  44
+ C   1,  42   5,  37   8,  34
+ C   2,  29   3,   8   3,   5
+ C   9,   5  13,   5  18,   8
+ C  19,   5  21,   3  24,   0
+ M   7,   0
+ C  17, -10  17, -32   0, -35
+ C -17, -32 -17, -10  -7,   0
+ Z
+ M   0,   0
+ C -12, -13  -5, -26   0, -28
+ C   5, -26  12, -13   0,   0
+ Z"
+       style="fill:#cccccc;fill-opacity:1"
+       transform="translate( 53, 48 )" />
+  </g>
+</svg>

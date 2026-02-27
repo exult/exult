@@ -8,8 +8,8 @@ ExternalProject_Add(
   GIT_REPOSITORY    https://github.com/xiph/vorbis.git
   GIT_TAG           v1.3.7
   INSTALL_DIR       @DEPENDENCIES_INSTALL_DIR@
-  PATCH_COMMAND     patch -p1 < @CMAKE_CURRENT_SOURCE_DIR@/0001-configure-Check-for-clang.patch
+  PATCH_COMMAND     patch -p1 < @CMAKE_CURRENT_SOURCE_DIR@/enable_lm_flag.patch && patch -p1 < @CMAKE_CURRENT_SOURCE_DIR@/0001-configure-Check-for-clang.patch
   CONFIGURE_COMMAND <SOURCE_DIR>/autogen.sh
   COMMAND           . @ENVFILE@ && <SOURCE_DIR>/configure --prefix=<INSTALL_DIR> --host=@ANDROID_LLVM_TRIPLE@
-  BUILD_COMMAND     make -j@NCPU@
+  BUILD_COMMAND     make -j@NCPU@ -s LIBTOOLFLAGS="--silent"
 )

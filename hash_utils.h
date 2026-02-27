@@ -22,17 +22,16 @@
 #include "common_types.h"
 
 #include <cstring>
-
-#include <unordered_map>
-#include <unordered_set>
+#include <unordered_map>    // IWYU pragma: export
+#include <unordered_set>    // IWYU pragma: export
 
 /*
  *  Hash function for strings:
  */
 struct hashstr {
-	uint32 operator()(const char *str) const noexcept {
-		const uint32 m = 4294967291u;
-		uint32 result = 0;
+	uint32 operator()(const char* str) const noexcept {
+		const uint32 m      = 4294967291u;
+		uint32       result = 0;
 		for (; *str != '\0'; ++str) {
 			result = ((result << 8) + *str) % m;
 		}
@@ -44,9 +43,9 @@ struct hashstr {
  *  For testing if two strings match:
  */
 struct eqstr {
-	bool operator()(const char *s1, const char *s2) const {
+	bool operator()(const char* s1, const char* s2) const {
 		return std::strcmp(s1, s2) == 0;
 	}
 };
 
-#endif  /* _HASH_UTILS_H_ */
+#endif /* _HASH_UTILS_H_ */

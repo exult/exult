@@ -1,0 +1,18 @@
+diff --git a/lib/Makefile.am b/lib/Makefile.am
+index e22895e..b51d5df 100644
+--- a/lib/Makefile.am
++++ b/lib/Makefile.am
+@@ -20,11 +20,11 @@ libvorbis_la_LIBADD = @VORBIS_LIBS@ @OGG_LIBS@
+ 
+ libvorbisfile_la_SOURCES = vorbisfile.c
+ libvorbisfile_la_LDFLAGS = -no-undefined -version-info @VF_LIB_CURRENT@:@VF_LIB_REVISION@:@VF_LIB_AGE@
+-libvorbisfile_la_LIBADD = libvorbis.la @OGG_LIBS@
++libvorbisfile_la_LIBADD = libvorbis.la @OGG_LIBS@ -lm
+ 
+ libvorbisenc_la_SOURCES = vorbisenc.c 
+ libvorbisenc_la_LDFLAGS = -no-undefined -version-info @VE_LIB_CURRENT@:@VE_LIB_REVISION@:@VE_LIB_AGE@
+-libvorbisenc_la_LIBADD = libvorbis.la @OGG_LIBS@
++libvorbisenc_la_LIBADD = libvorbis.la @OGG_LIBS@ -lm
+ 
+ EXTRA_PROGRAMS = barkmel tone psytune
+ CLEANFILES = $(EXTRA_PROGRAMS)

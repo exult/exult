@@ -18,16 +18,15 @@
  *
  *  2016-07-14 Written by Knight Captain
  */
- 
-void Kylista object#(0x436) ()
-{
-	// If Kylista does not have the breastplate.
-	if (event == STARTED_TALKING && !KYLISTA->get_cont_items(SHAPE_BREAST_PLATE, QUALITY_ANY, FRAME_ANY))
-	{
-		// And no one is currently on trial OR Kylista has not been arrested after the trial.
-		if (!(gflags[DUPRE_ACCUSED] || gflags[IOLO_ACCUSED] || gflags[SHAMINO_ACCUSED]) || (gflags[AUDIENCE_WITH_YELINDA] && gflags[FAWN_TRIAL_DONE] && gflags[ORACLE_SET_TO_INNOCENT]))
-			gflags[KNOWS_BREAST_PLATE_OWNER] = false; // We clear the flag so we can ask her about it.
-	}
 
+void Kylista object#(0x436) () {
+	// If Kylista does not have the breastplate.
+	if (event == STARTED_TALKING && !KYLISTA->get_cont_items(SHAPE_BREAST_PLATE, QUALITY_ANY, FRAME_ANY)) {
+		// And no one is currently on trial OR Kylista has not been arrested after the trial.
+		if (!(gflags[DUPRE_ACCUSED] || gflags[IOLO_ACCUSED] || gflags[SHAMINO_ACCUSED]) || (gflags[AUDIENCE_WITH_YELINDA] && gflags[FAWN_TRIAL_DONE] && gflags[ORACLE_SET_TO_INNOCENT])) {
+			// We clear the flag so we can ask her about it.
+			gflags[KNOWS_BREAST_PLATE_OWNER] = false;
+		}
+	}
 	Kylista.original();
 }

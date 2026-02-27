@@ -1,0 +1,236 @@
+Exult instructions for Windows
+------------------------------------
+
+Supported versions of Windows
+------------------------------
+Exult only officialy supports Windows Vista and newer. Windows XP is not supported.
+It may be possible to use a modified build process to generate XP compatible executables
+but the default build process does not.
+This document will not detail how to do that.
+
+To play
+---------
+First you need to get Ultima VII: The Black Gate or Ultima VII Part 2: Serpent Isle. 
+Either you own it already, or you buy it somewhere.  Then you must install it. 
+Note that the Ultima Collection already contains an installed copy of Ultima VII 
+(In the Ultima7 directory) and of Serpent Isle (in the Serpent directory).
+
+From the Ultima7 or Serpent folder on your PC, copy the STATIC sub folder to the
+'blackgate' or 'serpentisle' sub folder (as appropriate) of the folder you
+installed Exult in (you will likely have to create the sub folders yourself).
+
+Run "exult.exe".
+Have fun!
+
+(In depth instructions can be read in our documentation and FAQ)
+
+
+Notes
+------
+*	Exult generates the files 'stdout.txt' and 'stderr.txt' when you run it.
+	These may give you some idea of what is going on under the hood. When Exult
+	suddenly quits, sometimes these files can help.
+
+*	Exult Studio generates the files 'studioout.txt' and 'studioerr.txt' when
+	you run it. These may give you some idea of what is going on under the hood.
+	When Exult Studio suddenly quits, sometimes these files can help.
+
+*	If you're interested in building Exult for windows yourself, there are two
+	sections below describing how.
+
+
+To build in Windows using MSYS2/MinGW64
+---------------------------------------
+
+Download latest MSYS2:
+    32-bit Windows:
+        http://repo.msys2.org/distrib/msys2-i686-latest.exe
+    64-bit Windows:
+        http://repo.msys2.org/distrib/msys2-x86_64-latest.exe
+
+Install it somewhere, then start it from Start Menu. Run the following command:
+    pacman -Syyu --noconfirm
+
+Reply 'Y' when you have to. At some point, you will be asked to close and reopen
+the shell. Do so.
+
+Now it is time to make a choice: whether to build Exult on 32- or 64-bit: start
+the corresponding shell ("MSYS2 MinGW 32-bit" or "MSYS2 MinGW 64-bit") from the
+start menu. We do not recommend trying to make 32 bit build as some needed 
+dependency packages are unavailable when trying to build using mingw32 as the 
+maintainers of mingw are in the process of dropping  32bit support. pacman 
+commands will fail when trying to install the unavailable packages. in this 
+case you'll need to build the missing dependencies from source yourself using 
+mingw32 and install them. As of 21 April 2025 the following pacages are missing
+for mingw32 
+* mt32emu: needed by Exult,
+* SDL3_image: needed by some tools
+* icu needed by Exult Studio
+
+    **Warning**
+    It is IMPORTANT that you use either of these two shells and NOT the
+    "MSYS2 MSYS" shell.
+
+When the shell starts, issue the following commands:
+    pacman -S --noconfirm --needed base-devel git zip \
+            ${MINGW_PACKAGE_PREFIX}-toolchain \
+            ${MINGW_PACKAGE_PREFIX}-binutils \
+            ${MINGW_PACKAGE_PREFIX}-ntldd
+
+This installs the toolchain for building everything. Now, you must install
+the required libraries for building each component. The commands given below
+assume you have not installed any of the others, and can be used independently.
+
+To build Exult, you must install the following:
+    pacman -S --noconfirm --needed \
+            ${MINGW_PACKAGE_PREFIX}-sdl3 \
+            ${MINGW_PACKAGE_PREFIX}-fluidsynth \
+            ${MINGW_PACKAGE_PREFIX}-libtimidity \
+            ${MINGW_PACKAGE_PREFIX}-libogg \
+            ${MINGW_PACKAGE_PREFIX}-libvorbis \
+            ${MINGW_PACKAGE_PREFIX}-munt-mt32emu \
+            ${MINGW_PACKAGE_PREFIX}-libpng \
+            ${MINGW_PACKAGE_PREFIX}-zlib
+
+To build the Exult tools, you must install the following:
+    pacman -S --noconfirm --needed ${MINGW_PACKAGE_PREFIX}-sdl3-image
+
+To build Exult Studio, you must install the following:
+    pacman -S --noconfirm --needed \
+            ${MINGW_PACKAGE_PREFIX}-gtk3 \
+            ${MINGW_PACKAGE_PREFIX}-adwaita-icon-theme \
+            ${MINGW_PACKAGE_PREFIX}-libxml2 \
+            ${MINGW_PACKAGE_PREFIX}-freetype \
+            ${MINGW_PACKAGE_PREFIX}-zlib \
+            ${MINGW_PACKAGE_PREFIX}-icu
+
+To build the Gimp 2 Plug-In, you must install the following:
+    pacman -S --noconfirm --needed \
+            ${MINGW_PACKAGE_PREFIX}-gtk2 \
+            ${MINGW_PACKAGE_PREFIX}-gimp2
+
+To build the Gimp 3 Plug-In, you must install the following:
+    pacman -S --noconfirm --needed \
+            ${MINGW_PACKAGE_PREFIX}-gtk3 \
+            ${MINGW_PACKAGE_PREFIX}-gimp
+
+You now have everything needed to build any of the components you want.
+
+    **Warning**
+    The Gimp plug-in must be compiled with the same architecture of the version
+    of Gimp which you use. That is: if you use 32-bit Gimp, you must compile
+    the 32-bit version of the plug-in, and likewise for 64-bit Gimp.
+
+Open Makefile.mingw from the Exult source code directory in a text editor and
+change C:/Ultima7 to the directory you want Exult to be installed to.
+(ie C:/Games/Ultima7)
+
+You can also change C:/GimpPlugin to the directory you want the Gimp Plug-in
+to be installed to. This depends on the version of Gimp you use:
+    Gimp 2.8:
+        C:/Users/<username>/.gimp-2.8/plug-ins
+    Gimp 2.10 and newer:
+        C:/Users/<username>/AppData/Roaming/GIMP/<version>/plug-ins
+    Gimp 3.0 and newer:
+        C:/Users/<username>/AppData/Roaming/GIMP/<version>/plug-ins/u7shp
+
+If you are compiling Exult Studio, it will be installed to the same directory
+that Exult when you compile it. You can change that directory in the same way.
+
+Remain in the shell ("MSYS2 MinGW 32-bit" or "MSYS2 MinGW 64-bit")
+and type the command
+    git clone https://github.com/exult/exult.git c:\exult
+
+Then change to the directory where you cloned the Exult source code to by
+typing the command
+    cd C:/exult
+
+To compile and install Exult, type the command
+    make -f Makefile.mingw install
+
+To compile and install the Exult Tools, type the command
+    make -f Makefile.mingw toolsinstall
+
+To compile and install Exult Studio, type the command
+    make -f Makefile.mingw studioinstall
+
+To compile and install the Gimp Plug-In, type the command
+    make -f Makefile.mingw plugininstall
+
+If you want to make more than one, you can combine the commands; for example,
+to build Exult and the Exult Tools, you can type the command
+    make -f Makefile.mingw install toolsinstall
+
+Once compile has finished and been installed exit MSYS2
+
+Run Exult.exe and enjoy the game :-)
+
+    **Windows XP Compatibility**
+   With the switch to SDL3 and changes to our code compatibility with Windows XP
+   is even less likely to regain. Please see our prior instructions at
+   https://github.com/exult/exult/blob/v1.12.0/README.windows#L167 if you want
+   to try.
+
+To build in Windows using Visual Studio
+---------------------------------------
+NOTE: This has only been tested to work with Visual Studio 2019 and 2022
+Visual Studio 2017  does NOT work. It will load the projects but v141 build
+tools do not support all the C++/17 features needed by the exult source code. You
+can not sucessfully build all source files with VS 2017 v141 build tools.
+
+Projects are included for Exult, expack, exconfig, data flexes and Exult_studio, 
+no projects are supplied for other tools. VCPKG is used for package management
+and you must have it installed and integrated into visual studio. The build 
+process will automatically download and build needed dependencies. This will be
+slow the first time you try to be Exult abd very slow the first time you build
+exult_studio.
+
+1) Install visual studio community edition 2019 or newer. if newer make sure MSVC v142 VS 2019 C++ build tools
+are selected for install. If you do not install the v142 build tools you may
+need to change the build tools being used by the projects to v143 or whatever version your VS has installed. 
+
+2) Install vcpkg (https://vcpkg.io/) and then integrate it into visual studio by 
+running vcpkg integrate install from the visual studio Developer command prompt or Powershell.
+
+3) open the solution included in the exult source msvcstuff\vs2019\Exult.sln.
+
+4) Build the project using whichever Configuration you want. x86 and x64 builds are supported. All configrations 
+use dynamic runtimes. 
+EXEs will be placed in the root of the source tree with the vcpkg dependency dlls. The build process has not been tested with static 
+runtimes or dependencies. 
+The build process for Exult will build expack and the data .flx files needed by exult. 
+
+
+To cross-build from Linux
+---------------------------
+(Note: this hasn't been tested recently, and may or may not work)
+
+Exult is originally a Linux project, using a platform
+independent API called SDL. (Simple DirectMedia Layer)
+
+Because of this, the Windows version has been built in
+Linux, using the cross-compiler Mingw32.
+
+Please note it is not necessary to build Exult yourself,
+since the Windows executable is already included.
+
+1) get and install Mingw32 and SDL.
+
+SDL: http://www.libsdl.org/index.php
+
+Mingw32: http://www.libsdl.org/extras/win32/cross/README.txt
+
+Installation instructions can be found on the same pages.
+(make sure to get the DirectX headers, and build SDL for the cross compiler)
+
+2) build exult:
+
+configure --host=i386-linux --target=i386-mingw32 --enable-win32
+make
+
+3) copy exult.exe to your Ultima VII directory, and run it from windows
+If you are currently playing a game of Ultima VII, be sure
+to make a backup of the gamedat directory.
+
+4) Have fun :-)
+

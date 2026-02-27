@@ -19,20 +19,16 @@
  */
 
 #ifdef HAVE_CONFIG_H
-#  include <config.h>
+#	include <config.h>
 #endif
 
 #include "Table.h"
 
-#include <iostream>
-#include <cstdlib>
 #include "exceptions.h"
-#include "utils.h"
-
-using std::string;
 
 using std::FILE;
 using std::size_t;
+using std::string;
 
 void Table::index_file() {
 	if (!data) {
@@ -41,7 +37,6 @@ void Table::index_file() {
 	if (!is_table(data.get())) {    // Not a table file we recognise
 		throw wrong_file_type_exception(identifier.name, "TABLE");
 	}
-	unsigned int i = 0;
 	while (true) {
 		Reference f;
 		f.size = data->read2();
@@ -51,7 +46,6 @@ void Table::index_file() {
 		}
 		f.offset = data->read4();
 		object_list.push_back(f);
-		i++;
 	}
 }
 
@@ -60,13 +54,19 @@ void Table::index_file() {
  *  @param in   DataSource to verify.
  *  @return Whether or not the DataSource is a table file.
  */
-bool Table::is_table(IDataSource *in) {
-	const size_t pos = in->getPos();
+bool Table::is_table(IDataSource* in) {
+	const size_t pos       = in->getPos();
 	const size_t file_size = in->getSize();
 
+	if (!file_size) {
+		return false;
+	}
 	in->seek(0);
 	while (true) {
 		const uint16 size = in->read2();
+		if (!in->good()) {
+			return false;
+		}
 
 		// End of table marker.
 		if (size == 65535) {

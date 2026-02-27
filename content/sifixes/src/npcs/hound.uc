@@ -21,93 +21,65 @@
 // Always aborts.
 extern void HoundPointDirection 0x83B (var target);
 
-void HoundOfDoskar shape#(0x36A) ()
-{
-	if (event == DEATH)
-	{
+void HoundOfDoskar shape#(0x36A) () {
+	if (event == DEATH) {
 		clear_item_say();
 		item_say(randomIndex(["@Yipe, yipe, yipe!@", "@Aoaaoouuu!@"]));
 		set_attack_mode(FLEE);
-	}
-	else if (event == DOUBLECLICK)
-	{
+	} else if (event == DOUBLECLICK) {
 		AVATAR->item_say("@Come here, boy!@");
 		HOUND_OF_DOSKAR->makePartyFaceNPC();
-		script item after 2 ticks
-		{
+		script item after 2 ticks {
 			nohalt;
 			say "@Woof!@";
 		}
 		HOUND_OF_DOSKAR->set_schedule_type(TALK);
-	}
-	else if (event == SCRIPTED)
-	{
-		if (item == getPathEgg(5, 1))
-		{
+	} else if (event == SCRIPTED) {
+		if (item == getPathEgg(5, 1)) {
 			var found_hound = AVATAR->find_nearby(SHAPE_HOUND_OF_DOSKAR, 40, 0);
-			if (found_hound)
-			{
+			if (found_hound) {
 				found_hound->set_schedule_type(HOUND);
-			}
-			else
-			{
+			} else {
 				abort;
 			}
 		}
 
-		var target = UI_click_on_item();
+		struct<ObjPos> target = UI_click_on_item();
 		var target_shape = target->get_item_shape();
 		var target_frame = target->get_item_frame();
 		var target_quality = target->get_item_quality();
 		UI_play_music(18, getPathEgg(5, 1));
 
-		if (target_shape == SHAPE_AMULET && target_frame == FRAME_DIAMOND_NECKLACE && gflags[KNOW_YELINDAS_DIAMOND_NECKLACE] && !gflags[RETURNED_COMB_OF_BEAUTY])
-		{
+		if (target_shape == SHAPE_AMULET && target_frame == FRAME_DIAMOND_NECKLACE && gflags[KNOW_YELINDAS_DIAMOND_NECKLACE] && !gflags[RETURNED_COMB_OF_BEAUTY]) {
 			HoundPointDirection([1561, 1465, 0]);
-		}
-		else if (target_shape == SHAPE_WOODEN_SWORD && gflags[WILL_FIND_CANTRA] && !gflags[BATLIN_FLED_SHAMINOS_KEEP])
-		{
+		} else if (target_shape == SHAPE_WOODEN_SWORD && gflags[WILL_FIND_CANTRA] && !gflags[BATLIN_FLED_SHAMINOS_KEEP]) {
 			// This is a plot-critical flag
 			gflags[SHAMINOS_KEEP_BARRIERS_GONE] = true;
-			if (getAvatarLocationID() == SHAMINOS_CASTLE)
-			{
+			if (getAvatarLocationID() == SHAMINOS_CASTLE) {
 				HoundPointDirection([-1, 0, 0]);
-			}
-			else
-			{
+			} else {
 				HoundPointDirection([1890, 999, 0]);
 			}
-		}
-		else if (target_shape == SHAPE_AMULET && target_frame == FRAME_BATLINS_MEDALLION && gflags[BATLIN_FLED_SHAMINOS_KEEP] && !gflags[BANES_RELEASED])
-		{
+		} else if (target_shape == SHAPE_AMULET && target_frame == FRAME_BATLINS_MEDALLION && gflags[BATLIN_FLED_SHAMINOS_KEEP] && !gflags[BANES_RELEASED]) {
 			// Plot critical, will prevent entry to Skullcrusher if not set.
 			gflags[HOUND_TRACKED_BATLIN] = true;
-			if (getAvatarLocationID() == SPINEBREAKER_MOUNTAINS)
-			{
+			if (getAvatarLocationID() == SPINEBREAKER_MOUNTAINS) {
 				HoundPointDirection([-1, 0, 0]);
-			}
-			else
-			{
+			} else {
 				HoundPointDirection([1896, 739, 0]);
 			}
-		}
-		else if (gflags[BANES_RELEASED] &&
+		} else if (gflags[BANES_RELEASED] &&
 		         ((target_shape == SHAPE_AMULET && target_frame == FRAME_WHITE_DIAMOND_NECKLACE && !gflags[INSANITY_BANE_DEAD]) ||
 		          (target_shape == SHAPE_LUTE && target_frame == FRAME_IOLOS_LUTE && !gflags[INSANITY_BANE_DEAD]) ||
-		          (target_shape == SHAPE_DUPRE_SHIELD && !gflags[WANTONESS_BANE_DEAD]) ||
-		          (target_shape == SHAPE_BOOK && target_quality == 63 && !gflags[ANARCHY_BANE_DEAD])))
-		{
-			if (getAvatarLocationID() == WHITE_DRAGON_CASTLE)
-			{
+		          (target_shape == SHAPE_DUPRE_SHIELD && !gflags[WANTONNESS_BANE_DEAD]) ||
+		          (target_shape == SHAPE_BOOK && target_quality == 63 && !gflags[ANARCHY_BANE_DEAD]))) {
+			if (getAvatarLocationID() == WHITE_DRAGON_CASTLE) {
 				HoundPointDirection([-1, 0, 0]);
-			}
-			else
-			{
+			} else {
 				HoundPointDirection([1801, 1458, 0]);
 			}
 		}
-		script item
-		{
+		script item {
 			nohalt;
 			say "@Woof woof?@";
 		}
@@ -115,19 +87,15 @@ void HoundOfDoskar shape#(0x36A) ()
 		random_party->clear_item_say();
 		delayedBark(random_party, "@The hound looks confused.@", 4);
 		abort;
-	}
-	else if (event == STARTED_TALKING)
-	{
+	} else if (event == STARTED_TALKING) {
 		HOUND_OF_DOSKAR->set_schedule_type(HOUND);
 		FACE_HOUND_OF_DOSKAR.show_npc_face0(0);
 		say("@Woof!@");
 		add(["trick", "track", "attack", "bye"]);
 
-		converse (0)
-		{
+		converse (0) {
 			case "track":
-				script item
-				{
+				script item {
 					nohalt;
 					call HoundOfDoskar;
 				}
@@ -135,22 +103,18 @@ void HoundOfDoskar shape#(0x36A) ()
 
 			case "trick":
 				set_schedule_type(DANCE);
-				script item
-				{
+				script item {
 					nohalt;
 					say "@Ruff ruff ruff!@";
 				}
 				abort;
 
 			case "attack" (remove):
-				var target = UI_click_on_item();
+				struct<ObjPos> target = UI_click_on_item();
 				var barks = ["@Woof.@", "@Woof?@", "@Woof!!@", "@Woof.@"];
-				if (!target || target->get_alignment() == GOOD || !target->is_npc())
-				{
+				if (!target || target->get_alignment() == GOOD || !target->is_npc()) {
 					say(barks[GOOD]);
-				}
-				else
-				{
+				} else {
 					say(barks[target->get_alignment()]);
 					set_schedule_type(IN_COMBAT);
 					set_opponent(target);
@@ -158,30 +122,22 @@ void HoundOfDoskar shape#(0x36A) ()
 					abort;
 				}
 			case "bye" (remove):
-				script item
-				{
+				script item {
 					nohalt;
 					say "@Woof! Woof!@";
 				}
 				UI_remove_npc_face0();
 				abort;
 		}
-	}
-	else if (event == PATH_SUCCESS)
-	{
+	} else if (event == SI_PATH_SUCCESS) {
 		set_schedule_type(HOUND);
-		script item
-		{
+		script item {
 			nohalt;
 			say "@Ruff!@";
 		}
-	}
-	else if (event == PATH_FAILURE)
-	{
+	} else if (event == SI_PATH_FAILURE) {
 		set_schedule_type(HOUND);
-	}
-	else if (event == PROXIMITY)
-	{
+	} else if (event == PROXIMITY) {
 		clear_item_say();
 		item_say(randomIndex(["@Woof!@", "@Bark!@"]));
 	}

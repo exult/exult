@@ -17,10 +17,10 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-void eggGorlabSwampSleep object#(0x6B3) ()
-{
+void eggGorlabSwampSleep object#(0x6B3) () {
 	eggGorlabSwampSleep.original();
 	if ((getAvatarLocationID() == DREAM_WORLD) &&
-	    AVATAR->get_item_flag(POLYMORPH))
+	    AVATAR->get_item_flag(POLYMORPH)) {
 		AVATAR->set_polymorph(SHAPE_MALE_AVATAR);
+	}
 }

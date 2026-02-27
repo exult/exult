@@ -27,69 +27,61 @@
 // externs
 extern void startSpeech 0x940 (var var0000);
 
-void Crystal_Ball shape#(0x2D9) ()
-{
-	if (event == DOUBLECLICK)
-	{
+void Crystal_Ball shape#(0x2D9) () {
+	if (event == DOUBLECLICK) {
 		UI_close_gumps();
 		var qual = get_item_quality();
 		var pos;
-		if ((qual == 0) || (qual > 7))
-		{
+		if ((qual == 0) || (qual > 7)) {
 			startSpeech(0x19);
 			return;
-		}
-		else if (qual == 1)
-			if (gflags[0x157])
+		} else if (qual == 1) {
+			if (gflags[0x157]) {
 				pos = [0xA82, 0x970, 0x3, 0x0];
-			else
+			} else {
 				pos = [0xA82, 0x9A0, 0x3, 0x0];
-		else if (qual == 2)
+			}
+		} else if (qual == 2) {
 			pos = [0x38F, 0x47D, 0x3, 0x0];
-		else if (qual == 3)
+		} else if (qual == 3) {
 			pos = [0xA28, 0xA25, 0x3, 0x0];
-		else if (qual == 4)
+		} else if (qual == 4) {
 			pos = [0xAF7, 0xD7, 0x3, 0x0];
-		else if (qual == 5)
+		} else if (qual == 5) {
 			pos = [0x9F, 0x540, 0x3, 0x0];
-		else if (qual == 6)
+		} else if (qual == 6) {
 			pos = [0x609, 0x773, 0x3, 0x0];
-		else if (qual == 7)
+		} else if (qual == 7) {
 			pos = [0x928, 0x597, 0x3, 0x0];
-		else if (qual == 255)
+		} else if (qual == 255) {
 			return;
+		}
 		UI_display_area(pos);
 	}
 }
 
-void Gem shape#(0x2F8) ()
-{
+void Gem shape#(0x2F8) () {
 	var framenum = get_item_frame();
-	if (event == DOUBLECLICK)
-	{
-		if (framenum == 14)
-		{
-			if (!inIsleOfFire())
+	if (event == DOUBLECLICK) {
+		if (framenum == 14) {
+			if (!inIsleOfFire()) {
 				UI_display_area([0x88F, 0x610, 0x6, 0x0]);
-			else
-			{
+			} else {
 				remove_item();
 				UI_play_sound_effect(SOUND_GLASS_SHATTER);
 			}
-		}
-		else
+		} else {
 			Gem.original();
-	}
-	else
+		}
+	} else {
 		Gem.original();
+	}
 }
 
 extern void setOrreryPosition object#(0x6E1) ();
 
-void Orrery_Viewer shape#(0x302) ()
-{
-	if ((event == DOUBLECLICK) && inMagicStorm())
-	{
+void Orrery_Viewer shape#(0x302) () {
+	if ((event == DOUBLECLICK) && inMagicStorm()) {
 		UI_close_gumps();
 		UI_center_view([0xB4C, 0x58C]);
 		event = EGG;

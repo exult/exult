@@ -1,36 +1,44 @@
 Exult Release Checklist
 ------------------------
 
+* make sure all (visible) copyright dates are up to date
+  (tools/scripts/update_copyright_year.sh can be used for this)
+  - version dialog in ActionAbout (keyactions.cc)
+  - Info.plist.in
+  - win32/exultico.rc, win32/exultstudioico.rc
+  - macosx/exult_studio_info.plist.in
+
+* branch off the release in git (e.g v1.10.x)
+
 * make sure all version numbers are up to date
+  (tools/scripts/update_version_number.sh can be used for this)
   - configure.ac
   - Makefile.common
   - win32/exconfig.rc, win32/exultico.rc, win32/exultstudioico.rc
         (FILEVERSION, PRODUCTVERSION, "FileVersion" and "ProductVersion")
   - win32/exult.exe.manifest, win32/exult_studio.exe.manifest
         (version)
-  - win32/exult_installer.iss, win32/exult_studio_installer.iss, win32/exult_tools_installer.iss
+  - win32/exult_installer.iss, win32/exult_studio_installer.iss, win32/exult_tools_installer.iss, win32/exult_shpplugin_installer.iss
         (AppVerName, VersionInfoVersion)
   - msvcstuff/vs2019/msvc_include.h
         (VERSION)
-  - ios/includes/config.h
+  - ios/include/config.h
         (PACKAGE_STRING, PACKAGE_VERSION, VERSION)
   - ios/info.plist
         (CFBundleShortVersionString)
+  - tools/aseprite_plugin/package.json
+        (version)
 
 * make sure the Windows installers doesn't refer to a Git snapshot
+  (tools/scripts/update_version_number.sh can be used for this)
   - win32/exult_installer.iss, win32/exult_studio_installer.iss, win32/exult_tools_installer.iss
         (AppVerName)
   
-* make sure the osxdmg and clean-local target doesn't refer to a Git snapshot
-  - macosx/macosx.am (-volname "...", dmg filename)
+* make sure the osxdmg, studiodmg and clean-local target doesn't refer to a Git snapshot
+  (tools/scripts/update_version_number.sh can be used for this)
+  - macosx/macosx.am (--volname "...", dmg filename)
 
 * update NEWS; make sure version and date are correct
-
-* make sure all (visible) copyright dates are up to date
-  - version dialog in ActionAbout (keyactions.cc)
-  - Info.plist.in
-  - win32/exultico.rc, win32/exultstudioico.rc
-  - macosx/exult_studio_info.plist.in
 
 * documentation: make sure the readme/faq packaged are up to date
   - version numbers
@@ -46,4 +54,24 @@ Exult Release Checklist
 * make sure "make dist" produces a tarball from which you can
   succesfully build, install and run Exult
 
-* tag git
+* tag git and upload last version of our mods to this release on Github
+  (the Windows installer grabs these from the latest release and might otherwise fail)
+
+* upload binaries to our SourceForge files
+  https://sourceforge.net/projects/exult/files/exult-all-versions/
+  (contrary to a Github release we will have statistics of our release on SF)
+
+* update the website
+  - content/news.dat with the announcement
+  - content/download.dat change version numbers of new release and snapshots
+  - content/download.dat change release filenames and file sizes accordingly
+
+
+
+After Release
+--------------
+* change the version numbers in master to the new snapshot version number (see above) and
+  - .github/workflows/snapshots.yml
+        (jobs:snapshots:name:Check if artifacts downloaded:run:echo "GITHUB_REF=")
+
+* sync NEWS between master and release branch

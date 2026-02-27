@@ -23,8 +23,7 @@ const int BOOTED_FOR_FREEDOM = 0x001E;
 const int CURED_OF_INSANITY = 0x001D;
 
 // Party members (you know 'em, you love 'em)
-enum party_members
-{
+enum party_members {
 	// Used by several intrinsics (e.g. UI_count_objects) that would otherwise
 	// take a single NPC
 	// Not supported by several other intrinsics that you'd really like it to
@@ -59,8 +58,7 @@ enum party_members
 };
 
 // Moonshade residents
-enum moonshade_npcs
-{
+enum moonshade_npcs {
 	ANDRIO = -4, // Mageling
 	SERV_01 = -5, // Melino and Columna's automaton
 	SERV_02 = -6, // Gustacio's
@@ -103,16 +101,14 @@ enum moonshade_npcs
 };
 
 // Mad Mage Isle residents
-enum madmage_npcs
-{
+enum madmage_npcs {
 	// BOYDON = -34, // Defined above
 	ERSTAM = -35,
 	VASEL = -36
 };
 
 // Sleeping Bull residents
-enum sleepingbull_npcs
-{
+enum sleepingbull_npcs {
 	ALE = -37,
 	ARGUS = -38,
 	BYRIN = -39,
@@ -126,8 +122,7 @@ enum sleepingbull_npcs
 };
 
 // Fawn residents, including the Fellowship members
-enum fawn_npcs
-{
+enum fawn_npcs {
 	ALYSSAND = -46, // Fawn shopkeeper / seamstress
 	DELIN = -47, // Fawn shopkeeper
 	DELPHYNIA = -48, // Fawn horticulturalist
@@ -148,8 +143,7 @@ enum fawn_npcs
 };
 
 // Monitor residents
-enum monitor_npcs
-{
+enum monitor_npcs {
 	ANDRAL = -62, // Sculptor, Leopard
 	CALADIN = -63, // Leader of the Bears
 	CANTRA = -64, // Child, not yet a knight
@@ -174,8 +168,7 @@ enum monitor_npcs
 };
 
 // Automatons in the temple of discipline
-enum temple_of_discipline
-{
+enum temple_of_discipline {
 	LORD_OF_DISCIPLINE = -82, // Failing automaton
 	ACID_AUTOMATON = -83, // Another failing automaton
 	GUARD1 = -84,
@@ -187,8 +180,7 @@ enum temple_of_discipline
 };
 
 // Furnace residents
-enum furnace
-{
+enum furnace {
 	AUTO1 = -85,
 	AUTO2 = -87,
 	AUTO3 = -92,
@@ -201,8 +193,7 @@ enum furnace
 };
 
 // Automatons from temple of logic
-enum temple_of_logic
-{
+enum temple_of_logic {
 	MURDER1 = -94,
 	MURDER2 = -95,
 	MURDER3 = -96,
@@ -213,8 +204,7 @@ enum temple_of_logic
 };
 
 // Residents from temple of ethicality
-enum temple_of_ethicality
-{
+enum temple_of_ethicality {
 	// The automaton which administers the test of ethicality
 	ETH_AUTOMATON = -100,
 	MAN_IN_FIRE = -151
@@ -222,8 +212,7 @@ enum temple_of_ethicality
 
 
 // Goblin camp residents
-enum goblin_camp
-{
+enum goblin_camp {
 	GOBL01 = -101,
 	GOBL02 = -102,
 	GOBL03 = -103,
@@ -248,8 +237,7 @@ enum goblin_camp
 };
 
 // Fawn Tower residents, the five goblins you must kill to free the tower
-enum fawn_tower
-{
+enum fawn_tower {
 	GOBL19 = -119,
 	GOBL21 = -120,
 	GOBL22 = -121,
@@ -258,8 +246,7 @@ enum fawn_tower
 };
 
 // Dream world denizens
-enum dream_world
-{
+enum dream_world {
 	D_STEFANO = -124,
 	RABINDRINATH = -181,
 	SIRANUSH = -182,
@@ -272,8 +259,7 @@ enum dream_world
 };
 
 // Spinebreaker residents
-enum spinebreaker
-{
+enum spinebreaker {
 	BUTLER = -125, // The hierophant's butler
 	GUARD_11 = -126, // Greets you with Batlin's voice
 	// BRUNT = -127, // Defined below
@@ -283,8 +269,7 @@ enum spinebreaker
 };
 
 // Skullcrusher residents
-enum skullcrusher
-{
+enum skullcrusher {
 	GWANI_01 = -140,
 	GWANI_02 = -141,
 	GWANI_03 = -142,
@@ -297,8 +282,7 @@ enum skullcrusher
 };
 
 // Gwani Village residents
-enum gwani_npcs
-{
+enum gwani_npcs {
 	BAIYANDA = -143,
 	BWUNDIAI = -144,
 	MWAERNO = -145,
@@ -310,8 +294,7 @@ enum gwani_npcs
 };
 
 // Residents from temple of tolerance
-enum temple_of_tolerance
-{
+enum temple_of_tolerance {
 	// SETHYS = -152, // Defined above
 	YEARL = -267, // Snow leopard
 	BRENDA = -268, // Naga
@@ -320,22 +303,19 @@ enum temple_of_tolerance
 };
 
 // Great Northern Forest residents
-enum northernforest_npcs
-{
+enum northernforest_npcs {
 	BERYL = -155,
 	DRAYGAN = -156,
 	HURD = -157,
 	IVOR = -158,
 	MORGHRIM = -159,
 	HOUND_OF_DOSKAR = -269,
-	FACE_HOUND_OF_DOSKAR = -279,
 	HAZARD = -275,
 	SONAR = -276 // Timberwolf known as Windrunner
 };
 
 // Freedom residents
-enum mountains_of_freedom
-{
+enum mountains_of_freedom {
 	JAIL_01 = -160,
 	JAIL_02 = -161,
 	JAIL_03 = -162,
@@ -353,8 +333,7 @@ enum mountains_of_freedom
 };
 
 // Test of Purity residents
-enum test_of_purity
-{
+enum test_of_purity {
 	SEX_01 = -171,
 	SEX_02 = -172,
 	SEX_03 = -173,
@@ -366,16 +345,14 @@ enum test_of_purity
 };
 
 // Shamino's castle
-enum shamino_castle
-{
+enum shamino_castle {
 	HENCH1 = -205,
 	HENCH2 = -203, // Starts at House of the Dead
 	HENCH3 = -204 // Starts at House of the Dead
 };
 
 // Monk Isle residents
-enum monkisle_npcs
-{
+enum monkisle_npcs {
 	KARNAX = -207,
 	SILENT2 = -208,
 	MIGGIM = -209,
@@ -388,8 +365,7 @@ enum monkisle_npcs
 };
 
 // Residents of Castle of the White Dragon
-enum white_dragon_castle
-{
+enum white_dragon_castle {
 	// The quotes are from http://www.it-he.org
 	ANTI_DUPRE = -263, // Haha! I am Dupre, bane of drunkenness!
 	ANTI_IOLO = -262,  // I am Iolo! Bane of shooting-the-Avatar-through-the-
@@ -399,8 +375,7 @@ enum white_dragon_castle
 };
 
 // Batlin's goons
-enum batlingoons_npcs
-{
+enum batlingoons_npcs {
 	// Batlin is actually a monster in this game, not a real person... err, NPC.
 	// SELINA = -44, // Defined above
 	BRUNT = -127, // Fighter
@@ -409,8 +384,7 @@ enum batlingoons_npcs
 };
 
 // All other NPCs
-enum misc_npcs
-{
+enum misc_npcs {
 	GUARD12 = -130, // Automaton, starts at House of the Dead
 	GUARD13 = -131, // Automaton, starts at House of the Dead
 	GUARD14 = -132, // Automaton, starts at House of the Dead
@@ -446,5 +420,6 @@ enum misc_npcs
 	PIBB = -284, // Starts at the House of the Dead
 	CINDY = -287, // Naked girl S of turtle-summoning bell
 	DBEYER = -293, // Gargoyle, starts at the House of the Dead
-	FITCH = -295 // Trapper, the one dying at the edge of the Ice Plains
+	FITCH = -295, // Trapper, the one dying at the edge of the Ice Plains
+	AUTOMATON_FACE = -298,
 };

@@ -40,7 +40,7 @@ home		center_screen
 
 KP+		scaleval_increase
 KP- 	scaleval_decrease
-Del		delete_selected
+Ctrl-Del	delete_selected
 Ctrl-right	move_selected	 1  0  0
 Ctrl-left	move_selected	-1  0  0
 Ctrl-down	move_selected	 0  1  0
@@ -50,6 +50,9 @@ Ctrl-pagedown	move_selected	 0  0 -1
 Ctrl-C		copy
 Ctrl-x		cut
 Ctrl-v		paste
+Ctrl-KP+	cycle_frames_next	 1
+Ctrl-KP-	cycle_frames_prev	-1
+CTRL-KP*	rotate_frames
 
 F2		cheat_screen
 F3		map_teleport
@@ -60,6 +63,7 @@ Shift-F3	write_minimap
 Alt-F4		quit
 Alt-Enter	toggle_fullscreen
 Alt-1		sound_tester
+Ctrl-Alt-B		toggle_bboxes
 Ctrl-B		shape_browser
 B		useitem			761	# Show spellbook
 INSERT		create_item		-1	# Create last shape
@@ -68,6 +72,7 @@ C		toggle_combat
 SPACE		pause_combat
 Ctrl-D		delete_object
 E		toggle_eggs
+Alt-E		toggle_egg_areas
 F		call_usecode		1557 0		# Feed
 G		useitem			675	11	# Use abacus
 Alt-G		toggle_god_mode
@@ -107,6 +112,7 @@ Ctrl-T		next_time_period
 Alt-T		cursor_teleport
 T		target_mode
 V		about
+Shift-V		volume_mixer
 Alt-W		toggle_wizard_mode
 W		useitem			675 21	# Use watch
 Alt-X		quit

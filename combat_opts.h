@@ -19,7 +19,7 @@
  */
 
 #ifndef COMBAT_OPTS_H
-#define COMBAT_OPTS_H   1
+#define COMBAT_OPTS_H 1
 
 #include "singles.h"
 
@@ -27,21 +27,25 @@
  *  Combat options:
  */
 class Combat : public Game_singletons {
-	static bool paused;     // For suspending.
+	static bool paused;    // For suspending.
 public:
-	static int difficulty;      // 0=normal, >0 harder, <0 easier.
+	static int difficulty;    // 0=normal, >0 harder, <0 easier.
+
 	enum Mode {
-	    original = 0,       // All automatic,
-	    keypause = 1        // Kbd (space) suspends/resumes.
+		original = 0,    // All automatic,
+		keypause = 1     // Kbd (space) suspends/resumes.
 	};
+
 	static Mode mode;
-	static bool show_hits;      // Display #'s.
+	static bool show_hits;    // Display #'s.
 	// In game:
-	static void toggle_pause(); // Pause/resume.
-	static void resume();       // Always resume.
+	static void toggle_pause();    // Pause/resume.
+	static void resume();          // Always resume.
+
 	static bool is_paused() {
 		return paused;
 	}
+
 	static bool charmed_more_difficult;
 };
 

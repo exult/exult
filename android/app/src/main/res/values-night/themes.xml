@@ -1,0 +1,22 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <style name="Theme.ExultLauncher" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <item name="colorPrimary">@color/dark_scampi</item>
+        <item name="colorPrimaryVariant">@color/deep_koamaru</item>
+        <item name="colorOnPrimary">@color/white</item>
+
+        <item name="colorSecondary">@color/laurel</item>
+        <item name="colorSecondaryVariant">@color/bright_laurel</item>
+        <item name="colorOnSecondary">@color/white</item>
+
+        <item name="android:statusBarColor" tools:targetApi="l">@android:color/transparent</item>
+    </style>
+
+    <style name="Theme.ExultLauncher.NoActionBar">
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+    </style>
+
+    <style name="Theme.ExultLauncher.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />
+
+    <style name="Theme.ExultLauncher.PopupOverlay" parent="ThemeOverlay.AppCompat.Dark" />
+</resources>

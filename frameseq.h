@@ -17,39 +17,50 @@
  */
 
 #ifndef INCL_FRAMESEQ
-#define INCL_FRAMESEQ   1
+#define INCL_FRAMESEQ 1
 
 /*
  *  A sequence of frames.  Frame 0 is the resting state.
  */
 class Frames_sequence {
-	unsigned char *frames;
-	int num_frames;
+	unsigned char* frames;
+	int            num_frames;
+
 public:
-	Frames_sequence(int cnt, unsigned char *f);
+	Frames_sequence(int cnt, unsigned char* f);
+
 	~Frames_sequence() {
-		delete [] frames;
+		delete[] frames;
 	}
+
 	// Get resting frame.
 	unsigned char get_resting() const {
 		return frames[0];
 	}
+
 	// Get next frame.  Call
 	//   with index = 0 for first one.
-	unsigned char get_next(int &index) const {
-		if (++index >= num_frames)
+	unsigned char get_next(int& index) const {
+		if (++index >= num_frames) {
 			index = 1;
+		}
 		return frames[index];
 	}
-	void decrement(int &index) const {
-		if (--index <= 0) index = num_frames - 1;
+
+	void decrement(int& index) const {
+		if (--index <= 0) {
+			index = num_frames - 1;
+		}
 	}
+
 	// Find frame, masking off rotation.
 	// Rets. 0 if not found.
 	int find_unrotated(unsigned char frame) {
-		for (int i = num_frames - 1; i > 0; i--)
-			if (((frame ^ frames[i]) & 0xf) == 0)
+		for (int i = num_frames - 1; i > 0; i--) {
+			if (((frame ^ frames[i]) & 0xf) == 0) {
 				return i;
+			}
+		}
 		return 0;
 	}
 };

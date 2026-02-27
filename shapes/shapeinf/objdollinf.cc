@@ -22,31 +22,33 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
-#include "utils.h"
-#include "exult_constants.h"
 #include "objdollinf.h"
+
+#include "exult_constants.h"
 #include "ignore_unused_variable_warning.h"
+#include "utils.h"
+
 using std::istream;
 
 bool Paperdoll_item::read(
-    std::istream &in,   // Input stream.
-    int version,        // Data file version.
-    Exult_Game game     // Loading BG file.
+		std::istream& in,         // Input stream.
+		int           version,    // Data file version.
+		Exult_Game    game        // Loading BG file.
 ) {
 	ignore_unused_variable_warning(game);
-	world_frame = ReadInt(in);
-	translucent = ReadInt(in) != 0;
-	spot = ReadInt(in);
+	world_frame  = ReadInt(in);
+	translucent  = ReadInt(in) != 0;
+	spot         = ReadInt(in);
 	const int ty = ReadInt(in);
 	if (ty == -255) {
 		// 'Invalid' marker.
 		set_invalid(true);
 		return true;    // Ignore remainder of the line.
 	}
-	if (spot != 0 && spot != 3) // Field only valid for these spots.
-		type = 0;   // Ignore it.
-	else if (version == 1)
-		switch (ty) { // Convert old data.
+	if (spot != 0 && spot != 3) {    // Field only valid for these spots.
+		type = 0;                    // Ignore it.
+	} else if (version == 1) {
+		switch (ty) {    // Convert old data.
 		case 2:
 		case 7:
 			type = 1;
@@ -58,10 +60,11 @@ bool Paperdoll_item::read(
 			type = 0;
 			break;
 		}
-	else
+	} else {
 		type = ty;
-	gender = ReadInt(in) != 0;
-	shape = ReadInt(in);
+	}
+	gender   = ReadInt(in) != 0;
+	shape    = ReadInt(in);
 	frame[0] = ReadInt(in);
 	// Not all items have all entries; those that need, do, though.
 	frame[1] = ReadInt(in, -1);

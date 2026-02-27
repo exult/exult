@@ -21,25 +21,28 @@
  */
 
 //Corrected bug that treats noon (12:00-12:59) as 'am'
-void Pocketwatch shape#(0x9F) ()
-{
-	if (event != DOUBLECLICK)
+void Pocketwatch shape#(0x9F) () {
+	if (event != DOUBLECLICK) {
 		return;
+	}
 
 	var hour = UI_game_hour();
 	var period;
-	if (hour < 12)
+	if (hour < 12) {
 		period = "am";
-	else
+	} else {
 		period = "pm";
+	}
 
-	hour = hour % 12;
-	if (hour == 0)
+	hour %= 12;
+	if (hour == 0) {
 		hour = 12;
+	}
 
 	var minute = UI_game_minute();
-	if (minute < 10)
+	if (minute < 10) {
 		minute = "0" + minute;
+	}
 
 	var msg = " " + hour + ":" + minute + period;
 	item_say(msg);

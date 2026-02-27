@@ -1,0 +1,11 @@
+cmake_minimum_required(VERSION @CMAKE_MINIMUM_REQUIRED_VERSION@)
+project(@DEPENDENCY@)
+
+include(ExternalProject)
+
+ExternalProject_Add(
+  @DEPENDENCY@
+  GIT_REPOSITORY    https://github.com/divideconcept/FluidLite.git
+  INSTALL_DIR       @DEPENDENCIES_INSTALL_DIR@
+  CMAKE_ARGS        @DEPENDENCIES_CMAKE_DEFAULT_ARGS@ -DBUILD_SHARED_LIBS=ON -DCMAKE_BUILD_TYPE:STRING=Debug -DCMAKE_INSTALL_PREFIX=<INSTALL_DIR>
+)

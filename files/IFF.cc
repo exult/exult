@@ -19,23 +19,21 @@
  */
 
 #ifdef HAVE_CONFIG_H
-#  include <config.h>
+#	include <config.h>
 #endif
-
 
 #include "IFF.h"
 
-#include <iostream>
-#include <fstream>
-#include "exceptions.h"
-#include "utils.h"
 #include "databuf.h"
+#include "exceptions.h"
 
-using std::string;
+#include <iostream>
+
 using std::cout;
 using std::endl;
 using std::memcmp;
 using std::size_t;
+using std::string;
 
 /**
  *  Reads the header from an IFF and builds an object index.
@@ -44,14 +42,14 @@ void IFF::index_file() {
 	if (!data) {
 		throw file_read_exception(identifier.name);
 	}
-	if (!is_iff(data.get())) {  // Not an IFF file we recognise
+	if (!is_iff(data.get())) {    // Not an IFF file we recognise
 		throw wrong_file_type_exception(identifier.name, "IFF");
 	}
 #ifdef DEBUG
 	cout << "Okay. It looks like an IFF file chunk" << endl;
 #endif
 
-	data->skip(4);  // Skip past identifier.
+	data->skip(4);    // Skip past identifier.
 	const size_t full_length = data->read4high();
 
 #ifdef DEBUG
@@ -61,25 +59,23 @@ void IFF::index_file() {
 	// We don't really need to know what the general data type is
 	data->skip(4);
 
-
 	/*
 	-the objects entries
-	    entry   = type, size, object, [even]
-	    type    = 4 chars representing the type of this object
-	    size    = reversed longint (size of the entry excluding the first 8 bytes)
-	    even    = 1 byte (set to 0) present only to get an even number of bytes
-	    (the objects found in U7 IFF files have the following format:)
-	    object  = name, data
-	    name    = 8 chars (filled with 0s)
-	    data    = the data of the object
+		entry   = type, size, object, [even]
+		type    = 4 chars representing the type of this object
+		size    = reversed longint (size of the entry excluding the first 8
+	bytes) even    = 1 byte (set to 0) present only to get an even number of
+	bytes (the objects found in U7 IFF files have the following format:) object
+	= name, data name    = 8 chars (filled with 0s) data    = the data of the
+	object
 	*/
 
 	while (data->getPos() < full_length) {
-		Reference   r;
-		char type[4];
+		Reference r;
+		char      type[4];
 		data->read(type, 4);
 
-		r.size = data->read4high(); // 4 bytes for len
+		r.size   = data->read4high();    // 4 bytes for len
 		r.offset = data->getPos();
 
 		if (r.size == 0 || r.offset == 0) {
@@ -97,8 +93,8 @@ void IFF::index_file() {
  *  @param in   DataSource to verify.
  *  @return Whether or not the DataSource is an IFF file.
  */
-bool IFF::is_iff(IDataSource *in) {
-	char ckid[4];
+bool IFF::is_iff(IDataSource* in) {
+	char         ckid[4];
 	const size_t pos = in->getPos();
 	in->seek(0);
 	in->read(ckid, 4);

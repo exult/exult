@@ -20,7 +20,13 @@
  */
 
 #include <iostream>
+#include <string_view>
 
-void getVersionInfo(std::ostream &out);
+void             getVersionInfo(std::ostream& out);
+std::string_view VersionGetGitRevision(bool shortrev);
+std::string      VersionGetGitInfo(bool limitedwidth = false);
+
+bool OutputCPUID(std::ostream* out);
+bool CPUIDHasUnsupportedFeatures();
 
 #endif

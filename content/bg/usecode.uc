@@ -58,7 +58,7 @@ void LB_fun object#(0x417) ()
 	static var count;
 
 	LB_fun.original();
-	count = count + 1;
+	count += 1;
 	if (!inparty)
 		{
 		if (count%3 != 1)

@@ -33,26 +33,33 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *  The 'Usecode browser' window:
  */
 class Usecode_browser {
-	GtkWidget *win;         // Main window.
-	GtkWidget *tree;        // The tree-view.
-	std::string choice;     // Set when window is closed.
-	GtkTreeStore *model;
+	GtkWidget*    win;       // Main window.
+	GtkWidget*    tree;      // The tree-view.
+	std::string   choice;    // Set when window is closed.
+	GtkTreeStore* model;
+
 public:
 	Usecode_browser();
 	~Usecode_browser();
-	GtkWidget *get_win() {
+
+	GtkWidget* get_win() {
 		return win;
 	}
-	void show(bool tf);     // Show/hide.
+
+	void show(bool tf);    // Show/hide.
+
 	// Configure when created/resized.
-	const char *get_choice() const {
+	const char* get_choice() const {
 		return choice.c_str();
 	}
+
 	void okay();
+
 	void cancel() {
 		choice = "";
 		show(false);
 	}
+
 	void setup_list();
 };
 

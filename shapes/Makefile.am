@@ -1,10 +1,10 @@
 AM_CPPFLAGS = -I$(top_srcdir)/headers -I$(top_srcdir) -I$(top_srcdir)/files \
 	-I$(top_srcdir)/imagewin -I$(top_srcdir)/audio -I$(top_srcdir)/shapes/shapeinf \
-	-I$(top_srcdir)/data -I$(top_srcdir)/usecode -I$(top_srcdir)/objs \
-	$(SDL_CFLAGS) $(FREETYPE2_INCLUDES) \
+	-I$(top_srcdir)/data -I$(top_srcdir)/usecode -I$(top_srcdir)/objs -I$(top_srcdir)/conf \
+	$(SDL_CFLAGS) $(PNG_CFLAGS) $(FREETYPE2_CFLAGS) \
 	$(INCDIRS) $(WINDOWING_SYSTEM) $(DEBUG_LEVEL) $(OPT_LEVEL) $(WARNINGS) $(CPPFLAGS)
 
-if BUILD_EXULT
+if BUILD_SHAPES
 SUBDIRS = shapeinf
 else
 SUBDIRS =
@@ -18,7 +18,7 @@ libshapes_la_SOURCES = \
 	vgafile.cc \
 	vgafile.h
 
-if BUILD_EXULT
+if BUILD_SHAPES
 libshapes_la_SOURCES += \
 	baseinf.h \
 	data_utils.h \

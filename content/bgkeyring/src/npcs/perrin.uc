@@ -28,58 +28,52 @@
 //Externs:
 extern void perrinTrain 0x8CA (var props, var cost);
 
-void Perrin object#(0x4EE) ()
-{
+void Perrin object#(0x4EE) () {
 	var avatar_name;
 	var avatar_title;
 
-	if (event == DOUBLECLICK)
-	{
+	if (event == DOUBLECLICK) {
 		//Avatar's name and title:
 		avatar_name = getAvatarName();
 		avatar_title = getPoliteTitle();
-		
+
 		add(["name", "job", "bye"]);
-		
-		if (!gflags[MET_PERRIN])
-		{
+
+		if (!gflags[MET_PERRIN]) {
 			item.say("The man before you stretches and inhales deeply.");
 			gflags[MET_PERRIN] = true;
-		}
-		else
+		} else {
 			item.say("@Glorious day, ", avatar_name, ".@ Perrin grins.");
+		}
 
-
-		converse (0)
-		{
+		converse (0) {
 			case "name" (remove):
 				say("@Please, ", avatar_title,
 					", call me Perrin. I reside here in Empath Abbey.@");
 				add("Empath Abbey");
-				
+
 			case "job" (remove):
 				say("@I am a scholar, ", avatar_title,
 					". Dost thou want training in the realm of books?@");
 
-				if (askYesNo())
-				{
+				if (askYesNo()) {
 					//Avatar wants training:
 					say("@My price is 45 gold for each training session, but I will also teach thee what little I know about magic. Is this acceptable?@");
 
-					if(askYesNo())
+					if(askYesNo()) {
 						//If the price is OK, then train:
 						perrinTrain([INTELLIGENCE, MAX_MANA], 45);
-	
-					else
+					} else {
 						say("@Very well, ", avatar_title, ".@");
-				}		
-				else say("@Forgive me, I am a bit overzealous in my search for students. I hope thou wilt return in the future.@");
+					}
+				} else {
+					say("@Forgive me, I am a bit overzealous in my search for students. I hope thou wilt return in the future.@");
+				}
 
 			case "Empath Abbey" (remove):
 				say("@This is a pleasant location. I like the privacy, which gives me a chance to study when I need to. The Brotherhood is across the road, and I am near a healer. Also, I have begun a study on the effects of dealing with death for undertakers. I am using Tiery as a case study.@");
 				add(["Brotherhood", "healer", "Tiery"]);
-				if (gflags[LAURIANNA_IN_YEW])
-				{
+				if (gflags[LAURIANNA_IN_YEW]) {
 					//Lauriana is now in Yew, so mention her too:
 					say("@Recently, a new woman named Laurianna also came to live nearby.@");
 					add("Laurianna");
@@ -100,7 +94,7 @@ void Perrin object#(0x4EE) ()
 
 			case "Tiery" (remove):
 				say("@He is the undertaker who lives just north of the Brotherhood.@");
-				
+
 			case "Laurianna" (remove):
 				say("@She is very friendly, that one. She is living in the healer's house, as well as taking daily classes with me.");
 				say("@I must confess that she is not the only one learning, however -- I've learned a great deal about magic from her.@");
@@ -114,8 +108,7 @@ void Perrin object#(0x4EE) ()
 					". Best of luck in thy journeys.@*");
 				break;
 		}
-	}
-
-	else if (event == PROXIMITY)
+	} else if (event == PROXIMITY) {
 		scheduleBarks(item);
+	}
 }

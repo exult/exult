@@ -23,34 +23,33 @@
  *	Last Modified: 2006-02-27
  */
 
-void Plaque shape#(0x334) ()
-{
+void Plaque shape#(0x334) () {
 	var qual = get_item_quality();
-	if (qual < 100)
+	if (qual < 100) {
 		Plaque.original();
-	else
-	{
+	} else {
 		var msg;
-		if (qual == 100)
-			msg = ["(e", "flame", "of", "tru("];
-		else if (qual == 101)
-			msg = ["(e", "flame", "of", "love"];
-		else if (qual == 102)
-			msg = ["(e", "flame", "of", "courage"];
-		else if (qual == 103)
-			msg = ["(e", "flame", "of", "infinity"];
-		else if (qual == 104)
-			msg = ["(e", "flame", "of", "si*ularity"];
-		else if (qual == 105)
-			msg = ["shrine", "of", "(e", "codex"];
-		else if (qual == 106)
-			msg = ["ch+ters", "never", "win"];
-		else if (qual == 107)
-			msg = ["(e", "book", "of", "tru("];
-		else if (qual == 108)
-			msg = ["(e", "candle", "of", "love"];
-		else if (qual == 109)
-			msg = ["(e", "bell", "of", "courage"];
+		if (qual == 100) {
+			msg = ["\{th}e", "flame", "of", "tru\{th}"];
+		} else if (qual == 101) {
+			msg = ["\{th}e", "flame", "of", "love"];
+		} else if (qual == 102) {
+			msg = ["\{th}e", "flame", "of", "courage"];
+		} else if (qual == 103) {
+			msg = ["\{th}e", "flame", "of", "infinity"];
+		} else if (qual == 104) {
+			msg = ["\{th}e", "flame", "of", "si\{ng}ularity"];
+		} else if (qual == 105) {
+			msg = ["shrine", "of", "\{th}e", "codex"];
+		} else if (qual == 106) {
+			msg = ["ch\{ea}ters", "never", "win"];
+		} else if (qual == 107) {
+			msg = ["\{th}e", "book", "of", "tru\{th}"];
+		} else if (qual == 108) {
+			msg = ["\{th}e", "candle", "of", "love"];
+		} else if (qual == 109) {
+			msg = ["\{th}e", "bell", "of", "courage"];
+		}
 		UI_display_runes(0x0033, msg);
 	}
 }

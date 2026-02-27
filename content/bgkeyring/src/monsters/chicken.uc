@@ -21,31 +21,29 @@
  */
 
 /* Some highly sophisticated behaviour for chickens */
-void Chicken shape#(0x1F2) ()
-{
+void Chicken shape#(0x1F2) () {
 	var rand = UI_get_random(20);
 	var bark;
 
 	//Chickens will cluck whenever the party is near
-	if (event == PROXIMITY)
-	{
+	if (event == PROXIMITY) {
 		//Chickens will crow for 30 minutes after sunrise
-		if (UI_game_hour() == 6 && UI_game_minute() <= 30 && rand < 15)
+		if (UI_game_hour() == 6 && UI_game_minute() <= 30 && rand < 15) {
 			bark = "@Cockadoodledoo!@";
-		else if	(rand == 1)
+		} else if (rand == 1) {
 			bark = "@Cluck, I say!@";
-		else if	(rand < 15)
+		} else if (rand < 15) {
 			bark = "@Cluck@";
-		else
+		} else {
 			bark = "@Peck@";
+		}
 		item_say(bark);
-	}
-
-	//Double-clicking a chicken will spook it and cause it to run away
-	else if (event == DOUBLECLICK)
-	{
+	} else if (event == DOUBLECLICK) {
+		//Double-clicking a chicken will spook it and cause it to run away
 		item_say("@Squawk!@");
 		set_schedule_type(SHY);
-		if (rand < 5) randomPartyBark("@Leave the poor thing alone!@");
+		if (rand < 5) {
+			randomPartyBark("@Leave the poor thing alone!@");
+		}
 	}
 }

@@ -17,15 +17,17 @@
  */
 
 #ifdef HAVE_CONFIG_H
-#  include <config.h>
+#	include <config.h>
 #endif
 
-#include <fstream>
-
 #include "keyring.h"
-#include "utils.h"
-#include "fnames.h"
+
+#include "endianio.h"
 #include "exceptions.h"
+#include "fnames.h"
+#include "utils.h"
+
+#include <fstream>
 
 using std::ifstream;
 using std::ofstream;
@@ -38,29 +40,33 @@ void Keyring::read() {
 
 	try {
 		pIn = U7open_in(KEYRINGDAT);
-	} catch (exult_exception &/*e*/) {
+	} catch (exult_exception& /*e*/) {
 		// maybe an old savegame, just leave the keyring empty
 		return;
 	}
-	if (!pIn)
+	if (!pIn) {
 		return;
+	}
 	auto& in = *pIn;
 
 	do {
-		const int val = Read2(in);
-		if (in.good())
+		const int val = little_endian::Read2(in);
+		if (in.good()) {
 			addkey(val);
+		}
 	} while (in.good());
 }
 
 void Keyring::write() {
 	auto pOut = U7open_out(KEYRINGDAT);
-	if (!pOut)
+	if (!pOut) {
 		throw file_open_exception(KEYRINGDAT);
+	}
 	auto& out = *pOut;
 
-	for (const int key : keys)
-		Write2(out, key);
+	for (const int key : keys) {
+		little_endian::Write2(out, key);
+	}
 }
 
 void Keyring::clear() {
@@ -77,9 +83,9 @@ bool Keyring::checkkey(int qual) {
 
 bool Keyring::removekey(int qual) {
 	auto ent = keys.find(qual);
-	if (ent == keys.end())
+	if (ent == keys.end()) {
 		return false;
-	else {
+	} else {
 		keys.erase(ent);
 		return true;
 	}

@@ -17,21 +17,19 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-void Frigidazzi object#(0x414) ()
-{
+void Frigidazzi object#(0x414) () {
 	// When you give the fur cap back to Frigidazzi, she clears a flag
 	// she "shouldn't". We cache the flag value and use a try...catch
 	// block to get around a few hidden aborts in her usecode.
 	var knew_furcap_owner = gflags[KNOWS_FURCAP_OWNER];
-	try
-	{
+	try {
 		Frigidazzi.original();
 	}
-	catch ()
-	{
+	catch () {
 	}
 
-	if (knew_furcap_owner && !gflags[KNOWS_FURCAP_OWNER])
+	if (knew_furcap_owner && !gflags[KNOWS_FURCAP_OWNER]) {
 		gflags[GAVE_FURCAP_BACK] = true;
+	}
 }
 

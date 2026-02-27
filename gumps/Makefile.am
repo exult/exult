@@ -3,7 +3,7 @@ AM_CPPFLAGS = -I$(top_srcdir)/headers -I$(top_srcdir) -I$(top_srcdir)/files \
 		-I$(top_srcdir)/audio -I$(top_srcdir)/audio/midi_drivers \
 		-I$(top_srcdir)/conf -I$(top_srcdir)/usecode -I$(top_srcdir)/data \
 		-I$(top_srcdir)/shapes/shapeinf \
-		$(SDL_CFLAGS) $(VORBIS_CFLAGS) $(OGG_CFLAGS) $(INCDIRS)	\
+		$(SDL_CFLAGS) $(OGG_CFLAGS) $(INCDIRS) \
 		$(WINDOWING_SYSTEM) $(DEBUG_LEVEL) $(OPT_LEVEL) $(WARNINGS) $(CPPFLAGS)
 
 if BUILD_EXULT
@@ -38,6 +38,11 @@ libgumps_la_SOURCES = \
 	Sign_gump.h	\
 	Slider_gump.cc	\
 	Slider_gump.h	\
+	Slider_widget.cc	\
+	Slider_widget.h	\
+	StringList_widget.cc \
+	StringList_widget.h  \
+	IterableGump_widget.h \
 	Spellbook_gump.cc	\
 	Spellbook_gump.h	\
 	Stats_gump.cc	\
@@ -56,10 +61,16 @@ libgumps_la_SOURCES = \
 	GameDisplayOptions_gump.h	\
 	GameEngineOptions_gump.cc \
 	GameEngineOptions_gump.h \
+	Modal_gump.cc \
+	Modal_gump.h \
+	Mixer_gump.cc \
+	Mixer_gump.h \
 	Gump_ToggleButton.cc	\
 	Gump_ToggleButton.h	\
 	CombatStats_gump.cc	\
 	CombatStats_gump.h	\
+	Dynamic_container_gump.cc	\
+	Dynamic_container_gump.h	\
 	gump_types.h	\
 	Face_button.cc	\
 	Face_button.h	\
@@ -78,7 +89,15 @@ libgumps_la_SOURCES = \
 	ItemMenu_gump.cc \
 	ItemMenu_gump.h	\
 	InputOptions_gump.cc	\
-	InputOptions_gump.h
+	InputOptions_gump.h \
+	AdvancedOptions_gump.cc \
+	AdvancedOptions_gump.h \
+	ConfigSetting_widget.cc \
+	ConfigSetting_widget.h \
+	DropDown_widget.cc \
+	DropDown_widget.h \
+	Scrollable_widget.cc \
+	Scrollable_widget.h
 endif
 
 CLEANFILES = *~

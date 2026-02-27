@@ -1,82 +1,183 @@
 name: snapshots-windows
 
-on:
-  schedule:
-    - cron: "0 00 * * *" # Daily at 00:00 UTC
-  workflow_dispatch:
+on: [workflow_call]
 
 jobs:
   snapshots-windows:
-    if: ${{ github.repository_owner == 'exult' }}
-    runs-on: windows-2019
+    runs-on: windows-2022
     defaults:
       run:
         shell: msys2 {0}
     steps:
       - name: Activity check
+        id: activity_check
         shell: bash
         run: |
-          DATEUTC=$(curl -sL https://api.github.com/repos/exult/exult/commits | jq -r '[.[]][0]' | jq -r '.commit.committer.date')
+          DATEUTC=$((curl -sL -H "Authorization: Bearer ${{ github.token }}" https://api.github.com/repos/exult/exult/commits | jq -r '.[0].commit.committer.date') || date --utc -Iminutes)
           TIMESTAMP=$(date --utc -d "$DATEUTC" +%s)
-          DAYS=$(( ($(date --utc +%s) - $TIMESTAMP) / 86400 ))
+          DAYS=$(( ($(date --utc -d "0:00" +%s) - $TIMESTAMP) / 86400 ))
           if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
-            echo EXULT_REPO_ALIVE=true >> $GITHUB_ENV
+            echo repo_alive=true >> $GITHUB_OUTPUT
+            echo event is workflow_dispatch. Force building snapshot not doing activity check
           else
             if [ $DAYS -gt 0 ]; then
-              echo EXULT_REPO_ALIVE=false >> $GITHUB_ENV
+              echo repo_alive=false >> $GITHUB_OUTPUT
+              echo "No activity in 24 hours before midnight UTC not building snapshot. Last activity at $DATEUTC."
+              mkdir -p windows-snapshot
+              echo "No activity" >> windows-snapshot/Windows-not-built
             else
-              echo EXULT_REPO_ALIVE=true >> $GITHUB_ENV
+              echo repo_alive=true >> $GITHUB_OUTPUT
             fi
           fi
+
       - name: Install dependencies
-        if: ${{ env.EXULT_REPO_ALIVE == 'true' }}
+        if: ${{ steps.activity_check.outputs.repo_alive == 'true' }}
         uses: msys2/setup-msys2@v2
         with:
           msystem: MSYS
+          update: true
           install: |
-            base-devel
-            git
-            p7zip
-            mingw-w64-x86_64-toolchain
-            mingw-w64-x86_64-binutils
-            mingw-w64-x86_64-ntldd
-            mingw-w64-x86_64-SDL2
-            mingw-w64-x86_64-fluidsynth
-            mingw-w64-x86_64-libogg
-            mingw-w64-x86_64-libvorbis
-            mingw-w64-x86_64-munt-mt32emu
-            mingw-w64-x86_64-libpng
-            mingw-w64-x86_64-zlib
-            mingw-w64-x86_64-SDL2_image
-            mingw-w64-x86_64-gtk3
-            mingw-w64-x86_64-adwaita-icon-theme
-            mingw-w64-x86_64-libxml2
-            mingw-w64-x86_64-freetype
-            mingw-w64-x86_64-gtk2
-            mingw-w64-x86_64-gimp
-            mingw-w64-i686-toolchain
-            mingw-w64-i686-binutils
-            mingw-w64-i686-ntldd
-            mingw-w64-i686-SDL2
-            mingw-w64-i686-fluidsynth
-            mingw-w64-i686-libogg
-            mingw-w64-i686-libvorbis
-            mingw-w64-i686-munt-mt32emu
-            mingw-w64-i686-zlib
-            mingw-w64-i686-SDL2_image
-            mingw-w64-i686-gtk3
-            mingw-w64-i686-adwaita-icon-theme
-            mingw-w64-i686-libxml2
-            mingw-w64-i686-freetype
-            mingw-w64-i686-gtk2
-            mingw-w64-i686-gimp
+            base-devel git p7zip zip
+            mingw-w64-clang-x86_64-toolchain mingw-w64-clang-x86_64-binutils mingw-w64-clang-x86_64-ntldd mingw-w64-clang-x86_64-sdl3
+            mingw-w64-clang-x86_64-fluidsynth mingw-w64-clang-x86_64-libtimidity mingw-w64-clang-x86_64-libogg mingw-w64-clang-x86_64-libvorbis
+            mingw-w64-clang-x86_64-munt-mt32emu mingw-w64-clang-x86_64-libpng mingw-w64-clang-x86_64-zlib mingw-w64-clang-x86_64-sdl3-image
+            mingw-w64-clang-x86_64-gtk3 mingw-w64-clang-x86_64-adwaita-icon-theme mingw-w64-clang-x86_64-libxml2 mingw-w64-clang-x86_64-freetype
+            mingw-w64-clang-x86_64-gimp mingw-w64-clang-x86_64-icu
+            mingw-w64-i686-toolchain mingw-w64-i686-binutils mingw-w64-i686-ntldd
+            mingw-w64-i686-fluidsynth mingw-w64-i686-libogg mingw-w64-i686-libvorbis
+            mingw-w64-i686-libpng mingw-w64-i686-zlib
+            mingw-w64-i686-gtk3 mingw-w64-i686-adwaita-icon-theme mingw-w64-i686-libxml2 mingw-w64-i686-freetype
+            mingw-w64-i686-gimp mingw-w64-i686-autotools mingw-w64-i686-cmake
+      - name: Checkout munt
+        if: ${{ steps.activity_check.outputs.repo_alive == 'true' }}
+        uses: actions/checkout@v4
+        with:
+          repository: munt/munt
+          ref: libmt32emu_2_7_2
+          path: libmt32emu
+
+      - name: Install mingw32/mt32emu
+        if: ${{ steps.activity_check.outputs.repo_alive == 'true' }}
+        env:
+          MSYSTEM: MINGW32
+        run: |
+          cd $GITHUB_WORKSPACE
+          mkdir -p munt
+          cd munt
+          cmake --version
+          cmake ./../libmt32emu -Dmunt_WITH_MT32EMU_SMF2WAV=FALSE -Dmunt_WITH_MT32EMU_QT=FALSE -DCMAKE_INSTALL_PREFIX=$MINGW_PREFIX
+          ninja install
+
+      - name: Restore downloads Cache 
+        uses: actions/cache/restore@v4
+        id: downoads-cache-restore
+        with:
+          path: downloads
+          # Use the git rev hash of vcpkg in the cache key because things are not 
+          # entirely compatible between versions
+          key: snapshot-windows-downloads-${{github.run_number}}-${{github.run_attempt}}
+          restore-keys: |
+            snapshot-windows-downloads
+
+      - name: Download additional dependencies for mingw32 i686
+        if: ${{ steps.activity_check.outputs.repo_alive == 'true' }}
+        env:
+          MSYSTEM: MINGW32
+          ARCH: i686
+        shell: bash
+        run: |
+         declare -A urls_and_sha256=(
+         [https://github.com/libsdl-org/SDL/releases/download/release-3.2.14/SDL3-devel-3.2.14-mingw.tar.gz]=f620a946726d90037a9763c9f6dc29681b806c1aa3674d8d613eb689e25a6839
+         [https://github.com/libsdl-org/SDL_image/releases/download/release-3.2.4/SDL3_image-devel-3.2.4-mingw.tar.gz]=ae95f264b62cd8e4750ef91d5b25f82729e676e1fb45ec50abdca49289aa81b6
+         [https://github.com/unicode-org/icu/releases/download/release-77-1/icu4c-77_1-src.tgz]=588e431f77327c39031ffbb8843c0e3bc122c211374485fa87dc5f3faff24061
+         [https://sourceforge.net/projects/libtimidity/files/libtimidity/0.2.7/libtimidity-0.2.7.tar.gz]=26447cbc049fb262e26b640e42c063e8694133aa92ff145e0d0b15a03a352e6a
+         )
+         mkdir downloads 2>/dev/null || true
+         for url in "${!urls_and_sha256[@]}"; do
+           hash=${urls_and_sha256[$url]}
+           filename="downloads/$(basename -- $url)"
+           if echo "$hash *$filename"  |sha256sum --status -c 2>/dev/null; then
+           echo $url already downloaded
+           else
+           echo $url needs to be downloaded
+               curl -L $url -o $filename
+           fi
+               echo "$hash *$filename"  |sha256sum -c
+         done         
+
+      - name: Save downloads to cache
+        id: downloads-cache-save
+        uses: actions/cache/save@v4
+        with:
+          path: downloads
+          key: snapshot-windows-downloads-${{github.run_number}}-${{github.run_attempt}}
+
+      - name: Manually install SDL3-devel-3.2.14-mingw.tar.gz for mingw32 i686
+        if: ${{ steps.activity_check.outputs.repo_alive == 'true' }}
+        env:
+          MSYSTEM: MINGW32
+          ARCH: i686
+        run: |
+         tar xfz downloads/SDL3-devel-3.2.14-mingw.tar.gz
+         cp -r -v SDL3-3.2.14/i686-w64-mingw32/* $MINGW_PREFIX
+         rm -r -f SDL3-3.2.14 downloads/SDL3-devel-3.2.14-mingw.tar.gz
+
+      - name: Manually install SDL3_image-devel-3.2.4-mingw.tar.gz for mingw32 i686      
+        if: ${{ steps.activity_check.outputs.repo_alive == 'true' }}
+        env:
+          MSYSTEM: MINGW32
+          ARCH: i686
+        run: |
+         tar xfz downloads/SDL3_image-devel-3.2.4-mingw.tar.gz
+         cp -r -v SDL3_image-3.2.4/i686-w64-mingw32/* $MINGW_PREFIX
+         rm -r -f SDL3_image-3.2.4 downloads/SDL3_image-devel-3.2.4-mingw.tar.gz
+
+      - name: Build and install icu4c 77.1 for mingw32 i686      
+        if: ${{ steps.activity_check.outputs.repo_alive == 'true' }}
+        env:
+          MSYSTEM: MINGW32
+          ARCH: i686
+        run: |
+         tar xfz downloads/icu4c-77_1-src.tgz
+         cd icu/source
+         autoreconf -vfi
+         ./configure \
+         --enable-shared \
+         --with-data-packaging=dll \
+         --disable-tests \
+         --disable-samples \
+         --enable-release
+         make -j
+         make -j install
+         cd ../..
+         rm -r -f downloads/icu4c-77_1-src.tgz icu
+
+      - name: Build and install libtimidity 0.2.7 for mingw32 i686
+        if: ${{ steps.activity_check.outputs.repo_alive == 'true' }}
+        env:
+          MSYSTEM: MINGW32
+          ARCH: i686
+        run: |
+         tar xfz downloads/libtimidity-0.2.7.tar.gz
+         cd libtimidity-0.2.7/
+         autoreconf -vfi
+         ./configure \
+         --enable-shared \
+         --enable-static \
+         --disable-ao 
+         make -j
+         make -j install
+         cd ..
+         rm -r -f downloads/libtimidity-0.2.7.tar.gz libtimidity-0.2.7
+
       - name: Checkout code for i686 build
-        if: ${{ env.EXULT_REPO_ALIVE == 'true' }}
-        uses: actions/checkout@master
+        if: ${{ steps.activity_check.outputs.repo_alive == 'true' }}
+        uses: actions/checkout@v4
         with:
           path: exult-i686
+
       - name: Build i686
-        if: ${{ env.EXULT_REPO_ALIVE == 'true' }}
+        if: ${{ steps.activity_check.outputs.repo_alive == 'true' }}
         env:
           MSYSTEM: MINGW32
           ARCH: i686
@@ -84,34 +185,35 @@ jobs:
           SNAPSHOT_PATH=$(cygpath -m ~/Exult-dist)
           cd $GITHUB_WORKSPACE/exult-$ARCH
           mkdir -p ${SNAPSHOT_PATH}
-          make -j 2 -f Makefile.mingw DISTPATH=${SNAPSHOT_PATH} dist studiodist toolsdist plugindist
+          make -j 2 -f Makefile.mingw SNAPSHOT=1 DISTPATH=${SNAPSHOT_PATH} DEBUG_LEVEL=-g1 dist studiodist toolsdist plugindist
           for ff in bgkeyring islefaq sifixes; do
             pushd content/${ff}
             make -j 2 -f Makefile.mingw ${ff}dir=${SNAPSHOT_PATH}/${ff} install
             popd
           done
-          echo "EXULT_SNAPSHOT_PATH=${SNAPSHOT_PATH}" >> $GITHUB_ENV
-          echo "MSYSHOME=${HOME}" >> $GITHUB_ENV
+
       - name: Checkout code for x86_64 build
-        if: ${{ env.EXULT_REPO_ALIVE == 'true' }}
-        uses: actions/checkout@master
+        if: ${{ steps.activity_check.outputs.repo_alive == 'true' }}
+        uses: actions/checkout@v4
         with:
           path: exult-x86_64
+
       - name: Build x86_64
-        if: ${{ env.EXULT_REPO_ALIVE == 'true' }}
+        if: ${{ steps.activity_check.outputs.repo_alive == 'true' }}
         env:
-          MSYSTEM: MINGW64
+          MSYSTEM: CLANG64
           ARCH: x86_64
         run: |
           SNAPSHOT_PATH=$(cygpath -m ~/Exult-dist)
           cd $GITHUB_WORKSPACE/exult-$ARCH
           mkdir -p ${SNAPSHOT_PATH}
-          make -j 2 -f Makefile.mingw DISTPATH=${SNAPSHOT_PATH} dist studiodist toolsdist plugindist
-          echo "EXULT_SNAPSHOT_PATH=${SNAPSHOT_PATH}" >> $GITHUB_ENV
+          make -j 2 -f Makefile.mingw SNAPSHOT=1 DISTPATH=${SNAPSHOT_PATH} DEBUG_LEVEL=-g1 dist studiodist toolsdist plugindist aseprite-plugindist
+
       - name: Create installers
-        if: ${{ env.EXULT_REPO_ALIVE == 'true' }}
+        if: ${{ steps.activity_check.outputs.repo_alive == 'true' }}
         run: |
-          cd ${{ env.EXULT_SNAPSHOT_PATH }}
+          SNAPSHOT_PATH=$(cygpath -m ~/Exult-dist)
+          cd "${SNAPSHOT_PATH}"
           "/c/Program Files (x86)/Inno Setup 6/ISCC.exe" exult_installer.iss
           "/c/Program Files (x86)/Inno Setup 6/ISCC.exe" exult_studio_installer.iss
           "/c/Program Files (x86)/Inno Setup 6/ISCC.exe" exult_tools_installer.iss
@@ -119,112 +221,34 @@ jobs:
           "/c/Program Files/7-Zip/7z.exe" -tzip a Keyring.zip -mx9 -mmt ./bgkeyring/*
           "/c/Program Files/7-Zip/7z.exe" -tzip a SFisland.zip -mx9 -mmt ./islefaq/*
           "/c/Program Files/7-Zip/7z.exe" -tzip a Sifixes.zip -mx9 -mmt ./sifixes/*
-          echo "GITHUB_REF=v1.9.0.$(date --utc +'%Y%m%d')" >> $GITHUB_ENV
-      - name: VirusTotal Scan
-        if: ${{ env.EXULT_REPO_ALIVE == 'true' }}
-        id: scan_files
-        uses: crazy-max/ghaction-virustotal@v2
-        with:
-          vt_api_key: ${{ secrets.VT_API_KEY }}
-          github_token: ${{ github.token }}
-          update_release_body: true
-          files: |
-            ${{ env.EXULT_SNAPSHOT_PATH }}/Exult.exe
-            ${{ env.EXULT_SNAPSHOT_PATH }}/ExultStudio.exe
-            ${{ env.EXULT_SNAPSHOT_PATH }}/ExultTools.exe
-            ${{ env.EXULT_SNAPSHOT_PATH }}/Gimp20Plugin.exe
-      - name: Generate VirusTotal Body
-        if: ${{ env.EXULT_REPO_ALIVE == 'true' }}
-        run: |
-          echo "Snapshot ${{ env.GITHUB_REF }}" > ${{ env.EXULT_SNAPSHOT_PATH }}/body.txt
-          echo "" >> ${{ env.EXULT_SNAPSHOT_PATH }}/body.txt
-          echo "🛡 [VirusTotal GitHub Action](https://github.com/crazy-max/ghaction-virustotal) analysis:" >> ${{ env.EXULT_SNAPSHOT_PATH }}/body.txt
-          echo "" >> ${{ env.EXULT_SNAPSHOT_PATH }}/body.txt
-          analysis="${{ steps.scan_files.outputs.analysis }}"
-          while read -d, -r pair; do
-            IFS='=' read -r filename analysisURL <<<"$pair"
-            echo "* [$(basename $filename)]($analysisURL)" >> ${{ env.EXULT_SNAPSHOT_PATH }}/body.txt
-          done <<<"$analysis,"
-      - name: Create release
-        if: ${{ env.EXULT_REPO_ALIVE == 'true' }}
-        id: create_release
-        uses: softprops/action-gh-release@v1
-        with:
-          token: ${{ github.token }}
-          name: Snapshot ${{ env.GITHUB_REF }}
-          tag_name: snapshot-${{ env.GITHUB_REF }}
-          body_path: ${{ env.EXULT_SNAPSHOT_PATH }}/body.txt
-          prerelease: false
-          fail_on_unmatched_files: true
-          files: |
-            ${{ env.EXULT_SNAPSHOT_PATH }}/Exult.exe
-            ${{ env.EXULT_SNAPSHOT_PATH }}/ExultStudio.exe
-            ${{ env.EXULT_SNAPSHOT_PATH }}/ExultTools.exe
-            ${{ env.EXULT_SNAPSHOT_PATH }}/Gimp20Plugin.exe
-            ${{ env.EXULT_SNAPSHOT_PATH }}/Keyring.zip
-            ${{ env.EXULT_SNAPSHOT_PATH }}/SFisland.zip
-            ${{ env.EXULT_SNAPSHOT_PATH }}/Sifixes.zip
-      - name: save-artifacts
-        if: ${{ env.EXULT_REPO_ALIVE == 'true' }}
+          "/c/Program Files/7-Zip/7z.exe" -tzip a exult_shp_win64.aseprite-extension -mx9 -mmt ./AsepritePlugin-x86_64/*
+
+      - name: Save artifacts
+        if: ${{ steps.activity_check.outputs.repo_alive == 'true' }}
         run: |
           cd $GITHUB_WORKSPACE
-          mkdir -p snapshot-files
-          cp ${{ env.EXULT_SNAPSHOT_PATH }}/Exult.exe ./snapshot-files
-          cp ${{ env.EXULT_SNAPSHOT_PATH }}/ExultStudio.exe ./snapshot-files
-          cp ${{ env.EXULT_SNAPSHOT_PATH }}/ExultTools.exe ./snapshot-files
-          cp ${{ env.EXULT_SNAPSHOT_PATH }}/Gimp20Plugin.exe ./snapshot-files
-          cp ${{ env.EXULT_SNAPSHOT_PATH }}/Keyring.zip ./snapshot-files
-          cp ${{ env.EXULT_SNAPSHOT_PATH }}/SFisland.zip ./snapshot-files
-          cp ${{ env.EXULT_SNAPSHOT_PATH }}/Sifixes.zip ./snapshot-files
+          mkdir -p windows-snapshot
+          SNAPSHOT_PATH=$(cygpath -m ~/Exult-dist)
+          cp "${SNAPSHOT_PATH}/Exult.exe" ./windows-snapshot
+          cp "${SNAPSHOT_PATH}/ExultStudio.exe" ./windows-snapshot
+          cp "${SNAPSHOT_PATH}/ExultTools.exe" ./windows-snapshot
+          cp "${SNAPSHOT_PATH}/Gimp30Plugin.exe" ./windows-snapshot
+          cp "${SNAPSHOT_PATH}/Keyring.zip" ./windows-snapshot
+          cp "${SNAPSHOT_PATH}/SFisland.zip" ./windows-snapshot
+          cp "${SNAPSHOT_PATH}/Sifixes.zip" ./windows-snapshot
+          cp "${SNAPSHOT_PATH}/exult_shp_win64.aseprite-extension" ./windows-snapshot
+
       - name: Upload artifacts
-        if: ${{ env.EXULT_REPO_ALIVE == 'true' }}
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
-          name: "snapshot files"
-          path: snapshot-files
-  # new job, now on Ubuntu
-  snapshot-upload:
-    runs-on: ubuntu-latest
-    if: ${{ github.repository_owner == 'exult' }}
-    needs: snapshots-windows
-    steps:
-      - name: Activity check
-        shell: bash
-        run: |
-          DATEUTC=$(curl -sL https://api.github.com/repos/exult/exult/commits | jq -r '[.[]][0]' | jq -r '.commit.committer.date')
-          TIMESTAMP=$(date --utc -d "$DATEUTC" +%s)
-          DAYS=$(( ($(date --utc +%s) - $TIMESTAMP) / 86400 ))
-          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
-            echo EXULT_REPO_ALIVE=true >> $GITHUB_ENV
-          else
-            if [ $DAYS -gt 0 ]; then
-              echo EXULT_REPO_ALIVE=false >> $GITHUB_ENV
-            else
-              echo EXULT_REPO_ALIVE=true >> $GITHUB_ENV
-            fi
-          fi
-      - name: Install SSH key
-        if: ${{ env.EXULT_REPO_ALIVE == 'true' }}
-        uses: shimataro/ssh-key-action@v2
+          name: "windows snapshot"
+          path: windows-snapshot
+
+      - name: Upload unstripped executable artifacts
+        uses: actions/upload-artifact@v4
         with:
-          key: "${{ secrets.SSH_PRIVATE_KEY }}"
-          name: id_rsa
-          known_hosts: ${{ secrets.SSH_KNOWN_HOSTS }}
-      - name: Download artifacts
-        if: ${{ env.EXULT_REPO_ALIVE == 'true' }}
-        uses: actions/download-artifact@v2
-        with:
-          name: "snapshot files"
-      - name: Upload artifacts
-        shell: bash
-        if: ${{ env.EXULT_REPO_ALIVE == 'true' }}
-        run: |
-          cd $GITHUB_WORKSPACE
-          scp -i ~/.ssh/id_rsa *.exe *.zip ${{ secrets.SCP_HOST }}:${{ secrets.PROJECT_HOME }}/htdocs/snapshots/
-      # delete-artifact
-      - name: Delete artifact
-        if: ${{ env.EXULT_REPO_ALIVE == 'true' }}
-        uses: geekyeggo/delete-artifact@v1
-        with:
-          name: "snapshot files"
-          failOnError: false
+          name: "Unstripped Windows executables"
+          path: |
+           exult-i686/Exult.exe
+           exult-x86_64/Exult.exe
+          compression-level: 9

@@ -1,7 +1,9 @@
-AM_CPPFLAGS = -I$(top_srcdir)/headers -I$(top_srcdir) -I$(top_srcdir)/files $(SDL_CFLAGS) $(INCDIRS) $(WINDOWING_SYSTEM) \
-		-I$(top_srcdir)/conf \
+AM_CPPFLAGS = -I$(top_srcdir)/headers -I$(top_srcdir) -I$(top_srcdir)/files \
+		-I$(top_srcdir)/shapes -I$(top_srcdir)/objs -I$(top_srcdir)/conf \
+		$(SDL_CFLAGS) $(PNG_CFLAGS) $(INCDIRS) $(WINDOWING_SYSTEM) \
 		$(DEBUG_LEVEL) $(OPT_LEVEL) $(WARNINGS) $(CPPFLAGS)
 
+if HAVE_SDL
 noinst_LTLIBRARIES = libimagewin.la
 
 libimagewin_la_SOURCES = \
@@ -47,6 +49,7 @@ libimagewin_la_SOURCES += \
 	PointScaler.h \
 	scale_xbr.cc \
 	scale_xbr.h
+endif
 endif
 
 EXTRA_DIST =

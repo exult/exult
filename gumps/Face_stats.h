@@ -27,37 +27,40 @@ class Portrait_button;
 
 class Face_stats : public Gump {
 	// Only allow for one to be made
-	static Face_stats   *self;
-	static int      mode;
+	static Face_stats* self;
+	static int         mode;
 	Face_stats();
 
-	int     party_size;
-	Portrait_button *party[8];
-	int     npc_nums[8];
+	int              party_size;
+	Portrait_button* party[8];
+	int              npc_nums[8];
 
-	int     resx;
-	int     resy;
-	int     gamex;
-	int     gamey;
+	int resx;
+	int resy;
+	int gamex;
+	int gamey;
 
-	void        create_buttons();
-	void        delete_buttons();
+	void create_buttons();
+	void delete_buttons();
 
-	TileRect   region;
+	TileRect region;
 
 public:
 	~Face_stats() override;
 	// Is a given point on a button?
-	Gump_button *on_button(int mx, int my) override;
-	void paint() override;
+	Gump_button* on_button(int mx, int my) override;
+	void         paint() override;
+
 	// Don't close on end_gump_mode
 	bool is_persistent() const override {
 		return true;
 	}
+
 	// Can't be dragged with mouse
 	bool is_draggable() const override {
 		return false;
 	}
+
 	// Show the hand cursor
 	bool no_handcursor() const override {
 		return true;
@@ -66,27 +69,30 @@ public:
 	TileRect get_rect() const override {
 		return region;
 	}
+
 	bool has_point(int x, int y) const override;
 
 	// add dirty region, if dirty
 	void update_gump() override;
 
-	bool add(Game_object *obj, int mx = -1, int my = -1,
-	        int sx = -1, int sy = -1, bool dont_check = false,
-	        bool combine = false) override;
+	bool add(Game_object* obj, int mx = -1, int my = -1, int sx = -1, int sy = -1, bool dont_check = false, bool combine = false)
+			override;
 
-	Container_game_object *find_actor(int mx, int my) override;
+	Container_game_object* find_actor(int mx, int my) override;
 
 	static int get_state() {
 		return self ? mode : -1;
 	}
+
 	static void CreateGump();
 	static void RemoveGump();
 	static void AdvanceState();
 	static void UpdateButtons();
-	static void save_config(Configuration *config);
-	static void load_config(Configuration *config);
+	static void HideGump();
+	static void ShowGump();
+	static bool Visible();
+	static void save_config(Configuration* config);
+	static void load_config(Configuration* config);
 };
 
-
-#endif //FACE_STATS_H
+#endif    // FACE_STATS_H

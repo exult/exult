@@ -1,42 +1,82 @@
-CLASSPATH = xml-apis.jar:xercesImpl.jar:xalan.jar
-JAVA = java
-INPUT = readme.xml faq.xml
-CLASS = org.apache.xalan.xslt.Process
+top_srcdir := ../..
+DOCS_DIR := $(top_srcdir)/docs
+WEB_TMP := ./web_tmp
 
 HTML_OBJS := $(patsubst %.xml,%.html,$(wildcard *.xml))
 TEXT_OBJS := $(patsubst %.xml,%.txt,$(wildcard *.xml))
-PHP_OBJS := $(patsubst %.xml,%.dat,$(wildcard *.xml))
 
-all: html text php ReadMe.html duplicate phpfix
+DOCS_HTMLS := $(DOCS_DIR)/ReadMe.html $(DOCS_DIR)/faq.html $(DOCS_DIR)/exult_studio.html
+DOCS_TEXTS := $(DOCS_DIR)/exult_studio.txt
+TOP_TEXTS := $(top_srcdir)/FAQ $(top_srcdir)/README
+WEB_TMP_HTMLS := $(WEB_TMP)/docs.html $(WEB_TMP)/faq.html $(WEB_TMP)/studio.html
+
+ifdef WEB_DIR
+	WEB_TEXTS := $(patsubst %.xml,$(WEB_DIR)/%.txt,$(wildcard *.xml))
+	WEB_HTMLS := $(WEB_DIR)/docs.html $(WEB_DIR)/faq.html $(WEB_DIR)/studio.html
+else
+	WEB_TEXTS :=
+	WEB_HTMLS :=
+endif
+
+define build_output_files
+	xsltproc -o $(1) $(2) $(3)
+	sed -i'' 's/[[:blank:]]*$$//' $(1)
+endef
 
 # Rules for transforming the XML source
-.xml.html: html.xsl
-	$(JAVA) -classpath $(CLASSPATH) $(CLASS) -IN $< -XSL html.xsl -OUT $@
-.xml.txt: text.xsl
-	$(JAVA) -classpath $(CLASSPATH) $(CLASS) -IN $< -XSL text.xsl -OUT $@
-.xml.dat: php.xsl
-	$(JAVA) -classpath $(CLASSPATH) $(CLASS) -IN $< -XSL php.xsl -OUT $@
-.SUFFIXES: .xml .html .txt .dat
+%.html: %.xml html.xsl docs.dtd
+	$(call build_output_files, $@, html.xsl, $<)
 
-# rule for renaming docs.html to ReadMe.html
-ReadMe.html: docs.html
-	mv docs.html ReadMe.html
+%.txt: %.xml text.xsl docs.dtd
+	$(call build_output_files, $@, text.xsl, $<)
 
-#rule for copying faq.txt, docs.txt to Faq and ReadMe
-duplicate: faq.txt docs.txt
-	cp faq.txt FAQ
-	cp docs.txt README
+all: html text web-tmp $(top_srcdir)/FAQ $(top_srcdir)/README $(WEB_TMP_HTMLS) $(WEB_TEXTS) $(WEB_HTMLS)
 
-# rule for stripping the unneded <test> tag from the PHP files
-phpfix: docs.dat faq.dat exult_studio.dat
-	gsed -i -e 's@<test xmlns="http://www.w3.org/1999/xhtml">@@; s@</test>@@' *.dat
+# Create web_tmp directory if it doesn't exist
+$(WEB_TMP):
+	mkdir -p $(WEB_TMP)
+
+# Rules for generating web HTML files with web_html.xsl in web_tmp
+$(WEB_TMP)/docs.html: docs.xml web_html.xsl docs.dtd | $(WEB_TMP)
+	$(call build_output_files, $@, web_html.xsl, $<)
+
+$(WEB_TMP)/faq.html: faq.xml web_html.xsl docs.dtd | $(WEB_TMP)
+	$(call build_output_files, $@, web_html.xsl, $<)
+
+$(WEB_TMP)/studio.html: exult_studio.xml web_html.xsl docs.dtd | $(WEB_TMP)
+	$(call build_output_files, $@, web_html.xsl, $<)
+
+.SUFFIXES: .xml .html .txt
+
+define update_files_template
+$(1): $(2)
+	cp $(2) $(1)
+endef
+
+# Rule for updating files in the docs directory
+$(eval $(call update_files_template, $(DOCS_DIR)/ReadMe.html, docs.html))
+$(eval $(call update_files_template, $(DOCS_DIR)/faq.html, faq.html))
+$(eval $(call update_files_template, $(DOCS_DIR)/exult_studio.html, exult_studio.html))
+$(eval $(call update_files_template, $(DOCS_DIR)/exult_studio.txt, exult_studio.txt))
+
+# Rules for updating files in the top directory
+$(eval $(call update_files_template, $(top_srcdir)/FAQ, faq.txt))
+$(eval $(call update_files_template, $(top_srcdir)/README, docs.txt))
+
+ifdef WEB_DIR
+$(foreach file, $(TEXT_OBJS), $(eval $(call update_files_template, $(WEB_DIR)/$(file), $(file))))
+$(eval $(call update_files_template, $(WEB_DIR)/docs.html, $(WEB_TMP)/docs.html))
+$(eval $(call update_files_template, $(WEB_DIR)/faq.html, $(WEB_TMP)/faq.html))
+$(eval $(call update_files_template, $(WEB_DIR)/studio.html, $(WEB_TMP)/studio.html))
+endif
 
 # remove all generated files
 clean:
-	-rm -f *.html *.txt *.dat FAQ README
+	-rm -f *.html *.txt
+	-rm -rf $(WEB_TMP)
 
-html: $(HTML_OBJS)
-text: $(TEXT_OBJS)
-php: $(PHP_OBJS)
+html: $(HTML_OBJS) $(DOCS_HTMLS) $(DOCS_TEXTS)
+text: $(TEXT_OBJS) $(TOP_TEXTS)
+web-tmp: $(WEB_TMP_HTMLS)
 
-.PHONY: all html text php clean
+.PHONY: all html text web-tmp clean update

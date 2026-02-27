@@ -23,27 +23,23 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 namespace Pentagram {
 
-class RawAudioSample : public AudioSample
-{
-public:
-	RawAudioSample(std::unique_ptr<uint8[]> buffer, uint32 size,
-				   uint32 rate, bool signeddata, bool stereo);
-	void initDecompressor(void *DecompData) const override;
-	uint32 decompressFrame(void *DecompData, void *samples) const override;
-	void freeDecompressor(void *DecompData) const override;
+	class RawAudioSample : public AudioSample {
+	public:
+		RawAudioSample(std::unique_ptr<uint8[]> buffer, uint32 size, uint32 rate, bool signeddata, bool stereo);
+		void   initDecompressor(void* DecompData) const override;
+		uint32 decompressFrame(void* DecompData, void* samples) const override;
+		void   freeDecompressor(void* DecompData) const override;
 
-protected:
+	protected:
+		struct RawDecompData {
+			uint32 pos;
+		};
 
-	struct RawDecompData {
-		uint32 pos;
+		bool signeddata;
+		int  start_pos;
+		bool byte_swap;
 	};
 
-	bool signeddata;
-	int start_pos;
-	bool byte_swap;
-
-};
-
-}
+}    // namespace Pentagram
 
 #endif

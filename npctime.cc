@@ -19,18 +19,19 @@
  */
 
 #ifdef HAVE_CONFIG_H
-#  include <config.h>
+#	include <config.h>
 #endif
 
 #include "npctime.h"
-#include "gamewin.h"
-#include "gamemap.h"
-#include "gameclk.h"
+
 #include "actors.h"
+#include "game.h"
+#include "gameclk.h"
+#include "gamemap.h"
+#include "gamewin.h"
+#include "ignore_unused_variable_warning.h"
 #include "items.h"
 #include "schedule.h"
-#include "game.h"
-#include "ignore_unused_variable_warning.h"
 
 using std::rand;
 
@@ -41,10 +42,10 @@ extern bool god_mode;
  */
 class Npc_timer : public Time_sensitive, public Game_singletons {
 protected:
-	Npc_timer_list *list;       // Where NPC stores ->this.
-	uint32 get_minute();    // Get game minutes.
+	Npc_timer_list* list;            // Where NPC stores ->this.
+	uint32          get_minute();    // Get game minutes.
 public:
-	Npc_timer(Npc_timer_list *l, int start_delay = 0);
+	Npc_timer(Npc_timer_list* l, int start_delay = 0);
 	~Npc_timer() override;
 };
 
@@ -52,11 +53,12 @@ public:
  *  Handle starvation.
  */
 class Npc_hunger_timer : public Npc_timer {
-	uint32 last_time;   // Last game minute when penalized.
+	uint32 last_time;    // Last game minute when penalized.
 public:
-	Npc_hunger_timer(Npc_timer_list *l) : Npc_timer(l, 5000) {
+	Npc_hunger_timer(Npc_timer_list* l) : Npc_timer(l, 5000) {
 		last_time = get_minute();
 	}
+
 	// Handle events:
 	void handle_event(unsigned long curtime, uintptr udata) override;
 };
@@ -65,9 +67,9 @@ public:
  *  Handle poison.
  */
 class Npc_poison_timer : public Npc_timer {
-	uint32 end_time;        // Time when it wears off.
+	uint32 end_time;    // Time when it wears off.
 public:
-	Npc_poison_timer(Npc_timer_list *l);
+	Npc_poison_timer(Npc_timer_list* l);
 	// Handle events:
 	void handle_event(unsigned long curtime, uintptr udata) override;
 };
@@ -76,12 +78,13 @@ public:
  *  Handle sleep.
  */
 class Npc_sleep_timer : public Npc_timer {
-	uint32 end_time;        // Time when it wears off.
+	uint32 end_time;    // Time when it wears off.
 public:
-	Npc_sleep_timer(Npc_timer_list *l) : Npc_timer(l) {
+	Npc_sleep_timer(Npc_timer_list* l) : Npc_timer(l) {
 		// Lasts 5-10 seconds..
 		end_time = Game::get_ticks() + 5000 + rand() % 5000;
 	}
+
 	// Handle events:
 	void handle_event(unsigned long curtime, uintptr udata) override;
 };
@@ -90,12 +93,13 @@ public:
  *  Invisibility timer.
  */
 class Npc_invisibility_timer : public Npc_timer {
-	uint32 end_time;        // Time when it wears off.
+	uint32 end_time;    // Time when it wears off.
 public:
-	Npc_invisibility_timer(Npc_timer_list *l) : Npc_timer(l) {
+	Npc_invisibility_timer(Npc_timer_list* l) : Npc_timer(l) {
 		// Lasts 60-80 seconds..
 		end_time = Game::get_ticks() + 60000 + rand() % 20000;
 	}
+
 	// Handle events:
 	void handle_event(unsigned long curtime, uintptr udata) override;
 };
@@ -104,12 +108,13 @@ public:
  *  Protection timer.
  */
 class Npc_protection_timer : public Npc_timer {
-	uint32 end_time;        // Time when it wears off.
+	uint32 end_time;    // Time when it wears off.
 public:
-	Npc_protection_timer(Npc_timer_list *l) : Npc_timer(l) {
+	Npc_protection_timer(Npc_timer_list* l) : Npc_timer(l) {
 		// Lasts 60-80 seconds..
 		end_time = Game::get_ticks() + 60000 + rand() % 20000;
 	}
+
 	// Handle events:
 	void handle_event(unsigned long curtime, uintptr udata) override;
 };
@@ -129,13 +134,14 @@ public:
  *  Timer for flags that don't need any other checks.
  */
 class Npc_flag_timer : public Npc_timer {
-	int flag;           // Flag # in Obj_flags.
-	uint32 end_time;        // Time when it wears off.
+	int    flag;        // Flag # in Obj_flags.
+	uint32 end_time;    // Time when it wears off.
 public:
-	Npc_flag_timer(Npc_timer_list *l, int f) : Npc_timer(l), flag(f) {
+	Npc_flag_timer(Npc_timer_list* l, int f) : Npc_timer(l), flag(f) {
 		// Lasts 60-120 seconds..
 		end_time = Game::get_ticks() + 60000 + rand() % 60000;
 	}
+
 	// Handle events:
 	void handle_event(unsigned long curtime, uintptr udata) override;
 };
@@ -177,8 +183,7 @@ void Npc_timer_list::stop_bleeding() {
 }
 
 std::shared_ptr<Actor> Npc_timer_list::get_npc() const {
-	std::shared_ptr<Actor> npc_shared
-			= std::static_pointer_cast<Actor>(npc.lock());
+	std::shared_ptr<Actor> npc_shared = std::static_pointer_cast<Actor>(npc.lock());
 	return npc_shared;
 }
 
@@ -186,8 +191,7 @@ std::shared_ptr<Actor> Npc_timer_list::get_npc() const {
  *  Start hunger (if not already there).
  */
 
-void Npc_timer_list::start_hunger(
-) {
+void Npc_timer_list::start_hunger() {
 	if (hunger == nullptr) {
 		// Not already there?
 		hunger = std::make_unique<Npc_hunger_timer>(this);
@@ -198,8 +202,7 @@ void Npc_timer_list::start_hunger(
  *  Start poison.
  */
 
-void Npc_timer_list::start_poison(
-) {
+void Npc_timer_list::start_poison() {
 	poison = std::make_unique<Npc_poison_timer>(this);
 }
 
@@ -207,8 +210,7 @@ void Npc_timer_list::start_poison(
  *  Start sleep.
  */
 
-void Npc_timer_list::start_sleep(
-) {
+void Npc_timer_list::start_sleep() {
 	sleep = std::make_unique<Npc_sleep_timer>(this);
 }
 
@@ -216,8 +218,7 @@ void Npc_timer_list::start_sleep(
  *  Start invisibility.
  */
 
-void Npc_timer_list::start_invisibility(
-) {
+void Npc_timer_list::start_invisibility() {
 	invisibility = std::make_unique<Npc_invisibility_timer>(this);
 }
 
@@ -225,8 +226,7 @@ void Npc_timer_list::start_invisibility(
  *  Start protection.
  */
 
-void Npc_timer_list::start_protection(
-) {
+void Npc_timer_list::start_protection() {
 	protection = std::make_unique<Npc_protection_timer>(this);
 }
 
@@ -238,8 +238,7 @@ void Npc_timer_list::start_flag(int flag) {
  *  Start might.
  */
 
-void Npc_timer_list::start_might(
-) {
+void Npc_timer_list::start_might() {
 	start_flag(Obj_flags::might);
 }
 
@@ -247,8 +246,7 @@ void Npc_timer_list::start_might(
  *  Start curse.
  */
 
-void Npc_timer_list::start_curse(
-) {
+void Npc_timer_list::start_curse() {
 	start_flag(Obj_flags::cursed);
 }
 
@@ -256,8 +254,7 @@ void Npc_timer_list::start_curse(
  *  Start charm.
  */
 
-void Npc_timer_list::start_charm(
-) {
+void Npc_timer_list::start_charm() {
 	start_flag(Obj_flags::charmed);
 }
 
@@ -265,8 +262,7 @@ void Npc_timer_list::start_charm(
  *  Start paralyze.
  */
 
-void Npc_timer_list::start_paralyze(
-) {
+void Npc_timer_list::start_paralyze() {
 	start_flag(Obj_flags::paralyzed);
 }
 
@@ -282,8 +278,7 @@ void Npc_timer_list::start_bleeding() {
  *  Get game minute from start.
  */
 
-uint32 Npc_timer::get_minute(
-) {
+uint32 Npc_timer::get_minute() {
 	return 60 * gclock->get_total_hours() + gclock->get_minute();
 }
 
@@ -292,9 +287,10 @@ uint32 Npc_timer::get_minute(
  */
 
 Npc_timer::Npc_timer(
-    Npc_timer_list *l,
-    int start_delay         // Time in msecs. before starting.
-) : list(l) {
+		Npc_timer_list* l,
+		int             start_delay    // Time in msecs. before starting.
+		)
+		: list(l) {
 	gwin->get_tqueue()->add(Game::get_ticks() + start_delay, this);
 }
 
@@ -302,10 +298,9 @@ Npc_timer::Npc_timer(
  *  Be sure we're no longer in the time queue.
  */
 
-Npc_timer::~Npc_timer(
-) {
+Npc_timer::~Npc_timer() {
 	if (in_queue()) {
-		Time_queue *tq = Game_window::get_instance()->get_tqueue();
+		Time_queue* tq = Game_window::get_instance()->get_tqueue();
 		tq->remove(this);
 	}
 }
@@ -314,10 +309,7 @@ Npc_timer::~Npc_timer(
  *  Time to penalize for hunger.
  */
 
-void Npc_hunger_timer::handle_event(
-    unsigned long curtime,
-    uintptr udata
-) {
+void Npc_hunger_timer::handle_event(unsigned long curtime, uintptr udata) {
 	ignore_unused_variable_warning(udata);
 	Actor_shared npc = list->get_npc();
 	if (!npc) {
@@ -338,7 +330,7 @@ void Npc_hunger_timer::handle_event(
 				npc->say_hunger_message();
 			}
 			if (food <= 0 && (rand() % 5) < 2) {
-				npc->reduce_health(1, Weapon_data::sonic_damage);
+				npc->reduce_health(1, Weapon_data::starvation_damage);
 			}
 		}
 		last_time = minute;
@@ -350,9 +342,7 @@ void Npc_hunger_timer::handle_event(
  *  Initialize poison timer.
  */
 
-Npc_poison_timer::Npc_poison_timer(
-    Npc_timer_list *l
-) : Npc_timer(l, 5000) {
+Npc_poison_timer::Npc_poison_timer(Npc_timer_list* l) : Npc_timer(l, 5000) {
 	// Lasts 1-3 minutes.
 	end_time = Game::get_ticks() + 60000 + rand() % 120000;
 }
@@ -361,10 +351,7 @@ Npc_poison_timer::Npc_poison_timer(
  *  Time to penalize for poison, or see if it's worn off.
  */
 
-void Npc_poison_timer::handle_event(
-    unsigned long curtime,
-    uintptr udata
-) {
+void Npc_poison_timer::handle_event(unsigned long curtime, uintptr udata) {
 	ignore_unused_variable_warning(udata);
 	Actor_shared npc = list->get_npc();
 	if (!npc) {
@@ -372,14 +359,13 @@ void Npc_poison_timer::handle_event(
 		return;
 	}
 	// Long enough? Or cured? Or dead?
-	if (curtime >= end_time || !npc->get_flag(Obj_flags::poisoned)
-		|| npc->is_dead()) {
+	if (curtime >= end_time || !npc->get_flag(Obj_flags::poisoned) || npc->is_dead()) {
 		npc->clear_flag(Obj_flags::poisoned);
 		list->stop_poison();
 		return;
 	}
 	const int penalty = rand() % 3;
-	npc->reduce_health(penalty, Weapon_data::sonic_damage);
+	npc->reduce_health(penalty, Weapon_data::poison_damage);
 
 	// Check again in 10-20 secs.
 	gwin->get_tqueue()->add(curtime + 10000 + rand() % 10000, this);
@@ -389,10 +375,7 @@ void Npc_poison_timer::handle_event(
  *  Time to see if we should wake up.
  */
 
-void Npc_sleep_timer::handle_event(
-    unsigned long curtime,
-    uintptr udata
-) {
+void Npc_sleep_timer::handle_event(unsigned long curtime, uintptr udata) {
 	ignore_unused_variable_warning(udata);
 	Actor_shared npc = list->get_npc();
 	if (!npc) {
@@ -406,20 +389,19 @@ void Npc_sleep_timer::handle_event(
 				npc->mend_wounds(false);
 			}
 		} else {
-			// If not nearby, and not in party, just set health and mana to full.
-			npc->set_property(static_cast<int>(Actor::health),
-			                  npc->get_property(static_cast<int>(Actor::strength)));
-			npc->set_property(static_cast<int>(Actor::mana),
-			                  npc->get_property(static_cast<int>(Actor::magic)));
+			// If not nearby, and not in party, just set health and mana to
+			// full.
+			npc->set_property(static_cast<int>(Actor::health), npc->get_property(static_cast<int>(Actor::strength)));
+			npc->set_property(static_cast<int>(Actor::mana), npc->get_property(static_cast<int>(Actor::magic)));
 		}
 	}
 	// Don't wake up someone beaten into unconsciousness.
 	// Long enough?  Or cured?
-	if (npc->get_property(static_cast<int>(Actor::health)) >= 1
-	    && (curtime >= end_time || !npc->get_flag(Obj_flags::asleep))) {
+	if (npc->get_property(static_cast<int>(Actor::health)) >= 1 && (curtime >= end_time || !npc->get_flag(Obj_flags::asleep))) {
 		// Avoid waking sleeping people.
 		if (npc->get_schedule_type() == Schedule::sleep) {
-			npc->clear_sleep();
+			// This breaks Gorlab Swamp in SI/SS.
+			// npc->clear_sleep();
 		} else if (!npc->is_dead()) {
 			// Don't wake the dead.
 			npc->clear_flag(Obj_flags::asleep);
@@ -435,8 +417,7 @@ void Npc_sleep_timer::handle_event(
 		return;
 	}
 	// Check again every half a game minute.
-	gwin->get_tqueue()->add(
-			curtime + (ticks_per_minute * gwin->get_std_delay()) / 2, this);
+	gwin->get_tqueue()->add(curtime + (ticks_per_minute * gwin->get_std_delay()) / 2, this);
 }
 
 /*
@@ -444,27 +425,21 @@ void Npc_sleep_timer::handle_event(
  */
 
 inline bool Wearing_ring(
-    Actor *actor,
-    int shnum,          // Ring shape to look for.
-    int frnum
-) {
+		Actor* actor,
+		int    shnum,    // Ring shape to look for.
+		int    frnum) {
 	// See if wearing ring.
 	auto is_this_ring = [&](Game_object* ring) {
-		return ring != nullptr && ring->get_shapenum() == shnum
-			   && ring->get_framenum() == frnum;
+		return ring != nullptr && ring->get_shapenum() == shnum && ring->get_framenum() == frnum;
 	};
-	return is_this_ring(actor->get_readied(lfinger)) ||
-	       is_this_ring(actor->get_readied(rfinger));
+	return is_this_ring(actor->get_readied(lfinger)) || is_this_ring(actor->get_readied(rfinger));
 }
 
 /*
  *  See if invisibility wore off.
  */
 
-void Npc_invisibility_timer::handle_event(
-    unsigned long curtime,
-    uintptr udata
-) {
+void Npc_invisibility_timer::handle_event(unsigned long curtime, uintptr udata) {
 	ignore_unused_variable_warning(udata);
 	Actor_shared npc = list->get_npc();
 	if (!npc) {
@@ -495,10 +470,7 @@ void Npc_invisibility_timer::handle_event(
  *  See if protection wore off.
  */
 
-void Npc_protection_timer::handle_event(
-    unsigned long curtime,
-    uintptr udata
-) {
+void Npc_protection_timer::handle_event(unsigned long curtime, uintptr udata) {
 	ignore_unused_variable_warning(udata);
 	Actor_shared npc = list->get_npc();
 	if (!npc) {
@@ -529,9 +501,7 @@ void Npc_protection_timer::handle_event(
  *  Initialize bleeding timer.
  */
 
-Npc_bleed_timer::Npc_bleed_timer(
-    Npc_timer_list *l
-) : Npc_timer(l, 5000) {
+Npc_bleed_timer::Npc_bleed_timer(Npc_timer_list* l) : Npc_timer(l, 5000) {
 	Actor_shared npc = list->get_npc();
 	// If this assert ever triggers, we have bigger problems in our hands...
 	assert(npc);
@@ -544,10 +514,7 @@ Npc_bleed_timer::Npc_bleed_timer(
  *  Time to bleed, or see if it's worn off.
  */
 
-void Npc_bleed_timer::handle_event(
-    unsigned long curtime,
-    uintptr udata
-) {
+void Npc_bleed_timer::handle_event(unsigned long curtime, uintptr udata) {
 	ignore_unused_variable_warning(udata);
 	Actor_shared npc = list->get_npc();
 	if (!npc) {
@@ -555,8 +522,7 @@ void Npc_bleed_timer::handle_event(
 		return;
 	}
 	// Long enough? Or cured? Or dormant? Or dead?
-	if (curtime >= end_time || !npc->get_type_flag(Actor::tf_bleeding)
-		|| npc->is_dead() || npc->is_dormant()) {
+	if (curtime >= end_time || !npc->get_type_flag(Actor::tf_bleeding) || npc->is_dead() || npc->is_dormant()) {
 		npc->clear_type_flag(Actor::tf_bleeding);
 		list->stop_bleeding();
 		return;
@@ -571,10 +537,7 @@ void Npc_bleed_timer::handle_event(
  *  Might/curse/charm/paralyze wore off.
  */
 
-void Npc_flag_timer::handle_event(
-    unsigned long curtime,
-    uintptr udata
-) {
+void Npc_flag_timer::handle_event(unsigned long curtime, uintptr udata) {
 	ignore_unused_variable_warning(udata);
 	Actor_shared npc = list->get_npc();
 	if (!npc) {
@@ -590,4 +553,3 @@ void Npc_flag_timer::handle_event(
 	// Check again in 10 secs.
 	gwin->get_tqueue()->add(curtime + 10000, this);
 }
-

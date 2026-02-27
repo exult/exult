@@ -22,17 +22,23 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
-#include "utils.h"
-#include "exult_constants.h"
 #include "armorinf.h"
+
+#include "common_types.h"
+#include "endianio.h"
+#include "exult_constants.h"
 #include "ignore_unused_variable_warning.h"
+
+#include <istream>
+
 using std::istream;
 
 int Armor_info::get_base_strength() const {
 	// ++++The strength values are utter guesses.
 	int strength = prot;
-	if (immune) // Double strength for any immunities? Give bonus for each?
+	if (immune != 0u) {    // Double strength for any immunities? Give bonus for each?
 		strength *= 2;
+	}
 	return strength;
 }
 
@@ -43,21 +49,21 @@ int Armor_info::get_base_strength() const {
  */
 
 bool Armor_info::read(
-    std::istream &in,   // Input stream.
-    int version,        // Data file version.
-    Exult_Game game     // Loading BG file.
+		std::istream& in,         // Input stream.
+		int           version,    // Data file version.
+		Exult_Game    game        // Loading BG file.
 ) {
 	ignore_unused_variable_warning(version, game);
-	uint8 buf[Armor_info::entry_size - 2];          // Entry length.
-	in.read(reinterpret_cast<char *>(buf), sizeof(buf));
-	uint8 *ptr = buf;
-	if (buf[Armor_info::entry_size - 3] == 0xff) { // means delete entry.
+	uint8 buf[Armor_info::entry_size - 2];    // Entry length.
+	in.read(reinterpret_cast<char*>(buf), sizeof(buf));
+	uint8* ptr = buf;
+	if (buf[Armor_info::entry_size - 3] == 0xff) {    // means delete entry.
 		set_invalid(true);
 		return true;
 	}
-	prot = *ptr++;          // Protection value.
-	ptr++;              // Unknown.
-	immune = *ptr++;        // Immunity flags.
+	prot = Read1(ptr);      // Protection value.
+	Read1(ptr);             // Unknown.
+	immune = Read1(ptr);    // Immunity flags.
 	// Last 5 are unknown/unused.
 	return true;
 }

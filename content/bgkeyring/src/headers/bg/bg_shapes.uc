@@ -31,8 +31,7 @@
 
 //Shapes used by NPCs (ones that will talk to you and have schedules). Note that there's a bit of confusion between this and monster_shapes since some NPCs have the monster flag (even though they are human).
 //Also note that some of these are duplicated to make 'monster' versions - you can find those in monster_shapes below.
-enum npc_shapes
-{
+enum npc_shapes {
 	//NPCs with unique appearances
 	SHAPE_MALE_AVATAR	= 721,
 	SHAPE_FEMALE_AVATAR	= 989,
@@ -129,8 +128,7 @@ enum npc_shapes
 };
 
 //Shapes used by 'monsters' - i.e. combatants and humans without schedules
-enum monster_shapes
-{
+enum monster_shapes {
 	//Unique monsters
 	SHAPE_ETHEREAL_MONSTER	= 230,
 	SHAPE_HYDRA				= 381,
@@ -143,7 +141,7 @@ enum monster_shapes
 	SHAPE_MONSTER_FIGHTER	= 259,
 	SHAPE_MONSTER_GUARD		= 394,
 	SHAPE_MONSTER_GUARD2	= 806,
-	SHAPE_MONSTER_GUARD3	= 946,	//Certainly laying it on with the duplicate guards. 
+	SHAPE_MONSTER_GUARD3	= 946,	//Certainly laying it on with the duplicate guards.
 									//(Presumably they each have different appearances and abilities.)
 	SHAPE_MONSTER_PIRATE	= 401,
 	SHAPE_MONSTER_EMP		= 784,	//Not sure why this is a monster?
@@ -170,7 +168,7 @@ enum monster_shapes
 	SHAPE_GAZER				= 511,
 	SHAPE_GREMLIN			= 513,
 	SHAPE_HEADLESS			= 514,
-	
+
 	SHAPE_REAPER			= 524,
 	SHAPE_SEA_SERPENT		= 525,
 
@@ -185,8 +183,7 @@ enum monster_shapes
 };
 
 //Shapes used by 'normal' animals (i.e., real-life ones, whether friendly or hostile)
-enum animal_shapes
-{
+enum animal_shapes {
 	SHAPE_BEE		= 494,
 	SHAPE_CAT		= 495,
 	SHAPE_DOG		= 496,
@@ -245,8 +242,7 @@ const int SHAPE_FULL_CRADLE		= 987;
 
 const int SHAPE_SPILL = 912;
 
-enum light_sources
-{
+enum light_sources {
 	SHAPE_LIGHTSOURCE		= 336,
 	SHAPE_SCONCE			= 481,
 	SHAPE_TORCH				= 595,
@@ -257,8 +253,7 @@ enum light_sources
 	//SHAPE_FIREPIT lives in forging_shapes below
 };
 
-enum cloth_shapes
-{
+enum cloth_shapes {
 	SHAPE_THREAD	= 654,
 	SHAPE_LOOM		= 261,
 	SHAPE_CLOTH		= 851,
@@ -274,8 +269,7 @@ enum cloth_shapes
 };
 
 //Door shapes
-enum door_shapes
-{
+enum door_shapes {
 	SHAPE_DOOR_HORIZONTAL		= 270,
 	SHAPE_DOOR_VERTICAL			= 376,
 	SHAPE_DOOR2_HORIZONTAL		= 432,
@@ -289,15 +283,13 @@ enum door_shapes
 };
 
 //Chest shapes
-enum chest_shapes
-{
+enum chest_shapes {
 	SHAPE_CHEST			= 800,
 	SHAPE_LOCKED_CHEST	= 522
 };
 
 //Shapes used in mining
-enum mining_shapes
-{
+enum mining_shapes {
 	SHAPE_MINING_MACHINE	= 410,
 	SHAPE_CONVEYOR_BELT		= 411,
 	SHAPE_BLACKROCK			= 914,
@@ -307,8 +299,7 @@ enum mining_shapes
 };
 
 //Shapes used in weaponsmithing (e.g. Forge of Virtue)
-enum forging_shapes
-{
+enum forging_shapes {
 	SHAPE_SWORDBLANK		= 668,
 	SHAPE_ANVIL				= 991,
 	SHAPE_TROUGH_VERTICAL	= 719,
@@ -316,16 +307,14 @@ enum forging_shapes
 	SHAPE_FIREPIT			= 739
 };
 
-enum moongate_shapes
-{
+enum moongate_shapes {
 	SHAPE_ORB_MOONGATE_HORIZONTAL	= 779,
 	SHAPE_ORB_MOONGATE_VERTICAL		= 157,
 	SHAPE_STANDING_RED_MOONGATE		= 776,
 	SHAPE_STANDING_BLUE_MOONGATE	= 777
 };
 
-enum weapon_shapes
-{
+enum weapon_shapes {
 	SHAPE_HAMMER		= 623,
 	SHAPE_CUSTOM_SWORD	= 635,
 	SHAPE_BLACK_SWORD	= 707
@@ -343,8 +332,7 @@ const int FRAME_CUBE			= 1;	//the cube prism
 
 const int FRAME_RUNE_HONOR		= 6;
 
-enum kitchen_item_frames
-{
+enum kitchen_item_frames {
 	FRAME_FLOURSACK_OPEN	= 0,
 	FRAME_PITCHER			= 2,
 
@@ -355,8 +343,7 @@ enum kitchen_item_frames
 	FRAME_CHURN			= 15
 };
 
-enum food_frames
-{
+enum food_frames {
 	FRAME_BREAD			= 0,
 	FRAME_ROLLS			= 1,
 	FRAME_BAGUETTE		= 2,
@@ -403,20 +390,18 @@ enum food_frames
 	FRAME_SILVERLEAF		= 31
 };
 
-enum bottle_frames
-{
+enum bottle_frames {
 	FRAME_MILK				= 7
 };
 
-enum dough_frames	//used in baking.uc
-{
+enum dough_frames {
+	//used in baking.uc
 	FRAME_FLOUR			= 0,
 	FRAME_DOUGH_FLAT	= 1,	//this will now create a pastry when cooked in the oven
 	FRAME_DOUGH_BALL	= 2
 };
 
-enum bucket_frames
-{
+enum bucket_frames {
 	FRAME_BUCKET_EMPTY	= 0,
 	FRAME_BUCKET_WATER	= 1,
 	FRAME_BUCKET_BLOOD	= 2,

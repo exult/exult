@@ -25,8 +25,7 @@
  */
 
 //Cutscene levels:
-enum MageAndGoons_levels
-{
+enum MageAndGoons_levels {
 	BEGIN_CUTSCENE						= 1,
 	FADE_SCREEN							= 2,
 	CENTER_VIEW							= 3,
@@ -41,29 +40,27 @@ enum MageAndGoons_levels
 	PREPARE_NPC							= 12
 };
 
-void beginCutsceneMageAndGoons object#() ()
-{
+void beginCutsceneMageAndGoons object#() () {
 	var mage;
 	var gargoyle;
 	var cyclops;
 	var troll;
 	var fighter;
-	var pos;
+	struct<Position> pos;
 	var dir;
-	
-	if (event == BEGIN_CUTSCENE)
-	{
+
+	if (event == BEGIN_CUTSCENE) {
 		//Cutscene begins HERE, with item == AVATAR
-		
+
 		//Play music:
 		UI_play_music(21, 0);
-		
+
 		//Cutscene mode :-)
 		AVATAR->trueFreeze();
 		//Create magical effect:
 		pos = get_object_position();
-		UI_sprite_effect(ANIMATION_BLUE_BEADS, pos[X], pos[Y], 0, 0, 0, -1);
-		
+		UI_sprite_effect(ANIMATION_BLUE_BEADS, pos.x, pos.y, 0, 0, 0, -1);
+
 		//Screen fader:
 		script item after 5 ticks call beginCutsceneMageAndGoons, FADE_SCREEN;
 
@@ -71,39 +68,31 @@ void beginCutsceneMageAndGoons object#() ()
 		mage = findNearbyMonsterWithID(LAURIANNA->get_object_position(),
 										SHAPE_MAGE_MALE, 80, ID_MAGE_OR_GOON);
 		//Use him to unfade screen and kick-start the rest of the scene:
-		script mage after 10 ticks
-		{	nohalt;						call beginCutsceneMageAndGoons, CENTER_VIEW;
-			wait 2;						call beginCutsceneMageAndGoons, UNFADE_SCREEN;
-			wait 5;						call beginCutsceneMageAndGoons, DISPLAY_REGION;}
-	}
-	
-	else if (event == FADE_SCREEN)
-	{
-		//Fade screen to black:		
+		script mage after 10 ticks {
+			nohalt;
+			call beginCutsceneMageAndGoons, CENTER_VIEW;
+			wait 2;
+			call beginCutsceneMageAndGoons, UNFADE_SCREEN;
+			wait 5;
+			call beginCutsceneMageAndGoons, DISPLAY_REGION;
+		}
+	} else if (event == FADE_SCREEN) {
+		//Fade screen to black:
 		UI_fade_palette(12, 1, 0);
-	}
-
-	else if (event == CENTER_VIEW)
-	{
+	} else if (event == CENTER_VIEW) {
 		//center around item:
 		center_view();
-	}
-	
-	else if (event == UNFADE_SCREEN)
-	{
+	} else if (event == UNFADE_SCREEN) {
 		//Unfade screen:
 		UI_fade_palette(12, 1, 1);
-	}
-	
-	else if (event == DISPLAY_REGION)
-	{
+	} else if (event == DISPLAY_REGION) {
 		//The magical effect of the Gem of Dispelling
-		
+
 		//item == mage
-		
+
 		//Play a sound effect:
 		UI_play_sound_effect2(SOUND_MOONGATE, item);
-		
+
 		//Get each of the mage's goons:
 		gargoyle = findNearbyMonsterWithID(LAURIANNA->get_object_position(),
 										SHAPE_GARGOYLE_WARRIOR, 80, ID_MAGE_OR_GOON);
@@ -115,22 +104,36 @@ void beginCutsceneMageAndGoons object#() ()
 										SHAPE_FIGHTER_MALE, 80, ID_MAGE_OR_GOON);
 
 		//Make Laurianna visible and generate the scripts for the mage and goons:
-		script LAURIANNA after 6 ticks
-		{	nohalt;						call trueFreeze;
+		script LAURIANNA after 6 ticks {
+			nohalt;
+			call trueFreeze;
 			call beginCutsceneMageAndGoons, MAKE_VISIBLE;
 			wait 4;
-			call beginCutsceneMageAndGoons, GENERATE_SCRIPTS;}
+			call beginCutsceneMageAndGoons, GENERATE_SCRIPTS;
+		}
 
 		//Make the mage and his goons visible:
-		script item after 6 ticks		{nohalt;	call beginCutsceneMageAndGoons, MAKE_VISIBLE;};
-		script gargoyle after 6 ticks	{nohalt;	call beginCutsceneMageAndGoons, MAKE_VISIBLE;};
-		script cyclops after 6 ticks	{nohalt;	call beginCutsceneMageAndGoons, MAKE_VISIBLE;};
-		script troll after 6 ticks		{nohalt;	call beginCutsceneMageAndGoons, MAKE_VISIBLE;};
-		script fighter after 6 ticks	{nohalt;	call beginCutsceneMageAndGoons, MAKE_VISIBLE;};
-	}	
-	
-	else if (event == MAKE_VISIBLE)
-	{
+		script item after 6 ticks {
+			nohalt;
+			call beginCutsceneMageAndGoons, MAKE_VISIBLE;
+		};
+		script gargoyle after 6 ticks {
+			nohalt;
+			call beginCutsceneMageAndGoons, MAKE_VISIBLE;
+		};
+		script cyclops after 6 ticks {
+			nohalt;
+			call beginCutsceneMageAndGoons, MAKE_VISIBLE;
+		};
+		script troll after 6 ticks {
+			nohalt;
+			call beginCutsceneMageAndGoons, MAKE_VISIBLE;
+		};
+		script fighter after 6 ticks {
+			nohalt;
+			call beginCutsceneMageAndGoons, MAKE_VISIBLE;
+		};
+	} else if (event == MAKE_VISIBLE) {
 		//item varies
 		//Clears DONT_RENDER flag:
 		clear_item_flag(DONT_RENDER);
@@ -138,16 +141,13 @@ void beginCutsceneMageAndGoons object#() ()
 		UI_play_sound_effect2(110, item);
 		//Show magic bubbles:
 		pos = get_object_position();
-		UI_sprite_effect(ANIMATION_PURPLE_BUBBLES, pos[X], pos[Y], 0, 0, 0, -1);
-	}
-
-	else if (event == GENERATE_SCRIPTS)
-	{
+		UI_sprite_effect(ANIMATION_PURPLE_BUBBLES, pos.x, pos.y, 0, 0, 0, -1);
+	} else if (event == GENERATE_SCRIPTS) {
 		//item = LAURIANNA
-		
+
 		//Make Laurianna have fireworks around her:
 		script LAURIANNA call beginCutsceneMageAndGoons, FIREWORKS_LAURIANNA;
-		
+
 		//Get references for the mage and his goons:
 		mage = findNearbyMonsterWithID(LAURIANNA->get_object_position(),
 										SHAPE_MAGE_MALE, 80, ID_MAGE_OR_GOON);
@@ -159,134 +159,233 @@ void beginCutsceneMageAndGoons object#() ()
 										SHAPE_TROLL, 80, ID_MAGE_OR_GOON);
 		fighter = findNearbyMonsterWithID(LAURIANNA->get_object_position(),
 										SHAPE_FIGHTER_MALE, 80, ID_MAGE_OR_GOON);
-		
+
 		//Laundo's script; he casts a couple spells and wonders why they failed; then,
 		//he turns to the Avatar and begins to talk:
-		script mage
-		{	wait 2;						actor frame cast_up;			wait 2;
-			actor frame cast_out;			wait 2;						actor frame cast_up;
-			wait 2;						actor frame cast_out;			wait 2;
-			say "@An Sanct Ort!@";		wait 2;						actor frame standing;
-			wait 2;						actor frame cast_up;			wait 2;
-			actor frame cast_out;			wait 2;						actor frame cast_up;
-			wait 2;						actor frame cast_out;			wait 2;
+		script mage {
+			wait 2;
+			actor frame cast_up;
+			wait 2;
+			actor frame cast_out;
+			wait 2;
+			actor frame cast_up;
+			wait 2;
+			actor frame cast_out;
+			wait 2;
+			say "@An Sanct Ort!@";
+			wait 2;
+			actor frame standing;
+			wait 2;
+			actor frame cast_up;
+			wait 2;
+			actor frame cast_out;
+			wait 2;
+			actor frame cast_up;
+			wait 2;
+			actor frame cast_out;
+			wait 2;
 			say "@An Ort Sanct!@";
-			wait 2;						actor frame standing;			wait 2;
-			face east;					say "@Damn! Why doesn't it work?@";
-			wait 18;					say "@The spell is correct!@";
-			wait 18;					say "@It -should- work!@";
-			wait 18;					say "@Something -must- protect her!@";
-			wait 34;					say "@What?!@";
-			wait 18;					say "@Intruders?!?@";
-			wait 20;					say "@I'll talk to them!@";
-			wait 12;					call beginCutsceneMageAndGoons, LAUNDO_SPEAKS;}
-		
+			wait 2;
+			actor frame standing;
+			wait 2;
+			face east;
+			say "@Damn! Why doesn't it work?@";
+			wait 18;
+			say "@The spell is correct!@";
+			wait 18;
+			say "@It -should- work!@";
+			wait 18;
+			say "@Something -must- protect her!@";
+			wait 34;
+			say "@What?!@";
+			wait 18;
+			say "@Intruders?!?@";
+			wait 20;
+			say "@I'll talk to them!@";
+			wait 12;
+			call beginCutsceneMageAndGoons, LAUNDO_SPEAKS;
+		}
+
 		//Agra-Lem's script. He patrols around until he sees the Avatar and gang;
 		//then he sounds the alarm:
-		script gargoyle
-		{	repeat 4 {step west;		wait 2;};
-			actor frame standing;			wait 1;						face north;
-			wait 1;						face east;					wait 1;
-			repeat 5 {step east;		wait 2;};
-			actor frame standing;			wait 1;						face north;
-			wait 1;						face west;					wait 1;
-			repeat 2 {step west;		wait 2;};
-			actor frame standing;			wait 1;						face north;
-			wait 1;						actor frame standing;
-			repeat 3 {step north;		wait 2;};
-			actor frame standing;			wait 1;						face east;
-			wait 1;						face south;					wait 1;
-			repeat 4 {step south;		wait 2;};
-			wait 2;						say "@!!!@";				wait 6;
+		script gargoyle {
+			repeat 4 {
+				step west;
+				wait 2;
+			};
+			actor frame standing;
+			wait 1;
+			face north;
+			wait 1;
+			face east;
+			wait 1;
+			repeat 5 {
+				step east;
+				wait 2;
+			};
+			actor frame standing;
+			wait 1;
+			face north;
+			wait 1;
+			face west;
+			wait 1;
+			repeat 2 {
+				step west;
+				wait 2;
+			};
+			actor frame standing;
+			wait 1;
+			face north;
+			wait 1;
+			actor frame standing;
+			repeat 3 {
+				step north;
+				wait 2;
+			};
+			actor frame standing;
+			wait 1;
+			face east;
+			wait 1;
+			face south;
+			wait 1;
+			repeat 4 {
+				step south;
+				wait 2;
+			};
+			wait 2;
+			say "@!!!@";
+			wait 6;
 			say "@To see intruders!@";
-			repeat 2 {step west;		wait 2;};
-			call beginCutsceneMageAndGoons, GARGOYLE_WARNS;}
-		
+			repeat 2 {
+				step west;
+				wait 2;
+			};
+			call beginCutsceneMageAndGoons, GARGOYLE_WARNS;
+		}
+
 		//The cyclop's script. He just plays a game of Dragon, Sword, Gold
 		//with the troll:
-		script cyclops
-		{	actor frame raise_1h;		wait 4;						say "@Dragon...@";
-			actor frame ready;			wait 4;
-			actor frame raise_1h;		wait 4;						say "@... sword...@";
-			actor frame ready;			wait 4;
-			actor frame raise_1h;		wait 4;						say "@... gold!@";
-			actor frame strike_1h;		wait 4;
-			actor frame standing;			wait 8;						say "@Damn!@";
-			wait 56;					say "@Yer cheatin'!@";
-			wait 18;					say "@Yer winnin' always!@";
-			wait 22;					say "@Huh?@";}
-		
+		script cyclops {
+			actor frame raise_1h;
+			wait 4;
+			say "@Dragon...@";
+			actor frame ready;
+			wait 4;
+			actor frame raise_1h;
+			wait 4;
+			say "@... sword...@";
+			actor frame ready;
+			wait 4;
+			actor frame raise_1h;
+			wait 4;
+			say "@... gold!@";
+			actor frame strike_1h;
+			wait 4;
+			actor frame standing;
+			wait 8;
+			say "@Damn!@";
+			wait 56;
+			say "@Yer cheatin'!@";
+			wait 18;
+			say "@Yer winnin' always!@";
+			wait 22;
+			say "@Huh?@";
+		}
+
 		//The troll's script. He just plays a game of Dragon, Sword, Gold
 		//with the cyclops:
-		script troll
-		{	wait 5;
-			actor frame raise_1h;		wait 4;						say "@Dragon...@";
-			actor frame ready;			wait 4;
-			actor frame raise_1h;		wait 4;						say "@... sword...@";
-			actor frame ready;			wait 4;
-			actor frame raise_1h;		wait 4;						say "@... gold!@";
-			actor frame strike_1h;		wait 4;
-			actor frame standing;			wait 6;						say "@Haha! My sword...@";
-			wait 18;					say "@... kills yer dragon!@";
-			wait 18;					say "@I win again!@";
-			wait 22;					say "@Am not!@";
-			wait 18;					say "@Yer too dumb!@";
-			wait 14;					face east;
-			say "@Intruders? Kill!@";}
-		
+		script troll {
+			wait 5;
+			actor frame raise_1h;
+			wait 4;
+			say "@Dragon...@";
+			actor frame ready;
+			wait 4;
+			actor frame raise_1h;
+			wait 4;
+			say "@... sword...@";
+			actor frame ready;
+			wait 4;
+			actor frame raise_1h;
+			wait 4;
+			say "@... gold!@";
+			actor frame strike_1h;
+			wait 4;
+			actor frame standing;
+			wait 6;
+			say "@Haha! My sword...@";
+			wait 18;
+			say "@... kills yer dragon!@";
+			wait 18;
+			say "@I win again!@";
+			wait 22;
+			say "@Am not!@";
+			wait 18;
+			say "@Yer too dumb!@";
+			wait 14;
+			face east;
+			say "@Intruders? Kill!@";
+		}
+
 		//The human is having second doubts, but he is there for
 		//the money anyway...
-		script fighter
-		{	wait 4;						say "@What am I doing here?@";
-			wait 10;					say "@I mean, look who is around...@";
+		script fighter {
+			wait 4;
+			say "@What am I doing here?@";
+			wait 10;
+			say "@I mean, look who is around...@";
 			face north;
-			wait 16;					say "@One dumb troll...@";
-			wait 16;					say "@... a dumber cyclops...@";
-			wait 16;					say "@... one pissed-off gargoyle...@";
+			wait 16;
+			say "@One dumb troll...@";
+			wait 16;
+			say "@... a dumber cyclops...@";
+			wait 16;
+			say "@... one pissed-off gargoyle...@";
 			face east;
-			wait 16;					say "@... and a mad mage.@";
-			wait 20;					say "@The only good thing...@";
-			wait 16;					say "@... is the gold I get.@";
-			wait 24;					say "@Intruders? Where?@";}
-	}
-	else if (event == FIREWORKS_LAURIANNA)
-	{
+			wait 16;
+			say "@... and a mad mage.@";
+			wait 20;
+			say "@The only good thing...@";
+			wait 16;
+			say "@... is the gold I get.@";
+			wait 24;
+			say "@Intruders? Where?@";
+		}
+	} else if (event == FIREWORKS_LAURIANNA) {
 		//item = LAURIANNA
 		//This portion of the function is looped over and over
 		//again until Laundo's death halts it.
 		//Creates fireworks around Laurianna:
 		pos = LAURIANNA->get_object_position();
-		UI_sprite_effect(ANIMATION_FIREWORKS, pos[X], pos[Y], 0, 0, 0, -1);
+		UI_sprite_effect(ANIMATION_FIREWORKS, pos.x, pos.y, 0, 0, 0, -1);
 		//Loop:
 		script item after 10 ticks call beginCutsceneMageAndGoons, FIREWORKS_LAURIANNA;
-	}
-	else if (event == GARGOYLE_WARNS)
-	{
+	} else if (event == GARGOYLE_WARNS) {
 		//item = gargoyle
 		//Gargoyle sounds the alarm:
-		script item
-		{	say "@To see intruders!@";
-			wait 12;					say "@To believe intruders...@";
-			wait 12;					say "@... to see us too!@";}
-		
+		script item {
+			say "@To see intruders!@";
+			wait 12;
+			say "@To believe intruders...@";
+			wait 12;
+			say "@... to see us too!@";
+		}
+
 		//A party member reacts to it:
 		script randomPartyMember() after 20 ticks say "@Ooops...@";
-	}
-	else if (event == LAUNDO_SPEAKS)
-	{
+	} else if (event == LAUNDO_SPEAKS) {
 		//Laundo begins talking to Avatar:
 		KEYRING_ENEMY->show_npc_face(LAUNDO_FACE);
 		say("@Hey! Thou there! Who art thou?@");
 		//Laundo demands Avatar's name...
 		var choice = askForResponse([getAvatarName(), "Avatar", "None of thy business"]);
-		if (choice == "Avatar")
+		if (choice == "Avatar") {
 			say("The mage whispers to his companions. @I think we are safe. This one seems mad.@");
-
-		else if (choice == "None of thy business")
+		} else if (choice == "None of thy business") {
 			say("@A fiery spirit! I like that! No, wait -- I don't.@ He adds menacingly.");
-		else
+		} else {
 			say("@Bah, thy name is not really important and means nothing to me.@");
-		
+		}
 		//...rapid-fires a lot of questions without giving time for answers...
 		say("@-I- am the archmage Laundo. Now, who art thou?");
 		say("@No, wait -- I have already asked that. What did I want to ask again?");
@@ -304,71 +403,71 @@ void beginCutsceneMageAndGoons object#() ()
 		say("@Perhaps thou shalt amuse me before dying...@ he adds, sounding hopeful.");
 		add(["name", "job", "bye", "dispel", "tower", "Doing here", "rescue", "experiment", "Laurianna", "Rooted woman"]);
 
-		converse (0)
-		{
+		converse (0) {
 			case "name" (remove):
 				say("@-I- am the archmage Laundo. Now, who art thou?");
 				say("@No, wait -- I have already asked that. Never mind.@");
-				
+
 			case "job" (remove):
 				say("He looks at you with impatience. @I am a mage! An -arch-mage!@");
 				add("archmage");
-				
+
 			case "archmage" (remove):
 				say("He gives you an exasperated look. @A mage so powerful he transcends other mages!");
 				say("@And I am one! Hahaha! Behold my powers and beware!@");
-				
+
 			case "bye" (remove):
 				say("@Not so fast, peasant! Thou didst not tell me what thou art doing here!@");
-				
+
 			case "dispel" (remove):
 				say("@Yes, I want to know how a nothing like thee dispelled my protection spells!");
 				say("@Wilt thou tell me or wilt thou die?@");
-				if (chooseFromMenu2(["tell", "die"]) == 2)
+				if (chooseFromMenu2(["tell", "die"]) == 2) {
 					//Quickest way to end the talk:
 					break;
-
+				}
 				AVATAR.say("You quickly explain about the Gem of Dispelling to Laundo.");
 				AVATAR.hide();
 				say("@Gems of Dispelling? Never heard of them. It doesn't matter anyway.@");
-				
+
 			case "tower" (remove):
 				say("@Yes, I have a tower. All wizards have one. But I want a -castle- instead.@");
 				add("castle");
-				
+
 			case "castle" (remove):
 				say("@I mean castle British, of course. None others are worthy!");
 				say("@But alas, I must first slay that tyrant British to have his castle...@");
 				add("Tyrant British");
-				
+
 			case "Doing here" (remove):
 				say("@Wilt thou tell me what art doing here?@");
-				if (chooseFromMenu2(["rescue", "lie"]) == 1)
+				if (chooseFromMenu2(["rescue", "lie"]) == 1) {
 					say("@I am sorry to say thou hast wasted thy time. That mad mage sent thee on a wild goose chase.");
-				else
+				} else {
 					say("@I am sorry to say thou art wasting my time. I can feel the touch of that mad mage upon thee!");
+				}
 				say("@In any case, thou wilt fail to rescue this mageling! She is mine!@");
 				add("fail", "mad mage");
 				remove("rescue");
-				
+
 			case "rescue" (remove):
 				say("@I am sorry to say thou hast wasted thy time. That mad mage sent thee on a wild goose chase.");
 				say("@In any case, thou wilt fail to rescue this mageling! She is mine!@");
 				add("fail", "mad mage");
 				remove("Doing here");
-				
+
 			case "fail" (remove):
 				say("@Yes, thou wilt fail. By which I mean thou shalt die if thou dost try to rescue her.");
 				say("@And even if thou survivest, she will not be going anywhere...");
 				say("@Seest thou the necklace she wears? It is -my- handiwork.@");
 				add("necklace");
-				
+
 			case "mad mage" (remove):
 				say("@Yes, that mage that wants to keep this menace alive!@ he points towards Laurianna.");
 				say("@He wants to keep that -beast- alive! And he helps people! He is -mad-!");
 				say("@With all the power he has, he could -- I mean, -should- -- kill the tyrant British!@");
 				add("Tyrant British");
-				
+
 			case "Laurianna" (remove):
 				say("@Who? Never heard of her.@");
 				AVATAR.say("You explain that Laurianna is the woman with roots just nearby.");
@@ -376,14 +475,14 @@ void beginCutsceneMageAndGoons object#() ()
 				say("@Ah, so -that- is her name? Well, it doesn't matter. She won't be going anywhere.");
 				say("@Seest thou the necklace she wears? It is -my- handiwork.@");
 				add("necklace");
-				
+
 			case "necklace" (remove):
 				say("@It is lovely, is it not? It is a mighty artifact!");
 				say("@The person wearing it -- in this case, this dangerous lady here -- cannot move at all from where she is!");
 				say("@Not even magic can move her! And the necklace also cannot be removed! Hah! She shall be here forever!");
 				say("@And the best part is that the necklace will simply -explode- should someone powerful enough to dispel its magic");
 				say("@come even -near- it. That keeps that mad mage from trying to rescue her! Isn't it brilliant?");
-			
+
 			case "experiment" (remove):
 				say("@Since thou wilt die anyway, I don't see why not explain the greatness of my plans to thee!");
 				say("@This woman is a menace. She wields enormous power, and has no control over them.");
@@ -392,31 +491,34 @@ void beginCutsceneMageAndGoons object#() ()
 				say("@Of course, then I can remove other menaces from the face of Britannia.");
 				say("@One that comes to mind is that tyrant British. He -must- die!@");
 				add("Tyrant British");
-				
+
 			case "Tyrant British" (remove):
 				say("@Thou knowest, that bloke with a crown which calls himself 'king'");
 				say("@That miserable excuse of a tyrant must perish for his misdeeds!@");
-				
+
 			case "Rooted woman" (remove):
 				say("@Yes, that is an effect of the necklace I made for her. Isn't it lovely?@");
 				add("necklace");
 		}
-		
+
 		//When all options are exhausted (or the player chose the quick rout),
 		//we get to this point:
 		say("@Well, it was interesting. But thou art boring me. So now it is time to die!@");
-		
+
 		//Return view to avatar:
-		script AVATAR
-		{	nohalt;						call beginCutsceneMageAndGoons, FADE_SCREEN;
-			wait 2;						call beginCutsceneMageAndGoons, CENTER_VIEW;
-			wait 3;						call beginCutsceneMageAndGoons, UNFADE_SCREEN;
-			wait 3;						call beginCutsceneMageAndGoons, BEGIN_COMBAT;
-			wait 3;						call trueUnfreeze;
+		script AVATAR {
+			nohalt;
+			call beginCutsceneMageAndGoons, FADE_SCREEN;
+			wait 2;
+			call beginCutsceneMageAndGoons, CENTER_VIEW;
+			wait 3;
+			call beginCutsceneMageAndGoons, UNFADE_SCREEN;
+			wait 3;
+			call beginCutsceneMageAndGoons, BEGIN_COMBAT;
+			wait 3;
+			call trueUnfreeze;
 };
-	}
-	else if (event == BEGIN_COMBAT)
-	{
+	} else if (event == BEGIN_COMBAT) {
 		//item = AVATAR
 		//Get references to the mage and his goons:
 		mage = findNearbyMonsterWithID(LAURIANNA->get_object_position(),
@@ -431,17 +533,29 @@ void beginCutsceneMageAndGoons object#() ()
 										SHAPE_FIGHTER_MALE, 80, ID_MAGE_OR_GOON);
 
 		//Make them hostile and in combat:
-		script mage		{nohalt;	call beginCutsceneMageAndGoons, PREPARE_NPC;};
-		script gargoyle	{nohalt;	call beginCutsceneMageAndGoons, PREPARE_NPC;};
-		script cyclops	{nohalt;	call beginCutsceneMageAndGoons, PREPARE_NPC;};
-		script troll	{nohalt;	call beginCutsceneMageAndGoons, PREPARE_NPC;};
-		script fighter	{nohalt;	call beginCutsceneMageAndGoons, PREPARE_NPC;};
-		
-		//Release the Avatar from cutscene mode:
-	}
+		script mage {
+			nohalt;
+			call beginCutsceneMageAndGoons, PREPARE_NPC;
+		};
+		script gargoyle {
+			nohalt;
+			call beginCutsceneMageAndGoons, PREPARE_NPC;
+		};
+		script cyclops {
+			nohalt;
+			call beginCutsceneMageAndGoons, PREPARE_NPC;
+		};
+		script troll {
+			nohalt;
+			call beginCutsceneMageAndGoons, PREPARE_NPC;
+		};
+		script fighter {
+			nohalt;
+			call beginCutsceneMageAndGoons, PREPARE_NPC;
+		};
 
-	else if (event == PREPARE_NPC)
-	{
+		//Release the Avatar from cutscene mode:
+	} else if (event == PREPARE_NPC) {
 		//item varies
 		//Make npc hostile:
 		set_alignment(2);
@@ -450,15 +564,12 @@ void beginCutsceneMageAndGoons object#() ()
 		//Just to be sure:
 		clear_item_flag(DONT_RENDER);
 	}
-	
+
 }
 
-void registerDeathOfMageOrGoon object#() ()
-{
-	if ((event == DEATH) &&  (get_npc_id() == ID_MAGE_OR_GOON))
-	{
-		if (get_item_shape() == SHAPE_MAGE_MALE)
-		{
+void registerDeathOfMageOrGoon object#() () {
+	if ((event == DEATH) &&  (get_npc_id() == ID_MAGE_OR_GOON)) {
+		if (get_item_shape() == SHAPE_MAGE_MALE) {
 			//Laundo has died
 			//Set flag:
 			gflags[MAGE_KILLED] = true;
@@ -474,8 +585,7 @@ void registerDeathOfMageOrGoon object#() ()
 		var new_id = 1 + LAURIANNA->get_npc_id();
 		LAURIANNA->set_npc_id(new_id);
 
-		if (new_id == 5)
-		{
+		if (new_id == 5) {
 			LAURIANNA->set_npc_id(5);
 			//Everyone is dead; halt scripts for Laurianna:
 			LAURIANNA->halt_scheduled();

@@ -19,10 +19,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #ifndef COMBATSTATS_GUMP_H
 #define COMBATSTATS_GUMP_H
 
+#include "Face_button.h"
 #include "Gump.h"
 #include "misc_buttons.h"
-#include "Face_button.h"
-#include "ignore_unused_variable_warning.h"
 
 class Actor;
 
@@ -32,19 +31,20 @@ class Actor;
 class CombatStats_gump : public Gump {
 public:
 	CombatStats_gump(int initx, int inity);
+
 	// Add object.
-	bool add(Game_object *obj, int mx = -1, int my = -1,
-	        int sx = -1, int sy = -1, bool dont_check = false,
-	        bool combine = false) override {
+	bool add(Game_object* obj, int mx = -1, int my = -1, int sx = -1, int sy = -1, bool dont_check = false, bool combine = false)
+			override {
 		ignore_unused_variable_warning(obj, mx, my, sx, sy, dont_check, combine);
 		return false;    // Can't drop onto it.
 	}
+
 	// Paint it and its contents.
 	void paint() override;
 
 private:
-	Actor *party[9];
-	int party_size;
+	Actor* party[9];
+	int    party_size;
 };
 
 #endif

@@ -6,9 +6,9 @@ MT32EMUDRV=	\
 endif
 
 AM_CPPFLAGS = -I$(top_srcdir)/headers -I$(top_srcdir)/conf -I$(top_srcdir) \
-		-I$(top_srcdir)/audio -I$(top_srcdir)/files -I$(top_srcdir)/imagewin \
+		-I$(top_srcdir)/audio -I$(top_srcdir)/files  -I$(top_srcdir)/gumps -I$(top_srcdir)/imagewin \
 		-I$(top_srcdir)/objs -I$(top_srcdir)/shapes \
-		$(SDL_CFLAGS) $(MT32EMU_CFLAGS) $(INCDIRS) $(WINDOWING_SYSTEM) \
+		$(SDL_CFLAGS) $(MT32EMU_CFLAGS) $(ALSA_CFLAGS) $(FLUID_CFLAGS) $(INCDIRS) $(WINDOWING_SYSTEM) \
 		$(MT32EMUFLAGS) \
 		$(DEBUG_LEVEL) $(OPT_LEVEL) $(WARNINGS) $(CPPFLAGS)
 
@@ -44,6 +44,7 @@ libmididrv_la_SOURCES =	\
 	XMidiFile.cpp		\
 	XMidiFile.h		\
 	XMidiNoteStack.h	\
+	XMidiRecyclable.h \
 	XMidiSequence.cpp	\
 	XMidiSequence.h		\
 	XMidiSequenceHandler.h	\

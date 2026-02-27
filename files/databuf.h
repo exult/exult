@@ -17,17 +17,17 @@
 #ifndef DATA_H
 #define DATA_H
 
-#include <cstdio>
-#include <cstddef>
-#include <cstring>
-#include <cassert>
-#include <fstream>
-#include <string>
-#include <iomanip>
-#include <memory>
-#include <vector>
 #include "U7obj.h"
+#include "endianio.h"
 #include "utils.h"
+
+#include <cassert>
+#include <cstddef>
+#include <cstdio>
+#include <cstring>
+#include <fstream>
+#include <memory>
+#include <string>
 
 class ODataSource;
 
@@ -36,55 +36,66 @@ class ODataSource;
  */
 class IDataSource {
 public:
-	IDataSource() = default;
-	IDataSource(const IDataSource&) = delete;
-	IDataSource& operator=(const IDataSource&) = delete;
-	IDataSource(IDataSource&&) noexcept = default;
+	IDataSource()                                  = default;
+	IDataSource(const IDataSource&)                = delete;
+	IDataSource& operator=(const IDataSource&)     = delete;
+	IDataSource(IDataSource&&) noexcept            = default;
 	IDataSource& operator=(IDataSource&&) noexcept = default;
-	virtual ~IDataSource() noexcept = default;
+	virtual ~IDataSource() noexcept                = default;
 
 	virtual uint32 peek() = 0;
 
-	virtual uint32 read1() = 0;
-	virtual uint16 read2() = 0;
-	virtual uint16 read2high() = 0;
-	virtual uint32 read4() = 0;
-	virtual uint32 read4high() = 0;
-	virtual void read(void *, size_t) = 0;
-	virtual void read(std::string&, size_t) = 0;
-	std::unique_ptr<unsigned char[]> readN(size_t N) {
-		auto ptr = std::make_unique<unsigned char[]>(N);
+	virtual uint32 read1()                    = 0;
+	virtual uint16 read2()                    = 0;
+	virtual uint16 read2high()                = 0;
+	virtual uint32 read4()                    = 0;
+	virtual uint32 read4high()                = 0;
+	virtual void   read(void*, size_t)        = 0;
+	virtual void   read(std::string&, size_t) = 0;
+
+	std::unique_ptr<unsigned char[]> readN(size_t N, bool nullterminate = false) {
+		auto ptr = std::make_unique<unsigned char[]>(N + (nullterminate ? 1 : 0));
 		read(ptr.get(), N);
+		if (nullterminate) {
+			ptr[N] = 0;
+		}
 		return ptr;
 	}
+
 	virtual std::unique_ptr<IDataSource> makeSource(size_t) = 0;
 
-	virtual void seek(size_t) = 0;
-	virtual void skip(std::streamoff) = 0;
-	virtual size_t getSize() const = 0;
-	virtual size_t getPos() const = 0;
+	virtual void   seek(size_t)         = 0;
+	virtual void   skip(std::streamoff) = 0;
+	virtual size_t getSize() const      = 0;
+	virtual size_t getPos() const       = 0;
+
 	size_t getAvail() const {
-		size_t const msize = getSize();
-		size_t const mpos = getPos();
+		const size_t msize = getSize();
+		const size_t mpos  = getPos();
 		return msize >= mpos ? msize - mpos : 0;
 	}
-	virtual bool eof() const = 0;
+
+	virtual bool eof() const  = 0;
+	virtual bool fail() const = 0;
+	virtual bool bad() const  = 0;
+
 	virtual bool good() const {
-		return true;
+		return !bad() && !fail() && !eof();
 	}
-	virtual void clear_error() { }
+
+	virtual void clear_error() {}
 
 	virtual void copy_to(ODataSource& dest);
 
-	void readline(std::string &str) {
+	void readline(std::string& str) {
 		str.erase();
 		while (!eof()) {
-			const char character =  static_cast<char>(read1());
+			const char character = static_cast<char>(read1());
 			if (character == '\r') {
-				continue;        // Skip cr
+				continue;    // Skip cr
 			}
 			if (character == '\n') {
-				break;      // break on line feed
+				break;    // break on line feed
 			}
 			str += character;
 		}
@@ -94,13 +105,13 @@ public:
 /**
  * Stream-based input data source which does not own the stream.
  */
-class IStreamDataSource: public IDataSource {
+class IStreamDataSource : public IDataSource {
 protected:
-	std::istream *in;
+	std::istream* in;
+	size_t        size;
 
 public:
-	explicit IStreamDataSource(std::istream *data_stream)
-		: in(data_stream) {}
+	explicit IStreamDataSource(std::istream* data_stream) : in(data_stream), size(data_stream ? get_file_size(*data_stream) : 0) {}
 
 	uint32 peek() final {
 		return in->peek();
@@ -111,28 +122,28 @@ public:
 	}
 
 	uint16 read2() final {
-		return Read2(in);
+		return little_endian::Read2(in);
 	}
 
 	uint16 read2high() final {
-		return Read2high(in);
+		return big_endian::Read2(in);
 	}
 
 	uint32 read4() final {
-		return Read4(in);
+		return little_endian::Read4(in);
 	}
 
 	uint32 read4high() final {
-		return Read4high(in);
+		return big_endian::Read4(in);
 	}
 
-	void read(void *b, size_t len) final {
-		in->read(static_cast<char *>(b), len);
+	void read(void* b, size_t len) final {
+		in->read(static_cast<char*>(b), len);
 	}
 
 	void read(std::string& s, size_t len) final {
 		s.resize(len);
-		in->read(&s[0], len);
+		in->read(s.data(), len);
 	}
 
 	std::unique_ptr<IDataSource> makeSource(size_t len) final;
@@ -146,11 +157,19 @@ public:
 	}
 
 	size_t getSize() const final {
-		return get_file_size(*in);
+		return size ? size : get_file_size(*in);
 	}
 
 	size_t getPos() const final {
 		return in->tellg();
+	}
+
+	virtual bool fail() const final {
+		return in->fail();
+	}
+
+	virtual bool bad() const final {
+		return in->bad();
 	}
 
 	bool eof() const final {
@@ -161,9 +180,11 @@ public:
 		}
 		return ret;
 	}
+
 	bool good() const final {
 		return in && in->good();
 	}
+
 	void clear_error() final {
 		in->clear();
 	}
@@ -177,74 +198,116 @@ class IFileDataSource : public IStreamDataSource {
 	std::unique_ptr<std::istream> pFin;
 
 public:
-	explicit IFileDataSource(const File_spec &spec, bool is_text = false)
-		: IStreamDataSource(nullptr) {
+	explicit IFileDataSource(const File_spec& spec, bool is_text = false) : IStreamDataSource(nullptr) {
 		if (U7exists(spec.name)) {
 			pFin = U7open_in(spec.name.c_str(), is_text);
 		} else {
 			// Set fail bit
-			pFin = std::make_unique<std::ifstream>();
+			pFin      = std::make_unique<std::ifstream>();
 			auto& fin = *pFin;
 			fin.seekg(0);
 		}
 		in = pFin.get();
+		if (in) {
+			size = get_file_size(*in);
+		}
 	}
 };
 
 /**
  * Buffer-based input data source which does not own the buffer.
  */
-class IBufferDataView: public IDataSource {
+class IBufferDataView : public IDataSource {
 protected:
-	const unsigned char *buf;
-	const unsigned char *buf_ptr;
-	std::size_t size;
+	const unsigned char* buf;
+	const unsigned char* buf_ptr;
+	std::size_t          size;
+	bool                 failed;
 
 public:
-	IBufferDataView(const void *data, size_t len)
-		: buf(static_cast<const unsigned char *>(data)), buf_ptr(buf),
-		  size(len) {
+	IBufferDataView(const void* data, size_t len)
+			: buf(static_cast<const unsigned char*>(data)), buf_ptr(buf), size(len), failed(false) {
 		// data can be nullptr if len is also 0
 		assert(data != nullptr || len == 0);
 	}
-	IBufferDataView(const std::unique_ptr<unsigned char[]>& data_, size_t len)
-		: IBufferDataView(data_.get(), len) {
-	}
+
+	IBufferDataView(const std::unique_ptr<unsigned char[]>& data_, size_t len) : IBufferDataView(data_.get(), len) {}
 
 	// Prevent use after free.
 	IBufferDataView(std::unique_ptr<unsigned char[]>&& data_, size_t len) = delete;
 
 	uint32 peek() final {
+		if (getAvail() < 1) {
+			failed = true;
+			return -1;
+		}
 		return *buf_ptr;
 	}
 
 	uint32 read1() final {
+		if (getAvail() < 1) {
+			failed = true;
+			buf_ptr++;
+			return -1;
+		}
 		return Read1(buf_ptr);
 	}
 
 	uint16 read2() final {
-		return Read2(buf_ptr);
+		if (getAvail() < 2) {
+			failed = true;
+			buf_ptr += 2;
+			return -1;
+		}
+		return little_endian::Read2(buf_ptr);
 	}
 
 	uint16 read2high() final {
-		return Read2high(buf_ptr);
+		if (getAvail() < 2) {
+			failed = true;
+			buf_ptr += 2;
+			return -1;
+		}
+		return big_endian::Read2(buf_ptr);
 	}
 
 	uint32 read4() final {
-		return Read4(buf_ptr);
+		if (getAvail() < 4) {
+			failed = true;
+			buf_ptr += 4;
+			return -1;
+		}
+		return little_endian::Read4(buf_ptr);
 	}
 
 	uint32 read4high() final {
-		return Read4high(buf_ptr);
+		if (getAvail() < 4) {
+			failed = true;
+			buf_ptr += 4;
+			return -1;
+		}
+		return big_endian::Read4(buf_ptr);
 	}
 
-	void read(void *b, size_t len) final {
-		std::memcpy(b, buf_ptr, len);
+	void read(void* b, size_t len) final {
+		size_t available = getAvail();
+		if (available > 0) {
+			if (available < len) {
+				failed = true;
+			}
+			std::memcpy(b, buf_ptr, std::min<size_t>(available, len));
+		}
 		buf_ptr += len;
 	}
 
 	void read(std::string& s, size_t len) final {
-		s = std::string(reinterpret_cast<const char *>(buf_ptr), len);
+		size_t available = getAvail();
+		if (available > 0) {
+			if (available < len) {
+				failed = true;
+			}
+			s = std::string(reinterpret_cast<const char*>(buf_ptr), std::min<size_t>(available, len));
+		}
 		buf_ptr += len;
 	}
 
@@ -266,8 +329,20 @@ public:
 		return buf_ptr - buf;
 	}
 
-	const unsigned char *getPtr() {
+	const unsigned char* getPtr() {
 		return buf_ptr;
+	}
+
+	void clear_error() final {
+		failed = false;
+	}
+
+	bool bad() const final {
+		return !buf || !size;
+	}
+
+	bool fail() const final {
+		return failed || bad();
 	}
 
 	bool eof() const final {
@@ -275,7 +350,7 @@ public:
 	}
 
 	bool good() const final {
-		return (buf != nullptr) && (size != 0U);
+		return !fail() && !eof();
 	}
 
 	void copy_to(ODataSource& dest) final;
@@ -284,17 +359,15 @@ public:
 /**
  * Buffer-based input data source which owns the stream.
  */
-class IBufferDataSource: public IBufferDataView {
+class IBufferDataSource : public IBufferDataView {
 protected:
 	std::unique_ptr<unsigned char[]> data;
 
 public:
-	IBufferDataSource(void *data_, size_t len)
-		: IBufferDataView(data_, len), data(static_cast<unsigned char*>(data_)) {
-	}
-	IBufferDataSource(std::unique_ptr<unsigned char[]> data_, size_t len)
-		: IBufferDataView(data_, len), data(std::move(data_)) {
-	}
+	IBufferDataSource(void* data_, size_t len) : IBufferDataView(data_, len), data(static_cast<unsigned char*>(data_)) {}
+
+	IBufferDataSource(std::unique_ptr<unsigned char[]> data_, size_t len) : IBufferDataView(data_, len), data(std::move(data_)) {}
+
 	auto steal_data(size_t& len) {
 		len = size;
 		return std::move(data);
@@ -305,25 +378,22 @@ public:
  * Buffer-based input data source which opens an U7 object or
  * multiobject, and reads into an internal buffer.
  */
-class IExultDataSource: public IBufferDataSource {
+class IExultDataSource : public IBufferDataSource {
 public:
-	IExultDataSource(const File_spec &fname, int index)
-		: IBufferDataSource(nullptr, 0) {
+	IExultDataSource(const File_spec& fname, int index) : IBufferDataSource(nullptr, 0) {
 		const U7object obj(fname, index);
 		data = obj.retrieve(size);
 		buf = buf_ptr = data.get();
 	}
 
-	IExultDataSource(const File_spec &fname0, const File_spec &fname1, int index)
-		: IBufferDataSource(nullptr, 0) {
+	IExultDataSource(const File_spec& fname0, const File_spec& fname1, int index) : IBufferDataSource(nullptr, 0) {
 		const U7multiobject obj(fname0, fname1, index);
 		data = obj.retrieve(size);
 		buf = buf_ptr = data.get();
 	}
 
-	IExultDataSource(const File_spec &fname0, const File_spec &fname1,
-	                 const File_spec &fname2, int index)
-		: IBufferDataSource(nullptr, 0) {
+	IExultDataSource(const File_spec& fname0, const File_spec& fname1, const File_spec& fname2, int index)
+			: IBufferDataSource(nullptr, 0) {
 		const U7multiobject obj(fname0, fname1, fname2, index);
 		data = obj.retrieve(size);
 		buf = buf_ptr = data.get();
@@ -335,68 +405,70 @@ public:
  */
 class ODataSource {
 public:
-	ODataSource() = default;
-	ODataSource(const ODataSource&) = delete;
-	ODataSource& operator=(const ODataSource&) = delete;
-	ODataSource(ODataSource&&) noexcept = default;
+	ODataSource()                                  = default;
+	ODataSource(const ODataSource&)                = delete;
+	ODataSource& operator=(const ODataSource&)     = delete;
+	ODataSource(ODataSource&&) noexcept            = default;
 	ODataSource& operator=(ODataSource&&) noexcept = default;
-	virtual ~ODataSource() noexcept = default;
+	virtual ~ODataSource() noexcept                = default;
 
-	virtual void write1(uint32) = 0;
-	virtual void write2(uint16) = 0;
-	virtual void write2high(uint16) = 0;
-	virtual void write4(uint32) = 0;
-	virtual void write4high(uint32) = 0;
-	virtual void write(const void *, size_t) = 0;
-	virtual void write(const std::string &) = 0;
+	virtual void write1(uint32)             = 0;
+	virtual void write2(uint16)             = 0;
+	virtual void write2high(uint16)         = 0;
+	virtual void write4(uint32)             = 0;
+	virtual void write4high(uint32)         = 0;
+	virtual void write(const void*, size_t) = 0;
+	virtual void write(const std::string&)  = 0;
 
-	virtual void seek(size_t) = 0;
-	virtual void skip(std::streamoff) = 0;
-	virtual size_t getSize() const = 0;
-	virtual size_t getPos() const = 0;
-	virtual void flush() { }
+	virtual void   seek(size_t)         = 0;
+	virtual void   skip(std::streamoff) = 0;
+	virtual size_t getSize() const      = 0;
+	virtual size_t getPos() const       = 0;
+
+	virtual void flush() {}
+
 	virtual bool good() const {
 		return true;
 	}
-	virtual void clear_error() { }
+
+	virtual void clear_error() {}
 };
 
 /**
  * Stream-based output data source which does not own the stream.
  */
-class OStreamDataSource: public ODataSource {
+class OStreamDataSource : public ODataSource {
 protected:
-	std::ostream *out;
+	std::ostream* out;
 
 public:
-	explicit OStreamDataSource(std::ostream *data_stream)
-		: out(data_stream) {}
+	explicit OStreamDataSource(std::ostream* data_stream) : out(data_stream) {}
 
 	void write1(uint32 val) final {
 		Write1(out, static_cast<uint16>(val));
 	}
 
 	void write2(uint16 val) final {
-		Write2(out, val);
+		little_endian::Write2(out, val);
 	}
 
 	void write2high(uint16 val) final {
-		Write2high(out, val);
+		big_endian::Write2(out, val);
 	}
 
 	void write4(uint32 val) final {
-		Write4(out, val);
+		little_endian::Write4(out, val);
 	}
 
 	void write4high(uint32 val) final {
-		Write4high(out, val);
+		big_endian::Write4(out, val);
 	}
 
-	void write(const void *b, size_t len) final {
-		out->write(static_cast<const char *>(b), len);
+	void write(const void* b, size_t len) final {
+		out->write(static_cast<const char*>(b), len);
 	}
 
-	void write(const std::string &s) final {
+	void write(const std::string& s) final {
 		out->write(s.data(), s.size());
 	}
 
@@ -419,9 +491,11 @@ public:
 	void flush() final {
 		out->flush();
 	}
+
 	bool good() const final {
 		return out->good();
 	}
+
 	void clear_error() final {
 		out->clear();
 	}
@@ -434,32 +508,28 @@ class OFileDataSource : public OStreamDataSource {
 	std::unique_ptr<std::ostream> fout;
 
 public:
-	explicit OFileDataSource(const File_spec &spec, bool is_text = false)
-		: OStreamDataSource(nullptr) {
+	explicit OFileDataSource(const File_spec& spec, bool is_text = false) : OStreamDataSource(nullptr) {
 		fout = U7open_out(spec.name.c_str(), is_text);
-		out = fout.get();
+		out  = fout.get();
 	}
 };
 
 /**
  * Buffer-based output data source which does not own the buffer.
  */
-class OBufferDataSpan: public ODataSource {
+class OBufferDataSpan : public ODataSource {
 protected:
-	unsigned char *buf;
-	unsigned char *buf_ptr;
-	std::size_t size;
+	unsigned char* buf;
+	unsigned char* buf_ptr;
+	std::size_t    size;
 
 public:
-	OBufferDataSpan(void *data, size_t len)
-		: buf(static_cast<unsigned char *>(data)), buf_ptr(buf), size(len) {
+	OBufferDataSpan(void* data, size_t len) : buf(static_cast<unsigned char*>(data)), buf_ptr(buf), size(len) {
 		// data can be nullptr if len is also 0
 		assert(data != nullptr || len == 0);
 	}
 
-	OBufferDataSpan(const std::unique_ptr<unsigned char[]>& data_, size_t len)
-		: OBufferDataSpan(data_.get(), len) {
-	}
+	OBufferDataSpan(const std::unique_ptr<unsigned char[]>& data_, size_t len) : OBufferDataSpan(data_.get(), len) {}
 
 	// Prevent use after free.
 	OBufferDataSpan(std::unique_ptr<unsigned char[]>&& data_, size_t len) = delete;
@@ -469,27 +539,27 @@ public:
 	}
 
 	void write2(uint16 val) final {
-		Write2(buf_ptr, val);
+		little_endian::Write2(buf_ptr, val);
 	}
 
 	void write2high(uint16 val) final {
-		Write2high(buf_ptr, val);
+		big_endian::Write2(buf_ptr, val);
 	}
 
 	void write4(uint32 val) final {
-		Write4(buf_ptr, val);
+		little_endian::Write4(buf_ptr, val);
 	}
 
 	void write4high(uint32 val) final {
-		Write4high(buf_ptr, val);
+		big_endian::Write4(buf_ptr, val);
 	}
 
-	void write(const void *b, size_t len) final {
+	void write(const void* b, size_t len) final {
 		std::memcpy(buf_ptr, b, len);
 		buf_ptr += len;
 	}
 
-	void write(const std::string &s) final {
+	void write(const std::string& s) final {
 		write(s.data(), s.size());
 	}
 
@@ -509,7 +579,7 @@ public:
 		return buf_ptr - buf;
 	}
 
-	unsigned char *getPtr() {
+	unsigned char* getPtr() {
 		return buf_ptr;
 	}
 };
@@ -517,26 +587,24 @@ public:
 /**
  * Buffer-based output data source which owns the buffer.
  */
-class OBufferDataSource: public OBufferDataSpan {
+class OBufferDataSource : public OBufferDataSpan {
 	std::unique_ptr<unsigned char[]> data;
 
 public:
-	explicit OBufferDataSource(size_t len)
-		: OBufferDataSpan(nullptr, 0), data(std::make_unique<unsigned char[]>(len)) {
+	explicit OBufferDataSource(size_t len) : OBufferDataSpan(nullptr, 0), data(std::make_unique<unsigned char[]>(len)) {
 		assert(len != 0);
 		buf_ptr = buf = data.get();
-		size = len;
+		size          = len;
 	}
-	OBufferDataSource(std::unique_ptr<unsigned char[]> data_, size_t len)
-		: OBufferDataSpan(data_, len), data(std::move(data_)) {
-	}
-	OBufferDataSource(void *data_, size_t len)
-		: OBufferDataSpan(data_, len), data(static_cast<unsigned char*>(data_)) {}
+
+	OBufferDataSource(std::unique_ptr<unsigned char[]> data_, size_t len) : OBufferDataSpan(data_, len), data(std::move(data_)) {}
+
+	OBufferDataSource(void* data_, size_t len) : OBufferDataSpan(data_, len), data(static_cast<unsigned char*>(data_)) {}
 };
 
 inline void IDataSource::copy_to(ODataSource& dest) {
-	const size_t len = getSize();
-	auto data = readN(len);
+	const size_t len  = getSize();
+	auto         data = readN(len);
 	dest.write(data.get(), len);
 }
 
@@ -549,7 +617,7 @@ inline std::unique_ptr<IDataSource> IBufferDataView::makeSource(size_t len) {
 	if (avail < len) {
 		len = avail;
 	}
-	const unsigned char *ptr = getPtr();
+	const unsigned char* ptr = getPtr();
 	skip(len);
 	return std::make_unique<IBufferDataView>(ptr, len);
 }

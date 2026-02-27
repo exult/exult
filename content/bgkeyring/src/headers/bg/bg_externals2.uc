@@ -68,10 +68,10 @@ extern void exitMoongate object#(0x636) ();
 //Closes a moongate created by the orb of the moons:
 extern void closeOrbMoongate 0x821 (var moongate);
 //Returns the position where the player clicked as a respose of UI_click_on_item:
-extern var getClickPosition 0x822 (var itemref);
+extern struct<Position> getClickPosition 0x822 (struct<ObjPos> itemref);
 //The falling-down-kneeling-over-in-pain animation when the
 //avatar gets hurt trying to cross a moongate:
-extern var badMoongateAnim 0x825 (var avatarpos, var mongatepos, var coord);
+extern struct<Position> badMoongateAnim 0x825 (struct<Position> avatarpos, struct<Position> mongatepos, var coord);
 //Returns true if the player is inside a paralelepiped which
 //contains all of Trinsic:
 extern var inGreaterTrinsicArea 0x93E ();

@@ -1,6 +1,6 @@
 /*
  *  Copyright (C) 2000-2022 The Exult Team
- *  
+ *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation; either version 2 of the License, or
@@ -19,16 +19,16 @@
 #ifndef SOUNDTEST_H
 #define SOUNDTEST_H
 
-class SoundTester
-	{
-	int song = 0;
-	int sfx = 0;
-	int voice = 0;
-	int active = 0;
+class SoundTester {
+	int  song   = 0;
+	int  sfx    = 0;
+	int  voice  = 0;
+	int  active = 0;
 	bool repeat = true;
+
 public:
-		void test_sound();
-	};
-	
+	void   test_sound();
+	size_t formattime(char* buffer, size_t buffersize, uint32 position, uint32 length);
+};
 
 #endif

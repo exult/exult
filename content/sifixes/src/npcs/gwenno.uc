@@ -25,59 +25,49 @@
 // externs
 extern void askGwennoBelongings 0x835 ();
 
-void Gwenno object#(0x495) ()
-{
+void Gwenno object#(0x495) () {
 	var avatarname;
 	var gavenecklace;
 
 	avatarname = getAvatarName();
 
-	if ((event == DOUBLECLICK) || (event == SCRIPTED))
-	{
+	if ((event == DOUBLECLICK) || (event == SCRIPTED)) {
 		AVATAR->item_say("@A pleasure to see thee...@");
 		GWENNO->makePartyFaceNPC();
-		if (!GWENNO->get_item_flag(SI_ZOMBIE))
-		{
-			if (!gflags[SERPENT_GWENNO_BANE_SPEECH])
-			{
+		if (!GWENNO->get_item_flag(SI_ZOMBIE)) {
+			if (!gflags[SERPENT_GWENNO_BANE_SPEECH]) {
 				gflags[SERPENT_GWENNO_BANE_SPEECH] = true;
 				GWENNO->set_new_schedules(MIDNIGHT, DESK_WORK, [0x977, 0x48C]);
 				GWENNO->run_schedule();
 			}
 			delayedBark(GWENNO, "@'Tis good to see thee!@", 2);
 			GWENNO->set_schedule_type(TALK);
-		}
-		else
-		{
+		} else {
 			GWENNO->set_new_schedules(MIDNIGHT, DESK_WORK, [0x977, 0x48C]);
 			GWENNO->run_schedule();
-			if (!gflags[SERPENT_GWENNO_BANE_SPEECH])
-			{
+			if (!gflags[SERPENT_GWENNO_BANE_SPEECH]) {
 				gflags[SERPENT_GWENNO_BANE_SPEECH] = true;
-				script getPathEgg(5, 4) after 30 ticks
-				{
+				script getPathEgg(5, 4) after 30 ticks {
 					nohalt;
 					call startSerpentSpeechViaRing;
 				}
 			}
-			var barks = ["@I must sate mine hunger!@",
-						 "@Come, allow me to feed upon thee!@",
-						 "@Blood! Blood everywhere!@",
-						 "@Let me feel thy naked flesh!@"];
+			var barks = [
+				"@I must sate mine hunger!@",
+				"@Come, allow me to feed upon thee!@",
+				"@Blood! Blood everywhere!@",
+				"@Let me feel thy naked flesh!@"
+			];
 			var rand = UI_get_random(UI_get_array_size(barks));
 			delayedBark(GWENNO, barks[rand], 2);
 		}
 	}
 
-	if (event == STARTED_TALKING)
-	{
-		if (GWENNO->get_item_flag(IN_PARTY))
-		{
+	if (event == STARTED_TALKING) {
+		if (GWENNO->get_item_flag(IN_PARTY)) {
 			GWENNO->set_schedule_type(FOLLOW_AVATAR);
 			add("leave");
-		}
-		else
-		{
+		} else {
 			GWENNO->run_schedule();
 			add("join");
 		}
@@ -86,8 +76,7 @@ void Gwenno object#(0x495) ()
 		GWENNO->show_npc_face0(0);
 
 		if (!IOLO->get_item_flag(SI_ZOMBIE) && gflags[INSANITY_BANE_DEAD] &&
-		    !gflags[IOLO_GWENNO_REUNITED])
-		{
+		    !gflags[IOLO_GWENNO_REUNITED]) {
 			say("@Iolo! My beloved Iolo!@");
 			say("@Oh, I had feared that I would never see thee again!@");
 			IOLO.say("@My lovely Gwenno!@");
@@ -99,105 +88,89 @@ void Gwenno object#(0x495) ()
 
 			UI_set_conversation_slot(1);
 			// The original checked for the wrong frame:
-			if (hasItemCount(PARTY, 1, SHAPE_AMULET, QUALITY_ANY, 8))
-			{
+			if (hasItemCount(PARTY, 1, SHAPE_AMULET, QUALITY_ANY, 8)) {
 				say("@The Lady of Fawn gave me this necklace to give to thee, when at last I found thee, my love.@");
 				say("@Take it as a token of my love.@");
 				// The original tried to remove from Iolo only -- this could
 				// lead to a problem, as it checked in the entire party for its
 				// presence...
 				gavenecklace = giveItem(PARTY, GWENNO, 1, SHAPE_AMULET, QUALITY_ANY, 8, true);
-			}
-			else
-			{
+			} else {
 				say("@The Lady of Fawn gave me a necklace to give to thee, my love. But in all my trials to find thee, I seem to have lost it.@");
 				say("@I had thought to give it to thee as a token of my love.@");
 			}
 			UI_remove_npc_face1();
 			UI_set_conversation_slot(0);
 
-			if (gavenecklace)
-			{
+			if (gavenecklace) {
 				say("@I shall cherish it always, Iolo.@");
 				say("@But thou didst not have to give me anything to prove thy love. That thou art here now is proof enough.@");
-			}
-			else
-			{
+			} else {
 				say("@It doth not matter, Iolo.@");
 				say("@Thou dost not have to give me anything to prove thy love. That thou art here now is proof enough.@");
 			}
 			gflags[IOLO_GWENNO_REUNITED] = true;
 		}
 
-		if (IOLO->get_item_flag(SI_ZOMBIE) && gflags[INSANITY_BANE_DEAD])
-		{
+		if (IOLO->get_item_flag(SI_ZOMBIE) && gflags[INSANITY_BANE_DEAD]) {
 			say("@A thousand thanks for bringing back mine husband, ",
 				avatarname, ".@");
 			say("@I grieve that his wits seem to have left him. But at least he is safe with me.@");
 			say("@I shall do all that I can to aid thee in restoring him. Or gladly care for him all the remainder of my days... even as he is.@");
 		}
 
-		if (!GWENNO->get_item_flag(MET))
-		{
+		if (!GWENNO->get_item_flag(MET)) {
 			GWENNO->set_item_flag(MET);
 			say("@What a relief to see thee again, ", avatarname, ".@");
 			say("@I fear that thy work hath only begun. Batlin's deeds have only worsened the storms.@");
 			say("@As the sand dwindles within the Hourglass of Fate, the danger will only increase. Thou must find the answer quickly, Avatar!@");
-		}
-		else
-		{
+		} else {
 			say("@I have been doing much study, ", avatarname, ".@");
 			say("@There is much I must tell thee before the sand runs down in the Hourglass of Fate.@");
 		}
 
-		if (!gflags[KNOWS_OF_SOUL_GEMS])
+		if (!gflags[KNOWS_OF_SOUL_GEMS]) {
 			add(["Batlin's deeds", "danger", "answer"]);
+		}
 
 		if (gflags[KNOWS_OF_SOUL_GEMS] && (!gflags[ANARCHY_BANE_DEAD] ||
-		    !gflags[INSANITY_BANE_DEAD] || !gflags[WANTONESS_BANE_DEAD]))
-		{
+		    !gflags[INSANITY_BANE_DEAD] || !gflags[WANTONNESS_BANE_DEAD])) {
 			say("@Avatar! I have found a most intriguing scroll that tells of some sort of mystic connection between the Banes and the ancient temples!@");
 			add("mystic connection");
 		}
 
 		if (gflags[TALKED_TO_GREAT_HIEROPHANT] &&
-		    !gflags[TALKED_TO_CHAOS_HIEROPHANT])
-		{
+		    !gflags[TALKED_TO_CHAOS_HIEROPHANT]) {
 			say("@Now I understand what Xenka meant by being aided by specters. But, unless thou canst find the grave of the last Chaos Hierophant, I know not how thou wilt restore Balance.@");
 			say("@Perhaps if thou wouldst ask one of the monks -- perhaps Thoxa -- she could try to divine where the Chaos Hierophant lies.@");
 		}
 
 		if (gflags[GWENNO_HAS_BELONGINGS] && !GWENNO->get_item_flag(IN_PARTY) &&
-		    GWENNO->get_cont_items(SHAPE_ANY, QUALITY_ANY, FRAME_ANY))
+		    GWENNO->get_cont_items(SHAPE_ANY, QUALITY_ANY, FRAME_ANY)) {
 			add("belongings");
-
+		}
 		add(["bye"]);
 
-		converse (0)
-		{
+		converse (0) {
 			case "belongings" (remove):
 				askGwennoBelongings();
 
 			case "join" (remove):
-				if (gflags[DUPRE_IS_TOAST])
-				{
-					if (UI_get_array_size(UI_get_party_list2()) < 5)
-					{
+				if (gflags[DUPRE_IS_TOAST]) {
+					if (UI_get_array_size(UI_get_party_list2()) < 5) {
 						add("leave");
 						say("@If thou dost think I can be of use...@");
 						GWENNO->add_to_party();
 						gflags[GWENNO_HAS_BELONGINGS] = true;
-					}
-					else
-					{
+					} else {
 						say("@I hardly think that thou hast need of me, Avatar. Look at all thy fine companions!@");
 						say("@Instead, I shall remain here. After all, what can one old woman do for thee?@");
 					}
-				}
-				else if (IOLO->get_item_flag(SI_ZOMBIE))
+				} else if (IOLO->get_item_flag(SI_ZOMBIE)) {
 					say("@But I must remain here and study! I must help thee find a way to restore my dear Iolo!@");
-				else
+				} else {
 					say("@I will be of more use to thee if I remain here. I seem to have a talent for finding the information thou dost need.@");
+				}
 
 			case "leave" (remove):
 				add("join");

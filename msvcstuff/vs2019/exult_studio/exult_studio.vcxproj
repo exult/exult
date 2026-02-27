@@ -1,0 +1,411 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <VCProjectVersion>17.0</VCProjectVersion>
+    <Keyword>Win32Proj</Keyword>
+    <ProjectGuid>{53599a90-51ec-406e-a303-42c3b7bf2161}</ProjectGuid>
+    <RootNamespace>exultstudio</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v142</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v142</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v142</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v142</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="Shared">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <OutDir>$(SolutionDir)..\..\</OutDir>
+    <IntDir>$(SolutionDir)$(Configuration)\$(ProjectName)\</IntDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <OutDir>$(SolutionDir)..\..\</OutDir>
+    <IntDir>$(SolutionDir)$(Configuration)\$(ProjectName)\</IntDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <OutDir>$(SolutionDir)..\..\</OutDir>
+    <IntDir>$(SolutionDir)$(Configuration)\$(ProjectName)\</IntDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <OutDir>$(SolutionDir)..\..\</OutDir>
+    <IntDir>$(SolutionDir)$(Configuration)\$(ProjectName)\</IntDir>
+  </PropertyGroup>
+  <PropertyGroup Label="Vcpkg">
+    <VcpkgEnableManifest>true</VcpkgEnableManifest>
+    <VcpkgManifestInstall>true</VcpkgManifestInstall>
+    <VcpkgApplocalDeps>false</VcpkgApplocalDeps>
+  </PropertyGroup>
+  <PropertyGroup Label="Vcpkg" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <VcpkgUseMD>true</VcpkgUseMD>
+    <VcpkgTriplet>x86-windows</VcpkgTriplet>
+    <VcpkgHostTriplet>x86-windows</VcpkgHostTriplet>
+    <VcpkgAdditionalInstallOptions>--x-abi-tools-use-exact-versions</VcpkgAdditionalInstallOptions>
+  </PropertyGroup>
+  <PropertyGroup Label="Vcpkg" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <VcpkgUseMD>true</VcpkgUseMD>
+    <VcpkgTriplet>x86-windows</VcpkgTriplet>
+    <VcpkgHostTriplet>x86-windows</VcpkgHostTriplet>
+    <VcpkgAdditionalInstallOptions>--x-abi-tools-use-exact-versions</VcpkgAdditionalInstallOptions>
+  </PropertyGroup>
+  <PropertyGroup Label="Vcpkg" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <VcpkgUseMD>true</VcpkgUseMD>
+    <VcpkgTriplet>x64-windows</VcpkgTriplet>
+    <VcpkgHostTriplet>x64-windows</VcpkgHostTriplet>
+    <VcpkgAdditionalInstallOptions>--x-abi-tools-use-exact-versions --keep-going</VcpkgAdditionalInstallOptions>
+  </PropertyGroup>
+  <PropertyGroup Label="Vcpkg" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <VcpkgUseMD>true</VcpkgUseMD>
+    <VcpkgTriplet>x64-windows</VcpkgTriplet>
+    <VcpkgHostTriplet>x64-windows</VcpkgHostTriplet>
+    <VcpkgAdditionalInstallOptions>--x-abi-tools-use-exact-versions</VcpkgAdditionalInstallOptions>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <SDLCheck>false</SDLCheck>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>$(SolutionDir);$(SolutionDir)../..;$(SolutionDir)../../files;$(SolutionDir)..\..\Gamemgr;$(SolutionDir)..\..\Gumps;$(SolutionDir)..\..\data;$(SolutionDir)..\..\conf;$(SolutionDir)..\..\filc;$(SolutionDir)..\..\imagewin;$(SolutionDir)..\..\objs;$(SolutionDir)..\..\mapedit;$(SolutionDir)..\..\pathfinder;$(SolutionDir)..\..\shapes;$(SolutionDir)..\..\shapes\shapeinf;$(SolutionDir)..\..\usecode;$(SolutionDir)..\..\Audio;$(SolutionDir)..\..\Audio\MIDI_drivers;$(SolutionDir)..\..\server;$(SolutionDir)..\..\Headers;$(SolutionDir)..\..\tools;$(ProjectDir)vcpkg_installed\$(VcpkgTriplet)\$(VcpkgTriplet)\include\gtk-3.0;$(ProjectDir)vcpkg_installed\$(VcpkgTriplet)\$(VcpkgTriplet)\include\glib-2.0;$(ProjectDir)vcpkg_installed\$(VcpkgTriplet)\$(VcpkgTriplet)\lib\glib-2.0\include;$(ProjectDir)vcpkg_installed\$(VcpkgTriplet)\$(VcpkgTriplet)\include\pango-1.0;$(ProjectDir)vcpkg_installed\$(VcpkgTriplet)\$(VcpkgTriplet)\include\harfbuzz;$(ProjectDir)vcpkg_installed\$(VcpkgTriplet)\$(VcpkgTriplet)\include\cairo;$(ProjectDir)vcpkg_installed\$(VcpkgTriplet)\$(VcpkgTriplet)\include\gdk-pixbuf-2.0;$(ProjectDir)vcpkg_installed\$(VcpkgTriplet)\$(VcpkgTriplet)\include\atk-1.0;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <ForcedIncludeFiles>$(SolutionDir)msvc_include.h</ForcedIncludeFiles>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <LanguageStandard_C>stdc17</LanguageStandard_C>
+      <BasicRuntimeChecks>Default</BasicRuntimeChecks>
+      <BufferSecurityCheck>false</BufferSecurityCheck>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>$(CoreLibraryDependencies);Ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+    <PostBuildEvent>
+      <Command>copy "$(_ZVcpkgManifestRoot)vcpkg_installed\$(VcpkgTriplet)\$(VcpkgTriplet)\debug\bin\*.dll" "$(OutDir)"
+copy "$(_ZVcpkgManifestRoot)vcpkg_installed\$(VcpkgTriplet)\$(VcpkgTriplet)\debug\bin\*.pdb" "$(OutDir)"
+exit /b 0
+</Command>
+      <Message>Copy vcpkg package binaries to exult studio dir</Message>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>false</SDLCheck>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>$(SolutionDir);$(SolutionDir)../..;$(SolutionDir)../../files;$(SolutionDir)..\..\Gamemgr;$(SolutionDir)..\..\Gumps;$(SolutionDir)..\..\data;$(SolutionDir)..\..\conf;$(SolutionDir)..\..\filc;$(SolutionDir)..\..\imagewin;$(SolutionDir)..\..\objs;$(SolutionDir)..\..\mapedit;$(SolutionDir)..\..\pathfinder;$(SolutionDir)..\..\shapes;$(SolutionDir)..\..\shapes\shapeinf;$(SolutionDir)..\..\usecode;$(SolutionDir)..\..\Audio;$(SolutionDir)..\..\Audio\MIDI_drivers;$(SolutionDir)..\..\server;$(SolutionDir)..\..\Headers;$(SolutionDir)..\..\tools;$(ProjectDir)vcpkg_installed\$(VcpkgTriplet)\$(VcpkgTriplet)\include\gtk-3.0;$(ProjectDir)vcpkg_installed\$(VcpkgTriplet)\$(VcpkgTriplet)\include\glib-2.0;$(ProjectDir)vcpkg_installed\$(VcpkgTriplet)\$(VcpkgTriplet)\lib\glib-2.0\include;$(ProjectDir)vcpkg_installed\$(VcpkgTriplet)\$(VcpkgTriplet)\include\pango-1.0;$(ProjectDir)vcpkg_installed\$(VcpkgTriplet)\$(VcpkgTriplet)\include\harfbuzz;$(ProjectDir)vcpkg_installed\$(VcpkgTriplet)\$(VcpkgTriplet)\include\cairo;$(ProjectDir)vcpkg_installed\$(VcpkgTriplet)\$(VcpkgTriplet)\include\gdk-pixbuf-2.0;$(ProjectDir)vcpkg_installed\$(VcpkgTriplet)\$(VcpkgTriplet)\include\atk-1.0;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <ForcedIncludeFiles>$(SolutionDir)msvc_include.h</ForcedIncludeFiles>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <LanguageStandard_C>stdc17</LanguageStandard_C>
+      <BufferSecurityCheck>false</BufferSecurityCheck>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>$(CoreLibraryDependencies);Ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+    <PostBuildEvent>
+      <Command>copy "$(_ZVcpkgManifestRoot)vcpkg_installed\$(VcpkgTriplet)\$(VcpkgTriplet)\bin\*.dll" "$(OutDir)"
+copy "$(_ZVcpkgManifestRoot)vcpkg_installed\$(VcpkgTriplet)\$(VcpkgTriplet)\bin\*.pdb" "$(OutDir)"
+exit /b 0
+</Command>
+      <Message>Copy vcpkg package binaries to exult studio dir</Message>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <SDLCheck>false</SDLCheck>
+      <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>$(SolutionDir);$(SolutionDir)../..;$(SolutionDir)../../files;$(SolutionDir)..\..\Gamemgr;$(SolutionDir)..\..\Gumps;$(SolutionDir)..\..\data;$(SolutionDir)..\..\conf;$(SolutionDir)..\..\filc;$(SolutionDir)..\..\imagewin;$(SolutionDir)..\..\objs;$(SolutionDir)..\..\mapedit;$(SolutionDir)..\..\pathfinder;$(SolutionDir)..\..\shapes;$(SolutionDir)..\..\shapes\shapeinf;$(SolutionDir)..\..\usecode;$(SolutionDir)..\..\Audio;$(SolutionDir)..\..\Audio\MIDI_drivers;$(SolutionDir)..\..\server;$(SolutionDir)..\..\Headers;$(SolutionDir)..\..\tools;$(ProjectDir)vcpkg_installed\$(VcpkgTriplet)\$(VcpkgTriplet)\include\gtk-3.0;$(ProjectDir)vcpkg_installed\$(VcpkgTriplet)\$(VcpkgTriplet)\include\glib-2.0;$(ProjectDir)vcpkg_installed\$(VcpkgTriplet)\$(VcpkgTriplet)\lib\glib-2.0\include;$(ProjectDir)vcpkg_installed\$(VcpkgTriplet)\$(VcpkgTriplet)\include\pango-1.0;$(ProjectDir)vcpkg_installed\$(VcpkgTriplet)\$(VcpkgTriplet)\include\harfbuzz;$(ProjectDir)vcpkg_installed\$(VcpkgTriplet)\$(VcpkgTriplet)\include\cairo;$(ProjectDir)vcpkg_installed\$(VcpkgTriplet)\$(VcpkgTriplet)\include\gdk-pixbuf-2.0;$(ProjectDir)vcpkg_installed\$(VcpkgTriplet)\$(VcpkgTriplet)\include\atk-1.0;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <ForcedIncludeFiles>$(SolutionDir)msvc_include.h</ForcedIncludeFiles>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <LanguageStandard_C>stdc17</LanguageStandard_C>
+      <BasicRuntimeChecks>Default</BasicRuntimeChecks>
+      <BufferSecurityCheck>false</BufferSecurityCheck>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>$(CoreLibraryDependencies);Ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+    <PostBuildEvent>
+      <Command>copy "$(_ZVcpkgManifestRoot)vcpkg_installed\$(VcpkgTriplet)\$(VcpkgTriplet)\debug\bin\*.dll" "$(OutDir)"
+copy "$(_ZVcpkgManifestRoot)vcpkg_installed\$(VcpkgTriplet)\$(VcpkgTriplet)\debug\bin\*.pdb" "$(OutDir)"
+exit /b 0
+</Command>
+      <Message>Copy vcpkg package binaries to exult studio dir</Message>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>false</SDLCheck>
+      <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>$(SolutionDir);$(SolutionDir)../..;$(SolutionDir)../../files;$(SolutionDir)..\..\Gamemgr;$(SolutionDir)..\..\Gumps;$(SolutionDir)..\..\data;$(SolutionDir)..\..\conf;$(SolutionDir)..\..\filc;$(SolutionDir)..\..\imagewin;$(SolutionDir)..\..\objs;$(SolutionDir)..\..\mapedit;$(SolutionDir)..\..\pathfinder;$(SolutionDir)..\..\shapes;$(SolutionDir)..\..\shapes\shapeinf;$(SolutionDir)..\..\usecode;$(SolutionDir)..\..\Audio;$(SolutionDir)..\..\Audio\MIDI_drivers;$(SolutionDir)..\..\server;$(SolutionDir)..\..\Headers;$(SolutionDir)..\..\tools;$(ProjectDir)vcpkg_installed\$(VcpkgTriplet)\$(VcpkgTriplet)\include\gtk-3.0;$(ProjectDir)vcpkg_installed\$(VcpkgTriplet)\$(VcpkgTriplet)\include\glib-2.0;$(ProjectDir)vcpkg_installed\$(VcpkgTriplet)\$(VcpkgTriplet)\lib\glib-2.0\include;$(ProjectDir)vcpkg_installed\$(VcpkgTriplet)\$(VcpkgTriplet)\include\pango-1.0;$(ProjectDir)vcpkg_installed\$(VcpkgTriplet)\$(VcpkgTriplet)\include\harfbuzz;$(ProjectDir)vcpkg_installed\$(VcpkgTriplet)\$(VcpkgTriplet)\include\cairo;$(ProjectDir)vcpkg_installed\$(VcpkgTriplet)\$(VcpkgTriplet)\include\gdk-pixbuf-2.0;$(ProjectDir)vcpkg_installed\$(VcpkgTriplet)\$(VcpkgTriplet)\include\atk-1.0;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <ForcedIncludeFiles>$(SolutionDir)msvc_include.h</ForcedIncludeFiles>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <LanguageStandard_C>stdc17</LanguageStandard_C>
+      <BufferSecurityCheck>false</BufferSecurityCheck>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>$(CoreLibraryDependencies);Ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+    <PostBuildEvent>
+      <Command>copy "$(_ZVcpkgManifestRoot)vcpkg_installed\$(VcpkgTriplet)\$(VcpkgTriplet)\bin\*.dll" "$(OutDir)"
+copy "$(_ZVcpkgManifestRoot)vcpkg_installed\$(VcpkgTriplet)\$(VcpkgTriplet)\bin\*.pdb" "$(OutDir)"
+exit /b 0
+</Command>
+      <Message>Copy vcpkg package binaries to exult studio dir</Message>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\..\conf\Configuration.cc" />
+    <ClCompile Include="..\..\..\conf\XMLEntity.cc" />
+    <ClCompile Include="..\..\..\files\crc.cc" />
+    <ClCompile Include="..\..\..\files\Flat.cc" />
+    <ClCompile Include="..\..\..\files\Flex.cc" />
+    <ClCompile Include="..\..\..\files\IFF.cc" />
+    <ClCompile Include="..\..\..\files\listfiles.cc" />
+    <ClCompile Include="..\..\..\files\msgfile.cc" />
+    <ClCompile Include="..\..\..\files\Table.cc" />
+    <ClCompile Include="..\..\..\files\U7file.cc" />
+    <ClCompile Include="..\..\..\files\U7fileman.cc" />
+    <ClCompile Include="..\..\..\files\U7obj.cc" />
+    <ClCompile Include="..\..\..\files\utils.cc" />
+    <ClCompile Include="..\..\..\files\zip\unzip.cc" />
+    <ClCompile Include="..\..\..\files\zip\zip.cc" />
+    <ClCompile Include="..\..\..\gamemgr\modmgr.cc" />
+    <ClCompile Include="..\..\..\imagewin\ibuf8.cc" />
+    <ClCompile Include="..\..\..\imagewin\imagebuf.cc" />
+    <ClCompile Include="..\..\..\mapedit\audiotest.cc" />
+    <ClCompile Include="..\..\..\mapedit\bargeedit.cc" />
+    <ClCompile Include="..\..\..\mapedit\chunklst.cc" />
+    <ClCompile Include="..\..\..\mapedit\combo.cc" />
+    <ClCompile Include="..\..\..\mapedit\compile.cc" />
+    <ClCompile Include="..\..\..\mapedit\contedit.cc" />
+    <ClCompile Include="..\..\..\mapedit\eggedit.cc" />
+    <ClCompile Include="..\..\..\mapedit\execbox.cc" />
+    <ClCompile Include="..\..\..\mapedit\exult_studio.cc" />
+    <ClCompile Include="..\..\..\mapedit\locator.cc" />
+    <ClCompile Include="..\..\..\mapedit\maps.cc" />
+    <ClCompile Include="..\..\..\mapedit\npcedit.cc" />
+    <ClCompile Include="..\..\..\mapedit\npclst.cc" />
+    <ClCompile Include="..\..\..\mapedit\npcpresets.cc" />
+    <ClCompile Include="..\..\..\mapedit\objbrowse.cc" />
+    <ClCompile Include="..\..\..\mapedit\objedit.cc" />
+    <ClCompile Include="..\..\..\mapedit\paledit.cc" />
+    <ClCompile Include="..\..\..\mapedit\shapedraw.cc" />
+    <ClCompile Include="..\..\..\mapedit\shapeedit.cc" />
+    <ClCompile Include="..\..\..\mapedit\shapefile.cc" />
+    <ClCompile Include="..\..\..\mapedit\shapegroup.cc" />
+    <ClCompile Include="..\..\..\mapedit\shapelst.cc" />
+    <ClCompile Include="..\..\..\mapedit\shapepresets.cc" />
+    <ClCompile Include="..\..\..\mapedit\studio.cc" />
+    <ClCompile Include="..\..\..\mapedit\ucbrowse.cc" />
+    <ClCompile Include="..\..\..\server\objserial.cc" />
+    <ClCompile Include="..\..\..\server\servemsg.cc" />
+    <ClCompile Include="..\..\..\server\servewin32.cc" />
+    <ClCompile Include="..\..\..\shapes\font.cc" />
+    <ClCompile Include="..\..\..\shapes\fontgen.cc" />
+    <ClCompile Include="..\..\..\shapes\fontvga.cc" />
+    <ClCompile Include="..\..\..\shapes\items.cc" />
+    <ClCompile Include="..\..\..\shapes\pngio.cc" />
+    <ClCompile Include="..\..\..\shapes\shapeinf.cc" />
+    <ClCompile Include="..\..\..\shapes\shapeinf\ammoinf.cc" />
+    <ClCompile Include="..\..\..\shapes\shapeinf\aniinf.cc" />
+    <ClCompile Include="..\..\..\shapes\shapeinf\armorinf.cc" />
+    <ClCompile Include="..\..\..\shapes\shapeinf\bodyinf.cc" />
+    <ClCompile Include="..\..\..\shapes\shapeinf\continf.cc" />
+    <ClCompile Include="..\..\..\shapes\shapeinf\effhpinf.cc" />
+    <ClCompile Include="..\..\..\shapes\shapeinf\expinf.cc" />
+    <ClCompile Include="..\..\..\shapes\shapeinf\frflags.cc" />
+    <ClCompile Include="..\..\..\shapes\shapeinf\frnameinf.cc" />
+    <ClCompile Include="..\..\..\shapes\shapeinf\frusefun.cc" />
+    <ClCompile Include="..\..\..\shapes\shapeinf\gumpinf.cc" />
+    <ClCompile Include="..\..\..\shapes\shapeinf\lightinf.cc" />
+    <ClCompile Include="..\..\..\shapes\shapeinf\monstinf.cc" />
+    <ClCompile Include="..\..\..\shapes\shapeinf\npcdollinf.cc" />
+    <ClCompile Include="..\..\..\shapes\shapeinf\objdollinf.cc" />
+    <ClCompile Include="..\..\..\shapes\shapeinf\sfxinf.cc" />
+    <ClCompile Include="..\..\..\shapes\shapeinf\warminf.cc" />
+    <ClCompile Include="..\..\..\shapes\shapeinf\weaponinf.cc" />
+    <ClCompile Include="..\..\..\shapes\shapevga.cc" />
+    <ClCompile Include="..\..\..\shapes\shapewrite.cc" />
+    <ClCompile Include="..\..\..\shapes\u7drag.cc" />
+    <ClCompile Include="..\..\..\shapes\vgafile.cc" />
+    <ClCompile Include="..\..\..\usecode\ucsymtbl.cc" />
+  </ItemGroup>
+  <ItemGroup>
+    <CopyFileToFolders Include="..\..\..\mapedit\exult_studio.glade">
+      <FileType>Document</FileType>
+      <DestinationFolders Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(OutDir)\data</DestinationFolders>
+      <TreatOutputAsContent Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</TreatOutputAsContent>
+      <DestinationFolders Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(OutDir)\data</DestinationFolders>
+      <TreatOutputAsContent Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</TreatOutputAsContent>
+      <DestinationFolders Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(OutDir)\data</DestinationFolders>
+      <TreatOutputAsContent Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</TreatOutputAsContent>
+      <DestinationFolders Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(OutDir)\data</DestinationFolders>
+      <TreatOutputAsContent Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</TreatOutputAsContent>
+    </CopyFileToFolders>
+    <None Include="..\vcpkg-configuration.json" />
+    <None Include="vcpkg.json" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\..\conf\Configuration.h" />
+    <ClInclude Include="..\..\..\conf\XMLEntity.h" />
+    <ClInclude Include="..\..\..\files\crc.h" />
+    <ClInclude Include="..\..\..\files\databuf.h" />
+    <ClInclude Include="..\..\..\files\endianio.h" />
+    <ClInclude Include="..\..\..\files\Flat.h" />
+    <ClInclude Include="..\..\..\files\Flex.h" />
+    <ClInclude Include="..\..\..\files\IFF.h" />
+    <ClInclude Include="..\..\..\files\listfiles.h" />
+    <ClInclude Include="..\..\..\files\msgfile.h" />
+    <ClInclude Include="..\..\..\files\Table.h" />
+    <ClInclude Include="..\..\..\files\U7file.h" />
+    <ClInclude Include="..\..\..\files\U7fileman.h" />
+    <ClInclude Include="..\..\..\files\U7obj.h" />
+    <ClInclude Include="..\..\..\files\utils.h" />
+    <ClInclude Include="..\..\..\files\zip\unzip.h" />
+    <ClInclude Include="..\..\..\files\zip\zip.h" />
+    <ClInclude Include="..\..\..\gamemgr\bggame.h" />
+    <ClInclude Include="..\..\..\gamemgr\devgame.h" />
+    <ClInclude Include="..\..\..\gamemgr\modmgr.h" />
+    <ClInclude Include="..\..\..\gamemgr\sigame.h" />
+    <ClInclude Include="..\..\..\imagewin\ibuf8.h" />
+    <ClInclude Include="..\..\..\imagewin\imagebuf.h" />
+    <ClInclude Include="..\..\..\mapedit\chunklst.h" />
+    <ClInclude Include="..\..\..\mapedit\combo.h" />
+    <ClInclude Include="..\..\..\mapedit\execbox.h" />
+    <ClInclude Include="..\..\..\mapedit\gtk_redefines.h" />
+    <ClInclude Include="..\..\..\mapedit\locator.h" />
+    <ClInclude Include="..\..\..\mapedit\npclst.h" />
+    <ClInclude Include="..\..\..\mapedit\npcpresets.h" />
+    <ClInclude Include="..\..\..\mapedit\objbrowse.h" />
+    <ClInclude Include="..\..\..\mapedit\paledit.h" />
+    <ClInclude Include="..\..\..\mapedit\shapedraw.h" />
+    <ClInclude Include="..\..\..\mapedit\shapefile.h" />
+    <ClInclude Include="..\..\..\mapedit\shapegroup.h" />
+    <ClInclude Include="..\..\..\mapedit\shapelst.h" />
+    <ClInclude Include="..\..\..\mapedit\shapepresets.h" />
+    <ClInclude Include="..\..\..\mapedit\studio.h" />
+    <ClInclude Include="..\..\..\mapedit\ucbrowse.h" />
+    <ClInclude Include="..\..\..\server\objserial.h" />
+    <ClInclude Include="..\..\..\server\servemsg.h" />
+    <ClInclude Include="..\..\..\server\servewin32.h" />
+    <ClInclude Include="..\..\..\shapes\baseinf.h" />
+    <ClInclude Include="..\..\..\shapes\data_utils.h" />
+    <ClInclude Include="..\..\..\shapes\font.h" />
+    <ClInclude Include="..\..\..\shapes\fontgen.h" />
+    <ClInclude Include="..\..\..\shapes\fontvga.h" />
+    <ClInclude Include="..\..\..\shapes\items.h" />
+    <ClInclude Include="..\..\..\shapes\pngio.h" />
+    <ClInclude Include="..\..\..\shapes\ready.h" />
+    <ClInclude Include="..\..\..\shapes\shapeinf.h" />
+    <ClInclude Include="..\..\..\shapes\shapeinf\ammoinf.h" />
+    <ClInclude Include="..\..\..\shapes\shapeinf\aniinf.h" />
+    <ClInclude Include="..\..\..\shapes\shapeinf\armorinf.h" />
+    <ClInclude Include="..\..\..\shapes\shapeinf\bodyinf.h" />
+    <ClInclude Include="..\..\..\shapes\shapeinf\continf.h" />
+    <ClInclude Include="..\..\..\shapes\shapeinf\effhpinf.h" />
+    <ClInclude Include="..\..\..\shapes\shapeinf\expinf.h" />
+    <ClInclude Include="..\..\..\shapes\shapeinf\frflags.h" />
+    <ClInclude Include="..\..\..\shapes\shapeinf\frnameinf.h" />
+    <ClInclude Include="..\..\..\shapes\shapeinf\frusefun.h" />
+    <ClInclude Include="..\..\..\shapes\shapeinf\gumpinf.h" />
+    <ClInclude Include="..\..\..\shapes\shapeinf\lightinf.h" />
+    <ClInclude Include="..\..\..\shapes\shapeinf\monstinf.h" />
+    <ClInclude Include="..\..\..\shapes\shapeinf\npcdollinf.h" />
+    <ClInclude Include="..\..\..\shapes\shapeinf\objdollinf.h" />
+    <ClInclude Include="..\..\..\shapes\shapeinf\sfxinf.h" />
+    <ClInclude Include="..\..\..\shapes\shapeinf\warminf.h" />
+    <ClInclude Include="..\..\..\shapes\shapeinf\weaponinf.h" />
+    <ClInclude Include="..\..\..\shapes\shapevga.h" />
+    <ClInclude Include="..\..\..\shapes\u7drag.h" />
+    <ClInclude Include="..\..\..\shapes\vgafile.h" />
+    <ClInclude Include="..\..\..\usecode\ucsymtbl.h" />
+    <ClInclude Include="..\dirent.h" />
+    <ClInclude Include="..\msvc_include.h" />
+    <ClInclude Include="..\unistd.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="..\..\..\win32\exultstudio.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="..\..\..\win32\exultstudioico.rc" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

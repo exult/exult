@@ -18,45 +18,42 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
 #include "pent_include.h"
-#include "TimidityMidiDriver.h"
 
 #ifdef USE_TIMIDITY_MIDI
 
-#include "timidity/timidity.h"
+#	include "TimidityMidiDriver.h"
 
-const MidiDriver::MidiDriverDesc TimidityMidiDriver::desc = 
-		MidiDriver::MidiDriverDesc ("Timidity", createInstance);
+#	include "timidity/timidity.h"
 
-int TimidityMidiDriver::open()
-{
-	sint32 encoding = PE_16BIT|PE_SIGNED;
-	if (!stereo) encoding |= PE_MONO;
-	if (NS_TIMIDITY::Timidity_Init_Simple(sample_rate,65536,encoding)) 
-	{
+const MidiDriver::MidiDriverDesc TimidityMidiDriver::desc = MidiDriver::MidiDriverDesc("Timidity", createInstance);
+
+int TimidityMidiDriver::open() {
+	sint32 encoding = PE_16BIT | PE_SIGNED;
+	if (!stereo) {
+		encoding |= PE_MONO;
+	}
+	if (NS_TIMIDITY::Timidity_Init_Simple(sample_rate, 65536, encoding)) {
 		perr << NS_TIMIDITY::Timidity_Error() << std::endl;
 		return 1;
 	}
 
-	memset (used_inst, true, sizeof(bool)*128);
-	memset (used_drums, true, sizeof(bool)*128);
+	memset(used_inst, true, sizeof(bool) * 128);
+	memset(used_drums, true, sizeof(bool) * 128);
 
-	NS_TIMIDITY::Timidity_FinalInit(used_inst,used_drums);
+	NS_TIMIDITY::Timidity_FinalInit(used_inst, used_drums);
 	return 0;
 }
 
-void TimidityMidiDriver::close()
-{
+void TimidityMidiDriver::close() {
 	NS_TIMIDITY::Timidity_DeInit();
 }
 
-void TimidityMidiDriver::send(uint32 b)
-{
-	NS_TIMIDITY::Timidity_PlayEvent(b&0xFF, (b>>8)&0x7F, (b>>16)&0x7F);
+void TimidityMidiDriver::send(uint32 b) {
+	NS_TIMIDITY::Timidity_PlayEvent(b & 0xFF, (b >> 8) & 0x7F, (b >> 16) & 0x7F);
 }
 
-void TimidityMidiDriver::lowLevelProduceSamples(sint16 *samples, uint32 num_samples)
-{
-	NS_TIMIDITY::Timidity_GenerateSamples(samples,num_samples);
+void TimidityMidiDriver::lowLevelProduceSamples(sint16* samples, uint32 num_samples) {
+	NS_TIMIDITY::Timidity_GenerateSamples(samples, num_samples);
 }
 
-#endif //USE_TIMIDITY_MIDI
+#endif    // USE_TIMIDITY_MIDI

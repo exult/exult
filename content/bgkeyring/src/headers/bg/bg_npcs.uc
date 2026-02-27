@@ -27,8 +27,7 @@
 */
 
 //Party members (you know em, you love em)
-enum party_members
-{
+enum party_members {
 	PARTY		= -357,	//Used by several intrinsics (e.g. UI_count_objects) that would otherwise take a single NPC
 						//Not supported by several other intrinsics that you'd really like it to (e.g. UI_get_cont_items)
 	AVATAR		= -356,
@@ -44,8 +43,7 @@ enum party_members
 };
 
 //Trinsic residents
-enum trinsic_npcs
-{
+enum trinsic_npcs {
 	PETRE		= -11,	//stablekeeper
 	FINNIGAN	= -12,	//mayor
 	GILBERTO	= -13,	//injured guard
@@ -66,8 +64,7 @@ enum trinsic_npcs
 };
 
 //Britain residents
-enum britain_npcs
-{
+enum britain_npcs {
 	LORD_BRITISH	= -23,	//Castle British, ineffectual monarch
 	NYSTUL		= -24,	//Castle British, royal sage
 	CHUCKLES	= -25,	//Castle British, royal jester
@@ -124,8 +121,7 @@ enum britain_npcs
 };
 
 //Cove residents
-enum cove_npcs
-{
+enum cove_npcs {
 	RUDYOM			= -74,	//mad mage
 	NASTASSIA		= -75,	//caretaker of shrine of Compassion and feeble love-interest
 	RAYBURT			= -76,	//trainer and Pamela's main squeeze
@@ -137,8 +133,7 @@ enum cove_npcs
 };
 
 //Minoc residents
-enum minoc_npcs
-{
+enum minoc_npcs {
 	ELYNOR		= -81,	//fellowship leader and secret lover of Gregor
 	GREGOR		= -82,	//mine owner and secret lover of Elynor
 	MARGARETA	= -83,	//gypsy, wife of Jergi and fortune-teller
@@ -163,8 +158,7 @@ enum minoc_npcs
 };
 
 //Yew/great forest residents
-enum yew_npcs
-{
+enum yew_npcs {
 	TRELLEK		= -6,	//emp (Fun fact: his low ID is because he was originally meant to join the party)
 	SARALEK		= -98,	//emp
 	TAVENOR		= -100,	//emp
@@ -193,8 +187,7 @@ enum yew_npcs
 };
 
 //Jhelom residents
-enum jhelom_npcs
-{
+enum jhelom_npcs {
 	DE_SNEL		= -119,	//trainer
 	JOSEPH		= -120,	//mayor
 	KLIFTIN		= -121,	//armourer
@@ -207,8 +200,7 @@ enum jhelom_npcs
 };
 
 //New Magincia residents
-enum new_magincia_npcs
-{
+enum new_magincia_npcs {
 	RUSSELL		= -129,	//shipwright
 	BORIS		= -130,	//tavernkeeper and husband of Magenta
 	MAGENTA		= -131,	//mayor and wife of Boris
@@ -218,12 +210,11 @@ enum new_magincia_npcs
 	BATTLES		= -135,	//thug for Robin
 	LEAVELL		= -136,	//thug for Robin
 	SAM			= -137,	//flower man and total hippie
-	ALAGNER		= -146	//scholar and plot device
+	ALAGNER		= -246	//scholar and plot device
 };
 
 //Skara Brae residents
-enum skara_brae_npcs
-{
+enum skara_brae_npcs {
 	MARKHAM		= -140,	//barkeep
 	HORANCE		= -141,	//lich
 	TRENT		= -142,	//blacksmith and husband of Rowena
@@ -236,8 +227,7 @@ enum skara_brae_npcs
 };
 
 //Moonglow residents
-enum moonglow_npcs
-{
+enum moonglow_npcs {
 	CARLYN		= -118,	//seamstress
 	PENUMBRA	= -150,	//sleeping seeress
 	ZELDA		= -152,	//Lycaeum, advisor and courter of Brion
@@ -259,8 +249,7 @@ enum moonglow_npcs
 };
 
 //Paws residents
-enum paws_npcs
-{
+enum paws_npcs {
 	THURSTON	= -166,	//miller and courter of Polly
 	FERIDWYN	= -167,	//fellowship shelter manager, father of Garritt and husband of Brita
 	BRITA		= -168,	//snotty narrowminded bitch, mother of Garritt and wife of Feridwyn
@@ -278,8 +267,7 @@ enum paws_npcs
 };
 
 //Terfin residents
-enum terfin_npcs
-{
+enum terfin_npcs {
 	DRAXINUSOM	= -180,	//king of the Gargoyles
 	INFORLEM	= -181,	//trainer and arms dealer
 	INMANILEM	= -182,	//healer
@@ -294,8 +282,7 @@ enum terfin_npcs
 };
 
 //residents of the U.S.S. Serpent's Hold
-enum serpents_hold_npcs
-{
+enum serpents_hold_npcs {
 	MENION		= -192, //trainer and weaponsmith
 	PENDARAN	= -193, //knight, saboteur and husband of Jehanne
 	JEHANNE		= -194, //provisioner and wife of Pendaran
@@ -309,8 +296,7 @@ enum serpents_hold_npcs
 };
 
 //Vesper residents
-enum vesper_npcs
-{
+enum vesper_npcs {
 	CADOR		= -203,	//mine overseer
 	MARA		= -204,	//miner
 	ZAKSAM		= -205,	//trainer
@@ -331,8 +317,7 @@ enum vesper_npcs
 };
 
 //Buccaneer's Den residents
-enum buccaneers_den_npcs
-{
+enum buccaneers_den_npcs {
 	SULLIVAN	= -220,	//fellowship prisoner and conman
 	WENCH		= -221,	//whore
 	GLENNO		= -222,	//manager of the Baths
@@ -353,8 +338,7 @@ enum buccaneers_den_npcs
 };
 
 //Miscellaneous NPCs (dungeons and other minor locations)
-enum misc_npcs
-{
+enum misc_npcs {
 	MARTINGO	= -191, //Sultan of Spektran
 
 	IRIALE		= -128,	//Fellowship Retreat, guardian of the Cube

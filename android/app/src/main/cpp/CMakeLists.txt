@@ -13,4 +13,4 @@ find_library( log-lib log )
 
 target_link_libraries( exult-android-wrapper
                        ${log-lib}
-		       exult-${EXULT_VERSION} )
+                       exult-${EXULT_VERSION} )

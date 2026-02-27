@@ -45,6 +45,9 @@
     <ClCompile Include="..\..\..\tools\expack.cc">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\files\listfiles.cc">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\files\crc.h">
@@ -75,6 +78,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\msvc_include.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\files\endianio.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

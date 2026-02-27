@@ -55,13 +55,15 @@ on:
 jobs:
   notify:
     name: Exult-CI (IRC & Discord notification)
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-latest
+    continue-on-error: true
     needs:
       - ci-android
     if: ${{ always() && (github.repository_owner == 'exult' && github.event_name != 'pull_request') }}
     steps:
       - name: IRC success notification (ircs://irc.libera.chat:6697/#exult)
         uses: Gottox/irc-message-action@v2
+        continue-on-error: true
         if: needs.ci-android.result == 'success'
         with:
           server: irc.libera.chat
@@ -72,6 +74,7 @@ jobs:
           message: "\x0313exult\x03/\x0306${{ github.ref }}\x03 \x0314${{ github.sha }}\x03 https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }} The Android build \x033succeeded\x03."
       - name: IRC failure notification (ircs://irc.libera.chat:6697/#exult)
         uses: Gottox/irc-message-action@v2
+        continue-on-error: true
         if: needs.ci-android.result != 'success'
         with:
           server: irc.libera.chat
@@ -82,29 +85,43 @@ jobs:
           message: "\x0313exult\x03/\x0306${{ github.ref }}\x03 \x0314${{ github.sha }}\x03 https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }} The Android build \x034failed\x03."
       - name: Discord success notification
         uses: rjstone/discord-webhook-notify@v1
+        continue-on-error: true
         if: needs.ci-android.result == 'success'
         with:
           severity: info
-          username: github-actions
-          webhookURL: ${{ secrets.DISCORD_WEBHOOK }}
-          text: "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
-          details: "The Android build succeeded."
+          webhookUrl: ${{ secrets.DISCORD_WEBHOOK }}
+          username: Exult github-actions
+          avatarUrl: https://avatars.githubusercontent.com/u/15114538?s=200&v=4
+          text: '**[The Android build succeeded:](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})**'
       - name: Discord failure notification
         uses: rjstone/discord-webhook-notify@v1
+        continue-on-error: true
         if: needs.ci-android.result != 'success'
         with:
           severity: error
-          username: github-actions
-          webhookURL: ${{ secrets.DISCORD_WEBHOOK }}
-          text: "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
-          details: "The Android build failed."
+          webhookUrl: ${{ secrets.DISCORD_WEBHOOK }}
+          username: Exult github-actions
+          avatarUrl: https://avatars.githubusercontent.com/u/15114538?s=200&v=4
+          text: '**[The Android build failed:](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})**'
   ci-android:
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/setup-java@v4
+        with:
+          java-version: 17
+          distribution: "temurin"
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v3
+        with:
+          gradle-version: 8.11.1
+          cache-disabled: true
       - name: Install dependencies
         run: |
-          if ! apt-fast --help &> /dev/null; then
+          if ! apt-fast -- help &> /dev/null; then
             sudo add-apt-repository -u -y ppa:apt-fast/stable
+            sudo apt-get update
             echo debconf apt-fast/maxdownloads string 16 | sudo debconf-set-selections
             echo debconf apt-fast/dlflag boolean true | sudo debconf-set-selections
             echo debconf apt-fast/aptmanager string apt-get | sudo debconf-set-selections
@@ -112,39 +129,23 @@ jobs:
           else
             sudo apt-fast update
           fi
-          sudo apt-fast install -y \
-            zlib1g-dev libogg-dev libvorbis-dev libasound2-dev libfluidsynth-dev libsdl2-dev libpng-dev libfreetype6-dev \
-            libxml2-dev bison flex timidity
-      - uses: actions/setup-java@v3
-        with:
-          java-version: 11
-          distribution: "temurin"
-      - name: Setup Android SDK
-        uses: android-actions/setup-android@v2
-      - name: Setup Gradle
-        uses: gradle/gradle-build-action@v2
-        with:
-          gradle-version: current
+          sudo apt-fast install -y autoconf-archive ninja-build
       - name: Checkout code
-        uses: actions/checkout@master
-      - name: Run autogen
+        uses: actions/checkout@v4
+      - name: Run autoreconf
         run: |
-          chmod a+x ./autogen.sh
-          ./autogen.sh
-      - name: Compile host tools
-        run: |
-          ./configure --disable-exult --disable-data --enable-tools --enable-compiler
-          make -j
-          sudo make install
-          make clean distclean -j 2
+          mkdir ./../build
+          autoreconf -v -i
       - name: Configure
         run: |
-          if gradle --version &> /dev/null; then
-            GRADLE_PATH=$(ls -d /root/gradle-installations/installs/gradle-*/bin | head -n1)
-          fi
-          export PATH="$GRADLE_PATH:$PATH"
-          ./configure --enable-zip-support --enable-midi-sfx --enable-data --enable-mods \
-            --enable-usecode-container --enable-nonreadied-objects --disable-oggtest --disable-vorbistest \
-            --disable-tools --enable-libexult --enable-android-apk=debug
+          cd ./../build
+          ./../exult/configure --enable-data --enable-android-apk=debug \
+            --with-android-arch=arm64-v8a \
+            --disable-exult --disable-tools --disable-timidity-midi --disable-alsa \
+            --disable-fluidsynth --disable-mt32emu --disable-all-hq-scalers \
+            --disable-nxbr --disable-zip-support
       - name: Build
-        run: make -j 2
+        run: |
+          cd ./../build/files && make -j2
+          cd ./../data && make -j2
+          cd ./../android && make -j2

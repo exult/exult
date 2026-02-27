@@ -17,31 +17,29 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-void Baiyanda object#(0x48F) ()
-{
-	if (event == DOUBLECLICK)
-	{
+void Baiyanda object#(0x48F) () {
+	if (event == DOUBLECLICK) {
 		AVATAR->item_say("@Greetings@");
 		delayedBark(BAIYANDA, "@We knew thou would come.@", 3);
 		BAIYANDA->set_schedule_type(TALK);
 	}
-	if (event == STARTED_TALKING)
-	{
+	if (event == STARTED_TALKING) {
 		BAIYANDA->run_schedule();
 		BAIYANDA->clear_item_say();
 		BAIYANDA->show_npc_face0(0);
 
-		if (BAIYANDA->get_item_flag(MET))
+		if (BAIYANDA->get_item_flag(MET)) {
 			say("@We meet again.@");
-		else
+		} else {
 			say("@Thou art Avatar!@");
+		}
 
 		add(["name", "bye"]);
-		if (hasItemCount(PARTY, 1, SHAPE_BUCKET, 9, 2))
+		if (hasItemCount(PARTY, 1, SHAPE_BUCKET, 9, 2)) {
 			add("got blood");
+		}
 
-		converse (0)
-		{
+		converse (0) {
 			case "got blood" (remove):
 				say("@Hurry! Take Ice Dragon blood to Yenani! No time to delay!@");
 				abort;
@@ -63,14 +61,13 @@ void Baiyanda object#(0x48F) ()
 				add("Gwenno");
 
 			case "Gwenno" (remove):
-				if (GWENNO->get_schedule_type() == WAIT)
-				{
+				if (GWENNO->get_schedule_type() == WAIT) {
 					say("@Gwenno dead. She good woman. Very generous. She once make gift of bucket to Baiyanda. Baiyanda place body at sacred Gwani Death Temple.@");
 					gflags[TALKED_TO_GWANI_ABOUT_GWENNO] = true;
 					add("Where is the temple?");
-				}
-				else
+				} else {
 					say("@Baiyanda happy that Gwenno alive again!@");
+				}
 
 			case "Where is the temple?" (remove):
 				say("@It not thing for thou to know. Gwenno must rest now, her soul rest. Leave her. I know it painful, but thou must do this. Even if thou found her thou could not unseal her body without sacred horn of Gwani. Long ago it taken by fiend who steals our dead from us.@");
@@ -88,43 +85,39 @@ void Baiyanda object#(0x48F) ()
 				var index;
 				var max;
 
-				for (npc in living_npcs with index to max)
-					namelist = (namelist & npc->get_npc_name());
+				for (npc in living_npcs with index to max) {
+					namelist &= npc->get_npc_name();
+				}
 
 				living_npcs = [0, living_npcs];
 
 				var choice = chooseFromMenu2(namelist);
 				choice = living_npcs[choice];
-				if (choice == 0)
+				if (choice == 0) {
 					say("@Maybe thou return later.@");
-				else
-				{
+				} else {
 					var npcnumber = choice->get_npc_number();
 					var poisoned = choice->get_item_flag(POISONED);
 					var str = choice->get_npc_prop(STRENGTH);
 					var hps = choice->get_npc_prop(HEALTH);
 					var npcname = choice->get_npc_name();
-					if (str > hps)
-					{
+					if (str > hps) {
 						npcnumber->set_npc_prop(HEALTH, str - hps);
 						say("@All right, ", npcname, " healed now!@");
-					}
-					else
-					{
-						if (!poisoned)
-						{
-							if (npcnumber == AVATAR)
+					} else {
+						if (!poisoned) {
+							if (npcnumber == AVATAR) {
 								say("@Thou not hurt!@");
-							else
+							} else {
 								say("@", npcname, " not hurt! Thou play trick?@");
-						}
-						else if (npcnumber == AVATAR)
+							}
+						} else if (npcnumber == AVATAR) {
 							say("@Thou poisoned bad! I fix.@");
-						else
+						} else {
 							say("@", npcname, " poisoned bad! I fix.@");
+						}
 					}
-					if (poisoned == true)
-					{
+					if (poisoned == true) {
 						choice->clear_item_flag(POISONED);
 						say("@Good! Poison gone now.@");
 					}
@@ -140,36 +133,32 @@ void Baiyanda object#(0x48F) ()
 			case "dried fish" (remove):
 				say("@Dried fish very good food. It keeps thou from hunger longer than other food.@");
 				say("@Would thou like some?@");
-				if (askYesNo())
-				{
+				if (askYesNo()) {
 					say("@Here, have some. It good.@");
 					giveItemsToPartyMember(AVATAR, 1, SHAPE_FOOD, QUALITY_ANY, FRAME_DRIED_FISH, false, true);
-				}
-				else
+				} else {
 					say("@Too bad. Thou should try some.@");
+				}
 
 			case "Ice Dragon blood" (remove):
 				say("@Special things about blood of Ice Dragon that can cure almost any sickness.@");
 				say("@But Ice Dragons very rare creatures. Gwani honor all life -- try everything before we hunt them.@");
 				say("@One did live north of our village. We drove different one east many years ago.@");
 
-				if (NEYOBI->get_item_flag(SI_ZOMBIE))
-				{
+				if (NEYOBI->get_item_flag(SI_ZOMBIE)) {
 					say("@Ice Dragon blood maybe only thing powerful enough to cure Neyobi. But it so rare that it very hard to find. Five of our hunters looking for it.@");
 					say("@Gwenno said thou help people in need. Thou must find some Ice Dragon blood for Neyobi! It is the last hope!@");
-					if (!gflags[BAIYANDA_GAVE_BUCKET])
-					{
+					if (!gflags[BAIYANDA_GAVE_BUCKET]) {
 						say("@Here, take bucket of mine. If thou find and slay Ice Dragon, please bring bucket of blood. Take to Yenani, she know what to do with it.@");
 						giveItemsToPartyMember(AVATAR, 1, SHAPE_BUCKET, 0, 0, false, true);
 						say("@Good luck. Neyobi's life depend on it.@");
 						gflags[BAIYANDA_GAVE_BUCKET] = true;
-					}
-					else
+					} else {
 						say("@Give Yenani bucket of Ice Dragon blood. She know what to do with it.@");
-				}
-				else
+					}
+				} else {
 					say("@Ice Dragon blood saved Neyobi's life. Great many thanks, Avatar.@");
-
+				}
 				add(["north dragon", "east dragon", "Neyobi"]);
 
 			case "north dragon" (remove):
@@ -179,10 +168,11 @@ void Baiyanda object#(0x48F) ()
 				say("@Years ago, Gwani attacked by dragon. Myauri and Mwaerno led hunters to fight it. Gwani drove it east beyond mountains. It very old dragon and still unmated. Very rare.@");
 
 			case "Neyobi" (remove):
-				if (NEYOBI->get_item_flag(SI_ZOMBIE))
+				if (NEYOBI->get_item_flag(SI_ZOMBIE)) {
 					say("@Neyobi ill from strange sickness. Baiyanda never seen before. Nothing Baiyanda tried help her. Ice Dragon blood only thing that could save her.@");
-				else
+				} else {
 					say("@No magic in whole world would have saved Neyobi's life. But when Gwani way of healing with balance of nature done, she better.@");
+				}
 
 			case "bye":
 				UI_remove_npc_face0();

@@ -19,6 +19,6 @@
 #define IGNORE_UNUSED_VARIABLE_WARNING_H
 
 template <typename... T>
-inline void ignore_unused_variable_warning(T const&...) {}
+inline void ignore_unused_variable_warning(const T&...) {}
 
-#endif // IGNORE_UNUSED_VARIABLE_WARNING_H
+#endif    // IGNORE_UNUSED_VARIABLE_WARNING_H

@@ -13,14 +13,14 @@
         android:scrollbars="vertical"
         android:fillViewport="true">
 
-      <TextView
-	  android:id="@+id/consoleLogTextView"
-	  android:layout_height="fill_parent"
-	  android:layout_width="fill_parent"
-	  android:textIsSelectable="true"
-	  android:typeface = "monospace"
-	  android:background="@color/blackish"
-          android:textColor="@color/green"/>
+        <TextView
+            android:id="@+id/consoleLogTextView"
+            android:layout_height="fill_parent"
+            android:layout_width="fill_parent"
+            android:textIsSelectable="true"
+            android:typeface = "monospace"
+            android:background="@color/blackish"
+            android:textColor="@color/green"/>
 
     </ScrollView>
 

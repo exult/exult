@@ -1,0 +1,17 @@
+name: Format check
+
+on:
+  pull_request:
+
+jobs:
+  clang-format-check:
+    name: Clang-Format Check (informational)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Clang-Format
+        uses: jidicula/clang-format-action@v4.16.0
+        with:
+          clang-format-version: 19
+        continue-on-error: true

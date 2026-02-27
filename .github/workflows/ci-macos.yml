@@ -4,7 +4,7 @@ on:
   push:
     paths:
       - "**"
-      - "!android"
+      - "!android/**"
       - "!docs/**"
       - "docs/Makefile.am"
       - "!ios/**"
@@ -29,7 +29,7 @@ on:
   pull_request:
     paths:
       - "**"
-      - "!android"
+      - "!android/**"
       - "!docs/**"
       - "docs/Makefile.am"
       - "!ios/**"
@@ -56,12 +56,14 @@ jobs:
   notify:
     name: Exult-CI (IRC & Discord notification)
     runs-on: ubuntu-latest
+    continue-on-error: true
     needs:
       - ci-macos
     if: ${{ always() && (github.repository_owner == 'exult' && github.event_name != 'pull_request') }}
     steps:
       - name: IRC success notification (ircs://irc.libera.chat:6697/#exult)
         uses: Gottox/irc-message-action@v2
+        continue-on-error: true
         if: needs.ci-macos.result == 'success'
         with:
           server: irc.libera.chat
@@ -72,6 +74,7 @@ jobs:
           message: "\x0313exult\x03/\x0306${{ github.ref }}\x03 \x0314${{ github.sha }}\x03 https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }} The macOS build \x033succeeded\x03."
       - name: IRC failure notification (ircs://irc.libera.chat:6697/#exult)
         uses: Gottox/irc-message-action@v2
+        continue-on-error: true
         if: needs.ci-macos.result != 'success'
         with:
           server: irc.libera.chat
@@ -82,22 +85,24 @@ jobs:
           message: "\x0313exult\x03/\x0306${{ github.ref }}\x03 \x0314${{ github.sha }}\x03 https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }} The macOS build \x034failed\x03."
       - name: Discord success notification
         uses: rjstone/discord-webhook-notify@v1
+        continue-on-error: true
         if: needs.ci-macos.result == 'success'
         with:
           severity: info
-          username: github-actions
-          webhookURL: ${{ secrets.DISCORD_WEBHOOK }}
-          text: 'https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}'
-          details: 'The macOS build succeeded.'
+          webhookUrl: ${{ secrets.DISCORD_WEBHOOK }}
+          username: Exult github-actions
+          avatarUrl: https://avatars.githubusercontent.com/u/15114538?s=200&v=4
+          text: '**[The macOS build succeeded:](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})**'
       - name: Discord failure notification
         uses: rjstone/discord-webhook-notify@v1
+        continue-on-error: true
         if: needs.ci-macos.result != 'success'
         with:
           severity: error
-          username: github-actions
-          webhookURL: ${{ secrets.DISCORD_WEBHOOK }}
-          text: 'https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}'
-          details: 'The macOS build failed.'
+          webhookUrl: ${{ secrets.DISCORD_WEBHOOK }}
+          username: Exult github-actions
+          avatarUrl: https://avatars.githubusercontent.com/u/15114538?s=200&v=4
+          text: '**[The macOS build failed:](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})**'
   ci-macos:
     runs-on: macos-latest
     steps:
@@ -106,26 +111,25 @@ jobs:
           brew update
           brew upgrade || true
           brew install automake libtool pkg-config libpng zlib libogg libvorbis fluid-synth freetype gtk+3 libxml2 bison flex
-          brew install sdl2
+          brew install sdl3 sdl3_image icu4c mt32emu autoconf-archive
       - name: Checkout code
-        uses: actions/checkout@master
-      - name: Run autogen
+        uses: actions/checkout@v4
+      - name: Run autoreconf
         run: |
-          chmod a+x ./autogen.sh
-          ./autogen.sh
+          autoreconf -v -i
       - name: Configure
         run: |
           export LDFLAGS="-L$(brew --prefix bison)/lib -L$(brew --prefix flex)/lib -L$(brew --prefix zlib)/lib"
           export CPPFLAGS="-I$(brew --prefix flex)/include -I$(brew --prefix zlib)/include"
           export PATH="$(brew --prefix bison)/bin:$(brew --prefix flex)/bin:$(brew --prefix libxml2)/bin:$PATH"
-          export PKG_CONFIG_PATH="$(brew --prefix zlib)/lib/pkgconfig:$(brew --prefix libxml2)/lib/pkgconfig"
+          export PKG_CONFIG_PATH="$(brew --prefix zlib)/lib/pkgconfig:$(brew --prefix libxml2)/lib/pkgconfig:$(brew --prefix icu4c)/lib/pkgconfig"
           ./configure --with-debug=extreme --enable-exult-studio --enable-exult-studio-support --enable-compiler \
-            --enable-zip-support --enable-shared --enable-gnome-shp-thumbnailer --enable-data --enable-mods \
-            --disable-alsa --disable-timidity-midi --disable-oggtest --disable-vorbistest
+            --enable-zip-support --enable-shared --enable-shp-thumbnailer --enable-data --enable-mods --enable-aseprite-plugin \
+            --disable-alsa --disable-timidity-midi
       - name: Build
         run: |
           export LDFLAGS="-L$(brew --prefix bison)/lib -L$(brew --prefix flex)/lib -L$(brew --prefix zlib)/lib"
           export CPPFLAGS="-I$(brew --prefix flex)/include -I$(brew --prefix zlib)/include"
           export PATH="$(brew --prefix bison)/bin:$(brew --prefix flex)/bin:$(brew --prefix libxml2)/bin:$PATH"
-          export PKG_CONFIG_PATH="$(brew --prefix zlib)/lib/pkgconfig:$(brew --prefix libxml2)/lib/pkgconfig"
-          make -j 2
+          export PKG_CONFIG_PATH="$(brew --prefix zlib)/lib/pkgconfig:$(brew --prefix libxml2)/lib/pkgconfig:$(brew --prefix icu4c)/lib/pkgconfig"
+          make -j3

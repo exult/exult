@@ -5,7 +5,7 @@
  **/
 
 #ifndef INCL_BODYINF_H
-#define INCL_BODYINF_H  1
+#define INCL_BODYINF_H 1
 
 /*
 Copyright (C) 2008-2022 The Exult Team
@@ -36,14 +36,15 @@ class Shape_info;
  *  Information about body shape and frame.
  */
 class Body_info : public Base_info {
-	int     bshape;         // Body shape.
-	int     bframe;         // Body frame.
+	int bshape = 0;    // Body shape.
+	int bframe = 0;    // Body frame.
 public:
 	friend class Shape_info;
 	// Read in from file.
-	bool read(std::istream &in, int version, Exult_Game game);
+	bool read(std::istream& in, int version, Exult_Game game);
 	// Write out.
-	void write(std::ostream &out, int shapenum, Exult_Game game);
+	void write(std::ostream& out, int shapenum, Exult_Game game);
+
 	void set(int s, int f) {
 		if (bshape != s || bframe != f) {
 			set_modified(true);
@@ -51,16 +52,23 @@ public:
 			bframe = f;
 		}
 	}
+
 	int get_body_shape() const {
 		return bshape;
 	}
+
 	int get_body_frame() const {
 		return bframe;
 	}
+
 	static int get_info_flag() {
 		return 0x100;
 	}
-	enum { is_binary = 0, entry_size = 0 };
+
+	enum {
+		is_binary  = 0,
+		entry_size = 0
+	};
 };
 
 #endif

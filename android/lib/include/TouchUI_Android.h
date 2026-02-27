@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2021-2022  The Exult Team
+ *  Copyright (C) 2021-2025  The Exult Team
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -22,20 +22,22 @@
 #include <jni.h>
 #include <touchui.h>
 
-class TouchUI_Android: public TouchUI {
+class TouchUI_Android final : public TouchUI {
 public:
 	TouchUI_Android();
 	~TouchUI_Android() final;
-	void promptForName(const char* name) final;
 	void showGameControls() final;
 	void hideGameControls() final;
 	void showButtonControls() final;
 	void hideButtonControls() final;
+	void showPauseControls() final;
+	void hidePauseControls() final;
 	void onDpadLocationChanged() final;
 
 	static TouchUI_Android* getInstance();
 	void                    setVirtualJoystick(Sint16 x, Sint16 y);
-        void                    sendEscapeKeypress();
+	void                    sendEscapeKeypress();
+	void                    sendPauseKeypress();
 
 private:
 	static TouchUI_Android* m_instance;
@@ -45,8 +47,9 @@ private:
 	jmethodID               m_hideGameControlsMethod;
 	jmethodID               m_showButtonControlsMethod;
 	jmethodID               m_hideButtonControlsMethod;
+	jmethodID               m_showPauseControlsMethod;
+	jmethodID               m_hidePauseControlsMethod;
 	SDL_Joystick*           m_joystick;
-	jmethodID               m_promptForNameMethod;
 };
 
 #endif

@@ -21,26 +21,28 @@
  */
 
 extern void useBucketOnTrough ();
-void VerticalTrough shape#(0x2CF) ()
-{
+void VerticalTrough shape#(0x2CF) () {
 	var offsetx = [1, 1, -2, -2, 0, -1, 0, -1];
 	var offsety = [-1, -2, -1, -2, 1, 1, -4, -4];
 	var var0003;
 	var bucket = AVATAR->get_cont_items(SHAPE_BUCKET, QUALITY_ANY, 1);
-	if (!bucket)
+	if (!bucket) {
 		bucket = AVATAR->get_cont_items(SHAPE_BUCKET, QUALITY_ANY, 0);
-	if (bucket)
+	}
+	if (bucket) {
 		gotoObject(item, offsetx, offsety, 0, useBucketOnTrough, bucket, 7);
+	}
 }
 
-void HorizontalTrough shape#(0x2E5) ()
-{
+void HorizontalTrough shape#(0x2E5) () {
 	var offsetx = [-1, -2, -1, -2, 1, 1, -4, -4];
 	var offsety = [1, 1, -2, -2, 0, -1, 0, -1];
 	var var0003;
 	var bucket = AVATAR->get_cont_items(SHAPE_BUCKET, QUALITY_ANY, 1);
-	if (!bucket)
+	if (!bucket) {
 		bucket = AVATAR->get_cont_items(SHAPE_BUCKET, QUALITY_ANY, 0);
-	if (bucket)
+	}
+	if (bucket) {
 		gotoObject(item, offsetx, offsety, 0, useBucketOnTrough, bucket, 7);
+	}
 }

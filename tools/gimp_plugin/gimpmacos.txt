@@ -1,0 +1,22 @@
+The GIMP shapes plug-in
+=======================
+
+This Plug-In is for the macOS Port of The Gimp. It is tested with the latest version of Gimp 3 (3.0) and runs on macOS 11.1 and newer, on either Intel 64bit or Apple Silicon. 
+With it you can edit *.shp files used by Exult and the original Ultima VII. These shapes are compressed into *.flx or *.vga files. Use expack from our tools download to extract the files.
+
+Get the installer for The Gimp at http://www.gimp.org/downloads/
+
+
+Install
+=======
+
+- Install the Gimp (drag and drop the application from its disk image to /Applications). Make sure that you don't rename the application.
+- extract the plug-in and place it in ~/Library/Application Support/GIMP/3.0/plug-ins/u7shp/
+
+
+Usage
+=====
+- Drag and drop *.shp files into the Gimp. You don't need to select a palette file (press "Ok").
+- edit (see the Gimp manual on how to edit graphics)
+- save
+

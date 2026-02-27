@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2021-2022  The Exult Team
+ *  Copyright (C) 2021-2025  The Exult Team
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -25,47 +25,48 @@ import androidx.fragment.app.FragmentActivity;
 import androidx.viewpager2.adapter.FragmentStateAdapter;
 
 public class ViewPagerAdapter extends FragmentStateAdapter {
-  private static class TabData {
-    public TabData(String name, Class fragment) {
-      this.name = name;
-      this.fragment = fragment;
-    }
+	private static class TabData {
+		public final String name;
+		public final Class<? extends Fragment> fragment;
 
-    public String name;
-    public Class fragment;
-  }
+		public TabData(String name, Class<? extends Fragment> fragment) {
+			this.name     = name;
+			this.fragment = fragment;
+		}
+	}
 
-  private static final TabData[] TABS = {
-    new TabData("Launcher", LauncherFragment.class),
-    new TabData("Games", GamesFragment.class),
-    new TabData("Audio Packs", AudioPacksFragment.class),
-    new TabData("Mods", ModsFragment.class),
-    new TabData("Console Log", ConsoleLogFragment.class)
-  };
+	private static final TabData[] TABS
+			= {new TabData("Launcher", LauncherFragment.class),
+			   new TabData("Games", GamesFragment.class),
+			   new TabData("Audio Data", AudioPacksFragment.class),
+			   new TabData("Mods & Patches", ModsFragment.class),
+			   new TabData("Savegames", SavegamesFragment.class),
+			   new TabData("Console Log", ConsoleLogFragment.class)};
 
-  public ViewPagerAdapter(@NonNull FragmentActivity fragmentActivity) {
-    super(fragmentActivity);
-  }
+	public ViewPagerAdapter(@NonNull FragmentActivity fragmentActivity) {
+		super(fragmentActivity);
+	}
 
-  @NonNull
-  @Override
-  public Fragment createFragment(int position) {
-    try {
-      return (Fragment) TABS[position].fragment.getDeclaredConstructor().newInstance();
-    } catch (Exception e) {
-      Log.d(
-          "ViewPagerAdapter",
-          "exception instantiating tab position " + position + ": " + e.toString());
-      return null;
-    }
-  }
+	@NonNull
+	@Override
+	public Fragment createFragment(int position) {
+		try {
+			return (Fragment)TABS[position]
+					.fragment.getDeclaredConstructor()
+					.newInstance();
+		} catch (Exception e) {
+			Log.d("ViewPagerAdapter", "exception instantiating tab position "
+											  + position + ": " + e.toString());
+			return null;
+		}
+	}
 
-  @Override
-  public int getItemCount() {
-    return TABS.length;
-  }
+	@Override
+	public int getItemCount() {
+		return TABS.length;
+	}
 
-  public static String getItemText(int position) {
-    return TABS[position].name;
-  }
+	public static String getItemText(int position) {
+		return TABS[position].name;
+	}
 }

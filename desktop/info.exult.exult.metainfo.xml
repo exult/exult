@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>info.exult.exult</id>
+  <name>Exult Ultima VII Engine</name>
+  <developer id="info.exult.exult">
+    <name>Exult Contributors</name>
+    <url>https://github.com/exult/exult/graphs/contributors</url>
+  </developer>
+  <summary>Cross-platform engine for the Ultima VII games</summary>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>GPL-2.0-only</project_license>
+  <launchable type="desktop-id">info.exult.exult.desktop</launchable>
+  <url type="homepage">https://exult.info/</url>
+  <url type="bugtracker">https://github.com/exult/exult/issues</url>
+  <url type="help">https://exult.info/docs.html</url>
+  <url type="vcs-browser">https://github.com/exult/exult</url>
+  <description>
+    <p>Exult is a project to recreate Ultima VII for modern operating systems, using the game's original plot, data,
+        and graphics files.</p>
+    <p>Ultima VII, an RPG from the early 1990's, still has a huge following. But, being a DOS game with a very
+        nonstandard memory manager, it is difficult to run it on the latest computers. Exult is a project to create
+        an Ultima VII game engine that runs on modern operating systems, capable of using the data and graphics
+        files that come with the original game.</p>
+    <p>Exult is written in C++ and runs on, at least, Linux, macOS and Windows using the SDL library to make porting
+        to other platforms relatively easy. The current version supports all of "Ultima VII: The Black Gate" and
+        "Ultima VII Part 2: Serpent Isle", allowing you to finish both games. This is only possible due to the work
+        done by other fans who have decoded the various Ultima VII data files, especially Gary Thompson, Maxim Shatskih,
+        Jakob Schonberg, and Wouter Dijkslag.</p>
+    <p>Exult aims to let those people who own Ultima VII (copyright 1993) play the game on modern hardware, in as close
+        to (or perhaps even surpassing) its original splendor as is possible. You need to own "Ultima VII: The Black Gate"
+        and/or "Ultima VII Part 2: Serpent Isle" and optionally the add-ons (not required to run) in order to use Exult,
+        and we encourage you to buy a legal copy. The game data from at least one of these games must be installed in a
+        specific directory to play; please refer to the Exult documentation for more information.</p>
+  </description>
+  <screenshots>
+    <screenshot type="default">
+      <image type="source">https://exult.info/images/screenshots/mainmenu.png</image>
+      <caption>Select the game to play</caption>
+    </screenshot>
+    <screenshot>
+      <image type="source">https://exult.info/images/screenshots/si.png</image>
+      <caption>Supports all of the Ultima VII games, including The Serpent Isle</caption>
+    </screenshot>
+    <screenshot>
+      <image type="source">https://exult.info/images/screenshots/gamemenu.png</image>
+      <caption>Includes various high-quality scaling algorithms for the original low-resolution artwork</caption>
+    </screenshot>
+    <screenshot>
+      <image type="source">https://exult.info/images/screenshots/gameplaymenu.png</image>
+      <caption>A wide range of customization options</caption>
+    </screenshot>
+  </screenshots>
+  <releases>
+    <release version="1.10.1" date="2024-09-25">
+      <url>https://github.com/exult/exult/releases/tag/v1.10.1</url>
+    </release>
+    <release version="1.10" date="2024-09-08">
+      <url>https://github.com/exult/exult/releases/tag/v1.10</url>
+    </release>
+    <release version="1.8" date="2022-04-12">
+      <url>https://github.com/exult/exult/releases/tag/v1.8</url>
+    </release>
+    <release version="1.6" date="2020-04-17">
+      <url>https://github.com/exult/exult/releases/tag/v1.6</url>
+    </release>
+    <release version="1.2" date="2004-06-10">
+      <url>https://github.com/exult/exult/releases/tag/v1.2</url>
+    </release>
+    <release version="1.00" date="2002-11-06">
+      <url>https://github.com/exult/exult/releases/tag/v1.00</url>
+    </release>
+  </releases>
+  <content_rating type="oars-1.1">
+    <content_attribute id="violence-fantasy">intense</content_attribute>
+    <content_attribute id="violence-bloodshed">intense</content_attribute>
+    <content_attribute id="violence-desecration">moderate</content_attribute>
+    <content_attribute id="violence-slavery">mild</content_attribute>
+    <content_attribute id="drugs-alcohol">moderate</content_attribute>
+    <content_attribute id="drugs-narcotics">moderate</content_attribute>
+    <content_attribute id="sex-nudity">mild</content_attribute>
+    <content_attribute id="sex-themes">moderate</content_attribute>
+    <content_attribute id="language-profanity">mild</content_attribute>
+    <content_attribute id="language-humor">intense</content_attribute>
+    <content_attribute id="language-discrimination">intense</content_attribute>
+    <content_attribute id="money-gambling">moderate</content_attribute>
+  </content_rating>
+  <update_contact>https://github.com/exult/exult/issues</update_contact>
+  <recommends>
+    <control>keyboard</control>
+    <control>pointing</control>
+  </recommends>
+  <requires>
+    <internet>offline-only</internet>
+  </requires>
+  <provides>
+    <binary>exult_studio</binary>
+    <binary>exult</binary>
+  </provides>
+  <categories>
+      <category>Game</category>
+      <category>RolePlaying</category>
+  </categories>
+  <keywords>
+    <keyword>Ultima</keyword>
+    <keyword>avatar</keyword>
+    <keyword>fantasy</keyword>
+    <keyword>retro</keyword>
+  </keywords>
+</component>

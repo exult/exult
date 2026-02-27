@@ -23,43 +23,42 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 namespace Pentagram {
 
-class VocAudioSample : public AudioSample
-{
-public:
-	VocAudioSample(std::unique_ptr<uint8[]> buffer, uint32 size);
+	class VocAudioSample : public AudioSample {
+	public:
+		VocAudioSample(std::unique_ptr<uint8[]> buffer, uint32 size);
 
-	void initDecompressor(void *DecompData) const override;
-	uint32 decompressFrame(void *DecompData, void *samples) const override;
-	void freeDecompressor(void *DecompData) const override;
-	bool isVocSample() const override {
-		return true;
-	}
+		void   initDecompressor(void* DecompData) const override;
+		uint32 decompressFrame(void* DecompData, void* samples) const override;
+		void   freeDecompressor(void* DecompData) const override;
 
-	static bool isThis(IDataSource *ds);
-protected:
+		bool isVocSample() const override {
+			return true;
+		}
 
-	struct VocDecompData {
-		uint32	pos;
-		int		compression;
-		int		adpcm_reference;
-		int		adpcm_scale;
-		int		chunk_remain;	// Bytes remaining in chunk
-		int		cur_type;
+		static bool isThis(IDataSource* ds);
+
+	protected:
+		struct VocDecompData {
+			uint32 pos;
+			int    compression;
+			int    adpcm_reference;
+			int    adpcm_scale;
+			int    chunk_remain;    // Bytes remaining in chunk
+			int    cur_type;
+		};
+
+		static inline int decode_ADPCM_4_sample(uint8 sample, int& reference, int& scale);
+
+		static void decode_ADPCM_4(
+				uint8* inBuf,
+				int    bufSize,      // Size of inbuf
+				uint8* outBuf,       // Size is 2x bufsize
+				int&   reference,    // ADPCM reference value
+				int&   scale);
+
+		bool advanceChunk(void* DecompData) const;
 	};
 
-	static inline int decode_ADPCM_4_sample(uint8 sample,
-									 int& reference,
-									 int& scale);
-
-	static void decode_ADPCM_4(uint8* inBuf,	
-							  int bufSize,				// Size of inbuf
-							  uint8* outBuf,			// Size is 2x bufsize
-							  int& reference,			// ADPCM reference value
-							  int& scale);
-
-	bool advanceChunk(void *DecompData) const;
-};
-
-}
+}    // namespace Pentagram
 
 #endif

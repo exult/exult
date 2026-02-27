@@ -1,0 +1,185 @@
+Playscene 
+=========
+
+Allows creating animated and/or text cutscenes using the media Exult knows how to handle.
+Namely FLIC animations, audio files OGG, WAV, VOC and also playback of a games'
+music and sfx tracks.
+
+Exult will automatically look for intro, endgame, quotes and credits
+cutscenes in a game's or a mod's patch folder (files: intro_info.txt,
+intro.flx, endgame_info.txt, ...) and play these instead of the original.
+
+You can use these cutscenes in game with the UI_play_scene intrinsic (see 
+exult_intrinsics.txt for details).
+
+The script is loosely based on the format we use for de-hardcoded shape
+informations.
+
+There are three possible sections:
+	- version (only used if we significantly alter the format and need
+	  to discard older scripts)
+
+	- scene: This is for playing FLIC animations, audio and subtitles.
+	
+	- text: This is for displaying text, either as scrolling (bottom -> top)
+	  or as pages that are shown with a delay. Audio can be played back as well.
+
+You can have several scene and text sections which will be played in the 
+written order.
+
+
+Example Script:
+---------------
+
+%%section version
+:1
+%%endsection
+
+%%section scene
+#		:flic/index_number/frames_delay/fade_in/fade_out/end_delay
+#		frames_delay between FLIC frames is read from the FLIC file. Use 0 to keep
+#		that delay or use any value in milliseconds to override that. The higher
+#		the delay, the slower the animation.
+#		fade_in/fade_out uses the first or last frame to fade for the entered time
+#		in milliseconds.
+#		end_delay adds a black screen at the end of the FLIC for the entered time in milliseconds.
+#
+#		:sfx/sfx_number/start_time/stop_time/continue
+#
+#		:track/track_number/start_time/stop_time/continue
+#
+#		:ogg/index_number/start_time/stop_time/continue
+#
+#		:wave/index_number/start_time/stop_time/continue
+#
+#		:voc/index_number/start_time/stop_time/continue
+#		When speech is disabled, VOCs will not play.
+#
+#		:subtitle/index_number/start_time/line_number/font/flic_color/position/duration
+#		Subtitles are dependent on our global options.
+#
+#		index_number is the order of files in the corresponding flx file.
+#
+#		start_time starts the audio at the time in milliseconds since the flic started playing.
+#
+#		stop_time stops the audio at the time in milliseconds since the flic started playing.
+#
+#		continue lets audio play continue playing even though it's scene or
+#		text section has finished playing.
+#
+#		line_number: subtitle texts are using numbered lines and then the same
+#		format as text in the section text - see below. Additionally you can 
+#		use \n for line breaks.
+#		Example:
+#		001:\CTis is a centered subtitle\nwith a line break.
+#
+#		flic_color uses the entered number of the FLIC's palette.
+#
+#		Position of the text is by default bottom (0) with the option to display
+#		in the center of the screen (1) or at the top (2).
+#
+#		duration is time in milliseconds a subtitle is shown on screen
+#		(default is 2000ms). 
+#
+
+:flic/0/0
+:track/22/10/1
+:sfx/36/0/0
+
+%%endsection
+
+%%section text
+#		:text/index_number/font/color/scroll_or_delay(duration)
+#
+#		:sfx/sfx_number/start_time/stop_time/continue
+#
+#		:track/track_number/start_time/stop_time/continue
+#		Tracks' volume can only be changed by the Volume Mixer.
+#
+#		:ogg/index_number/start_time/stop_time/continue
+#
+#		:wave/index_number/start_time/stop_time/continue
+#
+#		:voc/index_number/start_time/stop_time/continue
+#
+#		index_number is the order of files in the corresponding flx file.
+#
+#		font switches between our Credits font and Hot font. The shape is the same
+#		but the possible colors are different.
+#
+#		Credits font colors: 0=light orange,  1=bright orange , 2=green, 3=white,
+#		4=bright pink, 5=white & grey screen, 6=bright green, 7=dark pink,
+#		8=white & red screen, 9=white & dark purple screen, 10=pink, 11=pink & dark reddish screen,
+#		12=menu blue, 13=green/yellow, 14=deep red, 15=yellow, 16=grey, 17=pink/brownred
+#
+#		Hot font colors:  0=light orange, 1=orange, 2=green, 3=white/grey,
+#		4=bright orange, 5=orange & grey screen, 6=yellow, 7=dark orange, 
+#		8=yellow & red screen, 9=yellow & dark purple screen, 10=dark orange, 11=dark orange & dark reddish screen,
+#		12=lighter blue, 13=dark grey/yellow, 14=deep blue, 15=washed out pink, 16=bright green,  17=pink/brownred
+#
+#		textblock_number counts the blocks of texts (starting with 0) that are separated by empty lines and 
+#		on which audio will start playing. Other than delay text, scrolling text only allows instant start 
+#		of audio (set to 0)
+#
+#		continue lets audio play continue playing even though it's scene or 
+#		text section has finished playing.
+#
+#		scroll_or_delay(duration): 0 for scrolling text, 1 for text in blocks that have a delay of 3000ms
+#		before the next block is shown. Any number higher than 1 is the new delay time in milliseconds.
+#
+#		Text format: 
+#			- Lines that begin with \C are centered.
+#			- Lines that begin with \L are left aligned to the right of the center.
+#			- Lines that begin with \R are right aligned to the left of the center.
+#			- Lines without these begin at the left with 10px margin.
+#			- empty lines will trigger a new page in delayed text or show as empty in scrolling text.
+#
+#		Text example:
+#		Unformatted text begins at the left with 10px margin.
+#		\CCentered text.
+#		\LLeft aligned to the right of the center.
+#		\RRight aligned to the left of the center.
+#
+
+:text/1/0/12/1
+:track/22/0/0/0
+:sfx/36/0/0/0
+
+%%endsection
+
+
+Notes and limitations
+---------------------
+
+- Audio volume is tied to the global volume set in the Volume Mixer. Track is using the music volume, sfx, wave and ogg
+  the sound effects volume and voc the speech volume.
+- As ogg's can and should be played regardless of the digital music setting, ogg playback is treated as sfx playback.
+- Scrolling text only allows starting audio at the beginning as our textscroll function has no means to tell us its state.
+- Scrolling text speed cannot be set but sped up by holding down SHIFT.
+- The listed colors are for a BG game, in case of SI the colors are different again. You might just have to test it out.
+- ESC stops the cutscene completely, while SPACE skips to the next section.
+
+
+Scene FLX creation
+------------------
+
+To create the FLX file you need expack from our tools and for ease of use a build script.
+
+For example an intro cutscene:
+- In your patch folder or mods data folder create 'intro_info.txt' and the folder 'intro'.
+- Place all the files you need for your cutscene into the 'intro' folder. 
+  For example 'animation1.flc', 'animation2.flc', 'music.ogg', 'sfx1.wav', 'voice1.voc', 'text1.txt', 'subtitles.txt'
+- create a text file called 'intro.in' in the 'intro' folder and add all the files and point at where the flx should
+  be created (example below).
+- run expack -i intro.in
+
+intro.in example (this will create intro.flx in the same folder that holds intro_info.txt):
+
+../intro.flx
+animation1.flc
+animation2.flc
+music.ogg
+sfx1.wav
+voice1.voc
+text1.txt
+subtitles.txt

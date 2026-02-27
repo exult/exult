@@ -17,21 +17,21 @@
  */
 
 #ifdef HAVE_CONFIG_H
-#  include <config.h>
+#	include <config.h>
 #endif
 
-#include <cctype>
-#include <cstdlib>
+#include "devgame.h"
 
+#include "Audio.h"
+#include "common_types.h"
+#include "databuf.h"
 #include "files/U7file.h"
 #include "files/utils.h"
 #include "flic/playfli.h"
-#include "gamewin.h"
-#include "Audio.h"
-#include "devgame.h"
-#include "palette.h"
-#include "databuf.h"
 #include "font.h"
+#include "gamewin.h"
+#include "palette.h"
 #include "txtscroll.h"
-#include "common_types.h"
 
+#include <cctype>
+#include <cstdlib>

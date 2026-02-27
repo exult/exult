@@ -1,0 +1,64 @@
+NAME
+       ucxt - Ultima VII/VIII usecode disassembler.
+
+SYNOPSIS
+       ucxt [OPTIONS] -a
+              prints all the functions
+
+       ucxt [OPTIONS] <hex_function_number>
+              disassembles a single function to stdout
+
+DESCRIPTION
+       Games  supported by Exult (Ultima VII, for example) consist in large part
+       of usecode. Exult basically implements a virtual  machine  the  machine
+       language of which is usecode.
+
+       The ucxt command allows you to disassemble usecode.
+
+OPTIONS
+       Misc Flags (any/all of these):
+
+       -nc    don't look for exult's .xml config file
+
+       -v     turns on verbose output mode
+
+       -ofile output to the specified file
+
+       -ifile load the usecode file specified by the filename
+
+       -ro    output the raw opcodes in addition to the -f format
+
+       -ac    output automatically generated comments
+
+       -uc    output automatically generated 'useless' comments
+
+       -b     only do 'basic' optimisations
+
+       -dbg   output debugging information if present in usecode
+
+       -ext32 convert function to ext32 format if not already
+
+       Game Specifier Flags (only one of these):
+
+       -bg    select the black gate usecode file
+
+       -si    select the serpent isle usecode file
+
+       -u8    select the ultima 8/pagan usecode file (experimental)
+
+       Output Format Flags (only one of these):
+
+       -fl    output using brief "list" format
+
+       -fa    output using "assembler" format (default)
+
+       -fs    output using "exult script" format
+
+       -fz    output using "exult script" format
+
+       -ftt   output using the translation table xml format
+
+       -ff    outputs  all flags referenced in the usecode file sorted both by
+              "flags within a function" and "functions using flag"
+
+(ReadMe copied from man page ucxt.1)

@@ -28,20 +28,19 @@
 
 /*
 	Fifth circle Spells
-	
-	extern void spellCharm (var target);
+
+	extern void spellCharm (struct<ObjPos> target);
 	extern void spellDance ();
-	extern void spellDispelField (var target);
-	extern void spellExplosion (var target);
-	extern void spellFireField (var target);
-	extern void spellGreatHeal (var target);
-	extern void spellInvisibility (var target);
+	extern void spellDispelField (struct<ObjPos> target);
+	extern void spellExplosion (struct<ObjPos> target);
+	extern void spellFireField (struct<ObjPos> target);
+	extern void spellGreatHeal (struct<ObjPos> target);
+	extern void spellInvisibility (struct<ObjPos> target);
 	extern void spellMassSleep ();
 	extern void spellSummonSkeletons ();
 */
 
-enum fifth_circle_spells
-{
+enum fifth_circle_spells {
 	SPELL_CHARM						= 0,
 	SPELL_DANCE						= 1,
 	SPELL_DISPEL_FIELD				= 2,
@@ -53,272 +52,299 @@ enum fifth_circle_spells
 	SPELL_SUMMON_SKELETONS			= 8
 };
 
-void spellCharm (var target)
-{
-	if (event == DOUBLECLICK)
-	{
-		//var target = UI_click_on_item();
+void spellCharm (struct<ObjPos> target) {
+	if (event == DOUBLECLICK) {
+		//struct<ObjPos> target = UI_click_on_item();
 		var dir = direction_from(target);
 		halt_scheduled();
 		item_say("@An Xen Ex@");
-		if (inMagicStorm())
-		{
+		if (inMagicStorm()) {
 			set_to_attack(target, SHAPE_SPELL_CHARM);
-			script item
-			{	nohalt;						face dir;
-				sfx 68;						actor frame raise_1h;
-				actor frame cast_out;			actor frame strike_2h;
-				attack;}
-		}
-		else
-		{
-			script item
-			{	nohalt;						face dir;
-				actor frame raise_1h;		actor frame cast_out;
-				actor frame strike_2h;		call spellFails;}
+			script item {
+				nohalt;
+				face dir;
+				sfx 68;
+				actor frame raise_1h;
+				actor frame cast_out;
+				actor frame strike_2h;
+				attack;
+			}
+		} else {
+			script item {
+				nohalt;
+				face dir;
+				actor frame raise_1h;
+				actor frame cast_out;
+				actor frame strike_2h;
+				call spellFails;
+			}
 		}
 	}
 }
 
-void spellDance ()
-{
-	if (event == DOUBLECLICK)
-	{
+void spellDance () {
+	if (event == DOUBLECLICK) {
 		halt_scheduled();
 		item_say("@Por Xen@");
-		if (inMagicStorm())
-		{
+		if (inMagicStorm()) {
 			item_say("@Everybody DANCE now!@");
-			script item
-			{	nohalt;						sfx 67;
-				actor frame raise_1h;		actor frame cast_out;
-				actor frame strike_2h;		call spellCauseDancing;}
-		}
-		else
-		{
-			script item
-			{	nohalt;						actor frame raise_1h;
-				actor frame cast_out;			actor frame strike_2h;
-				call spellFails;}
+			script item {
+				nohalt;
+				sfx 67;
+				actor frame raise_1h;
+				actor frame cast_out;
+				actor frame strike_2h;
+				call spellCauseDancing;
+			}
+		} else {
+			script item {
+				nohalt;
+				actor frame raise_1h;
+				actor frame cast_out;
+				actor frame strike_2h;
+				call spellFails;
+			}
 		}
 	}
 }
 
-void spellDispelField (var target)
-{
-	if (event == DOUBLECLICK)
-	{
-		//var target = UI_click_on_item();
+void spellDispelField (struct<ObjPos> target) {
+	if (event == DOUBLECLICK) {
+		//struct<ObjPos> target = UI_click_on_item();
 		var dir = direction_from(target);
 		halt_scheduled();
 		var fields = [SHAPE_ENERGY_FIELD, SHAPE_FIRE_FIELD, SHAPE_POISON_FIELD, SHAPE_SLEEP_FIELD];
 		item_say("@An Grav@");
-		if (inMagicStorm())
-		{
-			script item
-			{	nohalt;						sfx 65;
-				face dir;					actor frame cast_up;
-				actor frame cast_out;			actor frame strike_2h;}
-				
-			if (target->get_item_shape() in fields)
-			{
+		if (inMagicStorm()) {
+			script item {
+				nohalt;
+				sfx 65;
+				face dir;
+				actor frame cast_up;
+				actor frame cast_out;
+				actor frame strike_2h;
+			}
+
+			if (target->get_item_shape() in fields) {
 				target->halt_scheduled();
 				target->remove_item();
 			}
-		}
-		else
-		{
-			script item
-			{	nohalt;						face dir;
-				actor frame cast_up;			actor frame cast_out;
-				actor frame strike_2h;		call spellFails;}
+		} else {
+			script item {
+				nohalt;
+				face dir;
+				actor frame cast_up;
+				actor frame cast_out;
+				actor frame strike_2h;
+				call spellFails;
+			}
 		}
 	}
 }
 
-void spellExplosion (var target)
-{
-	if ((event == DOUBLECLICK) || (event == WEAPON))
-	{
-		//var target = UI_click_on_item();
+void spellExplosion (struct<ObjPos> target) {
+	if ((event == DOUBLECLICK) || (event == WEAPON)) {
+		//struct<ObjPos> target = UI_click_on_item();
 		halt_scheduled();
 		var dir = direction_from(target);
 		item_say("@Vas Flam Hur@");
-		if (inMagicStorm())
-		{
+		if (inMagicStorm()) {
 			set_to_attack(target, SHAPE_SPELL_EXPLOSION);
-			script item
-			{	nohalt;						face dir;
-				sfx 65;						actor frame cast_up;
-				actor frame cast_out;			actor frame strike_1h;
-				actor frame strike_1h;		attack;
-				actor frame standing;}
-		}
-		else
-		{
-			script item
-			{	nohalt;						face dir;
-				actor frame cast_up;			actor frame cast_out;
-				actor frame strike_1h;		call spellFails;}
+			script item {
+				nohalt;
+				face dir;
+				sfx 65;
+				actor frame cast_up;
+				actor frame cast_out;
+				actor frame strike_1h;
+				actor frame strike_1h;
+				attack;
+				actor frame standing;
+			}
+		} else {
+			script item {
+				nohalt;
+				face dir;
+				actor frame cast_up;
+				actor frame cast_out;
+				actor frame strike_1h;
+				call spellFails;
+			}
 		}
 	}
 }
 
-void spellFireField (var target)
-{
-	if (event == DOUBLECLICK)
-	{
-		//var target = UI_click_on_item();
+void spellFireField (struct<ObjPos> target) {
+	if (event == DOUBLECLICK) {
+		//struct<ObjPos> target = UI_click_on_item();
 		var dir = direction_from(target);
 		halt_scheduled();
 		item_say("@In Flam Grav@");
-		if (inMagicStorm())
-		{
-			script item
-			{	nohalt;						sfx 65;
-				face dir;					actor frame raise_1h;
-				actor frame reach_1h;		actor frame strike_1h;}
-				
+		if (inMagicStorm()) {
+			script item {
+				nohalt;
+				sfx 65;
+				face dir;
+				actor frame raise_1h;
+				actor frame reach_1h;
+				actor frame strike_1h;
+			}
+
 			var field = UI_create_new_object(SHAPE_FIRE_FIELD);
-			if (field)
-			{
-				var field_x = (target[X + 1] + 1);
-				var field_y = (target[Y + 1] + 1);
-				var field_z = target[Z + 1];
+			if (field) {
+				var field_x = (target.x + 1);
+				var field_y = (target.y + 1);
+				var field_z = target.z;
 				var pos = [field_x, field_y, field_z];
 				UI_update_last_created(pos);
 				var duration = 100;
 				field->set_item_quality(duration);
 				field->set_item_flag(TEMPORARY);
-				script field after duration ticks
-				{	nohalt;						remove;}
+				script field after duration ticks {
+					nohalt;
+					remove;
+				}
 			}
-		}
-		else
-		{
-			script item
-			{	nohalt;						face dir;
-				actor frame raise_1h;		actor frame reach_1h;
-				actor frame strike_1h;		call spellFails;}
+		} else {
+			script item {
+				nohalt;
+				face dir;
+				actor frame raise_1h;
+				actor frame reach_1h;
+				actor frame strike_1h;
+				call spellFails;
+			}
 		}
 	}
 }
 
-void spellGreatHeal (var target)
-{
-	if (event == DOUBLECLICK)
-	{
-		//var target = UI_click_on_item();
+void spellGreatHeal (struct<ObjPos> target) {
+	if (event == DOUBLECLICK) {
+		//struct<ObjPos> target = UI_click_on_item();
 		target->halt_scheduled();
 		var dir = direction_from(target);
 		item_say("@Vas Mani@");
-		if (inMagicStorm())
-		{
-			script item
-			{	nohalt;						face dir;
-				actor frame reach_1h;		actor frame raise_1h;
-				actor frame strike_1h;		sfx 64;}
-			if (target->is_npc())
-			{
+		if (inMagicStorm()) {
+			script item {
+				nohalt;
+				face dir;
+				actor frame reach_1h;
+				actor frame raise_1h;
+				actor frame strike_1h;
+				sfx 64;
+			}
+			if (target->is_npc()) {
 				var str = target->get_npc_prop(STRENGTH);
 				var hps = target->get_npc_prop(HEALTH);
 				target->set_npc_prop(HEALTH, (str - hps));
 			}
-		}
-		else
-		{
-			script item
-			{	nohalt;						face dir;
-				actor frame reach_1h;		actor frame raise_1h;
-				actor frame strike_1h;		call spellFails;}
+		} else {
+			script item {
+				nohalt;
+				face dir;
+				actor frame reach_1h;
+				actor frame raise_1h;
+				actor frame strike_1h;
+				call spellFails;
+			}
 		}
 	}
 }
 
-void spellInvisibility (var target)
-{
-	if (event == DOUBLECLICK)
-	{
-		//var target = UI_click_on_item();
+void spellInvisibility (struct<ObjPos> target) {
+	if (event == DOUBLECLICK) {
+		//struct<ObjPos> target = UI_click_on_item();
 		halt_scheduled();
 		var dir = direction_from(target);
 		item_say("@Sanct Lor@");
-		if (inMagicStorm())
-		{
-			script item
-			{	nohalt;						face dir;
-				sfx 67;						actor frame cast_up;
-				actor frame cast_out;			actor frame strike_2h;}
-				
-			script target after 4 ticks
-			{	nohalt;						call spellSetFlag, INVISIBLE;}
-		}
-		else
-		{
-			script item
-			{	nohalt;						face dir;
-				actor frame cast_up;			actor frame cast_out;
-				actor frame strike_2h;		call spellFails;}
+		if (inMagicStorm()) {
+			script item {
+				nohalt;
+				face dir;
+				sfx 67;
+				actor frame cast_up;
+				actor frame cast_out;
+				actor frame strike_2h;
+			}
+
+			script target after 4 ticks {
+				nohalt;
+				call spellSetFlag, INVISIBLE;
+			}
+		} else {
+			script item {
+				nohalt;
+				face dir;
+				actor frame cast_up;
+				actor frame cast_out;
+				actor frame strike_2h;
+				call spellFails;
+			}
 		}
 	}
 }
 
-void spellMassSleep ()
-{
-	if (event == DOUBLECLICK)
-	{
+void spellMassSleep () {
+	if (event == DOUBLECLICK) {
 		halt_scheduled();
-		var pos = get_object_position();
+		struct<Position> pos = get_object_position();
 		item_say("@Vas Zu@");
-		if (inMagicStorm())
-		{
-			UI_sprite_effect(7, (pos[X] - 2), (pos[Y] - 2), 0, 0, 0, -1);
-			script item
-			{	nohalt;						sfx 65;
-				actor frame standing;			actor frame raise_1h;
-				actor frame cast_up;			actor frame strike_1h;
-				actor frame strike_2h;}
-			
+		if (inMagicStorm()) {
+			UI_sprite_effect(ANIMATION_TELEPORT, (pos.x - 2), (pos.y - 2), 0, 0, 0, -1);
+			script item {
+				nohalt;
+				sfx 65;
+				actor frame standing;
+				actor frame raise_1h;
+				actor frame cast_up;
+				actor frame strike_1h;
+				actor frame strike_2h;
+			}
+
 			var targets = getEnemyTargetList(item, 25);
-			for (npc in targets)
+			for (npc in targets) {
 				script npc after 7 ticks call spellSleepEffect;
+			}
+		} else {
+			script item {
+				nohalt;
+				actor frame standing;
+				actor frame raise_1h;
+				actor frame cast_up;
+				actor frame strike_1h;
+				actor frame strike_2h;
+				call spellFails;
+			}
 		}
-		else
-		{
-			script item
-			{	nohalt;						actor frame standing;
-				actor frame raise_1h;		actor frame cast_up;
-				actor frame strike_1h;		actor frame strike_2h;
-				call spellFails;}
-		}
-	}
-	
-	else if (event == SCRIPTED)
-	{
+	} else if (event == SCRIPTED) {
 	}
 }
 
-void spellSummonSkeletons ()
-{
-	if (event == DOUBLECLICK)
-	{
+void spellSummonSkeletons () {
+	if (event == DOUBLECLICK) {
 		halt_scheduled();
 		item_say("@Kal Corp Xen@");
-		if (inMagicStorm())
-		{
-			script item
-			{	nohalt;						actor frame kneeling;
-				actor frame standing;			actor frame cast_up;
-				actor frame cast_out;			actor frame strike_2h;
-				sfx 65;						call spellSummonSkeletonsEffect;}
-		}
-		else
-		{
-			script item
-			{	nohalt;						actor frame kneeling;
-				actor frame standing;			actor frame cast_up;
-				actor frame cast_out;			actor frame strike_2h;
-				call spellFails;}
+		if (inMagicStorm()) {
+			script item {
+				nohalt;
+				actor frame kneeling;
+				actor frame standing;
+				actor frame cast_up;
+				actor frame cast_out;
+				actor frame strike_2h;
+				sfx 65;
+				call spellSummonSkeletonsEffect;
+			}
+		} else {
+			script item {
+				nohalt;
+				actor frame kneeling;
+				actor frame standing;
+				actor frame cast_up;
+				actor frame cast_out;
+				actor frame strike_2h;
+				call spellFails;
+			}
 		}
 	}
 }

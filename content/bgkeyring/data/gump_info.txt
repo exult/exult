@@ -1,0 +1,22 @@
+#	Exult 1.13.1git gump info file.	Written by ExultStudio.
+%%section version
+:1
+%%endsection
+%%section container_area
+:84/52/22/60/40
+%%endsection
+%%section checkmark_pos
+:72/22/124/2
+:73/22/124/2
+:74/22/124/2
+:75/22/124/2
+:76/22/124/2
+:77/22/124/2
+:78/22/124/2
+:79/22/124/2
+:80/22/124/2
+:81/22/124/2
+:82/22/124/2
+:83/22/124/2
+:84/24/52/2
+%%endsection

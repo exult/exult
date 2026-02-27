@@ -22,42 +22,65 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #ifdef USE_MT32EMU_MIDI
 
-#include "LowLevelMidiDriver.h"
+#	include "LowLevelMidiDriver.h"
 
-#ifdef __IPHONEOS__
-	#include <mt32emu.h>
-#else
-	#include <mt32emu/mt32emu.h>
-#endif
+#	ifdef __GNUC__
+#		pragma GCC diagnostic push
+#		pragma GCC diagnostic ignored "-Wundef"
+#		pragma GCC diagnostic ignored "-Wzero-as-null-pointer-constant"
+#		if defined(__llvm__) || defined(__clang__)
+#			pragma GCC diagnostic ignored "-Wmacro-redefined"
+#		endif
+#	endif    // __GNUC__
+#	ifdef SDL_PLATFORM_IOS
+#		include <mt32emu.h>
+#	else
+#		include <mt32emu/mt32emu.h>
+#	endif
+#	ifdef __GNUC__
+#		pragma GCC diagnostic pop
+#	endif    // __GNUC__
 
-namespace MT32Emu { class Synth; }
+namespace MT32Emu {
+	class Synth;
+	class SampleRateConverter;
+}    // namespace MT32Emu
 
-class MT32EmuMidiDriver : public LowLevelMidiDriver
-{
-	const static MidiDriverDesc	desc;
-	static MidiDriver *createInstance() {
-		return new MT32EmuMidiDriver();
+class MT32EmuMidiDriver : public LowLevelMidiDriver {
+	static const MidiDriverDesc desc;
+
+	static std::shared_ptr<MidiDriver> createInstance() {
+		return std::make_shared<MT32EmuMidiDriver>();
 	}
 
-	MT32Emu::Synth	*mt32;
+	MT32Emu::Synth*               mt32;
+	MT32Emu::SampleRateConverter* mt32src;
 
 public:
-	static const MidiDriverDesc* getDesc() { return &desc; }
+	MT32EmuMidiDriver() : LowLevelMidiDriver(std::string(desc.name)), mt32(nullptr), mt32src(nullptr) {}
+
+	static const MidiDriverDesc* getDesc() {
+		return &desc;
+	}
 
 protected:
 	// LowLevelMidiDriver implementation
-	int			open() override;
-	void		close() override;
-	void		send(uint32 b) override;
-	void		send_sysex(uint8 status, const uint8 *msg, uint16 length) override;
-	void		lowLevelProduceSamples(sint16 *samples, uint32 num_samples) override;
+	int  open() override;
+	void close() override;
+	void send(uint32 b) override;
+	void send_sysex(uint8 status, const uint8* msg, uint16 length) override;
+	void lowLevelProduceSamples(sint16* samples, uint32 num_samples) override;
 
 	// MidiDriver overloads
-	bool		isSampleProducer() override { return true; }
-	bool		isMT32() override { return true; }
+	bool isSampleProducer() override {
+		return true;
+	}
 
+	bool isMT32() override {
+		return true;
+	}
 };
 
-#endif //USE_MT32EMU_MIDI
+#endif    // USE_MT32EMU_MIDI
 
-#endif //MT32EMUMIDIDRIVER_H_INCLUDED
+#endif    // MT32EMUMIDIDRIVER_H_INCLUDED

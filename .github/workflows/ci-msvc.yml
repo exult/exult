@@ -1,0 +1,375 @@
+# This workflow uses actions that are not certified by GitHub.
+# They are provided by a third-party and are governed by
+# separate terms of service, privacy policy, and support
+# documentation.
+
+name: ci-msvc
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - "**"
+      - "!android/**"
+      - "!docs/**"
+      - "!**Makefile**"
+      - "!ios/**"
+      - "!macosx/**"
+      - "!AUTHORS"
+      - "!ChangeLog"
+      - "!COPYING"
+      - "!FAQ"
+      - "!INSTALL"
+      - "!NEWS"
+      - "!**README**"
+      - "!**.ico"
+      - "!**.md"
+      - "!**.png"
+      - "!**.txt"
+      - "!.clang*"
+      - "!.gitignore"
+      - "!.gitattributes"
+      - "!.github/workflows/*"
+      - ".github/workflows/ci-msvc.yml"
+  pull_request:
+    paths:
+      - "**"
+      - "!android/**"
+      - "!docs/**"
+      - "!**Makefile**"
+      - "!ios/**"
+      - "!macosx/**"
+      - "!AUTHORS"
+      - "!ChangeLog"
+      - "!COPYING"
+      - "!FAQ"
+      - "!INSTALL"
+      - "!NEWS"
+      - "!**README**"
+      - "!**.ico"
+      - "!**.md"
+      - "!**.png"
+      - "!**.txt"
+      - "!.clang*"
+      - "!.gitignore"
+      - "!.gitattributes"
+      - "!.github/workflows/*"
+      - ".github/workflows/ci-msvc.yml"
+  
+env:
+  # Path to the solution file relative to the root of the project.
+  SOLUTION_FILE_PATH: msvcstuff\vs2019
+
+  # Configuration type to build.
+  # You can convert this to a build matrix if you need coverage of multiple configuration types.
+  # https://docs.github.com/actions/learn-github-actions/managing-complex-workflows#using-a-build-matrix
+  BUILD_CONFIGURATION: Release
+
+  BUILD_CONFIGURATION_ES: Debug
+
+  #platform
+  BUILD_PLATFORM: x64
+
+  BUILD_PLATFORM_ES: x64
+
+  BUILD_PROJECTS: Exult
+
+  BUILD_PROJECTS_ES: exult_studio
+
+  VCPKGCACHE_PATH: msvcstuff\vs2019\vcpkg_installed
+  
+  VCPKGCACHE_PATH_ES: msvcstuff\vs2019\exult_studio\vcpkg_installed
+
+  TARGET_VCPKG_MANIFEST_INSTALL: VcpkgInstallManifestDependencies
+
+  #No automatic binary caching until microsoft fixes it
+  VCPKG_BINARY_SOURCES: "clear"
+
+ 
+  VCPKG_ASSETCACHE_PATH: msvcstuff\vcpkg\assetcache
+
+  #Set vcpkg to use an asset cache
+  X_VCPKG_ASSET_SOURCES: ${{format('clear;x-azurl,file://{0}\msvcstuff\vcpkg\assetcache,,readwrite', github.workspace) }}
+
+permissions:
+  contents: read
+
+jobs:
+  ci-msvc:
+
+    runs-on: windows-2022
+    if: ${{ github.repository_owner == 'exult' || github.repository_owner == 'wench' }}
+ 
+
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Add MSBuild to PATH
+      uses: microsoft/setup-msbuild@v2
+
+    - name: Setup VCPKG for Exult
+      working-directory: ${{env.GITHUB_WORKSPACE}}     
+      run: |
+        New-Item -ItemType Directory "$Env:VCPKG_ASSETCACHE_PATH"  -ErrorAction Ignore
+        $vcpkg_json = Get-Content msvcstuff\vs2019\vcpkg.json -Raw | ConvertFrom-Json
+        cd $Env:VCPKG_INSTALLATION_ROOT
+        git fetch
+        git checkout -f --detach $vcpkg_json.'builtin-baseline'
+        .\bootstrap-vcpkg.bat
+        ./vcpkg integrate install
+        ('VCPKG_REV='+$vcpkg_json.'builtin-baseline')|Out-File -Append -NoNewLine ${{ github.env }}
+
+    - name: Restore VCPKG packages for Exult from Cache 
+      uses: actions/cache/restore@v4
+      id: exult-vcpkg-cache-restore
+      with:
+        path: |
+          ${{env.VCPKGCACHE_PATH}}
+          ${{env.VCPKG_ASSETCACHE_PATH}}
+        # Use the git rev hash of vcpkg in the cache key because things are not 
+        # entirely compatible between versions
+        key: exult-vcpkg-packages-${{env.VCPKG_REV}}-${{github.sha}}-${{github.run_attempt}}
+        restore-keys: |
+          exult-vcpkg-packages-${{env.VCPKG_REV}}
+          exult-vcpkg-packages
+
+      # If cache was restored from a different VCPKG_REV, try to clear the download cache of stale files
+      # do this by Setting the LastAccessTime to Jan 1 2000 before building and then after building before saving
+      # the cache delete any download files that were not acessed by the build and didn't have their access time changed
+    - name: Init Clearing Stale Files In Asset Cache
+      if: ${{!contains( steps.exult-vcpkg-cache-restore.outputs.cache-matched-key, env.VCPKG_REV)}}
+      run: |
+          #disable filesystems auto updating last access time while I'm manually setting it for each file
+          fsutil behavior set disablelastaccess 1
+          #object representing a date long ago.
+          $longago = [DateTime]::Parse("2000-01-01") 
+          get-ChildItem $Env:VCPKG_ASSETCACHE_PATH -filter *.* -File | ForEach-Object { $_.LastAccessTimeUTC = $longago; $_.Name }
+          # renable filesystem auto updating last access time 
+          fsutil behavior set disablelastaccess 0
+
+    - name: Install VCPKG packages for Exult
+      continue-on-error: true
+      working-directory: ${{env.GITHUB_WORKSPACE}}
+      run: |
+          msbuild /v:${{ runner.debug =='1' && 'detailed' || 'normal' }} /m /p:Configuration=${{env.BUILD_CONFIGURATION}} /p:Platform=${{env.BUILD_PLATFORM}} ${{env.SOLUTION_FILE_PATH}}\Exult.vcxproj /t:${{env.TARGET_VCPKG_MANIFEST_INSTALL}}
+
+    - name: Actually Clearing Stale Files In Download Cache
+      if: ${{!contains( steps.exult-vcpkg-cache-restore.outputs.cache-matched-key, env.VCPKG_REV)}}
+      working-directory: ${{env.GITHUB_WORKSPACE}}     
+      run: |
+          #object representing a date long ago.
+          $longago = [DateTime]::Parse("2000-01-01") 
+          #delete all files in download directory where LastAccessTime is equal to $longago
+          get-ChildItem $Env:VCPKG_ASSETCACHE_PATH -file |where LastAccessTimeUTC -EQ $longago| Remove-Item -Force -Verbose
+
+    - name: Save Exult VCPKG cache
+      id: exult-vcpkg-cache-save
+      uses: actions/cache/save@v4
+      with:
+        path: |
+          ${{env.VCPKGCACHE_PATH}}
+          ${{env.VCPKG_ASSETCACHE_PATH}}
+        key: exult-vcpkg-packages-${{env.VCPKG_REV}}-${{github.sha}}-${{github.run_attempt}}
+  
+    - name: Build Exult
+      working-directory: ${{env.GITHUB_WORKSPACE}}
+      run: msbuild /v:${{ runner.debug =='1' && 'detailed' || 'normal' }} /m /p:Configuration=${{env.BUILD_CONFIGURATION}} /p:Platform=${{env.BUILD_PLATFORM}} ${{env.SOLUTION_FILE_PATH}} /t:${{env.BUILD_PROJECTS}}
+
+  ci-msvc-exult_studio:
+    runs-on: windows-2022
+    if: ${{ github.repository_owner == 'exult' || github.repository_owner == 'wench' }}
+
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Export GitHub Actions cache environment variables
+      uses: actions/github-script@v7
+      with:
+        script: |
+          core.exportVariable('ACTIONS_CACHE_URL', process.env.ACTIONS_CACHE_URL || '');
+          core.exportVariable('ACTIONS_RUNTIME_TOKEN', process.env.ACTIONS_RUNTIME_TOKEN || '');
+        
+    - name: Add MSBuild to PATH
+      uses: microsoft/setup-msbuild@v2
+
+    - name: Setup VCPKG for Studio
+      working-directory: ${{env.GITHUB_WORKSPACE}}     
+      run: |
+        New-Item -ItemType Directory "$Env:VCPKG_ASSETCACHE_PATH"  -ErrorAction Ignore
+        $vcpkg_json = Get-Content msvcstuff\vs2019\exult_studio\vcpkg.json -Raw | ConvertFrom-Json
+        cd $Env:VCPKG_INSTALLATION_ROOT
+        git fetch
+        git checkout -f --detach $vcpkg_json.'builtin-baseline'
+        .\bootstrap-vcpkg.bat
+        ./vcpkg integrate install
+        ('VCPKG_REV='+$vcpkg_json.'builtin-baseline')|Out-File -Append -NoNewLine ${{ github.env }}
+
+
+    - name: Restore Studio VCPKG cache 
+      uses: actions/cache/restore@v4
+      id: studio-vcpkg-cache-restore
+      with:
+        path: |
+          ${{env.VCPKGCACHE_PATH_ES}}
+          ${{env.VCPKG_ASSETCACHE_PATH}}
+        key: studio-vcpkg-packages-${{env.VCPKG_REV}}-${{github.sha}}-${{github.run_attempt}}
+        restore-keys: |
+          studio-vcpkg-packages-${{env.VCPKG_REV}}
+          studio-vcpkg-packages
+
+
+      # If cache was restored from a different VCPKG_REV, try to clear the download cache of stale files
+      # do this by Setting the LastAccessTime to Jan 1 2000 before building and then after building before saving
+      # the cache delete any download files that were not acessed by the build and didn't have their access time changed
+    - name: Init Clearing Stale Files In Asset Cache
+      if: ${{!contains( steps.studio-vcpkg-cache-restore.outputs.cache-matched-key , env.VCPKG_REV)}}
+      working-directory: ${{env.GITHUB_WORKSPACE}}     
+      run: |
+          #disable filesystems auto updating last access time while I'm manually setting it for each file
+          fsutil behavior set disablelastaccess 1
+          #object representing a date long ago.
+          $longago = [DateTime]::Parse("2000-01-01") 
+          get-ChildItem $Env:VCPKG_ASSETCACHE_PATH -filter *.* -File | ForEach-Object { $_.LastAccessTimeUTC = $longago; $_.Name }
+          # renable filesystem auto updating last access time 
+          fsutil behavior set disablelastaccess 0
+
+    - name: Install VCPKG packages for Studio
+      continue-on-error: true
+      working-directory: ${{env.GITHUB_WORKSPACE}}
+      run: |
+          msbuild /v:${{ runner.debug =='1' && 'detailed' || 'normal' }} /m /p:Configuration=${{env.BUILD_CONFIGURATION_ES}} /p:Platform=${{env.BUILD_PLATFORM_ES}} ${{env.SOLUTION_FILE_PATH}}\exult_studio\exult_studio.vcxproj /t:${{env.TARGET_VCPKG_MANIFEST_INSTALL}}
+
+    - name: Restore Exult VCPKG Cache 
+      uses: actions/cache/restore@v4
+      id: exult-vcpkg-cache-restore
+      with:
+        path: |
+          ${{env.VCPKGCACHE_PATH}}
+          ${{env.VCPKG_ASSETCACHE_PATH}}
+        key: exult-vcpkg-packages-${{env.VCPKG_REV}}-${{github.sha}}-${{github.run_attempt}}
+        restore-keys: |
+          exult-vcpkg-packages-${{env.VCPKG_REV}}
+          
+    - name: Build exult_studio
+      working-directory: ${{env.GITHUB_WORKSPACE}}
+      run: |
+       msbuild /v:${{ runner.debug =='1' && 'detailed' || 'normal' }} /m /p:Configuration=${{env.BUILD_CONFIGURATION_ES}} /p:Platform=${{env.BUILD_PLATFORM_ES}} ${{env.SOLUTION_FILE_PATH}} /t:${{env.BUILD_PROJECTS_ES}}      
+
+    - name: Actually Clearing Stale Files In Asset Cache
+      if: ${{!contains( steps.studio-vcpkg-cache-restore.outputs.cache-matched-key , env.VCPKG_REV)}}
+      working-directory: ${{env.GITHUB_WORKSPACE}}     
+      run: |
+          #object representing a date long ago.
+          $longago = [DateTime]::Parse("2000-01-01") 
+          #delete all files in download directory where LastAccessTime is equal to $longago
+          get-ChildItem $Env:VCPKG_ASSETCACHE_PATH -file |where LastAccessTimeUTC -EQ $longago| Remove-Item -Force -Verbose
+
+    - name: Save Studio VCPKG cache
+      if: always() 
+      id: studio-vcpkg-cache-save
+      uses: actions/cache/save@v4
+      with:
+        path: |
+          ${{env.VCPKGCACHE_PATH_ES}}
+          ${{env.VCPKG_ASSETCACHE_PATH}}
+        key: studio-vcpkg-packages-${{env.VCPKG_REV}}-${{github.sha}}-${{github.run_attempt}}
+  notify:
+    name: Exult-CI (IRC & Discord notification)
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    needs:
+      - ci-msvc
+    if: ${{ always() && (github.repository_owner == 'exult' && github.event_name == 'push') }}
+    steps:
+      - name: IRC success notification (ircs://irc.libera.chat:6697/#exult)
+        uses: Gottox/irc-message-action@v2
+        continue-on-error: true
+        if: needs.ci-msvc.result == 'success'
+        with:
+          server: irc.libera.chat
+          port: 6697
+          channel: "#exult"
+          nickname: github-actions
+          tls: true
+          message: "\x0313exult\x03/\x0306${{ github.ref }}\x03 \x0314${{ github.sha }}\x03 https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }} The MSVC build \x033succeeded\x03."
+      - name: IRC failure notification (ircs://irc.libera.chat:6697/#exult)
+        uses: Gottox/irc-message-action@v2
+        continue-on-error: true
+        if: needs.ci-msvc.result != 'success'
+        with:
+          server: irc.libera.chat
+          port: 6697
+          channel: "#exult"
+          nickname: github-actions
+          tls: true
+          message: "\x0313exult\x03/\x0306${{ github.ref }}\x03 \x0314${{ github.sha }}\x03 https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }} The MSVC build \x034failed\x03."
+      - name: Discord success notification
+        uses: rjstone/discord-webhook-notify@v1
+        continue-on-error: true
+        if: needs.ci-msvc.result == 'success'
+        with:
+          severity: info
+          webhookUrl: ${{ secrets.DISCORD_WEBHOOK }}
+          username: Exult github-actions
+          avatarUrl: https://avatars.githubusercontent.com/u/15114538?s=200&v=4
+          text: '**[The MSVC build succeeded:](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})**'
+      - name: Discord failure notification
+        uses: rjstone/discord-webhook-notify@v1
+        continue-on-error: true
+        if: needs.ci-msvc.result != 'success'
+        with:
+          severity: error
+          webhookUrl: ${{ secrets.DISCORD_WEBHOOK }}
+          username: Exult github-actions
+          avatarUrl: https://avatars.githubusercontent.com/u/15114538?s=200&v=4
+          text: '**[The MSVC build failed:](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})**'
+  notify-studio:
+    name: Exult-CI-ES (IRC & Discord notification)
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    needs:
+      - ci-msvc-exult_studio
+    if: ${{ always() && (github.repository_owner == 'exult' && github.event_name == 'push') }}
+    steps:
+      - name: ES IRC success notification (ircs://irc.libera.chat:6697/#exult)
+        uses: Gottox/irc-message-action@v2
+        continue-on-error: true
+        if: needs.ci-msvc-exult_studio.result == 'success'
+        with:
+          server: irc.libera.chat
+          port: 6697
+          channel: "#exult"
+          nickname: github-actions
+          tls: true
+          message: "\x0313exult\x03/\x0306${{ github.ref }}\x03 \x0314${{ github.sha }}\x03 https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }} The MSVC exult_studio build \x033succeeded\x03."
+      - name: ES IRC failure notification (ircs://irc.libera.chat:6697/#exult)
+        uses: Gottox/irc-message-action@v2
+        continue-on-error: true
+        if: needs.ci-msvc-exult_studio.result != 'success'
+        with:
+          server: irc.libera.chat
+          port: 6697
+          channel: "#exult"
+          nickname: github-actions
+          tls: true
+          message: "\x0313exult\x03/\x0306${{ github.ref }}\x03 \x0314${{ github.sha }}\x03 https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }} The MSVC exult_studio build \x034failed\x03."
+      - name: ES Discord success notification
+        uses: rjstone/discord-webhook-notify@v1
+        continue-on-error: true
+        if: needs.ci-msvc-exult_studio.result == 'success'
+        with:
+          severity: info
+          webhookUrl: ${{ secrets.DISCORD_WEBHOOK }}
+          username: Exult github-actions
+          avatarUrl: https://avatars.githubusercontent.com/u/15114538?s=200&v=4
+          text: '**[The MSVC exult_studio build succeeded:](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})**'
+      - name: ES Discord failure notification
+        uses: rjstone/discord-webhook-notify@v1
+        continue-on-error: true
+        if: needs.ci-msvc-exult_studio.result != 'success'
+        with:
+          severity: error
+          webhookUrl: ${{ secrets.DISCORD_WEBHOOK }}
+          username: Exult github-actions
+          avatarUrl: https://avatars.githubusercontent.com/u/15114538?s=200&v=4
+          text: '**[The MSVC exult_studio build failed:](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})**'

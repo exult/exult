@@ -35,8 +35,7 @@ const int ID_MAGE_OR_GOON				= 31;
 const int ID_JONELETH					= 31;
 
 //Global indicator of progress for the Keyring Quest:
-enum Keyring_quest_levels
-{
+enum Keyring_quest_levels {
 	NOT_STARTED							= 0,
 	QUEST_ACCEPTED						= 1,
 	NO_ONE_THERE						= 2,

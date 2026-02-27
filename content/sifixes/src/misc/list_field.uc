@@ -19,15 +19,13 @@
  *	Author: Marzo Junior
  */
 
-void ListFieldReturnGear 0x931 (var obj)
-{
+void ListFieldReturnGear 0x931 (var obj) {
 	// Just in case.
 	try {
 		ListFieldReturnGear.original(obj);
 	} catch (error) {
 	}
-	if (UI_get_npc_object(BOYDON) == obj)
-	{
+	if (UI_get_npc_object(BOYDON) == obj) {
 		UI_set_item_flag(obj, SI_TOURNAMENT);
 	}
 }

@@ -29,9 +29,11 @@
 //Item-related functions
 //----------------------
 
-extern void stealItem 0x8FA(var object);		//If <object> belongs to someone (i.e., does not have the OKAY_TO_TAKE flag and the party is not in a dungeon), this executes stolen-item behaviour: guards showing up, party members leaving etc.
+//If <object> belongs to someone (i.e., does not have the OKAY_TO_TAKE flag and the party is not in a dungeon), this executes stolen-item behaviour: guards showing up, party members leaving etc.
+extern void stealItem 0x8FA(var object);
 
-extern void subtractQuantity 0x925(var object);	//Remove 1 from <object>'s quantity stack. If it's quantity is at 1, or it has no quantity, this will remove the object.
+//Remove 1 from <object>'s quantity stack. If it's quantity is at 1, or it has no quantity, this will remove the object.
+extern void subtractQuantity 0x925(var object);
 
 //This will try to pathfind the avatar to <target>, which can be an object, NPC or X,Y,Z location(?).
 //<rangex> and <rangey> are arrays that define a grid of points around the object, and the Avatar will pathfind to the first unoccupied point in that grid (in the order the coordinates were defined). <rangez> I think declares an acceptable z range to pathfind to, and is usually -3.
@@ -59,14 +61,18 @@ extern var placeOnTarget 0x837(var obj, var target, var offset_x, var offset_y, 
 //<npc> barks <line> after <delay> ticks.
 extern void delayedBark 0x933(var npc, var line, var delay);
 
-extern void randomPartyBark 0x08FE(var line);	//Get a random nearby party member to say <line> as a bark
-extern void randomPartySay 0x08FF(var line);		//Get a random nearby party member to say <line> in conversation form
+//Get a random nearby party member to say <line> as a bark
+extern void randomPartyBark 0x08FE(var line);
+//Get a random nearby party member to say <line> in conversation form
+extern void randomPartySay 0x08FF(var line);
 
 //returns a random party member who is nearby, or the Avatar if none can be found.
 extern var randomPartyMember 0x900();
 
-extern var getAvatarName 0x0908();	//returns the name of the Avatar
-extern var getPoliteTitle 0x909();	//returns "milord" or "milady", depending on the gender of the Avatar
+//returns the name of the Avatar
+extern var getAvatarName 0x0908();
+//returns "milord" or "milady", depending on the gender of the Avatar
+extern var getPoliteTitle 0x909();
 
 //asks a Yes/No question in a conversation; returns true/false respectively
 extern var askYesNo 0x90A();

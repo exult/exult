@@ -1,5 +1,5 @@
 /*
-Copyright (C) 2022 The Exult Team
+Copyright (C) 2022-2024 The Exult Team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -16,62 +16,103 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
-
 #ifdef HAVE_CONFIG_H
-#  include <config.h>
+#	include <config.h>
 #endif
 
-#include "gamewin.h"
-#include "Gump.h"
 #include "Gump_widget.h"
+
+#include "gamewin.h"
 
 /*
  *  Is a given screen point on this widget?
  */
 
 bool Gump_widget::on_widget(
-    int mx, int my          // Point in window.
+		int mx, int my    // Point in window.
 ) const {
-	mx -= parent->get_x() + x;  // Get point rel. to gump.
-	my -= parent->get_y() + y;
-	Shape_frame *cshape = get_shape();
-	return (cshape != nullptr) ? cshape->has_point(mx, my) : false;
+	// if shapenum is invalid just use rect
+	if (get_shapenum() < 0 || get_framenum() < 0) {
+		return get_rect().has_point(mx, my);
+	}
+	int lx = mx, ly = my;
+	screen_to_local(lx, ly);
+	Shape_frame* cshape = get_shape();
+	return (cshape != nullptr) ? cshape->has_point(lx, ly) : get_rect().has_point(mx, my);
 }
 
 /*
  *  Repaint checkmark, etc.
  */
 
-void Gump_widget::paint(
-) {
-	int px = 0;
-	int py = 0;
+void Gump_widget::paint() {
+	int sx = 0;
+	int sy = 0;
 
-	if (parent) {
-		px = parent->get_x();
-		py = parent->get_y();
-	}
+	local_to_screen(sx, sy);
 
-	paint_shape(x + px, y + py);
+	paint_shape(sx, sy);
 }
 
 /*
  *  Get screen area used by a gump.
  */
 
-TileRect Gump_widget::get_rect() {
-	int px = x;
-	int py = y;
+TileRect Gump_widget::get_rect() const {
+	int sx = 0;
+	int sy = 0;
 
-	if (parent) {
-		px += parent->get_x();
-		py += parent->get_y();
+	local_to_screen(sx, sy);
+
+	Shape_frame* s = get_shape();
+
+	if (!s) {
+		return TileRect(0, 0, 0, 0);
 	}
 
-	Shape_frame *s = get_shape();
+	return TileRect(sx - s->get_xleft(), sy - s->get_yabove(), s->get_width(), s->get_height());
+}
 
-	if (!s) return TileRect(0, 0, 0, 0);
+void Gump_widget::set_pos(int newx, int newy) {
+	// Set old rect dirty
+	gwin->add_dirty(get_rect());
+	x = newx;
+	y = newy;
+	// Set new rect dirty
+	gwin->add_dirty(get_rect());
+}
 
-	return TileRect(px - s->get_xleft(),   py - s->get_yabove(),
-	                 s->get_width(), s->get_height());
+void Gump_widget::paintSorted(Sort_Order sort, Sort_Order& next, Sort_Order& highest) {
+	if (sort_order > highest) {
+		highest = sort_order;
+	}
+	if (sort_order > sort && (sort_order < next || sort_order < highest)) {
+		next = sort_order;
+	}
+	if (sort_order == sort) {
+		// Save clipping rect
+		auto                       ibuf = gwin->get_win()->get_ibuf();
+		Image_buffer::ClipRectSave clip(ibuf);
+		// If top most clear clip and allow to overdraw everything
+		if (sort == Sort_Order::ontop) {
+			ibuf->clear_clip();
+		}
+		paint();
+	}
+}
+
+Gump_widget* Gump_widget::findSorted(int sx, int sy, Sort_Order sort, Sort_Order& next, Sort_Order& highest, Gump_widget* before) {
+	if (this == before) {
+		return nullptr;
+	}
+	if (sort_order > highest) {
+		highest = sort_order;
+	}
+	if (sort_order > sort && (sort_order < next || sort_order < highest)) {
+		next = sort_order;
+	}
+	if (sort_order == sort && on_widget(sx, sy) && sort_order != Sort_Order::hidden) {
+		return this;
+	}
+	return nullptr;
 }

@@ -22,7 +22,13 @@
 #ifndef UCMACHINE_H
 #define UCMACHINE_H
 
+#include "exceptions.h"
+#include "singles.h"
+
+#include <algorithm>
 #include <iosfwd>
+#include <optional>
+#include <vector>
 
 class Game_window;
 class Usecode_machine;
@@ -34,84 +40,154 @@ class Usecode_value;
 class Usecode_class_symbol;
 class Tile_coord;
 
-#include "exceptions.h"
-#include "singles.h"
-#include "exult_constants.h"
-
 /*
  *  Here's our virtual machine for running usecode.  The actual internals
  *  are in Usecode_internal.
  */
 class Usecode_machine : nonreplicatable, public Game_singletons {
 protected:
-	unsigned char gflags[c_last_gflag + 1]; // Global flags.
-	Keyring *keyring = nullptr;
-	Conversation *conv = nullptr;     // Handles conversations
+	// Global flags.
+	std::vector<unsigned char> gflags;
+	// Handles the SI keyring
+	Keyring* keyring = nullptr;
+	// Handles conversations
+	Conversation* conv = nullptr;
+
+	// "Page size" for global flags.
+	constexpr static const size_t gflags_page_size = 2048;
+
 public:
+	constexpr static const size_t max_num_gflags = 32768;
+	constexpr static const size_t last_gflag     = max_num_gflags - 1;
+
 	friend class Usecode_script;
 	// Create Usecode_internal.
-	static Usecode_machine *create();
+	static Usecode_machine* create();
 	Usecode_machine();
 	virtual ~Usecode_machine();
 	// Read in usecode functions.
-	virtual void read_usecode(std::istream &file, bool patch = false) = 0;
+	virtual void read_usecode(std::istream& file, bool patch = false) = 0;
+
 	// Possible events:
 	enum Usecode_events {
-	    npc_proximity = 0,
-	    double_click = 1,
-	    internal_exec = 2,  // Internal call via intr. 1 or 2.
-	    egg_proximity = 3,
-	    weapon = 4,     // From weapons.dat.
-	    readied = 5,        // Wear an item.
-	    unreadied = 6,      // Removed an item.
-	    died = 7,       // In SI only, I think.
-	    chat = 9    // When a NPC wants to talk to you in SI
+		npc_proximity = 0,
+		double_click  = 1,
+		internal_exec = 2,    // Internal call via intr. 1 or 2.
+		egg_proximity = 3,
+		weapon        = 4,    // From weapons.dat.
+		readied       = 5,    // Wear an item.
+		unreadied     = 6,    // Removed an item.
+		died          = 7,    // In SI only, I think.
+		chat          = 9,    // When a NPC wants to talk to you in SI
+		si_path_fail  = 14,
 	};
+
 	enum Global_flag_names {
-	    did_first_scene = 0x3b, // Went through 1st scene with Iolo.
-	    have_trinsic_password = 0x3d,
-	    found_stable_key = 0x3c,
-	    left_trinsic = 0x57,
-	    avatar_is_thief = 0x2eb
+		si_did_first_scene    = 0x03,    // After Iolo's talk at the start of SI.
+		failed_copy_protect   = 0x38,
+		did_first_scene       = 0x3b,    // Went through 1st scene with Iolo.
+		have_trinsic_password = 0x3d,
+		found_stable_key      = 0x3c,
+		left_trinsic          = 0x57,
+		doing_xenka_return    = 0x272,
+		avatar_is_thief       = 0x2eb,
 	};
-	int get_global_flag(int i) { // Get/set ith flag.
-		return gflags[i];
+
+	// Get ith flag, without bounds checks.
+	bool get_global_flag_unsafe(int i) {
+		return gflags[i] != 0;
 	}
-	void set_global_flag(int i, int val = 1) {
-		gflags[i] = (val == 1);
+
+	// Set ith flag, without bounds checks.
+	void set_global_flag_unsafe(int i, bool val) {
+		gflags[i] = static_cast<unsigned char>(val);
 	}
+
+	// Get ith flag, with bounds checks. Returns std::nullopt if out of range.
+	std::optional<bool> get_global_flag(int i) {
+		if (i >= 0 && static_cast<size_t>(i) < gflags.size()) {
+			return get_global_flag_unsafe(i);
+		}
+		return std::nullopt;
+	}
+
+	bool get_global_flag_bool(int i) {
+		return get_global_flag(i).value_or(false);
+	}
+
+	// Set ith flag, with bounds checks. Resizes gflags vector if needed, to a
+	// multiple of the page size. Returns false if i < 0 || i >= max_num_gflags.
+	bool set_global_flag(int i, bool val) {
+		if (i < 0 || static_cast<size_t>(i) >= max_num_gflags) {
+			return false;
+		}
+		if (i >= static_cast<int>(gflags.size())) {
+			set_num_global_flags(i + 1);
+		}
+		set_global_flag_unsafe(i, val);
+		return true;
+	}
+
+	size_t get_num_global_flags() const {
+		return gflags.size();
+	}
+
+	void set_num_global_flags(size_t n) {
+		size_t newsize = ((n + gflags_page_size - 1) / gflags_page_size) * gflags_page_size;
+		newsize        = std::clamp(newsize, gflags_page_size, max_num_gflags);
+		gflags.resize(newsize, 0);
+	}
+
+	void reset_global_flags(size_t n = gflags_page_size) {
+		gflags.clear();
+		set_num_global_flags(n);
+	}
+
+	void compact_global_flags() {
+		auto rit = std::find(gflags.rbegin(), gflags.rend(), 1);
+		if (rit == gflags.rend()) {
+			gflags.resize(gflags_page_size);
+		} else {
+			// rit dereferences to the last nonzero flag.
+			// it dereferences to one after the last nonzero flag.
+			auto   it     = rit.base();
+			size_t offset = std::distance(gflags.begin(), it);
+			set_num_global_flags(offset);
+		}
+	}
+
 	// Start speech, or show text.
-	virtual void do_speech(int num) = 0;
-	virtual bool in_usecode() = 0;  // Currently in a usecode function?
-	virtual bool in_usecode_for(Game_object *item, Usecode_events event) = 0;
-	Keyring *getKeyring() const {
+	virtual void do_speech(int num)                                      = 0;
+	virtual bool in_usecode()                                            = 0;    // Currently in a usecode function?
+	virtual bool in_usecode_for(Game_object* item, Usecode_events event) = 0;
+
+	Keyring* getKeyring() const {
 		return keyring;
 	}
+
 	// Call desired function.
-	virtual int call_usecode(int id, Game_object *item,
-	                         Usecode_events event) = 0;
-	virtual bool call_method(Usecode_value *inst, int id,
-	                         Game_object *item) = 0;
-	virtual int find_function(const char *nm, bool noerr = false) = 0;
-	virtual const char *find_function_name(int funcid) = 0;
-	virtual Usecode_class_symbol *get_class(int n) = 0;
-	virtual Usecode_class_symbol *get_class(const char *nm) = 0;
-	virtual int get_shape_fun(int n) = 0;
-	virtual void write() = 0;   // Write out 'gamedat/usecode.dat'.
-	virtual void read() = 0;    // Read in 'gamedat/usecode.dat'.
+	virtual int                   call_usecode(int id, Game_object* item, Usecode_events event) = 0;
+	virtual bool                  call_method(Usecode_value* inst, int id, Game_object* item)   = 0;
+	virtual int                   find_function(const char* nm, bool noerr = false)             = 0;
+	virtual const char*           find_function_name(int funcid)                                = 0;
+	virtual Usecode_class_symbol* get_class(int n)                                              = 0;
+	virtual Usecode_class_symbol* get_class(const char* nm)                                     = 0;
+	virtual int                   get_shape_fun(int n)                                          = 0;
+	virtual void                  write() = 0;    // Write out 'gamedat/usecode.dat'.
+	virtual void                  read()  = 0;    // Read in 'gamedat/usecode.dat'.
 
 	void init_conversation();
-	int get_num_faces_on_screen() const;
+	int  get_num_faces_on_screen() const;
 
 	// intercept the next click_on_item intrinsic
-	virtual void intercept_click_on_item(Game_object *obj) = 0;
-	virtual Game_object *get_intercept_click_on_item() const = 0;
-	virtual void intercept_click_on_tile(Tile_coord *t) = 0;
-	virtual Tile_coord *get_intercept_click_on_tile() const = 0;
-	virtual void save_intercept(Game_object *&obj, Tile_coord *&t) = 0;
-	virtual void restore_intercept(Game_object *obj, Tile_coord *t) = 0;
+	virtual void         intercept_click_on_item(Game_object* obj)          = 0;
+	virtual Game_object* get_intercept_click_on_item() const                = 0;
+	virtual void         intercept_click_on_tile(Tile_coord* t)             = 0;
+	virtual Tile_coord*  get_intercept_click_on_tile() const                = 0;
+	virtual void         save_intercept(Game_object*& obj, Tile_coord*& t)  = 0;
+	virtual void         restore_intercept(Game_object* obj, Tile_coord* t) = 0;
 
 	virtual bool function_exists(int funcid) = 0;
 };
 
-#endif  /* INCL_USECODE */
+#endif /* INCL_USECODE */

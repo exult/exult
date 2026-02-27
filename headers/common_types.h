@@ -20,7 +20,7 @@
 #define COMMON_TYPES_H
 
 #ifdef HAVE_CONFIG_H
-#  include <config.h>
+#	include <config.h>
 #endif
 
 //
@@ -29,28 +29,47 @@
 
 #include <cstdint>
 
-// Note: u?int{8,16,32,64,ptr}_t types from <cstdint> are mandatory in any systems
-// which directly support them.
+// Note: u?int{8,16,32,64,ptr}_t types from <cstdint> are mandatory in any
+// systems which directly support them.
 
-using uint8 = uint8_t;
-using uint16 = uint16_t;
-using uint32 = uint32_t;
-using uint64 = uint64_t;
+using uint8   = uint8_t;
+using uint16  = uint16_t;
+using uint32  = uint32_t;
+using uint64  = uint64_t;
 using uintptr = uintptr_t;
-using sint8 = int8_t;
-using sint16 = int16_t;
-using sint32 = int32_t;
-using sint64 = int64_t;
+using sint8   = int8_t;
+using sint16  = int16_t;
+using sint32  = int32_t;
+using sint64  = int64_t;
 using sintptr = intptr_t;
 
 // Debug
 #ifdef DEBUG
-#  define COUT(x)       do { std::cout << x << std::endl; std::cout.flush(); } while (0)
-#  define CERR(x)       do { std::cerr << x << std::endl; std::cerr.flush(); } while (0)
+#	ifndef COUT
+#		define COUT(x)                      \
+			do {                             \
+				std::cout << x << std::endl; \
+				std::cout.flush();           \
+			} while (0)
+#	endif
+#	ifndef CERR
+#		define CERR(x)                      \
+			do {                             \
+				std::cerr << x << std::endl; \
+				std::cerr.flush();           \
+			} while (0)
+#	endif
 #else
-#  define COUT(x)       do { } while(0)
-#  define CERR(x)       do { } while(0)
+#	ifndef COUT
+#		define COUT(x) \
+			do {        \
+			} while (0)
+#	endif
+#	ifndef CERR
+#		define CERR(x) \
+			do {        \
+			} while (0)
+#	endif
 #endif
 
-#endif // COMMON_TYPES_H
-
+#endif    // COMMON_TYPES_H

@@ -37,76 +37,89 @@ class Shape_info;
  *  This is meant to be stored in a totally ordered vector.
  */
 class Effective_hp_info : public Base_info {
-	short   frame;
-	short   quality;
-	char    hps;
+	short frame;
+	short quality;
+	char  hps;
+
 public:
 	friend class Shape_info;
 	Effective_hp_info() = default;
-	Effective_hp_info(short f, short q, char h, bool p = false, bool m = false,
-	                  bool s = false, bool inv = false) {
+
+	Effective_hp_info(short f, short q, char h, bool p = false, bool m = false, bool s = false, bool inv = false) {
 		set(f, q, h, p, m, s, inv);
 	}
-	Effective_hp_info(const Effective_hp_info &other)
-		: Base_info(other), frame(other.frame), quality(other.quality), hps(other.hps) {
+
+	Effective_hp_info(const Effective_hp_info& other)
+			: Base_info(other), frame(other.frame), quality(other.quality), hps(other.hps) {
 		info_flags = other.info_flags;
 	}
+
 	// Read in from file.
-	bool read(std::istream &in, int version, Exult_Game game);
+	bool read(std::istream& in, int version, Exult_Game game);
 	// Write out.
-	void write(std::ostream &out, int shapenum, Exult_Game game);
-	void set(short f, short q, char h, bool p = false, bool m = false,
-	         bool s = false, bool inv = false) {
-		frame = f;
+	void write(std::ostream& out, int shapenum, Exult_Game game);
+
+	void set(short f, short q, char h, bool p = false, bool m = false, bool s = false, bool inv = false) {
+		frame   = f;
 		quality = q;
-		hps = h;
+		hps     = h;
 		set_patch(p);
 		set_modified(m);
 		set_static(s);
 		set_invalid(inv);
 	}
+
 	void invalidate() {
 		hps = 0;
 		set_invalid(true);
 	}
+
 	int get_frame() const {
 		return frame;
 	}
+
 	int get_quality() const {
 		return quality;
 	}
+
 	int get_hps() const {
 		return hps;
 	}
+
 	void set_hps(int f) {
 		if (hps != f) {
 			set_modified(true);
 			hps = f;
 		}
 	}
-	bool operator<(const Effective_hp_info &other) const {
-		auto qual1 = static_cast<unsigned short>(quality);
-		auto qual2 = static_cast<unsigned short>(other.quality);
+
+	bool operator<(const Effective_hp_info& other) const {
+		auto qual1  = static_cast<unsigned short>(quality);
+		auto qual2  = static_cast<unsigned short>(other.quality);
 		auto frame1 = static_cast<unsigned short>(frame);
 		auto frame2 = static_cast<unsigned short>(other.frame);
 		return (frame1 == frame2 && qual1 < qual2) || (frame1 < frame2);
 	}
-	bool operator==(const Effective_hp_info &other) const {
+
+	bool operator==(const Effective_hp_info& other) const {
 		return this == &other || (!(*this < other) && !(other < *this));
 	}
-	bool operator!=(const Effective_hp_info &other) const {
+
+	bool operator!=(const Effective_hp_info& other) const {
 		return !(*this == other);
 	}
-	Effective_hp_info &operator=(const Effective_hp_info &other) {
+
+	Effective_hp_info& operator=(const Effective_hp_info& other) {
 		if (this != &other) {
-			frame = other.frame;
-			quality = other.quality;
-			hps = other.hps;
+			frame      = other.frame;
+			quality    = other.quality;
+			hps        = other.hps;
 			info_flags = other.info_flags;
 		}
 		return *this;
 	}
-	void set(const Effective_hp_info &other) {
+
+	void set(const Effective_hp_info& other) {
 		// Assumes *this == other.
 		// No need to guard against self-assignment.
 		// Do NOT copy modified or static flags.
@@ -114,7 +127,11 @@ public:
 		set_invalid(other.is_invalid());
 		set_hps(other.hps);
 	}
-	enum { is_binary = 0, entry_size = 0 };
+
+	enum {
+		is_binary  = 0,
+		entry_size = 0
+	};
 };
 
 #endif

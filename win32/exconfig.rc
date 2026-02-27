@@ -6,7 +6,7 @@
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENA)
 #ifdef _WIN32
 LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_AUS
-#pragma code_page(1252)
+#pragma code_page(65001) // UTF-8
 #endif //_WIN32
 
 
@@ -17,8 +17,8 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_AUS
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 1,9,0,0
- PRODUCTVERSION 1,9,0,0
+ FILEVERSION 1,13,1,0
+ PRODUCTVERSION 1,13,1,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -36,14 +36,14 @@ BEGIN
             VALUE "Comments", "\0"
             VALUE "CompanyName", "\0"
             VALUE "FileDescription", "Exult Config Helper DLL for InnoSetup\0"
-            VALUE "FileVersion", "1, 9, 0\0"
+            VALUE "FileVersion", "1.13.1git\0"
             VALUE "InternalName", "exconfig\0"
-            VALUE "LegalCopyright", "Copyright © 2022\0"
+            VALUE "LegalCopyright", "Copyright Â© 2025\0"
             VALUE "LegalTrademarks", "\0"
             VALUE "OriginalFilename", "exconfig.dll\0"
             VALUE "PrivateBuild", "\0"
             VALUE "ProductName", "Exult\0"
-            VALUE "ProductVersion", "1.9.0git\0"
+            VALUE "ProductVersion", "1.13.1git\0"
             VALUE "SpecialBuild", "\0"
         END
     END

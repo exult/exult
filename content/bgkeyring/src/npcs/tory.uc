@@ -25,40 +25,36 @@
  */
 
 const int RIKY_QUEST_EXPERIENCE = 100;	//How much the party gets for returning Riky
-void Lady_Tory object#(0x4C8) ()
-{
+void Lady_Tory object#(0x4C8) () {
 	var player_name;
 	var polite_title;
 	var asked_about_john_paul;
 
-	if(event == DOUBLECLICK)
-	{
+	if(event == DOUBLECLICK) {
 		player_name = getAvatarName();
 		polite_title = getPoliteTitle();
 		asked_about_john_paul = false;
 
 		add(["name", "job", "bye"]);
-		if (gflags[STARTED_HOLD_INVESTIGATION] && !gflags[FINISHED_HOLD_INVESTIGATION])
+		if (gflags[STARTED_HOLD_INVESTIGATION] && !gflags[FINISHED_HOLD_INVESTIGATION]) {
 			add("statue");
-		if (gflags[HEARD_ABOUT_RIKY] && !gflags[RESCUED_RIKY])
+		}
+		if (gflags[HEARD_ABOUT_RIKY] && !gflags[RESCUED_RIKY]) {
 			add("Riky");
+		}
 
-		if(!gflags[MET_TORY])
-		{
+		if(!gflags[MET_TORY]) {
 			item.say("The woman smiles at you compassionately.");
 			gflags[MET_TORY] = true;
-		}
-		else
+		} else {
 			item.say("Tory smiles and reaches out to you. @Hello, ", player_name,
 				". I sense thou art troubled.@");
+		}
 
-		converse(0)
-		{
+		converse(0) {
 			case "name" (remove):
 				say("@I am Lady Tory, ", polite_title, ".@");
-
-				if (!gflags[HEARD_ABOUT_RIKY])
-				{
+				if (!gflags[HEARD_ABOUT_RIKY]) {
 					say("@Mother of Riky,@ she says, sobbing.");
 					add("Riky");
 				}
@@ -68,44 +64,36 @@ void Lady_Tory object#(0x4C8) ()
 				add(["Lord John-Paul", "Hold"]);
 
 			case "Riky" (remove):
-				if (gflags[HEARD_ABOUT_RIKY])
-				{
+				if (gflags[HEARD_ABOUT_RIKY]) {
 					say("@Hast thou found my child?@");
-					if (askYesNo())
-					{
+					if (askYesNo()) {
 						//Party is carrying Riky
-						if (PARTY->count_objects(SHAPE_BABY, QUALITY_ANY, FRAME_RIKY))
-						{
+						if (PARTY->count_objects(SHAPE_BABY, QUALITY_ANY, FRAME_RIKY)) {
 							giveExperience(RIKY_QUEST_EXPERIENCE);
 							say("@I cannot begin to express my gratitude, ",
 								polite_title, ". Thank thee ever so much!@",
 								"~She begins sobbing for joy. @Pl-please set him back gently in the cradle.@");
 							gflags[RESCUED_RIKY] = true;
-						}
-						//Carrying some baby, but it ain't him
-						else if (PARTY->count_objects(SHAPE_BABY, QUALITY_ANY, FRAME_ANY))
+						} else if (PARTY->count_objects(SHAPE_BABY, QUALITY_ANY, FRAME_ANY)) {
+							//Carrying some baby, but it ain't him
 							say("@Why, that's not my little Riky, ", polite_title,
 								". Thou hast someone else's child. Oh, where could my boy have been taken?@ she says, crying.");
-						else
-						{
+						} else {
 							say("@But, I see no child with thee. Thine humor is quite dark. Please return when thou art carrying my baby boy!@*");
 							return;
 						}
-					}
-					else
+					} else {
 						say("@Please, I beseech thee, continue thine hunt!@");
-				}
-				else
-				{
+					}
+				} else {
 					gflags[HEARD_ABOUT_RIKY] = true;
 
 					say("@My poor baby boy. He -- he was taken one night by cruel harpies who wanted a child for their own. I -- I know not where they have taken him, but I have heard some of the knights mention that a group of the vile women-birds cluster around the shrine of Honor. But, they have not yet been able to defeat them.@ She sniffs.");
 					say("@But thou ", polite_title,
 						", thou wilt help me get my child back. Oh, please, wilt thou?@");
-					if (askYesNo())
+					if (askYesNo()) {
 						say("@I cannot thank thee enough for helping me!@ She appears to have cheered up greatly.");
-					else
-					{
+					} else {
 						say("@Thou art a no more than a coward. Get thee gone, coward!@");
 						gflags[RESCUED_RIKY] = true;
 					}
@@ -120,22 +108,22 @@ void Lady_Tory object#(0x4C8) ()
 				//and you intuit by my VERY AURA that I want to know about
 				//Serpent's Hold. What a marvel you are.
 
-				if (askYesNo())
-				{
+				if (askYesNo()) {
 					say("@As counselor for the Hold, I can tell thee about many people. Hast thou met the healer or the provisioner? And, as a warrior thyself, thou mayest wish to visit the trainer and the armourer.@");
 
-					if (!asked_about_john_paul)
+					if (!asked_about_john_paul) {
 						add("Lord John-Paul");
+					}
 					add(["healer", "armourer", "trainer", "provisioner"]);
-				}
-				else
+				} else {
 					say("@Very well. Come to me if thou changest thy mind.@");
+				}
 
 			case "Lord John-Paul" (remove):
 				say("@He is an extraordinary leader. Everyone looks up to him. Thou hast only to ask his captain.@");
 				add("captain");
 				asked_about_john_paul = true;
-		
+
 			case "healer" (remove):
 				say("@Lady Leigh is very skilled as a healer. I have yet to see her lose a patient.@");
 
@@ -156,8 +144,9 @@ void Lady_Tory object#(0x4C8) ()
 
 			case "captain" (remove):
 				say("@The Captain of the guard, Sir Horffe, is a gargoyle. He was found by two humans who raised him to be a valiant knight. He is a very dedicated warrior, and rarely leaves Lord John-Paul's side.@");
-				if (gflags[MET_HORFFE])
+				if (gflags[MET_HORFFE]) {
 					add("Gargish accent");
+				}
 
 			case "Gargish accent" (remove):
 				say("@Despite his human upbringing, Horffe has struggled to maintain his Gargish identity. By speaking in the same manner as his brethren, he feels he can better hold on to his background.@");
@@ -172,8 +161,7 @@ void Lady_Tory object#(0x4C8) ()
 			case "Sir Jordan" (remove):
 				say("@He is a wonder. Despite his blindness, he fights with amazing deftness. In fact, he also enjoys toying with mechanical items, and his loss of eyesight does not seem to affect that, either.",
 					"~~@However, I sense in him a very recent change, remarkably like that in Sir Richter. He would be an interesting one to speak with. Thou mayest find him at Iolo's South.@*");
-				if (isNearby(IOLO))
-				{
+				if (isNearby(IOLO)) {
 					IOLO.say("Iolo smiles proudly.",
 						"~~@My shop has, er, grown a bit since thou wert here last, ",
 						player_name, ".@");
@@ -185,7 +173,7 @@ void Lady_Tory object#(0x4C8) ()
 				say("@I sense thou hast pressing engagements elsewhere. I bid thee farewell.@*");
 				return;
 		}
-	}
-	else if (event == PROXIMITY)
+	} else if (event == PROXIMITY) {
 		scheduleBarks(item);
+	}
 }

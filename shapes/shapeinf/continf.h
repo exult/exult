@@ -5,7 +5,7 @@
  **/
 
 #ifndef INCL_CONTINF_H
-#define INCL_CONTINF_H  1
+#define INCL_CONTINF_H 1
 
 /*
 Copyright (C) 2008-2022 The Exult Team
@@ -37,68 +37,79 @@ class Shape_info;
  *  This is meant to be stored in a totally ordered vector.
  */
 class Content_rules : public Base_info {
-	int     shape;
-	bool    accept;
+	int  shape;
+	bool accept;
+
 public:
 	friend class Shape_info;
 	Content_rules() = default;
-	Content_rules(int sh, bool a, bool p = false, bool m = false,
-	              bool st = false, bool inv = false) {
+
+	Content_rules(int sh, bool a, bool p = false, bool m = false, bool st = false, bool inv = false) {
 		set(sh, a, p, m, st, inv);
 	}
-	Content_rules(const Content_rules &other)
-		: Base_info(other), shape(other.shape), accept(other.accept) {
+
+	Content_rules(const Content_rules& other) : Base_info(other), shape(other.shape), accept(other.accept) {
 		info_flags = other.info_flags;
 	}
+
 	// Read in from file.
-	bool read(std::istream &in, int version, Exult_Game game);
+	bool read(std::istream& in, int version, Exult_Game game);
 	// Write out.
-	void write(std::ostream &out, int shapenum, Exult_Game game);
-	void set(int sh, bool a, bool p = false, bool m = false,
-	         bool st = false, bool inv = false) {
-		shape = sh;
+	void write(std::ostream& out, int shapenum, Exult_Game game);
+
+	void set(int sh, bool a, bool p = false, bool m = false, bool st = false, bool inv = false) {
+		shape  = sh;
 		accept = a;
 		set_patch(p);
 		set_modified(m);
 		set_static(st);
 		set_invalid(inv);
 	}
+
 	void invalidate() {
 		accept = true;
 		set_invalid(true);
 	}
+
 	int get_shape() const {
 		return shape;
 	}
+
 	bool accepts_shape() const {
 		return accept;
 	}
+
 	void set_accept(bool tf) {
 		if (accept != tf) {
 			set_modified(true);
 			accept = tf;
 		}
 	}
-	bool operator<(const Content_rules &other) const {
+
+	bool operator<(const Content_rules& other) const {
 		auto shp1 = static_cast<unsigned short>(shape);
 		auto shp2 = static_cast<unsigned short>(other.shape);
 		return shp1 < shp2;
 	}
-	bool operator==(const Content_rules &other) const {
+
+	bool operator==(const Content_rules& other) const {
 		return this == &other || (!(*this < other) && !(other < *this));
 	}
-	bool operator!=(const Content_rules &other) const {
+
+	bool operator!=(const Content_rules& other) const {
 		return !(*this == other);
 	}
-	Content_rules &operator=(const Content_rules &other) {
+
+	Content_rules& operator=(const Content_rules& other) {
 		if (this != &other) {
-			shape = other.shape;
-			accept = other.accept;
+			shape      = other.shape;
+			accept     = other.accept;
 			info_flags = other.info_flags;
 		}
 		return *this;
 	}
-	void set(const Content_rules &other) {
+
+	void set(const Content_rules& other) {
 		// Assumes *this == other.
 		// No need to guard against self-assignment.
 		// Do NOT copy modified or static flags.
@@ -106,7 +117,11 @@ public:
 		set_invalid(other.is_invalid());
 		set_accept(other.accept);
 	}
-	enum { is_binary = 0, entry_size = 0 };
+
+	enum {
+		is_binary  = 0,
+		entry_size = 0
+	};
 };
 
 #endif

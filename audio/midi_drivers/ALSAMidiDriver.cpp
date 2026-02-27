@@ -25,60 +25,60 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
 #include "pent_include.h"
-#include "ALSAMidiDriver.h"
 
 #ifdef USE_ALSA_MIDI
+#	include "ALSAMidiDriver.h"
 
-const MidiDriver::MidiDriverDesc ALSAMidiDriver::desc =
-      MidiDriver::MidiDriverDesc ("Alsa", createInstance);
+#	include <algorithm>
+#	include <array>
+#	include <string_view>
 
+const MidiDriver::MidiDriverDesc ALSAMidiDriver::desc = MidiDriver::MidiDriverDesc("Alsa", createInstance);
 
-
-
-#if SND_LIB_MAJOR >= 1 || SND_LIB_MINOR >= 6
-#define snd_seq_flush_output(x) snd_seq_drain_output(x)
-#define snd_seq_set_client_group(x,name)	/*nop */
-#define my_snd_seq_open(seqp) snd_seq_open(seqp, "hw", SND_SEQ_OPEN_OUTPUT, 0)
-#else
+#	if SND_LIB_MAJOR >= 1 || SND_LIB_MINOR >= 6
+#		define snd_seq_flush_output(x)           snd_seq_drain_output(x)
+#		define snd_seq_set_client_group(x, name) /*nop */
+#		define my_snd_seq_open(seqp)             snd_seq_open(seqp, "hw", SND_SEQ_OPEN_OUTPUT, 0)
+#	else
 /* SND_SEQ_OPEN_OUT causes oops on early version of ALSA */
-#define my_snd_seq_open(seqp) snd_seq_open(seqp, SND_SEQ_OPEN)
-#endif
+#		define my_snd_seq_open(seqp) snd_seq_open(seqp, SND_SEQ_OPEN)
+#	endif
 
-#define ALSA_PORT "65:0"
-#define ADDR_DELIM ".:"
+constexpr const std::string_view ALSAPort  = "65:0";
+constexpr const std::string_view AddrDelim = ".:";
 
+namespace {
+	bool is_generic_midi_port(const snd_seq_port_info_t* info) {
+		constexpr const unsigned mask = SND_SEQ_PORT_TYPE_MIDI_GENERIC;
+		return (snd_seq_port_info_get_type(info) & mask) == mask;
+	}
 
-ALSAMidiDriver::ALSAMidiDriver()
- : isOpen(false), seq_handle(nullptr), clt_info(nullptr), prt_info(nullptr),
-   seq_client(0), seq_port(0), my_client(0), my_port(0)
-{
+	bool is_midi_port_writable(const snd_seq_port_info_t* info) {
+		constexpr const unsigned mask = SND_SEQ_PORT_CAP_WRITE | SND_SEQ_PORT_CAP_SUBS_WRITE;
+		return (snd_seq_port_info_get_capability(info) & mask) == mask;
+	}
 
-}
+	bool is_writable_midi_port(const snd_seq_port_info_t* info) {
+		return is_generic_midi_port(info) && is_midi_port_writable(info);
+	}
+}    // namespace
 
 bool ALSAMidiDriver::find_next_port(bool first) {
 	if (first) {
 		snd_seq_client_info_set_client(clt_info, -1);
 	} else {
 		while (snd_seq_query_next_port(seq_handle, prt_info) >= 0) {
-			if ((((snd_seq_port_info_get_type      (prt_info)) &
-			      (SND_SEQ_PORT_TYPE_MIDI_GENERIC))) &&
-			    (((snd_seq_port_info_get_capability(prt_info)) &
-			      (SND_SEQ_PORT_CAP_WRITE | SND_SEQ_PORT_CAP_SUBS_WRITE)) ==
-			      (SND_SEQ_PORT_CAP_WRITE | SND_SEQ_PORT_CAP_SUBS_WRITE))) {
+			if (is_writable_midi_port(prt_info)) {
 				return true;
 			}
 		}
 	}
 	while (snd_seq_query_next_client(seq_handle, clt_info) >= 0) {
-		int clt_id = snd_seq_client_info_get_client(clt_info);
-		snd_seq_port_info_set_client(prt_info, clt_id);
+		int client_id = snd_seq_client_info_get_client(clt_info);
+		snd_seq_port_info_set_client(prt_info, client_id);
 		snd_seq_port_info_set_port(prt_info, -1);
 		while (snd_seq_query_next_port(seq_handle, prt_info) >= 0) {
-			if ((((snd_seq_port_info_get_type      (prt_info)) &
-			      (SND_SEQ_PORT_TYPE_MIDI_GENERIC))) &&
-			    (((snd_seq_port_info_get_capability(prt_info)) &
-			      (SND_SEQ_PORT_CAP_WRITE | SND_SEQ_PORT_CAP_SUBS_WRITE)) ==
-			      (SND_SEQ_PORT_CAP_WRITE | SND_SEQ_PORT_CAP_SUBS_WRITE))) {
+			if (is_writable_midi_port(prt_info)) {
 				return true;
 			}
 		}
@@ -86,87 +86,84 @@ bool ALSAMidiDriver::find_next_port(bool first) {
 	return false;
 }
 
-bool ALSAMidiDriver::identify_port(int seq_client, int seq_port) {
-	if ((seq_client != -1) && (seq_port != -1)) {
-		if ((snd_seq_get_any_client_info(
-		         seq_handle, seq_client,           clt_info) < 0) ||
-		    (snd_seq_get_any_port_info  (
-		         seq_handle, seq_client, seq_port, prt_info) < 0)) {
+bool ALSAMidiDriver::identify_port(int arg_seq_client, int arg_seq_port) {
+	if ((arg_seq_client != -1) && (arg_seq_port != -1)) {
+		int ret = snd_seq_get_any_client_info(seq_handle, arg_seq_client, clt_info);
+		if (ret < 0) {
+			return false;
+		}
+		ret = snd_seq_get_any_port_info(seq_handle, arg_seq_client, arg_seq_port, prt_info);
+		if (ret < 0) {
 			return false;
 		}
 	}
-	if ((((snd_seq_port_info_get_type      (prt_info)) &
-	      (SND_SEQ_PORT_TYPE_MIDI_GENERIC))) &&
-	    (((snd_seq_port_info_get_capability(prt_info)) &
-	      (SND_SEQ_PORT_CAP_WRITE | SND_SEQ_PORT_CAP_SUBS_WRITE)) ==
-	      (SND_SEQ_PORT_CAP_WRITE | SND_SEQ_PORT_CAP_SUBS_WRITE))) {
-		clt_id            = snd_seq_client_info_get_client     (clt_info);
-		clt_name          = snd_seq_client_info_get_name       (clt_info);
-		prt_id            = snd_seq_port_info_get_port         (prt_info);
-		prt_capability    = snd_seq_port_info_get_capability   (prt_info);
-		prt_type          = snd_seq_port_info_get_type         (prt_info);
+	if (is_writable_midi_port(prt_info)) {
+		clt_id            = snd_seq_client_info_get_client(clt_info);
+		clt_name          = snd_seq_client_info_get_name(clt_info);
+		prt_id            = snd_seq_port_info_get_port(prt_info);
+		prt_capability    = snd_seq_port_info_get_capability(prt_info);
+		prt_type          = snd_seq_port_info_get_type(prt_info);
 		prt_midi_channels = snd_seq_port_info_get_midi_channels(prt_info);
-		prt_write_use     = snd_seq_port_info_get_write_use    (prt_info);
-		prt_name          = snd_seq_port_info_get_name         (prt_info);
+		prt_write_use     = snd_seq_port_info_get_write_use(prt_info);
+		prt_name          = snd_seq_port_info_get_name(prt_info);
 		return true;
 	}
 	return false;
 }
 
 int ALSAMidiDriver::open() {
-	std::string arg;
+	std::string  arg;
 	unsigned int caps;
 
-	if (isOpen)
+	if (isOpen) {
 		return -1;
+	}
 
-	if (my_snd_seq_open(&seq_handle)) {
+	if (!seq_handle && my_snd_seq_open(&seq_handle)) {
 		perr << "ALSAMidiDriver: Can't open sequencer" << std::endl;
 		return -1;
 	}
 
 	isOpen = true;
-	snd_seq_client_info_malloc(&clt_info);
-	snd_seq_port_info_malloc  (&prt_info);
+	if (!clt_info) {
+		snd_seq_client_info_malloc(&clt_info);
+	}
+	if (!prt_info) {
+		snd_seq_port_info_malloc(&prt_info);
+	}
 
 	my_client = snd_seq_client_id(seq_handle);
 	snd_seq_set_client_name(seq_handle, "PENTAGRAM");
 	snd_seq_set_client_group(seq_handle, "input");
 
 	caps = SND_SEQ_PORT_CAP_READ;
-	if (seq_client == SND_SEQ_ADDRESS_SUBSCRIBERS)
+	if (seq_client == SND_SEQ_ADDRESS_SUBSCRIBERS) {
 		caps = ~SND_SEQ_PORT_CAP_SUBS_READ;
-	my_port = snd_seq_create_simple_port(seq_handle, "PENTAGRAM", caps,
-	    SND_SEQ_PORT_TYPE_MIDI_GENERIC | SND_SEQ_PORT_TYPE_APPLICATION);
+	}
+	my_port = snd_seq_create_simple_port(
+			seq_handle, "PENTAGRAM", caps, SND_SEQ_PORT_TYPE_MIDI_GENERIC | SND_SEQ_PORT_TYPE_APPLICATION);
 	if (my_port < 0) {
 		close();
 		perr << "ALSAMidiDriver: Can't create port" << std::endl;
 		return -1;
 	}
 
-	{
-		pout << "Listing midi devices:" << std::endl;
-		bool first = true;
-		while (find_next_port(first)) {
-			first = false;
-			if (identify_port()) {
-				pout << clt_id << ":" << prt_id << " : [ "
-				     << clt_name << " : " << prt_name
-				     << ( prt_write_use > 0 ?
-				          " ], in use, " : " ], available, " )
-				     << prt_midi_channels << " channels"
-				     << ", RW capability"
-				     << ((prt_capability & SND_SEQ_PORT_CAP_READ)       ?  " R" : "" )
-				     << ((prt_capability & SND_SEQ_PORT_CAP_WRITE)      ?  " W" : "" )
-				     << ((prt_capability & SND_SEQ_PORT_CAP_DUPLEX)     ?  " D" : "" )
-				     << ((prt_capability & SND_SEQ_PORT_CAP_SUBS_READ)  ? " SR" : "" )
-				     << ((prt_capability & SND_SEQ_PORT_CAP_SUBS_WRITE) ? " SW" : "" )
-				     << " expected W SW" <<std::endl;
-			}
+	pout << "Listing midi devices:" << std::endl;
+	bool first = true;
+	while (find_next_port(first)) {
+		first = false;
+		if (identify_port()) {
+			pout << clt_id << ":" << prt_id << " : [ " << clt_name << " : " << prt_name
+				 << (prt_write_use > 0 ? " ], in use, " : " ], available, ") << prt_midi_channels << " channels"
+				 << ", RW capability" << ((prt_capability & SND_SEQ_PORT_CAP_READ) != 0u ? " R" : "")
+				 << ((prt_capability & SND_SEQ_PORT_CAP_WRITE) != 0u ? " W" : "")
+				 << ((prt_capability & SND_SEQ_PORT_CAP_DUPLEX) != 0u ? " D" : "")
+				 << ((prt_capability & SND_SEQ_PORT_CAP_SUBS_READ) != 0u ? " SR" : "")
+				 << ((prt_capability & SND_SEQ_PORT_CAP_SUBS_WRITE) != 0u ? " SW" : "") << " expected W SW" << std::endl;
 		}
 	}
 
-	arg = getConfigSetting("alsa_port", ALSA_PORT);
+	arg = getConfigSetting("alsa_port", ALSAPort.data());
 
 	if (parse_addr(arg, &seq_client, &seq_port) < 0) {
 		close();
@@ -176,11 +173,9 @@ int ALSAMidiDriver::open() {
 
 	if (seq_client != SND_SEQ_ADDRESS_SUBSCRIBERS) {
 		/* subscribe to MIDI port */
-		if (seq_client != my_client &&
-		    snd_seq_connect_to(seq_handle, my_port, seq_client, seq_port) >= 0) {
+		if (seq_client != my_client && snd_seq_connect_to(seq_handle, my_port, seq_client, seq_port) >= 0) {
 			pout << "ALSAMidiDriver: "
-			     << "ALSA client initialised on MIDI port ["
-			     << seq_client << ":" << seq_port << "]";
+				 << "ALSA client initialised on MIDI port [" << seq_client << ":" << seq_port << "]";
 			if (identify_port(seq_client, seq_port)) {
 				pout << " [ " << clt_name << " : " << prt_name << " ]";
 			}
@@ -188,8 +183,7 @@ int ALSAMidiDriver::open() {
 			return 0;
 		}
 		perr << "ALSAMidiDriver: "
-		     << "Can't subscribe to default MIDI port ["
-		     << seq_client << ":" << seq_port << "]";
+			 << "Can't subscribe to default MIDI port [" << seq_client << ":" << seq_port << "]";
 		if (identify_port(seq_client, seq_port)) {
 			perr << " [ " << clt_name << " : " << prt_name << " ]";
 		}
@@ -206,26 +200,18 @@ int ALSAMidiDriver::open() {
 		//   <alsa_port>14:0</alsa_port> in the <midi> section.
 		while (find_next_port(first)) {
 			first = false;
-			if ((identify_port()) &&
-			    ((prt_capability &
-			      (SND_SEQ_PORT_CAP_READ |
-			       SND_SEQ_PORT_CAP_WRITE |
-			       SND_SEQ_PORT_CAP_DUPLEX |
-			       SND_SEQ_PORT_CAP_SUBS_READ |
-			       SND_SEQ_PORT_CAP_SUBS_WRITE)) ==
-			      (SND_SEQ_PORT_CAP_WRITE |
-			       SND_SEQ_PORT_CAP_SUBS_WRITE)) &&
-			     (prt_midi_channels > 0) &&
-			     (prt_write_use == 0)) {
+			if ((identify_port())
+				&& ((prt_capability
+					 & (SND_SEQ_PORT_CAP_READ | SND_SEQ_PORT_CAP_WRITE | SND_SEQ_PORT_CAP_DUPLEX | SND_SEQ_PORT_CAP_SUBS_READ
+						| SND_SEQ_PORT_CAP_SUBS_WRITE))
+					== (SND_SEQ_PORT_CAP_WRITE | SND_SEQ_PORT_CAP_SUBS_WRITE))
+				&& (prt_midi_channels > 0) && (prt_write_use == 0)) {
 				seq_client = clt_id;
 				seq_port   = prt_id;
-				if (snd_seq_connect_to(
-				        seq_handle, my_port, seq_client, seq_port) >= 0) {
+				if (snd_seq_connect_to(seq_handle, my_port, seq_client, seq_port) >= 0) {
 					pout << "ALSAMidiDriver: "
-					     << "ALSA client initialised on MIDI port ["
-					     << seq_client << ":" << seq_port << "]"
-					     << " [ " << clt_name << " : " << prt_name << " ]"
-					     << std::endl;
+						 << "ALSA client initialised on MIDI port [" << seq_client << ":" << seq_port << "]"
+						 << " [ " << clt_name << " : " << prt_name << " ]" << std::endl;
 					return 0;
 				}
 			}
@@ -238,118 +224,169 @@ int ALSAMidiDriver::open() {
 
 void ALSAMidiDriver::close() {
 	isOpen = false;
-	if (clt_info) {
+	if (clt_info != nullptr) {
 		snd_seq_client_info_free(clt_info);
 		clt_info = nullptr;
 	}
-	if (prt_info) {
-		snd_seq_port_info_free  (prt_info);
+	if (prt_info != nullptr) {
+		snd_seq_port_info_free(prt_info);
 		prt_info = nullptr;
 	}
-	if (seq_handle) {
+	if (seq_handle != nullptr) {
 		snd_seq_close(seq_handle);
 		seq_handle = nullptr;
 	}
 	seq_client = 0;
-	my_client = 0;
-	seq_port = 0;
-	my_port = 0;
+	my_client  = 0;
+	seq_port   = 0;
+	my_port    = 0;
 }
 
 void ALSAMidiDriver::send(uint32 b) {
-	unsigned int midiCmd[4];
 	ev.type = SND_SEQ_EVENT_OSS;
+	std::array midiCmd{
+			(b & 0x000000FF),
+			(b & 0x0000FF00) >> 8,
+			(b & 0x00FF0000) >> 16,
+			(b & 0xFF000000) >> 24,
+	};
+	const auto& [command, param1, param2, param3] = midiCmd;
 
-	midiCmd[3] = (b & 0xFF000000) >> 24;
-	midiCmd[2] = (b & 0x00FF0000) >> 16;
-	midiCmd[1] = (b & 0x0000FF00) >> 8;
-	midiCmd[0] = (b & 0x000000FF);
-	ev.data.raw32.d[0] = midiCmd[0];
-	ev.data.raw32.d[1] = midiCmd[1];
-	ev.data.raw32.d[2] = midiCmd[2];
+	const size_t num_elements = std::distance(std::begin(ev.data.raw32.d), std::end(ev.data.raw32.d));
+	std::copy_n(std::cbegin(midiCmd), num_elements, std::begin(ev.data.raw32.d));
 
-	unsigned char chanID = midiCmd[0] & 0x0F;
-	switch (midiCmd[0] & 0xF0) {
+	unsigned char chanID = command & 0x0F;
+	switch (command & 0xF0) {
 	case 0x80:
-		snd_seq_ev_set_noteoff(&ev, chanID, midiCmd[1], midiCmd[2]);
-		send_event(1);
+		snd_seq_ev_set_noteoff(&ev, chanID, param1, param2);
+		send_event(true);
 		break;
 	case 0x90:
-		snd_seq_ev_set_noteon(&ev, chanID, midiCmd[1], midiCmd[2]);
-		send_event(1);
+		snd_seq_ev_set_noteon(&ev, chanID, param1, param2);
+		send_event(true);
 		break;
 	case 0xB0:
 		/* is it this simple ? Wow... */
-		snd_seq_ev_set_controller(&ev, chanID, midiCmd[1], midiCmd[2]);
-		send_event(1);
+		snd_seq_ev_set_controller(&ev, chanID, param1, param2);
+		send_event(true);
 		break;
 	case 0xC0:
-		snd_seq_ev_set_pgmchange(&ev, chanID, midiCmd[1]);
-		send_event(0);
+		snd_seq_ev_set_pgmchange(&ev, chanID, param1);
+		send_event(false);
 		break;
 	case 0xD0:
-		snd_seq_ev_set_chanpress(&ev, chanID, midiCmd[1]);
-		send_event(0);
+		snd_seq_ev_set_chanpress(&ev, chanID, param1);
+		send_event(false);
 		break;
-	case 0xE0:{
-			// long theBend = ((((long)midiCmd[1] + (long)(midiCmd[2] << 7))) - 0x2000) / 4;
-			// snd_seq_ev_set_pitchbend(&ev, chanID, theBend);
-			long theBend = (static_cast<long>(midiCmd[1]) + static_cast<long>(midiCmd[2] << 7)) - 0x2000;
-			snd_seq_ev_set_pitchbend(&ev, chanID, theBend);
-			send_event(1);
-		}
+	case 0xE0: {
+		long theBend = (static_cast<long>(param1) + static_cast<long>(param2 << 7)) - 0x2000;
+		snd_seq_ev_set_pitchbend(&ev, chanID, theBend);
+		send_event(true);
 		break;
-
+	}
 	default:
-		perr << "ALSAMidiDriver: Unknown Command: "
-		     << std::hex << static_cast<int>(b) << std::dec << std::endl;
+		perr << "ALSAMidiDriver: Unknown Command: " << std::hex << static_cast<int>(b) << std::dec << std::endl;
 		/* I don't know if this works but, well... */
-		send_event(1);
+		send_event(true);
 		break;
 	}
 }
 
-void ALSAMidiDriver::send_sysex(uint8 status,const uint8 *msg,uint16 length) {
-	unsigned char buf[1024];
-
+void ALSAMidiDriver::send_sysex(uint8 status, const uint8* msg, uint16 length) {
 	if (length > 511) {
 		perr << "ALSAMidiDriver: Cannot send SysEx block - data too large" << std::endl;
 		return;
 	}
-	buf[0] = status;
-	memcpy(buf + 1, msg, length);
-	snd_seq_ev_set_sysex(&ev, length + 1, &buf);
-	send_event(1);
+	std::array<unsigned char, 1024> buf;
+	unsigned char*                  out = buf.data();
+	Write1(out, status);
+	std::copy_n(msg, length, out);
+	snd_seq_ev_set_sysex(&ev, length + 1, buf.data());
+	send_event(true);
 }
 
 // static
-int ALSAMidiDriver::parse_addr(const std::string& _arg, int *client, int *port) {
+int ALSAMidiDriver::parse_addr(const std::string& _arg, int* client, int* port) const {
 	const char* arg = _arg.c_str();
-
-	if (isdigit(static_cast<unsigned char>(*arg))) {
-		const char *p;
-		if ((p = strpbrk(arg, ADDR_DELIM)) == nullptr)
+	if (isdigit(static_cast<unsigned char>(_arg.front())) != 0) {
+		const char* p = strpbrk(arg, AddrDelim.data());
+		if (p == nullptr) {
 			return -1;
+		}
 		*client = atoi(arg);
-		*port = atoi(p + 1);
+		p       = std::next(p, 1);
+		*port   = atoi(p);
 	} else {
 		if (*arg == 's' || *arg == 'S') {
 			*client = SND_SEQ_ADDRESS_SUBSCRIBERS;
-			*port = 0;
-		} else
+			*port   = 0;
+		} else {
 			return -1;
+		}
 	}
 	return 0;
 }
 
-void ALSAMidiDriver::send_event(int do_flush) {
+void ALSAMidiDriver::send_event(bool do_flush) {
 	snd_seq_ev_set_direct(&ev);
 	snd_seq_ev_set_source(&ev, my_port);
 	snd_seq_ev_set_dest(&ev, seq_client, seq_port);
 
 	snd_seq_event_output(seq_handle, &ev);
-	if (do_flush)
+	if (do_flush) {
 		snd_seq_flush_output(seq_handle);
+	}
 }
 
+std::vector<ConfigSetting_widget::Definition> ALSAMidiDriver::GetSettings() {
+	if (!seq_handle && my_snd_seq_open(&seq_handle)) {
+		perr << "ALSAMidiDriver: Can't open sequencer" << std::endl;
+		return {};
+	}
+	if (!clt_info) {
+		snd_seq_client_info_malloc(&clt_info);
+	}
+	if (!prt_info) {
+		snd_seq_port_info_malloc(&prt_info);
+	}
+
+	ConfigSetting_widget::Definition ports{
+			Strings::ALSAPORT(),                          // label
+			"config/audio/midi/alsa_port",                // config_setting
+			0,                                            // additional
+			false,                                        // required
+			false,                                        // unique
+			ConfigSetting_widget::Definition::dropdown    // setting_type
+	};
+
+	bool first = true;
+	while (find_next_port(first)) {
+		first = false;
+		if (identify_port()) {
+			std::string label;
+			std::string value;
+
+			value = std::to_string(clt_id);
+			value += ":";
+			value += std::to_string(prt_id);
+			label = clt_name;
+			label += " : ";
+			label += prt_name;
+
+			ports.choices.push_back({std::move(label), value, value});
+		}
+	}
+
+	ports.default_value = "";
+
+	// close will deallocate infos and handle for us
+	// but only if not open because if open they will be frred later
+	if (!isOpen) {
+		close();
+	}
+
+	auto settings = MidiDriver::GetSettings();
+	settings.push_back(std::move(ports));
+	return settings;
+}
 #endif

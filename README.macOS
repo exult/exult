@@ -1,0 +1,197 @@
+Exult instructions for MacOS
+----------------------------
+
+
+To play
+-------
+First you need to get Ultima VII: The Black Gate or Ultima VII Part 2:
+Serpent Isle. Either you own it already, or you buy it somewhere. 
+
+In the documentation of Exult (ReadMe, ReadMe.html) we describe 
+several ways of how to install the original games and where to
+put the files on your Mac so Exult finds them automatically.
+
+Now download Exult, and have fun!
+
+
+More Information
+----------------
+More information can be found in the accompanying files README and FAQ.
+In addition, you might want to check out our homepage at
+https://exult.info
+
+
+How to compile on macOS
+-----------------------
+
+The following guide is only for people that want to compile Exult on their own. 
+This is not needed if there is a current snapshot for macOS available on our 
+download page.
+
+Make sure you have Apple's Xcode, which can be installed for free from 
+the App Store (https://apps.apple.com/de/app/xcode/id497799835?l=en&mt=12).
+
+In order to compile Exult, you need to install several Unix packages.
+If you are an expert, you may want to install them manually; for all others,
+we recommend installing them via the package manager MacPorts
+(http://www.macports.org/).
+Alternative package managers are Fink (https://www.finkproject.org) or 
+Homebrew (https://brew.sh/) (however, neitherFink nor Homebrew install the 
+necessary libraries to compile the Gimp plug-in).
+
+With MacPorts install:
+  autoconf-archive
+  libsdl2
+  libvorbis
+  munt-mt32emu
+  libpng
+  fluidsynth
+  dylibbundler
+  create-dmg
+
+Installing these packages with MacPorts will actually install many other
+packages these depend on.
+  
+Open terminal and enter the following to allow the compile to find all the 
+headers.
+
+If you use MacPorts:
+  export CFLAGS=-I/opt/local/include
+  export CXXFLAGS=$CFLAGS
+  export CPPFLAGS=$CFLAGS
+
+Now you are ready to compile Exult. If you are compiling from Git, the
+first thing you have to run is this:
+  autoreconf -v -i
+
+The next step is the same whether you compile a release version or Git:
+  ./configure
+  make
+
+This will give you a "exult" binary in the current directory. If you want
+a nice Exult.app (double clickable from the Finder and all), enter this
+command:
+  make bundle
+
+To use this bundle on another machine you need to run:
+  make bundle_shared
+
+
+How to compile Exult Studio on macOS
+------------------------------------
+
+If you want to compile Exult Studio, you have to install these packages:
+  libsdl2
+  gtk3
+
+This will cause many other packages required by gtk3 to
+be installed. 
+
+After that, you have to re-run configure and make (remember to do the export 
+commands to find the headers):
+  ./configure --enable-exult-studio --enable-exult-studio-support
+  make
+
+- You need to add the path of Exult Studio to your PATH settings so that Exult 
+can start Exult Studio on entering Map-Edit-Mode (ctrl+cmd+m).
+Normally Exult Studio gets compiled in /path_to_the_Exult_source_code/mapedit, 
+so if you do "export PATH=$PATH:/path_to_the_Exult_source_code/mapedit" before 
+starting Exult, you can start using Exult and Exult Studio.
+If you don't want to set the path to Exult Studio, you can also start Exult,
+go into Map-Edit-Mode, start Exult Studio manually and click in it's menu
+on File->Connect.
+
+- You need to copy the file exult_studio.glade (found in 
+/path_to_the_Exult_source_code/mapedit/) to your Exult data folder which is by 
+default in /Library/Application Support/Exult/data.
+
+
+How to build an Exult Studio app Bundle
+---------------------------------------
+
+You will need another package from MacPorts:
+  gtk-mac-bundler
+
+Follow the above steps to build Exult Studio and Exult with Exult Studio Support.
+Afterwards run the commands:
+  export PREFIX=PATH_TO_PREFIX
+  make studiobundle
+
+In the above command substitute PATH_TO_PREFIX with your real prefix path. 
+If you use MacPorts this would be "/opt/local", so the commands look like this:
+  export PREFIX=/opt/local
+  make studiobundle
+
+This will generate the Exult_Studio.app in your Exult source.
+
+
+How to build a disk image
+-------------------------
+
+For building a disk image for Exult, run:
+  make osxdmg
+
+For building a disk image for Exult Studio, run:
+  make studiodmg
+
+
+How to build the GIMP 3.0 plug-in
+---------------------------------
+
+Download the "Plugin Developer" Release for macOS from 
+https://download.gimp.org/gimp/v3.0/macos/, e.g. for Apple Silicon download
+gimp-3.0.2-arm64-plugin-developer.dmg.
+The Gimp.app bundle in the DMG contains all the needed files to build the
+GIMP 3.0 plug-in.
+Copy the Gimp.app from the DMG anywhere on your hard drive and use these
+imports to point at the needed developer files:
+
+  export PATH=/path_to/gimp.app/contents/macos/:$PATH
+  export CPPFLAGS='-I/path_to/gimp.app/Contents/Resources/include'
+  export CFLAGS='-I/path_to/gimp.app/Contents/Resources/include'
+  export CXXFLAGS='-I/path_to/gimp.app/Contents/Resources/include'
+  export LDFLAGS='-L/path_to/gimp.app/Contents/Resources/lib'
+  export PKG_CONFIG_PATH=/path_to/gimp.app/Contents/Resources/lib/pkgconfig
+
+Then re-run Exult's configure and make
+  ./configure --enable-tools --enable-gimp-plugin=user
+  make
+  make install
+
+The Gimp plug-in "u7shp" will be installed into 
+~/Library/Application Support/GIMP/3.0/plug-ins/u7shp.
+
+To make it work you will need to add an "rpath" to the plug-in which allows
+it to be used with The GIMP:
+  install_name_tool -add_rpath /Applications/GIMP.app/Contents/Resources/ $HOME/Library/Application\ Support/GIMP/3.0/plug-ins/u7shp/u7shp
+
+(If your The GIMP bundle is named differently or in another folder on your macOS, change the path to GIMP.app accordingly)
+
+
+How to build the GIMP 3.0 plug-in for distribution
+--------------------------------------------------
+
+The same instructions as above apply only you don't run make install but
+  ./configure --enable-tools --enable-gimp-plugin=user
+  make
+  make gimp_package
+
+This will create the package installer Gimp30plugin.pkg, the rpath is pre-added to it.
+
+
+How to build the Gimp 2.x plug-in
+---------------------------------
+
+With MacPorts install:
+  gimp2 +quartz
+
+Then re-run configure and make
+  ./configure --enable-tools --enable-gimp-plugin
+  make
+
+You will then find the Gimp plug-in "u7shp" in the mapedit folder of our source. 
+For the Gimp to use it you need to copy it into 
+~/Library/Application Support/GIMP/2.10/plug-ins.
+Note that this is not a static build of the plug-in and relies on your 
+MacPorts installation.
+So if you uninstall MacPorts the plug-in will cease to work.

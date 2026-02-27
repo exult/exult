@@ -1,4 +1,16 @@
-man_MANS = exult.6 expack.1 ipack.1 shp2pcx.1 splitshp.1 textpack.1 exult_studio.1 ucc.1
+man_MANS = exult.6 expack.1 ipack.1
+
+if BUILD_STUDIO
+man_MANS += exult_studio.1
+endif
+
+if BUILD_COMPILER
+man_MANS += ucc.1
+endif
+
+if BUILD_TOOLS
+man_MANS += shp2pcx.1 splitshp.1 textpack.1
+endif
 
 nobase_doc_DATA = \
 	exult_studio.html		\
@@ -11,6 +23,11 @@ nobase_doc_DATA = \
 	images/docs04.png		\
 	images/docs05.png		\
 	images/docs06.png		\
+	images/docs07.png		\
+	images/docs08.png		\
+	images/docs09.png		\
+	images/docs10.png		\
+	images/docs11.png		\
 	images/exult_logo.gif		\
 	images/studio01.png		\
 	images/studio02.png		\
@@ -22,8 +39,10 @@ nobase_doc_DATA = \
 	images/studio08.png		\
 	images/studio09.png		\
 	images/studio10.png		\
+	images/studio11.png		\
 	images/studiobgiregs.png	\
-	images/studiosiiregs.png
+	images/studiosiiregs.png	\
+	images/exult_logo_nice.svg
 
 EXTRA_DIST =		\
 	xml/docs.dtd	\

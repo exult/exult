@@ -23,25 +23,28 @@
 
 struct File_spec;
 
-class BG_Game: public Game {
+class BG_Game : public Game {
 public:
 	BG_Game();
 
-	void play_intro() override;
-	void end_game(bool success, bool within_game) override;
-	void top_menu() override;
-	void show_quotes() override;
-	void show_credits() override;
+	void                      play_intro() override;
+	void                      end_game(bool success, bool within_game) override;
+	void                      top_menu() override;
+	void                      show_quotes() override;
+	void                      show_credits() override;
 	std::vector<unsigned int> get_congratulations_messages() override;
-	bool new_game(Vga_file &shapes) override;
-	int  get_start_tile_x() override {
+	bool                      new_game(Vga_file& shapes) override;
+
+	int get_start_tile_x() override {
 		return 64 * c_tiles_per_chunk;
 	}
-	int  get_start_tile_y() override {
+
+	int get_start_tile_y() override {
 		return 136 * c_tiles_per_chunk;
 	}
-	void show_journey_failed() override;
-	Shape_frame *get_menu_shape() override;
+
+	void             show_journey_failed() override;
+	Shape_frame*     get_menu_shape() override;
 	static File_spec get_sfx_subflex();
 
 private:
@@ -53,6 +56,5 @@ private:
 	void scene_desk();
 	void scene_moongate();
 };
-
 
 #endif

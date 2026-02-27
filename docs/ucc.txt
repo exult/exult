@@ -3,7 +3,7 @@ May, 21, 2002 - JSF
 
 0. Introduction
 ---------------
-Ultima7's plot and conversations are controlled by a script encoded in
+Ultima VII's plot and conversations are controlled by a script encoded in
 'usecode', a file in the game's 'static' directory.  UCC is our
 attempt at providing a language and compiler so that we and others can
 write our own game plots.

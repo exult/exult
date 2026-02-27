@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <Filter Include="Source Files">
@@ -12,21 +12,6 @@
     <Filter Include="Resource Files">
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
-    </Filter>
-    <Filter Include="any">
-      <UniqueIdentifier>{4cc737a5-16e8-4166-9675-d5eb19d226c4}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="any\any">
-      <UniqueIdentifier>{cfe3163c-108c-492f-85a1-de335d9fef99}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="data">
-      <UniqueIdentifier>{824b0bc2-4de5-42db-a120-3ada9c9ec32a}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="data\bg">
-      <UniqueIdentifier>{b6749ccd-f3bf-4a48-9d7a-d9abd2005b7d}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="data\si">
-      <UniqueIdentifier>{92539d23-e6d4-434a-8d46-9dfe8831da51}</UniqueIdentifier>
     </Filter>
     <Filter Include="audio">
       <UniqueIdentifier>{93823729-846b-4fc5-8384-ef7b60390558}</UniqueIdentifier>
@@ -79,7 +64,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <None Include="packages.config" />
     <None Include="..\..\audio\Makefile.am">
       <Filter>audio</Filter>
     </None>
@@ -131,11 +115,8 @@
     <None Include="..\..\server\Makefile.am">
       <Filter>server</Filter>
     </None>
-  </ItemGroup>
-  <ItemGroup>
-    <Text Include="any\any\zlib.static.txt">
-      <Filter>any\any</Filter>
-    </Text>
+    <None Include="vcpkg.json" />
+    <None Include="vcpkg-configuration.json" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\files\crc.cc">
@@ -279,6 +260,9 @@
     <ClCompile Include="..\..\paths.cc">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\playscene.cc">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\readnpcs.cc">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -301,9 +285,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\version.cc">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\windrag.cc">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\audio\midi_drivers\fmopl.cpp">
@@ -430,6 +411,9 @@
       <Filter>shapes\shapeinf</Filter>
     </ClCompile>
     <ClCompile Include="..\..\shapes\shapeinf\frusefun.cc">
+      <Filter>shapes\shapeinf</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\shapes\shapeinf\gumpinf.cc">
       <Filter>shapes\shapeinf</Filter>
     </ClCompile>
     <ClCompile Include="..\..\shapes\shapeinf\lightinf.cc">
@@ -565,9 +549,6 @@
       <Filter>imagewin</Filter>
     </ClCompile>
     <ClCompile Include="..\..\imagewin\PointScaler.cpp">
-      <Filter>imagewin</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\imagewin\savepcx.cc">
       <Filter>imagewin</Filter>
     </ClCompile>
     <ClCompile Include="..\..\imagewin\scale_2x.cc">
@@ -735,6 +716,42 @@
     <ClCompile Include="..\..\server\servemsg.cc">
       <Filter>server</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\imagewin\save_screenshot.cc">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\audio\midi_drivers\MT32EmuMidiDriver.cpp">
+      <Filter>audio\midi_drivers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\gumps\Mixer_gump.cc">
+      <Filter>gumps</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\gumps\Slider_widget.cc">
+      <Filter>gumps</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\gumps\Modal_gump.cc">
+      <Filter>gumps</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\audio\midi_drivers\FluidSynthMidiDriver.cpp">
+      <Filter>audio\midi_drivers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\gumps\AdvancedOptions_gump.cc">
+      <Filter>gumps</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\gumps\ConfigSetting_widget.cc">
+      <Filter>gumps</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\gumps\Scrollable_widget.cc">
+      <Filter>gumps</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\gumps\DropDown_widget.cc">
+      <Filter>gumps</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\gumps\StringList_widget.cc">
+      <Filter>gumps</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\win32\crash.cc">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\actions.h">
@@ -867,9 +884,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\version.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\windrag.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\audio\midi_drivers\fmopl.h">
@@ -1025,6 +1039,9 @@
     <ClInclude Include="..\..\shapes\shapeinf\frusefun.h">
       <Filter>shapes\shapeinf</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\shapes\shapeinf\gumpinf.h">
+      <Filter>shapes\shapeinf</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\shapes\shapeinf\lightinf.h">
       <Filter>shapes\shapeinf</Filter>
     </ClInclude>
@@ -1086,6 +1103,9 @@
       <Filter>shapes</Filter>
     </ClInclude>
     <ClInclude Include="..\..\pathfinder\Astar.h">
+      <Filter>pathfinder</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\pathfinder\path.h">
       <Filter>pathfinder</Filter>
     </ClInclude>
     <ClInclude Include="..\..\pathfinder\PathFinder.h">
@@ -1218,9 +1238,6 @@
       <Filter>headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\headers\pent_include.h">
-      <Filter>headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\headers\array_size.h">
       <Filter>headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\headers\common_types.h">
@@ -1385,6 +1402,9 @@
     <ClInclude Include="..\..\files\databuf.h">
       <Filter>files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\files\endianio.h">
+      <Filter>files</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\files\crc.h">
       <Filter>files</Filter>
     </ClInclude>
@@ -1427,33 +1447,71 @@
     <ClInclude Include="msvc_include.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\imagewin\AffineScaler.h">
+      <Filter>imagewin</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\audio\midi_drivers\MT32EmuMidiDriver.h">
+      <Filter>audio\midi_drivers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\headers\span.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\gitinfo.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\gumps\Mixer_gump.h">
+      <Filter>gumps</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\gumps\Slider_widget.h">
+      <Filter>gumps</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\audio\midi_drivers\FluidSynthMidiDriver.h">
+      <Filter>audio\midi_drivers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\audio\midi_drivers\XMidiRecyclable.h">
+      <Filter>audio\midi_drivers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\gumps\AdvancedOptions_gump.h">
+      <Filter>gumps</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\gumps\StringList_widget.h">
+      <Filter>gumps</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\gumps\ConfigSetting_widget.h">
+      <Filter>gumps</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\gumps\Scrollable_widget.h">
+      <Filter>gumps</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\gumps\DropDown_widget.h">
+      <Filter>gumps</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\gumps\IterableGump_widget.h">
+      <Filter>gumps</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\playscene.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <CustomBuild Include="..\..\data\flx.in">
-      <Filter>data</Filter>
-    </CustomBuild>
-    <CustomBuild Include="..\..\data\bg\flx.in">
-      <Filter>data\bg</Filter>
-    </CustomBuild>
-    <CustomBuild Include="..\..\data\si\flx.in">
-      <Filter>data\si</Filter>
-    </CustomBuild>
-    <CustomBuild Include="..\..\data\bg\introsfx_sb.in">
-      <Filter>data\bg</Filter>
-    </CustomBuild>
-    <CustomBuild Include="..\..\data\bg\introsfx_mt.in">
-      <Filter>data\bg</Filter>
-    </CustomBuild>
-    <CustomBuild Include="..\..\data\bg\bg_paperdol.in">
-      <Filter>data\bg</Filter>
-    </CustomBuild>
-    <CustomBuild Include="..\..\data\bg\bg_mr_faces.in">
-      <Filter>data\bg</Filter>
-    </CustomBuild>
+    <CustomBuild Include="..\..\.git\index" />
   </ItemGroup>
   <ItemGroup>
     <Xml Include="..\..\conf\config.xml">
       <Filter>conf</Filter>
     </Xml>
+  </ItemGroup>
+  <ItemGroup>
+    <Manifest Include="..\..\win32\exult.exe.manifest" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="..\..\win32\exult.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="..\..\win32\exultico.rc">
+      <Filter>Resource Files</Filter>
+    </ResourceCompile>
   </ItemGroup>
 </Project>

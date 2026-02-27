@@ -19,97 +19,97 @@
  */
 
 #ifndef INCL_READY
-#define INCL_READY  1
+#define INCL_READY 1
 
 /*
  *  Internal Exult types describing how a shape may be worn.
  */
 enum Ready_type_Exult {
-    head = 0x00,
-    backpack = 0x01,
-    belt = 0x02,
-    lhand = 0x03,
-    lfinger = 0x04,
-    legs = 0x05,
-    feet = 0x06,
-    rfinger = 0x07,             // Only for usecode or for alternate slot.
-    rhand = 0x08,
-    torso = 0x09,
-    amulet = 0x0a,
-    quiver = 0x0b,
-    back_2h = 0x0c,             // Only for usecode or for alternate slot
-    back_shield = 0x0d,         // Only for usecode or for alternate slot
-    earrings = 0x0e,
-    cloak = 0x0f,
-    gloves = 0x10,
-    ucont = 0x11,
-    // The following four entries are not actual spots, but mark an object as
-    // filling multiple spots of the given type.
-    both_hands = 0x12,          // Uses both hands.
-    lrgloves = 0x13,            // Uses gloves spot, fills ring.
-    neck = 0x14,                // Uses amulet spot, fills cloak.
-    // Used for alternate slot only:
-    scabbard = 0x15,            // Uses belt spot, fills back_2h, back_shield.
-    // Marks as firing triple crossbow bolts:
-    triple_bolts = 0x16,
-    // Used for paperdolling only:
-    cloak_clasp = 102,
-    invalid_spot = 0xff
+	head        = 0x00,
+	backpack    = 0x01,
+	belt        = 0x02,
+	lhand       = 0x03,
+	lfinger     = 0x04,
+	legs        = 0x05,
+	feet        = 0x06,
+	rfinger     = 0x07,    // Only for usecode or for alternate slot.
+	rhand       = 0x08,
+	torso       = 0x09,
+	amulet      = 0x0a,
+	quiver      = 0x0b,
+	back_2h     = 0x0c,    // Only for usecode or for alternate slot
+	back_shield = 0x0d,    // Only for usecode or for alternate slot
+	earrings    = 0x0e,
+	cloak       = 0x0f,
+	gloves      = 0x10,
+	ucont       = 0x11,
+	// The following four entries are not actual spots, but mark an object as
+	// filling multiple spots of the given type.
+	both_hands = 0x12,    // Uses both hands.
+	lrgloves   = 0x13,    // Uses gloves spot, fills ring.
+	neck       = 0x14,    // Uses amulet spot, fills cloak.
+	// Used for alternate slot only:
+	scabbard = 0x15,    // Uses belt spot, fills back_2h, back_shield.
+	// Marks as firing triple crossbow bolts:
+	triple_bolts = 0x16,
+	// Used for paperdolling only:
+	cloak_clasp  = 102,
+	invalid_spot = 0xff
 };
 
 // Black Gate Ready types
 enum Ready_type_BG {
-    backpack_bg = 0x00,
-    lhand_bg = 0x01,
-    rhand_bg = 0x02,            // Only for usecode or for alternate slot
-    belt_bg = 0x03,             // Only for usecode or for alternate slot
-    neck_bg = 0x04,
-    torso_bg = 0x05,
-    lfinger_bg = 0x06,
-    rfinger_bg = 0x07,          // Only for usecode or for alternate slot
-    quiver_bg = 0x08,
-    head_bg = 0x09,
-    legs_bg = 0x0a,
-    feet_bg = 0x0b,
-    ucont_bg = 0x0c,            // Porting from SI
-    cloak_bg = 0x0d,            // Porting from SI
-    gloves_bg = 0x0e,           // Porting from SI
-    triple_bolts_bg = 0x0f,
-    earrings_bg = 0x10,         // Porting from SI
-    back_shield_bg = 0x11,      // Porting from SI
-    tongs_bg = 0x12,            // Silently converted to lhand_bg
-    back_2h_bg = 0x13,          // Porting from SI
-    both_hands_bg = 0x14,
-    lrgloves_bg = 0x15,
-    amulet_bg = 0x16,
-    scabbard_bg = 0x17          // Only for alternate slot
+	backpack_bg     = 0x00,
+	lhand_bg        = 0x01,
+	rhand_bg        = 0x02,    // Only for usecode or for alternate slot
+	belt_bg         = 0x03,    // Only for usecode or for alternate slot
+	neck_bg         = 0x04,
+	torso_bg        = 0x05,
+	lfinger_bg      = 0x06,
+	rfinger_bg      = 0x07,    // Only for usecode or for alternate slot
+	quiver_bg       = 0x08,
+	head_bg         = 0x09,
+	legs_bg         = 0x0a,
+	feet_bg         = 0x0b,
+	ucont_bg        = 0x0c,    // Porting from SI
+	cloak_bg        = 0x0d,    // Porting from SI
+	gloves_bg       = 0x0e,    // Porting from SI
+	triple_bolts_bg = 0x0f,
+	earrings_bg     = 0x10,    // Porting from SI
+	back_shield_bg  = 0x11,    // Porting from SI
+	tongs_bg        = 0x12,    // Silently converted to lhand_bg
+	back_2h_bg      = 0x13,    // Porting from SI
+	both_hands_bg   = 0x14,
+	lrgloves_bg     = 0x15,
+	amulet_bg       = 0x16,
+	scabbard_bg     = 0x17    // Only for alternate slot
 };
 
 // Serpent Isle Ready types
 enum Ready_type_SI {
-    rhand_si = 0x00,
-    lhand_si = 0x01,
-    cloak_si = 0x02,
-    amulet_si = 0x03,
-    head_si = 0x04,
-    gloves_si = 0x05,
-    ucont_si = 0x06,
-    rfinger_si = 0x07,          // Only for usecode or for alternate slot
-    lfinger_si = 0x08,
-    earrings_si = 0x09,
-    quiver_si = 0x0a,
-    belt_si = 0x0b,
-    torso_si = 0x0c,
-    feet_si = 0x0d,
-    legs_si = 0x0e,
-    backpack_si = 0x0f,
-    back_shield_si = 0x10,      // Only for usecode or for alternate slot
-    back_2h_si = 0x11,          // Only for usecode or for alternate slot
-    triple_bolts_si = 0x12,     // Porting from BG
-    both_hands_si = 0x14,
-    lrgloves_si = 0x15,         // Porting from BG
-    neck_si = 0x16,
-    scabbard_si = 0x17          // Only for alternate slot
+	rhand_si        = 0x00,
+	lhand_si        = 0x01,
+	cloak_si        = 0x02,
+	amulet_si       = 0x03,
+	head_si         = 0x04,
+	gloves_si       = 0x05,
+	ucont_si        = 0x06,
+	rfinger_si      = 0x07,    // Only for usecode or for alternate slot
+	lfinger_si      = 0x08,
+	earrings_si     = 0x09,
+	quiver_si       = 0x0a,
+	belt_si         = 0x0b,
+	torso_si        = 0x0c,
+	feet_si         = 0x0d,
+	legs_si         = 0x0e,
+	backpack_si     = 0x0f,
+	back_shield_si  = 0x10,    // Only for usecode or for alternate slot
+	back_2h_si      = 0x11,    // Only for usecode or for alternate slot
+	triple_bolts_si = 0x12,    // Porting from BG
+	both_hands_si   = 0x14,
+	lrgloves_si     = 0x15,    // Porting from BG
+	neck_si         = 0x16,
+	scabbard_si     = 0x17    // Only for alternate slot
 };
 
 /*
@@ -225,7 +225,6 @@ inline int Ready_spot_to_SI(int spot) {
 		return invalid_spot;
 	}
 }
-
 
 /*
  *  Convert from BG ready spot # to ours (or invalid_spot if not found).
@@ -343,5 +342,4 @@ inline int Ready_spot_from_SI(int spot) {
 	}
 }
 
-#endif  /* INCL_READY   */
-
+#endif /* INCL_READY   */

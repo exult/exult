@@ -23,8 +23,8 @@
 
 #if (defined(USE_EXULTSTUDIO) && defined(USECODE_DEBUGGER))
 
-void Handle_client_debug_message(int &fd);
-void Handle_debug_message(unsigned char *data, int datalen);
+void Handle_client_debug_message(int& fd);
+void Handle_debug_message(unsigned char* data, int datalen);
 
 #endif
 #endif

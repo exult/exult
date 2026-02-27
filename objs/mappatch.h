@@ -23,12 +23,13 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
 #ifndef INCL_MAPPATCH
-#define INCL_MAPPATCH   1
+#define INCL_MAPPATCH 1
 
-#include <map>
-#include <list>
-#include <memory>
 #include "tiles.h"
+
+#include <list>
+#include <map>
+#include <memory>
 
 class Game_object;
 
@@ -38,53 +39,53 @@ class Game_object;
 class Object_spec {
 public:
 	Tile_coord loc;         // Where it is.
-	int shapenum;           // Shape #, or -359 for 'dont care'.
-	int framenum;           // Frame #, or -359.
-	int quality;            // Quality, or -359.
-	Object_spec(Tile_coord const &t, int shnum = c_any_shapenum,
-	            int frnum = c_any_framenum, int qual = c_any_qual)
-		: loc(t), shapenum(shnum), framenum(frnum), quality(qual)
-	{  }
+	int        shapenum;    // Shape #, or -359 for 'dont care'.
+	int        framenum;    // Frame #, or -359.
+	int        quality;     // Quality, or -359.
+
+	Object_spec(const Tile_coord& t, int shnum = c_any_shapenum, int frnum = c_any_framenum, int qual = c_any_qual)
+			: loc(t), shapenum(shnum), framenum(frnum), quality(qual) {}
 };
 
 /*
  *  Base class for map patches:
  */
 class Map_patch {
-	Object_spec spec;       // Specifies object to modify.
+	Object_spec spec;    // Specifies object to modify.
 public:
 	friend class Map_patch_collection;
-	Map_patch(Object_spec s) : spec(s)
-	{  }
+
+	Map_patch(Object_spec s) : spec(s) {}
+
 	virtual ~Map_patch() = default;
-	Game_object *find();        // Find matching object.
-	virtual bool apply() = 0;   // Perform action.
+	Game_object* find();         // Find matching object.
+	virtual bool apply() = 0;    // Perform action.
 };
 
 // Sigh, this is needed to prevent compiler error with MSVC
 using Map_patch_list = std::list<std::unique_ptr<Map_patch>>;
-using Map_patch_map = std::map<int, Map_patch_list>;
+using Map_patch_map  = std::map<int, Map_patch_list>;
 
 /*
  *  Remove an object.
  */
 class Map_patch_remove : public Map_patch {
-	bool all;           // Delete all matching.
+	bool all;    // Delete all matching.
 public:
-	Map_patch_remove(Object_spec s, bool a = false) : Map_patch(s), all(a)
-	{  }
-	bool apply() override;       // Perform action.
+	Map_patch_remove(Object_spec s, bool a = false) : Map_patch(s), all(a) {}
+
+	bool apply() override;    // Perform action.
 };
 
 /*
  *  Move/modify an object.
  */
 class Map_patch_modify : public Map_patch {
-	Object_spec mod;        // Modification.
+	Object_spec mod;    // Modification.
 public:
-	Map_patch_modify(Object_spec s, Object_spec m) : Map_patch(s), mod(m)
-	{  }
-	bool apply() override;       // Perform action.
+	Map_patch_modify(Object_spec s, Object_spec m) : Map_patch(s), mod(m) {}
+
+	bool apply() override;    // Perform action.
 };
 
 /*
@@ -92,9 +93,10 @@ public:
  */
 class Map_patch_collection {
 	Map_patch_map patches;
+
 public:
-	void add(std::unique_ptr<Map_patch> p);     // Add a patch.
-	void apply(int schunk);     // Apply for given superchunk.
+	void add(std::unique_ptr<Map_patch> p);    // Add a patch.
+	void apply(int schunk);                    // Apply for given superchunk.
 };
 
 #endif

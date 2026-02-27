@@ -36,37 +36,48 @@ class Shape_info;
  *  Armor:
  */
 class Armor_info : public Base_info {
-	unsigned char prot;     // Protection value.
-	unsigned char immune;       // Weapon_data::damage_type bits.
+	unsigned char prot   = 0;    // Protection value.
+	unsigned char immune = 0;    // Weapon_data::damage_type bits.
 public:
 	friend class Shape_info;
 	// Read in from file.
-	bool read(std::istream &in, int version, Exult_Game game);
+	bool read(std::istream& in, int version, Exult_Game game);
 	// Write out.
-	void write(std::ostream &out, int shapenum, Exult_Game game);
-	enum { is_binary = 1, entry_size = 10 };
+	void write(std::ostream& out, int shapenum, Exult_Game game);
+
+	enum {
+		is_binary  = 1,
+		entry_size = 10
+	};
+
 	unsigned char get_prot() const {
 		return prot;
 	}
+
 	void set_prot(unsigned char p) {
 		if (prot != p) {
 			set_modified(true);
 			prot = p;
 		}
 	}
+
 	unsigned char get_immune() const {
 		return immune;
 	}
+
 	void set_immune(unsigned char i) {
 		if (immune != i) {
 			set_modified(true);
 			immune = i;
 		}
 	}
+
 	static int get_info_flag() {
 		return 4;
 	}
+
 	int get_base_strength() const;
+
 	int get_base_xp_value() const {
 		return prot;
 	}

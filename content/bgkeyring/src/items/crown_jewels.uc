@@ -23,38 +23,37 @@
  *	Last Modified: 2006-02-27
  */
 
-void LB_Sceptre_Hit object#(0xB7E) ()
-{
-	if (event != WEAPON)
+void LB_Sceptre_Hit object#(0xB7E) () {
+	if (event != WEAPON) {
 		return;
+	}
 	var field_shapes = [SHAPE_ENERGY_FIELD, SHAPE_FIRE_FIELD, SHAPE_POISON_FIELD, SHAPE_SLEEP_FIELD];
-	if (get_item_shape() in field_shapes)
-	{
-		var pos = get_object_position();
-		UI_sprite_effect(18, pos[X] - 1, pos[Y] - 1, 0, 0, 0, -1);
+	if (get_item_shape() in field_shapes) {
+		struct<Position> pos = get_object_position();
+		UI_sprite_effect(ANIMATION_BLUE_BEADS, pos.x - 1, pos.y - 1, 0, 0, 0, -1);
 		UI_play_sound_effect(64);
 		script item after 4 ticks remove;
 	}
 }
 
-void LB_Sceptre shape#(0x466) ()
-{
+void LB_Sceptre shape#(0x466) () {
 	//Add double-click support
 }
 
-void LB_Crown shape#(0x467) ()
-{
+void LB_Crown shape#(0x467) () {
 	// TODO: Implement the magic protection side.
-	if (event == READIED)
+	if (event == READIED) {
 		set_item_flag(MAGIC_PROTECTION);
-	else if (event == UNREADIED)
+	} else if (event == UNREADIED) {
 		clear_item_flag(MAGIC_PROTECTION);
+	}
 }
 
-void LB_Amulet shape#(0x468) ()
-{
-	if (event == READIED)
+void LB_Amulet shape#(0x468) () {
+	if (event == READIED) {
 		UI_infravision(get_container(), true);
-	if (event == UNREADIED)
+	}
+	if (event == UNREADIED) {
 		UI_infravision(get_container(), false);
+	}
 }

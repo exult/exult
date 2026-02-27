@@ -27,31 +27,43 @@
 #include <string>
 #include <vector>
 
-class   Args {
+class Args {
 	struct Opts {
 		std::string option;
+
 		union {
-			bool    *bval;
-			std::string  *sval;
-			int *ival;
-			uint32 *uval;
+			bool*        bval;
+			std::string* sval;
+			int*         ival;
+			uint32*      uval;
 		};
+
 		union {
-			bool    dbval;
-			const char *dsval;
-			int dival;
-			uint32 duval;
+			bool        dbval;
+			const char* dsval;
+			int         dival;
+			uint32      duval;
 		};
-		enum { no_type = 0, type_bool, type_string, type_int, type_unsigned } valuetype = no_type;
+
+		enum {
+			no_type = 0,
+			type_bool,
+			type_string,
+			type_int,
+			type_unsigned
+		} valuetype = no_type;
+
 		Opts() : sval(nullptr), dsval(nullptr) {}
 	};
+
 	std::vector<Opts> options;
+
 public:
-	void    declare(const char *s, bool *b, bool defval = true);
-	void    declare(const char *s, std::string *b, const char *defval = nullptr);
-	void    declare(const char *s, int *b, int defval = 0);
-	void    declare(const char *s, uint32 *b, uint32 defval = 0);
-	void    process(int argc, char **argv);
+	void declare(const char* s, bool* b, bool defval = true);
+	void declare(const char* s, std::string* b, const char* defval = nullptr);
+	void declare(const char* s, int* b, int defval = 0);
+	void declare(const char* s, uint32* b, uint32 defval = 0);
+	void process(int argc, char** argv);
 };
 
 #endif

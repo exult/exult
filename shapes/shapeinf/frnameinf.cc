@@ -22,31 +22,35 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
-#include "utils.h"
-#include "exult_constants.h"
 #include "frnameinf.h"
+
+#include "exult_constants.h"
 #include "ignore_unused_variable_warning.h"
+#include "utils.h"
+
 using std::istream;
 
 bool Frame_name_info::read(
-    std::istream &in,   // Input stream.
-    int version,        // Data file version.
-    Exult_Game game     // Loading BG file.
+		std::istream& in,         // Input stream.
+		int           version,    // Data file version.
+		Exult_Game    game        // Loading BG file.
 ) {
 	ignore_unused_variable_warning(version, game);
 	frame = ReadInt(in);
-	if (frame < 0)
+	if (frame < 0) {
 		frame = -1;
-	else
+	} else {
 		frame &= 0xff;
+	}
 	quality = ReadInt(in);
-	if (quality < 0)
+	if (quality < 0) {
 		quality = -1;
-	else
+	} else {
 		quality &= 255;
+	}
 	type = ReadInt(in);
 	if (type >= 0) {
-		msgid = ReadInt(in);
+		msgid    = ReadInt(in);
 		othermsg = ReadInt(in, -255);
 	}
 	return true;

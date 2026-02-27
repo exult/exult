@@ -23,28 +23,23 @@
  *	Last Modified: 2006-02-27
  */
 
-void killTargetNPC object#() ()
-{
+void killTargetNPC object#() () {
 	var npcshape = get_item_shape();
-	if (npcshape == SHAPE_LORD_BRITISH)
-	{
+	if (npcshape == SHAPE_LORD_BRITISH) {
 		//The victim is the King of Britannia
 		//Make all friendly NPCs around hostile and attack Avatar:
 		var npclist = AVATAR->find_nearby(-1, 80, MASK_NPC2);
-		for (npc in npclist)
-		{
+		for (npc in npclist) {
 			npcshape = npc->get_item_shape();
-			if (!((npcshape == SHAPE_MALE_AVATAR) || (npcshape == SHAPE_FEMALE_AVATAR)))
-			{
-				if (npc->get_alignment() == 0)
-				{
+			if (!((npcshape == SHAPE_MALE_AVATAR) || (npcshape == SHAPE_FEMALE_AVATAR))) {
+				if (npc->get_alignment() == 0) {
 					npc->set_alignment(2);
 					npc->set_schedule_type(IN_COMBAT);
 				}
 			}
 		}
 		//Kill Lord British:
-		var pos = get_object_position();
+		struct<Position> pos = get_object_position();
 		//Create LB's body (the bastard cannot be killed...):
 		var body = UI_create_new_object(SHAPE_BODIES_2);
 		body->set_item_frame_rot(get_item_frame_rot());
@@ -59,51 +54,42 @@ void killTargetNPC object#() ()
 		scroll->set_item_quality(43);
 		body->give_last_created();
 		//Dying sequence:
-		script body
-		{	wait 5;
+		script body {
+			wait 5;
 			frame CAST_2_SOUTH;
 			wait 2;
-			frame KNEEL_NORTH;}
-	}
-	else
-	{
+			frame KNEEL_NORTH;
+		}
+	} else {
 		//Get the NPC's alignment:
 		var alignment = get_alignment();
-		if (!get_item_flag(TEMPORARY))
-		{
+		if (!get_item_flag(TEMPORARY)) {
 			//Permanent NPCs work differently;
 			//kill NPC:
 			kill_npc();
 			remove_npc();
 			//Make all NPCs of the same alignment as victim hostile:
 			var npclist = AVATAR->find_nearby(-1, 80, MASK_NPC2);
-			for (npc in npclist)
-			{
+			for (npc in npclist) {
 				var npcshape = npc->get_item_shape();
-				if (!((npcshape == SHAPE_MALE_AVATAR) || (npcshape == SHAPE_FEMALE_AVATAR)))
-				{
-					if (npc->get_alignment() == alignment)
-					{
+				if (!((npcshape == SHAPE_MALE_AVATAR) || (npcshape == SHAPE_FEMALE_AVATAR))) {
+					if (npc->get_alignment() == alignment) {
 						npc->set_alignment(2);
 						npc->set_schedule_type(IN_COMBAT);
 					}
 				}
 			}
-		}
-		else
-		{
+		} else {
 			//FoV 'NPCs' are temporary monsters carrying scrolls:
 			var ownedscrolls = get_cont_items(SHAPE_SCROLL, QUALITY_ANY, 4);
-			if (ownedscrolls)
-			{
+			if (ownedscrolls) {
 				var scrollquality = ownedscrolls->get_item_quality();
 				var body = false;
-				if (scrollquality == 240)
-				{
+				if (scrollquality == 240) {
 					//Erethian
 					//Set flag to prevent respawning:
 					gflags[0x02EE] = true;
-					var pos = get_object_position();
+					struct<Position> pos = get_object_position();
 					//Create his body:
 					body = UI_create_new_object(SHAPE_BODIES_3);
 					body->set_item_frame_rot(get_item_frame_rot());
@@ -111,12 +97,11 @@ void killTargetNPC object#() ()
 					deleteObjectAndContents(item);
 					UI_update_last_created(pos);
 				}
-				if (scrollquality == 241)
-				{
+				if (scrollquality == 241) {
 					//Dracothraxus
 					//Set flag to prevent respawning:
 					gflags[0x02EF] = true;
-					var pos = get_object_position();
+					struct<Position> pos = get_object_position();
 					//Create his body:
 					body = UI_create_new_object(SHAPE_LARGE_BODIES);
 					body->set_item_frame_rot(get_item_frame_rot());
@@ -133,8 +118,7 @@ void killTargetNPC object#() ()
 				scroll->set_item_frame(4);
 				//Put it in the body:
 				body->give_last_created();
-				script scroll after 1 ticks
-				{
+				script scroll after 1 ticks {
 					finish;
 					nohalt;
 					//Not sure what it does:
@@ -142,32 +126,24 @@ void killTargetNPC object#() ()
 				}
 				//Make all NPCs of the same alignment as victim hostile:
 				var npclist = AVATAR->find_nearby(-1, 80, MASK_NPC2);
-				for (npc in npclist)
-				{
+				for (npc in npclist) {
 					var npcshape = npc->get_item_shape();
-					if (!((npcshape == SHAPE_MALE_AVATAR) || (npcshape == SHAPE_FEMALE_AVATAR)))
-					{
-						if (npc->get_alignment() == alignment)
-						{
+					if (!((npcshape == SHAPE_MALE_AVATAR) || (npcshape == SHAPE_FEMALE_AVATAR))) {
+						if (npc->get_alignment() == alignment) {
 							npc->set_alignment(2);
 							npc->set_schedule_type(IN_COMBAT);
 						}
 					}
 				}
-			}
-			else
-			{
+			} else {
 				//Kill monster npc:
 				kill_npc();
 				//Make all NPCs of the same alignment as victim hostile:
 				var npclist = AVATAR->find_nearby(-1, 80, MASK_NPC2);
-				for (npc in npclist)
-				{
+				for (npc in npclist) {
 					var npcshape = npc->get_item_shape();
-					if (!((npcshape == SHAPE_MALE_AVATAR) || (npcshape == SHAPE_FEMALE_AVATAR)))
-					{
-						if (npc->get_alignment() == alignment)
-						{
+					if (!((npcshape == SHAPE_MALE_AVATAR) || (npcshape == SHAPE_FEMALE_AVATAR))) {
+						if (npc->get_alignment() == alignment) {
 							npc->set_alignment(2);
 							npc->set_schedule_type(IN_COMBAT);
 						}
@@ -178,29 +154,23 @@ void killTargetNPC object#() ()
 	}
 }
 
-void Blackrock_Potion shape#(0x450) ()
-{
-	if ((event == DOUBLECLICK) && get_item_frame() == 0)
-	{
+void Blackrock_Potion shape#(0x450) () {
+	if ((event == DOUBLECLICK) && get_item_frame() == 0) {
 		//Nothing happens if in incomplete form.
 		//Get random party member to ask the Avatar if he is SURE:
 		var npc = randomPartyMember();
 		npc.say("@If thou dost remember it, Zauriel said this was a deadly poison. @Art thou sure thou dost want to use it?@");
-		if (askYesNo())
-		{
+		if (askYesNo()) {
 			//Alas, yes...
 			npc.hide();
 			//Ask for target:
-			var target = UI_click_on_item();
-			
-			if (target->is_npc())
-			{
+			struct<ObjPos> target = UI_click_on_item();
+
+			if (target->is_npc()) {
 				//An NPC:
-				if (target->get_item_shape() == SHAPE_LAURIANNA_ROOTED)
-				{
+				if (target->get_item_shape() == SHAPE_LAURIANNA_ROOTED) {
 					//Fortunatelly, it is Laurianna
-					if (getQuestState() < PLAYER_KILLED_MAGE)
-					{
+					if (getQuestState() < PLAYER_KILLED_MAGE) {
 						// Laundo yet alive, so Laurianna is behind an energy shield.
 						AVATAR.say("There is some sort of energy field that prevents you from reaching your intended victim.");
 						return;
@@ -220,23 +190,18 @@ void Blackrock_Potion shape#(0x450) ()
 
 					//Register that Laundo and his goons are gonners:
 					target->set_npc_id(0);
-	
+
 					script target after 1 ticks call Laurianna;
-				}
-				else
-				{
+				} else {
 					//Someone else... DAMN YOU AVATAR!
 					var npc_num = target->get_npc_number();
 					AVATAR.say("In a terrible display of strength and brutality, you force the potion down your victim's throat. The effect is swift, and everyone nearby is shocked by your brutal display.");
-					if (npc_num == BATLIN)
-					{
+					if (npc_num == BATLIN) {
 						//Batlin is a special case, but he IS affected:
 						BATLIN.say("Batlin squirms and contorts for a while, and chokes @Damn thee, Avatar!@ very faintly. In what appears to be a spasm, Batlin makes a gesture and vanishes before your eyes.");
 						gflags[0x00DA] = true;
 						UI_remove_npc(UI_get_npc_object(BATLIN));
-					}
-					else
-					{
+					} else {
 						//Simply kill anyone else:
 						say("After contorting for a while, your poor victim stops squirming and lays dead at your feet.");
 						target->killTargetNPC();

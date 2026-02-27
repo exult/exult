@@ -27,18 +27,16 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define INCL_PNGIO
 #ifdef HAVE_PNG_H
 
-int Import_png8(const char *pngname, int transp_index, int &width, int &height,
-                int &rowbytes, int &xoff, int &yoff, unsigned char  *&pixels,
-                unsigned char  *&palette, int &pal_size);
-int Export_png8(const char *pngname, int transp_index, int width, int height,
-                int rowbytes, int xoff, int yoff, unsigned char *pixels,
-                const unsigned char *palette, int pal_size,
-                bool transp_to_0 = false);
-int Import_png32(const char *pngname, int &width, int &height,
-                 int &rowbytes, int &xoff, int &yoff, unsigned char  *&pixels,
-                 bool bottom_first = false);
-int Export_png32(const char *pngname, int width, int height,
-                 int rowbytes, int xoff, int yoff, unsigned char *pixels);
+int Import_png8(
+		const char* pngname, int transp_index, int& width, int& height, int& rowbytes, int& xoff, int& yoff, unsigned char*& pixels,
+		unsigned char*& palette, int& pal_size);
+int Export_png8(
+		const char* pngname, int transp_index, int width, int height, int rowbytes, int xoff, int yoff, unsigned char* pixels,
+		const unsigned char* palette, int pal_size, bool transp_to_0 = false);
+int Import_png32(
+		const char* pngname, int& width, int& height, int& rowbytes, int& xoff, int& yoff, unsigned char*& pixels,
+		bool bottom_first = false);
+int Export_png32(const char* pngname, int width, int height, int rowbytes, int xoff, int yoff, unsigned char* pixels);
 
 #endif
 #endif

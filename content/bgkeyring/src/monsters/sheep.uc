@@ -22,16 +22,12 @@
 
 //More highly sophisticated behaviour, for sheep this time!
 //Also an accusation of sheep-fucking, from our good friend Dupre.
-void Sheep shape#(0x3CA) ()
-{
+void Sheep shape#(0x3CA) () {
 	item_say("@Baa-aa-aa@");
-	if (event == DOUBLECLICK)
-	{
-		if (UI_get_random(10) < 3 && inParty(SHAMINO) && canTalk(SHAMINO))
-		{
+	if (event == DOUBLECLICK) {
+		if (UI_get_random(10) < 3 && inParty(SHAMINO) && canTalk(SHAMINO)) {
 			delayedBark(SHAMINO, "@I like sheep.@", 6);
-			if (inParty(DUPRE) && canTalk(DUPRE))
-			{ 
+			if (inParty(DUPRE) && canTalk(DUPRE)) {
 				delayedBark(DUPRE, "@Aye, I hath heard that about thee!@", 16);
 				delayedBark(SHAMINO, "@Hey!@", 26);
 			}

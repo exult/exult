@@ -23,6 +23,7 @@
 
 #include "common_types.h"
 #include "useval.h"
+
 #include <iosfwd>
 #include <memory>
 
@@ -32,42 +33,44 @@ using Game_object_shared = std::shared_ptr<Game_object>;
 
 class Stack_frame {
 public:
-	Stack_frame(Usecode_function *fun, int event,
-	            Game_object *caller, int chain, int depth);
+	Stack_frame(Usecode_function* fun, int event, Game_object* caller, int chain, int depth);
 	~Stack_frame();
 
-	Usecode_function *function;
-	const uint8 *ip; // current IP
-	const uint8 *data; // pointer to start of data segment
-	const uint8 *externs; // pointer to start of externs
-	const uint8 *code; // pointer to (actual) code
-	const uint8 *endp; // pointer directly past code segment
-	int line_number; // if debugging info present
+	Usecode_function* function;
+	const uint8*      ins_ip;         // IP for current instruction
+	const uint8*      ip;             // current IP
+	const uint8*      data;           // pointer to start of data segment
+	const uint8*      externs;        // pointer to start of externs
+	const uint8*      code;           // pointer to (actual) code
+	const uint8*      endp;           // pointer directly past code segment
+	int               line_number;    // if debugging info present
 
 	// should probably add source filename?
 
-	int call_chain; // unique ID for this call chain
-	int call_depth; // zero for top level function
+	int call_chain;    // unique ID for this call chain
+	int call_depth;    // zero for top level function
 
-	int num_externs;
-	int num_args;
-	int num_vars;
-	Usecode_value *locals;
+	int            num_externs;
+	int            num_args;
+	int            num_vars;
+	Usecode_value* locals;
 
-	int eventid;
+	int                eventid;
 	Game_object_shared caller_item;
 
-	Usecode_value *save_sp;
+	Usecode_value* save_sp;
 
-	Usecode_value &get_this() {
+	Usecode_value& get_this() {
 		return locals[num_args - 1];
 	}
+
 	static int LastCallChainID;
+
 	static int getCallChainID() {
 		return ++LastCallChainID;
 	}
 };
 
-std::ostream &operator<<(std::ostream &out, Stack_frame &frame);
+std::ostream& operator<<(std::ostream& out, Stack_frame& frame);
 
 #endif

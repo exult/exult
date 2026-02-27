@@ -1,0 +1,9 @@
+#!/bin/zsh
+# This script works around the PKG issue that you can only install
+# into absolute paths. 
+# For creating the PKG it needs to be renamed to postinstall and
+# it needs to be executable (chmod +x).
+# The PKG installer saves the plugin to /tmp/u7shp and this script
+# copies it to where the GIMP 3.0 can find it.
+mkdir -p $HOME/Library/Application\ Support/GIMP/3.0/plug-ins/u7shp
+cp -pf /tmp/u7shp/* $HOME/Library/Application\ Support/GIMP/3.0/plug-ins/u7shp 

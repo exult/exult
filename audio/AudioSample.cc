@@ -18,36 +18,30 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
 #include "pent_include.h"
+
 #include "AudioSample.h"
+
 #include "OggAudioSample.h"
-#include "WavAudioSample.h"
 #include "VocAudioSample.h"
+#include "WavAudioSample.h"
 
 namespace Pentagram {
 
-AudioSample::AudioSample(std::unique_ptr<uint8[]> buffer_, uint32 size_) :
-		bits(0), frame_size(0), decompressor_size(0), decompressor_align(0),
-		length(0), buffer_size(size_), buffer(std::move(buffer_)), refcount(1),
-		sample_rate(0), stereo(false)
-{
-}
-AudioSample *AudioSample::createAudioSample(std::unique_ptr<uint8[]> data, uint32 size)
-{
-	IBufferDataView ds(data, size);
+	AudioSample::AudioSample(std::unique_ptr<uint8[]> buffer_, uint32 size_)
+			: bits(0), frame_size(0), decompressor_size(0), decompressor_align(0), buffer_limit(size_), buffer(std::move(buffer_)),
+			  refcount(1), sample_rate(0), stereo(false), length(0) {}
 
-	if (VocAudioSample::isThis(&ds))
-	{
-		return new VocAudioSample(std::move(data), size);
-	}
-	else if (WavAudioSample::isThis(&ds))
-	{
-		return new WavAudioSample(std::move(data), size);
-	}
-	else if (OggAudioSample::isThis(&ds))
-	{
-		return new OggAudioSample(std::move(data), size);
-	}
-	return nullptr;
-}
+	AudioSample* AudioSample::createAudioSample(std::unique_ptr<uint8[]> data, uint32 size) {
+		IBufferDataView ds(data, size);
 
-}
+		if (VocAudioSample::isThis(&ds)) {
+			return new VocAudioSample(std::move(data), size);
+		} else if (WavAudioSample::isThis(&ds)) {
+			return new WavAudioSample(std::move(data), size);
+		} else if (OggAudioSample::isThis(&ds)) {
+			return new OggAudioSample(std::move(data), size);
+		}
+		return nullptr;
+	}
+
+}    // namespace Pentagram

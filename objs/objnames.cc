@@ -17,29 +17,29 @@
  */
 
 #ifdef HAVE_CONFIG_H
-#  include <config.h>
+#	include <config.h>
 #endif
+
+#include "actors.h"
+#include "frnameinf.h"
+#include "game.h"
+#include "gamewin.h"
+#include "items.h"
+#include "objs.h"
+#include "shapeinf.h"
 
 #include <cstdio>
 
-#include "objs.h"
-#include "game.h"
-#include "items.h"
-#include "gamewin.h"
-#include "actors.h"
-#include "shapeinf.h"
-#include "frnameinf.h"
-
 #ifndef ATTR_PRINTF
-#ifdef __GNUC__
-#define ATTR_PRINTF(x,y) __attribute__((format(printf, (x), (y))))
-#else
-#define ATTR_PRINTF(x,y)
-#endif
+#	ifdef __GNUC__
+#		define ATTR_PRINTF(x, y) __attribute__((format(printf, (x), (y))))
+#	else
+#		define ATTR_PRINTF(x, y)
+#	endif
 #endif
 
-using std::string;
 using std::strchr;
+using std::string;
 
 /*
  *  For objects that can have a quantity, the name is in the format:
@@ -55,14 +55,14 @@ using std::strchr;
  *  Extracts the first, second and third parts of the name string
  */
 static void get_singular_name(
-    const char *name,       // Raw name string from TEXT.FLX
-    string &output_name     // Output string
+		const char* name,          // Raw name string from TEXT.FLX
+		string&     output_name    // Output string
 ) {
-	if (*name != '/') {     // Output the first part
-		do
+	if (*name != '/') {    // Output the first part
+		do {
 			output_name += *name++;
-		while (*name != '/' && *name != '\0');
-		if (*name == '\0') { // should not happen
+		} while (*name != '/' && *name != '\0');
+		if (*name == '\0') {    // should not happen
 			output_name = "?";
 			return;
 		}
@@ -72,8 +72,9 @@ static void get_singular_name(
 	name++;
 
 	// Output the second part
-	while (*name != '/' && *name != '\0')
+	while (*name != '/' && *name != '\0') {
 		output_name += *name++;
+	}
 	if (*name == '\0') {    // should not happen
 		output_name = "?";
 		return;
@@ -81,8 +82,9 @@ static void get_singular_name(
 	name++;
 
 	// Output the third part
-	while (*name != '/' && *name != '\0')
+	while (*name != '/' && *name != '\0') {
 		output_name += *name++;
+	}
 	if (*name == '\0') {    // should not happen
 		output_name = "?";
 		return;
@@ -93,128 +95,132 @@ static void get_singular_name(
 /*
  *  Extracts the second and fourth parts of the name string
  */
-static void get_plural_name(
-    const char *name,
-    int quantity,
-    string &output_name
-) {
+static void get_plural_name(const char* name, int quantity, string& output_name) {
 	char buf[20];
 
-	snprintf(buf, 20, "%d ", quantity); // Output the quantity
+	snprintf(buf, sizeof(buf), "%d ", quantity);    // Output the quantity
 	output_name = buf;
 
 	// Skip the first part
-	while (*name != '/' && *name != '\0')
+	while (*name != '/' && *name != '\0') {
 		name++;
+	}
 	if (*name == '\0') {    // should not happen
 		output_name = "?";
 		return;
 	}
 	name++;
 	// Output the second part
-	while (*name != '/' && *name != '\0')
+	while (*name != '/' && *name != '\0') {
 		output_name += *name++;
+	}
 	if (*name == '\0') {    // should not happen
 		output_name = "?";
 		return;
 	}
 	name++;
 	// Skip the third part
-	while (*name != '/' && *name != '\0')
+	while (*name != '/' && *name != '\0') {
 		name++;
+	}
 	if (*name == '\0') {    // should not happen
 		output_name = "?";
 		return;
 	}
 	name++;
-	while (*name != '\0')       // Output the last part
+	while (*name != '\0') {    // Output the last part
 		output_name += *name++;
+	}
 }
 
 /*
  *  Returns the string to be displayed when the item is clicked on
  */
-string Game_object::get_name(
-) const {
-	const Shape_info &info = get_info();
-	const int qual = info.has_quality() && !info.is_npc() ? get_quality() : -1;
-	const Frame_name_info *nminf = info.get_frame_name(get_framenum(), qual);
-	const int shnum = get_shapenum();
-	const char *name;
-	const char *shpname = (shnum >= 0 && shnum < get_num_item_names()) ?
-	                      get_item_name(shnum) : nullptr;
-	const int type = nminf ? nminf->get_type() : -255;
-	int msgid;
-	if (type < 0 && type != -255)   // This is a "catch all" default.
-		return "";  // None.
-	else if (type == -255 || (msgid = nminf->get_msgid()) >= get_num_misc_names())
+string Game_object::get_name() const {
+	const Shape_info&      info  = get_info();
+	const int              qual  = info.has_quality() && !info.is_npc() ? get_quality() : -1;
+	const Frame_name_info* nminf = info.get_frame_name(get_framenum(), qual);
+	const int              shnum = get_shapenum();
+	const char*            name;
+	const char*            shpname = (shnum >= 0 && shnum < get_num_item_names()) ? get_item_name(shnum) : nullptr;
+	const int              type    = nminf ? nminf->get_type() : -255;
+	int                    msgid;
+	if (type < 0 && type != -255) {    // This is a "catch all" default.
+		return "";                     // None.
+	} else if (type == -255 || (msgid = nminf->get_msgid()) >= get_num_misc_names()) {
 		name = shpname;
-	else if (!type)
+	} else if (!type) {
 		name = get_misc_name(msgid);
-	else if (!info.has_quality() && !info.is_body_shape())
-		name = shpname;     // Use default name for these.
-	else {
+	} else if (!info.has_quality() && !info.is_body_shape()) {
+		name = shpname;    // Use default name for these.
+	} else {
 		const int othermsg = nminf->get_othermsg();
-		bool defname = false;
-		string msg;
-		string other;
+		bool      defname  = false;
+		string    msg;
+		string    other;
 		if (type >= 3) {
 			// Special names (in SI, corpse, urn).
 			int npcnum = -1;
-			if (!info.is_body_shape())
+			if (!info.is_body_shape()) {
 				npcnum = get_quality();
-			else if (qual == 1)
+			} else if (qual == 1) {
 				npcnum = get_live_npc_num();
-			Actor *npc = gwin->get_npc(npcnum);
-			if (npc && !npc->is_unused() &&
-			        (!info.is_body_shape() || npc->get_flag(Obj_flags::met))) {
+			}
+			Actor* npc = gwin->get_npc(npcnum);
+			if (npc && !npc->is_unused() && (!info.is_body_shape() || npc->get_flag(Obj_flags::met))) {
 				other = npc->get_npc_name_string();
-				if (other.empty())  // No name.
+				if (other.empty()) {    // No name.
 					defname = true;
-				else
+				} else {
 					msg = get_misc_name(msgid);
-			} else  // Default name.
+				}
+			} else {    // Default name.
 				defname = true;
+			}
 		} else {
-			msg = get_misc_name(msgid);
-			other = (othermsg >= 0 && othermsg < get_num_misc_names()) ?
-			        get_misc_name(othermsg) : (shpname ? shpname : "");
+			msg   = get_misc_name(msgid);
+			other = (othermsg >= 0 && othermsg < get_num_misc_names()) ? get_misc_name(othermsg) : (shpname ? shpname : "");
 		}
 		if (defname) {
-			if (othermsg >= 0 && othermsg < get_num_misc_names())
+			if (othermsg >= 0 && othermsg < get_num_misc_names()) {
 				name = get_misc_name(othermsg);
-			else if (othermsg < 0 && othermsg != -255)  // None.
+			} else if (othermsg < 0 && othermsg != -255) {    // None.
 				return "";
-			else    // Use shape's.
+			} else {    // Use shape's.
 				name = shpname;
-		} else if (type & 1)
+			}
+		} else if (type & 1) {
 			return other + msg;
-		else
+		} else {
 			return msg + other;
+		}
 	}
-	int quantity;
+	int    quantity;
 	string display_name;
-	if (name == nullptr)
+	if (name == nullptr) {
 		return "";
+	}
 
-	if (ShapeID::get_info(shnum).has_quantity())
+	if (ShapeID::get_info(shnum).has_quantity()) {
 		quantity = quality & 0x7f;
-	else
+	} else {
 		quantity = 1;
+	}
 
 	// If there are no slashes then it is simpler
 	if (strchr(name, '/') == nullptr) {
-		if (quantity <= 1)
+		if (quantity <= 1) {
 			display_name = name;
-		else {
+		} else {
 			char buf[50];
 
-			snprintf(buf, 50, "%d %s", quantity, name);
+			snprintf(buf, sizeof(buf), "%d %s", quantity, name);
 			display_name = buf;
 		}
-	} else if (quantity <= 1)   // quantity might be zero?
+	} else if (quantity <= 1) {    // quantity might be zero?
 		get_singular_name(name, display_name);
-	else
+	} else {
 		get_plural_name(name, quantity, display_name);
+	}
 	return display_name;
 }

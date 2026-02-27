@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2021-2022  The Exult Team
+ *  Copyright (C) 2021-2025  The Exult Team
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -20,76 +20,140 @@ package info.exult;
 
 import android.content.Context;
 import android.util.Log;
+import java.io.BufferedInputStream;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.zip.CRC32;
 import java.util.zip.CheckedInputStream;
 import org.apache.commons.compress.archivers.ArchiveEntry;
 
 class ExultGameContent extends ExultContent {
-  private Long m_expectedCrc32;
-  private Path m_installPath;
-  private Path m_gameRootInArchive;
+	private Long m_expectedCrc32;
+	private Path m_installPath;
+	private Path m_gameRootInArchive;
 
-  public ExultGameContent(String name, Context context, Long expectedCrc32) {
-    super("game", name, context);
-    m_expectedCrc32 = expectedCrc32;
-    m_installPath = context.getFilesDir().toPath().resolve(name).resolve("static");
-  }
+	public ExultGameContent(String name, Context context, Long expectedCrc32) {
+		super("game", name, context);
+		m_expectedCrc32 = expectedCrc32;
+		m_installPath   = context.getFilesDir().toPath().resolve(name).resolve(
+                "static");
+	}
 
-  @Override
-  protected boolean identify(Path location, ArchiveEntry archiveEntry, InputStream inputStream)
-      throws IOException {
-    // Nothing to do for the terminal call - we've failed to find a valid game if we get that far.
-    if (null == archiveEntry) {
-      return false;
-    }
+	public boolean isAnyVariantInstalledInFolder() {
+		try {
+			java.nio.file.Path mainshp = m_installPath.resolve("mainshp.flx");
+			return java.nio.file.Files.exists(mainshp)
+					&& !java.nio.file.Files.isDirectory(mainshp);
+		} catch (Exception e) {
+			return false;
+		}
+	}
 
-    // Skip over directories.
-    if (archiveEntry.isDirectory()) {
-      return false;
-    }
+	@Override
+	public boolean isInstalled() {
+		// A game is installed if mainshp.flx exists in the static folder,
+		// regardless of whether its CRC matches a known variant.
+		try {
+			java.nio.file.Path mainshp = m_installPath.resolve("mainshp.flx");
+			return Files.exists(mainshp) && !Files.isDirectory(mainshp);
+		} catch (Exception e) {
+			return false;
+		}
+	}
 
-    // The Exult engine looks for "initgame.dat" to indicate a valid game.
-    Path fullPath = getFullArchivePath(location, archiveEntry);
-    if (!fullPath.getFileName().toString().toLowerCase().equals("initgame.dat")) {
-      return false;
-    }
+	/**
+	 * Returns true if the installed mainshp.flx has a CRC matching the
+	 * expected value for this content row, or if no expected CRC is set.
+	 * Returns false if there is a CRC mismatch or the file does not exist.
+	 */
+	public boolean isCrcMatch() {
+		try {
+			java.nio.file.Path mainshp = m_installPath.resolve("mainshp.flx");
+			if (!Files.exists(mainshp) || Files.isDirectory(mainshp)) {
+				return false;
+			}
+			if (m_expectedCrc32 != null) {
+				long actual = computeCrc32(mainshp);
+				return (actual & 0xffffffffL)
+						== (m_expectedCrc32.longValue() & 0xffffffffL);
+			}
+			return true;
+		} catch (Exception e) {
+			return false;
+		}
+	}
 
-    // If there is an expected CRC, calculate the entry's CRC to see if it is the game we are
-    // expecting.
-    if (null != m_expectedCrc32) {
-      CheckedInputStream checkedInputStream = new CheckedInputStream(inputStream, new CRC32());
-      byte[] buffer = new byte[1024];
-      while (checkedInputStream.read(buffer, 0, buffer.length) >= 0) {}
-      long actualCrc32 = checkedInputStream.getChecksum().getValue();
-      if (actualCrc32 != m_expectedCrc32) {
-        Log.d(
-            "ExultGameContent",
-            "CRC mismatch (actual=0x"
-                + Long.toHexString(actualCrc32)
-                + ", expected=0x"
-                + Long.toHexString(m_expectedCrc32)
-                + ")");
-        return false;
-      }
-    }
+	private static long computeCrc32(java.nio.file.Path file)
+			throws IOException {
+		byte[]              buf = new byte[8192];
+		java.util.zip.CRC32 crc = new java.util.zip.CRC32();
+		try (BufferedInputStream in
+			 = new BufferedInputStream(new FileInputStream(file.toFile()))) {
+			int r;
+			while ((r = in.read(buf)) != -1) {
+				crc.update(buf, 0, r);
+			}
+		}
+		return crc.getValue();
+	}
 
-    // If we got here, we have the game we're looking for.  Note the directory containing it for use
-    // by
-    // installDestination() and then terminate the search.
-    m_gameRootInArchive = fullPath.getParent();
-    return true;
-  }
+	@Override
+	protected boolean identify(
+			Path location, ArchiveEntry archiveEntry, InputStream inputStream)
+			throws IOException {
+		// Nothing to do for the terminal call - we've failed to find a valid
+		// game if we get that far.
+		if (null == archiveEntry) {
+			return false;
+		}
 
-  @Override
-  protected Path getContentRootInArchive() {
-    return m_gameRootInArchive;
-  }
+		// Skip over directories.
+		if (archiveEntry.isDirectory()) {
+			return false;
+		}
 
-  @Override
-  protected Path getContentInstallRoot() {
-    return m_installPath;
-  }
+		// The Exult engine looks for "mainshp.flx" to indicate a valid game.
+		Path fullPath = getFullArchivePath(location, archiveEntry);
+		if (!fullPath.getFileName().toString().toLowerCase().equals(
+					"mainshp.flx")) {
+			return false;
+		}
+
+		// If there is an expected CRC, calculate the entry's CRC to see if it
+		// is the game we are expecting.
+		if (null != m_expectedCrc32) {
+			CheckedInputStream checkedInputStream
+					= new CheckedInputStream(inputStream, new CRC32());
+			byte[] buffer = new byte[1024];
+			while (checkedInputStream.read(buffer, 0, buffer.length) >= 0) {
+			}
+			long actualCrc32 = checkedInputStream.getChecksum().getValue();
+			if (actualCrc32 != m_expectedCrc32) {
+				Log.d("ExultGameContent",
+					  "CRC mismatch (actual=0x" + Long.toHexString(actualCrc32)
+							  + ", expected=0x"
+							  + Long.toHexString(m_expectedCrc32) + ")");
+				return false;
+			}
+		}
+
+		// If we got here, we have the game we're looking for.  Note the
+		// directory containing it for use by installDestination() and then
+		// terminate the search.
+		m_gameRootInArchive = fullPath.getParent();
+		return true;
+	}
+
+	@Override
+	protected Path getContentRootInArchive() {
+		return m_gameRootInArchive;
+	}
+
+	@Override
+	protected Path getContentInstallRoot() {
+		return m_installPath;
+	}
 }

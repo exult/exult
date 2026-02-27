@@ -24,21 +24,18 @@
 
 //Wheat can be used on a millstone to create a sack of flour
 extern void Millstone shape#(0x2C7) ();
-void Wheat shape#(0x2A5) ()
-{
-	//Player double-clicked on wheat-sack - it must first be picked up
-	//in order to be used. Once the player has it, this function gets
-	//called again with event = SCRIPTED
-	if (event == DOUBLECLICK)
+void Wheat shape#(0x2A5) () {
+	if (event == DOUBLECLICK) {
+		//Player double-clicked on wheat-sack - it must first be picked up
+		//in order to be used. Once the player has it, this function gets
+		//called again with event = SCRIPTED
 		gotoAndGet(item);
 
-	//Wheat-sack has been acquired and is now ready to use on millstone
-	else if (event == SCRIPTED)
-	{
+	} else if (event == SCRIPTED) {
+		//Wheat-sack has been acquired and is now ready to use on millstone
 		UI_close_gumps();
-		var target = UI_click_on_item();
-		if (target->get_item_shape() != SHAPE_MILLSTONE)
-		{
+		struct<ObjPos> target = UI_click_on_item();
+		if (target->get_item_shape() != SHAPE_MILLSTONE) {
 			randomPartySay("@Why not try grinding the wheat in a millstone?@");
 			return;
 		}
@@ -53,27 +50,27 @@ void Wheat shape#(0x2A5) ()
 }
 
 //Create a new flour sack
-void createFlour object#() ()
-{
+void createFlour object#() () {
 	//create the new flour object
 	var flour = UI_create_new_object(SHAPE_KITCHEN_ITEM);
-	if (!flour) return;
-	flour->set_item_frame(FRAME_FLOURSACK_OPEN);	//changed from FRAME_FLOURSACK
+	if (!flour) {
+		return;
+	}
+	//changed from FRAME_FLOURSACK
+	flour->set_item_frame(FRAME_FLOURSACK_OPEN);
 
 	flour->set_item_flag(TEMPORARY);
 	flour->set_item_flag(OKAY_TO_TAKE);
 
-	var target_pos = get_object_position();
+	struct<Position> target_pos = get_object_position();
 	//place it on the middle right-hand side of the millstone
-	target_pos[X] = target_pos[X] + 1;
-	target_pos[Y] = target_pos[Y] - 3;
+	target_pos.x += 1;
+	target_pos.y -= 3;
 
 	UI_update_last_created(target_pos);
 	//Added: Check if Thurston is nearby, since he'll object
-	if (isNearby(THURSTON) && UI_get_random(2) == 1)
-	{
-		if (!gflags[THURSTON_WARNED_ABOUT_MILLING])
-		{
+	if (isNearby(THURSTON) && UI_get_random(2) == 1) {
+		if (!gflags[THURSTON_WARNED_ABOUT_MILLING]) {
 			THURSTON.say("Thurston approaches you, obviously angry and embarrassed of his anger.",
 			             "~@I do not want to be rude ", getPoliteTitle(),
 			             "...but it is my livelihood to run the mill and grind the wheat. So I ask thou, leavest the job to me!");
@@ -86,44 +83,43 @@ void createFlour object#() ()
 
 //Performs grindage upon a sack of wheat
 const int SOUND_GRIND = 26;
-void Millstone shape#(0x2C7) ()
-{
-	//player double-clicked on the millstone
-	if (event == DOUBLECLICK)
-	{
+void Millstone shape#(0x2C7) () {
+	if (event == DOUBLECLICK) {
+		//player double-clicked on the millstone
 		randomPartySay("@Try grinding wheat upon this millstone.@");
 		return;
-	}
-
-	//player used wheat on the millstone
-	else if (event == SCRIPTED)
-	{
+	} else if (event == SCRIPTED) {
+		//player used wheat on the millstone
 		//find the first wheat sack the player is carrying and remove it
 		var wheat = AVATAR->get_cont_items(SHAPE_WHEAT, QUALITY_ANY, FRAME_ANY);
 		wheat->remove_item();
 
 		//animate the avatar doing things to the millstone
-		script AVATAR
-		{
+		script AVATAR {
 			nohalt;
-			call freeze;	//prevent player movement
+			//prevent player movement
+			call freeze;
 			face directionFromAvatar(item);
-			repeat 3
-			{
+			repeat 3 {
 				sfx SOUND_GRIND;
-				actor frame ready; wait 2;
-				actor frame standing; wait 2;
+				actor frame ready;
+				wait 2;
+				actor frame standing;
+				wait 2;
 			};
 			call unfreeze;
 		}
 
 		if (isNearby(THURSTON) && gflags[THURSTON_WARNED_ABOUT_MILLING] &&
-				UI_get_random(2) == 1)
+				UI_get_random(2) == 1) {
 			delayedBark(THURSTON, "I have told thee before!", 10);
+		}
 
 		//call createFlour() at end of animation
 		//(we do this in a separate script block, so that the itemref
 		//is set properly in the called function)
-		script item after 28 ticks	{ call createFlour; }
+		script item after 28 ticks {
+			call createFlour;
+		}
 	}
 }

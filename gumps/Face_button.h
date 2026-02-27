@@ -1,5 +1,5 @@
 /*
-Copyright (C) 2001-2022 The Exult Team
+Copyright (C) 2001-2024 The Exult Team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -29,23 +29,30 @@ class Game_window;
  */
 class Face_button : public Gump_button {
 protected:
-	Actor *actor;           // Who this represents.
-	bool translucent;
+	Actor* actor;    // Who this represents.
+	bool   translucent;
+
 public:
-	Face_button(Gump *par, int px, int py, Actor *a);
-	Actor *get_actor() {
+	Face_button(Gump* par, int px, int py, Actor* a);
+
+	Actor* get_actor() {
 		return actor;
 	}
+
 	void double_clicked(int x, int y) override;
-	bool activate(int button) override {
-		return button == 1;
+
+	bool activate(MouseButton button) override {
+		return button == MouseButton::Left;
 	}
 
 	void paint() override;
-	bool push(int button) override {
-		return button == 1;
+
+	bool push(MouseButton button) override {
+		return button == MouseButton::Left;
 	}
-	void unpush(int) override {}
+
+	void unpush(MouseButton) override {}
+
 	void update_widget() override;
 };
 

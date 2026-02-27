@@ -146,3 +146,620 @@
 0x585:telling him of your fate!
 0x586:
 0x587:
+
+#message for Automatic feding
+0x590:Out of Food
+
+# GumpStrings
+0x591:OK
+0x592:CANCEL
+0x593:HELP
+0x594:APPLY
+0x595:Yes
+0x596:No
+0x597:Cancel
+0x599:disabled
+0x59A:Disabled
+0x59B:Enabled
+0x59C:Default
+0x59D:Do you really want to quit?
+
+# Mixer_gump.cc
+0x5A0:Failed to play midi test track
+0x5A1:Failed to play ogg test track
+0x5A2:Music:
+0x5A3:MIDI Music:
+0x5A4:OGG Music:
+0x5A5:SFX:
+0x5A6:Speech:
+
+#GameDisplayOptions_gump.cc
+0x5B0:Left
+0x5B1:Middle
+0x5B2:Right
+
+0x5B3:Vertical
+0x5B4:Transparent
+0x5B5:Black
+0x5B6:Green
+0x5B7:White
+0x5B8:Yellow
+0x5B9:Blue
+0x5BA:Red
+0x5BB:Purple
+0x5BC:Solid Gray
+0x5BD:Dark Purple
+0x5BE:Bright Yellow
+0x5BF:Light Blue
+
+0x5C0:Light Green
+0x5C1:Dark Red
+0x5C2:Orange
+0x5C3:Light Gray
+0x5C4:Pale Blue
+0x5C5:Dark Green
+0x5C6:Bright White
+0x5C7:Dark Gray
+
+0x5C8:Status Bars:
+0x5C9:Use ShortcutBar :
+0x5CA:    Use outline color :
+0x5CB:    Hide missing items:
+0x5CC:Text Background:
+0x5CD:Smooth scrolling:
+0x5CE:Skip intro:
+0x5CF:Skip scripted first scene:
+0x5D0:Use extended SI intro:
+0x5D1:Paperdolls:
+0x5D2:Android autolaunch:
+0x5D3:Language:
+0x5D4:English
+0x5D5:French
+0x5D6:German
+0x5D7:Spanish
+0x5D8:Built-in fonts:
+0x5D9:Original
+0x5DA:Serif
+
+# Gamemenu_gump.cc
+0x5E0:Load/Save Game
+0x5E1:Video Options
+0x5E2:Audio Options
+0x5E3:Game Display
+0x5E4:Game Engine
+0x5E5:Game Input
+0x5E6:Quit
+
+#AdvancedOptions_gump.cc
+0x5F0:Apply anyway?
+
+#ConfigSetting_widget.cc
+0x5f8:(Default)
+0x5F9:(Unset)
+0x5FA:All values for
+0x5FB:setting must be unique.
+0x5FC:At least One value for
+0x5FD:setting must be set.
+
+#AudioOptions_gump.cc
+0x600:VOLUME MIXER
+0x601:SETTINGS
+0x602:Advanced settings for
+0x603:midi driver.
+0x604:Mono
+0x605:Stereo
+0x606:Digital
+0x607:Subtitles only
+0x608:Voice only
+0x609:Voice + Subtitles
+0x60A:Never
+0x60B:Limited
+0x60C:Auto
+0x60D:Endless
+0x60E:Roland MT-32
+0x60F:Sound Blaster
+0x610:Custom
+0x611:The mod
+0x612:requires Digital Music
+0x613:Disable anyway?
+0x614:Audio:
+0x615:    sample rate
+0x616:    speaker type
+0x617:Music:
+0x618:    looping
+0x619:    digital music
+0x61A:    midi driver
+0x61B:SFX:
+0x61C:    pack
+0x61D:Speech:
+0x61E:    conversion
+
+#GameEngineOptions_gump.cc
+0x620:Normal
+0x621:Hard
+0x622:Easiest (-3)
+0x623:Easier (-2)
+0x624:Easier (-1)
+0x625:Harder (+1)
+0x626:Harder (+2)
+0x627:Hardest (+3)
+0x628:Manual
+0x629:Automatic
+0x62A:Take automatic notes:
+0x62B:Gumps pause game:
+0x62C:Alternative drag and drop:
+0x62D:Speed:
+0x62E:Combat Show Hits:
+0x62F:Combat paused with Space:
+0x630:Combat Charmed Difficulty:
+0x631:Combat Difficulty:
+0x632:Cheats:
+0x633:Feeding:
+0x634:Enhancements:
+
+#InputOptions_gump.cc
+0x640:Single
+0x641:Double
+0x644:None
+0x645:Left
+0x646:Right
+0x647:Doubleclick closes Gumps:
+0x648:Right click closes Gumps:
+0x649:Pathfind with Right Click:
+0x64A:Scroll game view with mouse:
+0x64B:Use Middle Mouse Button:
+0x64C:Fullscreen Fast Mouse:
+0x64D:Item helper menu:
+0x64E:D-Pad screen location:
+0x64F:Pathfind with Long Touch:
+
+#ItemMenu_gump.cc
+0x650:Show Inventory
+0x651:Talk to
+0x652:Show Contents
+0x653:Interact with
+0x654:Pickup
+0x655:Move to
+0x656:Do nothing
+
+#Notebook_gump.cc
+0x658:Day
+0x659:am
+0x65A:pm
+
+#Newfile_gump.cc
+#Info Box Strings
+0x660:Avatar
+0x661:Exp
+0x662:Hp
+0x663:Str
+0x664:Dxt
+0x665:Int
+0x666:Trn
+0x667:Game Day
+0x668:Game Time
+0x669:Save Count
+0x66A:Date
+0x66B:Time
+0x66C:File
+#Buttons
+0x66D:LOAD
+0x66E:SAVE
+0x66F:DELETE
+
+#Month Avbbreviations
+0x670:Jan
+0x671:Feb
+0x672:March
+0x673:April
+0x674:May
+0x675:June
+0x676:July
+0x677:Aug
+0x678:Sept
+0x679:Oct
+0x67A:Nov
+0x67B:Dec
+#ordinal_numeral Suffixes for days
+0x67C:st
+0x67D:nd
+0x67E:rd
+0x67F:th
+
+#VideoOptions_gump.cc
+0x680:Auto
+0x683:Fill
+0x684:Fit
+0x685:Centre
+0x686:Custom
+0x687:Scaled size less than 320x200.
+0x688:Exult may be unusable.
+0x689:Apply anyway?
+0x68A:Settings applied.
+0x68B:Keep?
+0x68C:Full Screen:
+0x68D:Display Mode:
+0x68E:Window Size:
+0x68F:Resolution:
+0x690:Scaler:
+0x691:Scaling:
+0x692:Game Area:
+0x693:Fill Quality:
+0x694:Fill Mode:
+0x695:AR Correction:
+0x696:Same settings for window
+0x697:and fullscreen:
+
+#imagewin.cc scaler displaynames 
+0x69A:Point
+0x69B:Interlaced
+0x69C:Bilinear
+0x69D:BilinearPlus
+
+
+#MidiDriver setting labels
+0x6A0:Reverb Effect
+0x6A1:Chorus Effect
+0x6A2:device type
+0x6A3:General Midi
+0x6A4:GS127
+0x6A5:Fake MT32
+0x6A6:Real MT32
+0x6A7:Soundfont
+0x6A8:Win32 MIDI Device
+0x6A9:ALSA PORT
+0x6AA:CoreMIDI Device
+
+#Exult Menu
+0x6B0:FIRST
+0x6B1:PREVIOUS
+0x6B2:NEXT
+0x6B3:LAST
+0x6B4:SHOW MODS
+0x6B5:SETUP
+0x6B6:CREDITS
+0x6B7:QUOTES
+0x6B8:HELP
+0x6B9:EXIT 
+0x6BA:WRONG EXULT VERSION
+0x6BB:RETURN TO MAIN MENU
+0x6BC:Welcome to Exult
+0x6BD:
+0x6BE:To play you need the static data for either
+0X6Bf:"The Black Gate" or "Serpent Isle".
+0X6C0:Please edit the configuration file.
+0X6C1:Press ESC to exit.
+0X6C2:Please add the games in File Sharing
+0X6C3:Touch screen for help!
+
+#Misc
+# SI copy protection failed
+0x6F0:Oink!
+0x6F1:Oink
+
+# keyactions.cc
+0x6FA: Saving game failed!
+0x6FB: Game saved
+0x6FC: Restoring game failed!
+0x6FD: Game restored
+0x6FE: Object created
+
+# cheat.cc screen messages
+0x700: God Mode Enabled
+0x701: God Mode Disabled
+0x702: Archwizard Mode Enabled
+0x703: Archwizard Mode Disabled
+0x704: Map Editor Mode Enabled
+0x705: Map Editor Mode Disabled
+0x706: Infravision Enabled
+0x707: Infravision Disabled
+0x708: Pick Pocket Enabled
+0x709: Pick Pocket Disabled
+0x70A: Hack mover Enabled
+0x70B: Hack mover Disabled
+0x70C: Avatar is now male
+0x70D: Avatar is now female
+0x70E: Eggs display enabled
+0x70F: Eggs display disabled
+0x710: Level up!
+0x711: Maximum level reached
+0x712: Game clock incremented to 
+0x713: Teleport!!!
+0x714: Map not found
+0x715: To map #
+0x716: Added 100 gold coins
+0x717: Object created
+0x718: No room
+0x719: Can only create from 'shapes.vga'
+0x71A: Object deleted
+0x71B: Party healed
+0x71C: NPC Tool Actor Grabbing Enabled
+0x71D: NPC Tool Actor Grabbing Disabled
+0x71E: NPC Numbers Enabled
+0x71F: NPC Numbers Disabled
+0x720: Egg areas: All types
+0x721: Egg areas: Off
+0x722: Egg areas: Monster
+0x723: Egg areas: Jukebox
+0x724: Egg areas: Sound effects
+0x725: Egg areas: Voice
+0x726: Egg areas: Usecode
+0x727: Egg areas: Missile
+0x728: Egg areas: Teleport
+0x729: Egg areas: Weather
+0x72A: Egg areas: Button
+0x72B: Egg areas: Intermap
+
+# combat.cc
+0x730: Combat resumed
+0x731: Combat paused
+
+# exult.cc
+0x740: Too many screenshots
+0x741: Screenshot
+0x742: Screenshot failed
+0x743: Gamma Set to
+
+# game.cc
+0x74A: You must start a new game first.
+0x74B: Press ESC to return.
+
+# gamewin.cc
+# NPC ...
+0x750:  does not exist.
+# NPC ...
+0x751:  is not on the map.
+0x752: Searching for shape 
+0x753: Not found
+0x754: Saving Game
+
+# gamemap.cc
+0x760: Scanning superchunk 
+0x761: Encoding chunks
+0x762: Creating minimap 
+
+# server.cc
+0x770: Terrain-Editing Aborted
+0x771: Terrain-Editing Done
+0x772: Terrain-Editing Enabled
+0x773: Map #
+
+#keys.cc - Action description strings
+#VOLUME_MIXER
+0x800:Volume Mixer
+#QUIT
+0x801:Quit
+#SAVE_RESTORE
+0x802:Save/restore
+#QUICKSAVE
+0x803:Quick-save
+#QUICKRESTORE
+0x804:Quick-restore
+#ABOUT
+0x805:About Exult
+#HELP
+0x806:List keys
+#CLOSE_GUMPS
+0x807:Close gumps
+#CLOSE_OR_MENU
+0x808:Game menu
+#SCREENSHOT
+0x809:Take screenshot
+#GAME_MENU
+0x80a:Game Menu
+#OLD_FILE_GUMP
+0x80b:Save/restore
+#SCALEVAL_INCREASE
+0x80c:Increase scaleval
+#SCALEVAL_DECREASE
+0x80d:Decrease scaleval
+#BRIGHTER
+0x80e:Increase brightness
+#DARKER
+0x80f:Decrease brightness
+#TOGGLE_FULLSCREEN
+0x810:Toggle fullscreen
+#USEITEM
+0x811:Use item
+#USEFOOD
+0x812:Feed
+#CALL_USECODE
+0x813:Call Usecode
+#TOGGLE_COMBAT
+0x814:Toggle combat
+#PAUSE_COMBAT
+0x815:Pause combat
+#TARGET_MODE
+0x816:Target mode
+#INVENTORY
+0x817:Show inventory
+#TRY_KEYS
+0x818:Try keys
+#STATS
+0x819:Show stats
+#COMBAT_STATS
+0x81a:Show combat stats
+#FACE_STATS
+0x81b:Change Face Stats State
+#USE_HEALING_ITEMS
+0x81c:Use bandages or healing potions
+#SHOW_SI_INTRO
+0x81d:Show Alternate SI intro
+#SHOW_ENDGAME
+0x81e:Show endgame
+#SCROLL_LEFT
+0x81f:Scroll left
+#SCROLL_RIGHT
+0x820:Scroll right
+#SCROLL_UP
+0x821:Scroll up
+#SCROLL_DOWN
+0x822:Scroll down
+#WALK_WEST
+0x823:Walk west
+#WALK_EAST
+0x824:Walk east
+#WALK_NORTH
+0x825:Walk north
+#WALK_SOUTH
+0x826:Walk south
+#WALK_NORTH_EAST
+0x827:Walk north-east
+#WALK_SOUTH_EAST
+0x828:Walk south-east
+#WALK_NORTH_WEST
+0x829:Walk north-west
+#WALK_SOUTH_WEST
+0x82a:Walk south-west
+#CENTER_SCREEN
+0x82b:Center screen
+#SHAPE_BROWSER
+0x82c:Shape browser
+#SHAPE_BROWSER_HELP
+0x82d:List shape browser keys
+#CREATE_ITEM
+0x82e:Create last shape
+#DELETE_OBJECT
+0x82f:Delete object
+#TOGGLE_EGGS
+0x830:Toggle egg display
+#TOGGLE_GOD_MODE
+0x831:Toggle god mode
+#CHANGE_GENDER
+0x832:Change gender
+#CHEAT_HELP
+0x833:List cheat keys
+#TOGGLE_INFRAVISION
+0x834:Toggle infravision
+#TOGGLE_HACK_MOVER
+0x835:Toggle hack-mover mode
+#MAP_TELEPORT
+0x836:Map teleport
+#CURSOR_TELEPORT
+0x837:Teleport to cursor
+#TARGET_MODE_TELEPORT
+0x838:Bring up cursor to teleport
+#NEXT_MAP_TELEPORT
+0x839:Teleport to next map
+#NEXT_TIME_PERIOD
+0x83a:Next time period
+#TOGGLE_WIZARD_MODE
+0x83b:Toggle archwizard mode
+#PARTY_HEAL
+0x83c:Heal party
+#PARTY_INCREASE_LEVEL
+0x83d:Level-up party
+#CHEAT_SCREEN
+0x83e:Cheat Screen
+#PICK_POCKET
+0x83f:Toggle Pick Pocket
+#NPC_NUMBERS
+0x840:Toggle NPC Numbers
+#GRAB_ACTOR
+0x841:Grab NPC for Cheat Screen
+#PLAY_MUSIC
+0x842:Play song
+#TOGGLE_NAKED
+0x843:Toggle naked mode
+#TOGGLE_PETRA
+0x844:Toggle Petra mode
+#CHANGE_SKIN
+0x845:Change skin colour
+#NOTEBOOK
+0x846:Show notebook
+#SOUND_TESTER
+0x847:Sound tester
+#TEST
+0x848:Test
+#MAPEDIT_HELP
+0x849:List mapedit keys
+#TOGGLE_MAP_EDITOR
+0x84a:Toggle map-editor mode
+#SKIPLIFT_DECREMENT
+0x84b:Decrement skiplift
+#CUT
+0x84c:Cut Selected Objects
+#COPY
+0x84d:Copy Selected Objects
+#PASTE
+0x84e:Paste Selected Objects
+#DELETE_SELECTED
+0x84f:Delete selected
+#MOVE_SELECTED
+0x850:Move selected
+#CYCLE_FRAMES_NEXT
+0x851:Cycle frames next
+#CYCLE_FRAMES_PREV
+0x852:Cycle frames previus
+#ROTATE_FRAMES
+0x853:Rotate frames
+#WRITE_MINIMAP
+0x854:Write minimap
+#REPAINT
+0x855:Repaint screen
+#TOGGLE_BBOXES
+0x856:Toggle bounding boxes
+#TOGGLE_EGG_AREAS
+0x857:Toggle egg area display
+
+
+#Shape Browser Help
+
+#The Entire block starting at 0x860 until the terminator will be displayed in order in the Shape Browser Help
+0x860:Esc - Exits the shape browser
+0x861:down - Increase shape by 1
+0x862:R - toggle palette rotation
+0x863:S - Increase shape by 1
+0x864:up - Decrease shape by 1
+0x865:Shift-S - Decrease shape by 1
+0x866:Page down - Increase shape by 20
+0x867:J - Increase shape by 20
+0x868:Page up - Decrease shape by 20
+0x869:Shift-J - Decrease shape by 20
+0x86A:right - Increase frame by 1
+0x86B:F - Increase frame by 1
+0x86C:left - Decrease frame by 1
+0x86D:Shift-F - Decrease frame by 1
+0x86E:V - Increase vga file by 1
+0x86F:Shift-V - Decrease vga file by 1
+0x870:P - Increase palette by 1
+0x871:Shift-P - Decrease palette by 1
+0x872:X - Increase xform by 1
+0x873:Shift-X - Decrease xform by 1
+0x874:B - Toggle 3d Bounding Boxes
+# this line is the block terminator and must remain an empty string
+0x875:
+
+#If the following lines have their index changed, keys.cc must be updated
+0x87D:Error: No key assigned
+0x87E: or 
+0x87F: - when pressed in game will create the last shape viewed in shapes.vga.
+
+# soundtester.cc
+0x890: Sound Tester
+0x891: ------------
+0x892:
+0x893:    Up/I - Previous Type
+0x894:  Down/K - Next Type
+0x895:  Left/J - Previous Number
+0x896: Right/L - Next Number
+0x897:   Enter - Play it
+0x898:     ESC - Leave
+0x899:       R - Repeat Music
+0x89A:       S - Stop Music
+0x89B:       D - Dump Music Track
+0x89C: Music
+0x89D: SFX
+0x89E: Voice
+0x89F: - Repeat
+
+# browser.cc
+0x8B0: Show [K]eys
+0x8B1: VGA File: '
+0x8B2: Shape: 
+0x8B3: Frame: 
+0x8B4: Palette: 
+0x8B5: class: 
+0x8B6:   ready_type: 0x
+0x8B7:  3d: 
+0x8B8: No Shape

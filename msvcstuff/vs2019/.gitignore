@@ -1,5 +1,8 @@
 /packages
 Debug
-*.user
+**.user
+**.log
 /any
 Release
+Nuget
+vcpkg_installed

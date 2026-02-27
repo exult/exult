@@ -24,23 +24,23 @@
  *	Last Modified: 2006-02-27
  */
 
-void Key shape#(0x281) ()
-{
+void Key shape#(0x281) () {
 
 	//If we didn't came here via double-click, leave:
-	if (!(event == DOUBLECLICK)) return;
-	
+	if (!(event == DOUBLECLICK)) {
+		return;
+	}
+
 	//Prompt player for target:
-	var target = UI_click_on_item();
+	struct<ObjPos> target = UI_click_on_item();
 	//var target_quality;
-	
+
 	//Target is the keyring:
-	if (target->get_item_shape() == SHAPE_KEYRING)
-	{
+	if (target->get_item_shape() == SHAPE_KEYRING) {
 		get_keyring()->add_to_keyring(target, item);
 		return;
 	}
-	
+
 	KeyInternal(target,
 				(get_item_quality() == target->get_item_quality()),
 				["@The key doesn't fit.@", "@Maybe it is another key.@"]);

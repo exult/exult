@@ -21,26 +21,23 @@
  */
 
 extern void useBucketOnWell ();
-void WellBase shape#(0x1D6) ()
-{
+void WellBase shape#(0x1D6) () {
 	var bucket = AVATAR->get_cont_items(SHAPE_BUCKET, QUALITY_ANY, 0);
-	if (bucket)
-	{
+	if (bucket) {
 		var offsetx = [-5, -5];
 		var offsety = [-1, -1];
 		gotoObject(item, offsetx, offsety, 0, useBucketOnWell, bucket, 9);
 	}
 }
 
-void Well shape#(0x2E4) ()
-{
+void Well shape#(0x2E4) () {
 	var bucket = AVATAR->get_cont_items(SHAPE_BUCKET, QUALITY_ANY, 0);
-	if (bucket)
-	{
+	if (bucket) {
 		var offsetx = [-5, -5];
 		var offsety = [-1, -1];
 		var well = find_nearest(SHAPE_WELLBASE, 5);
-		if (well)
+		if (well) {
 			gotoObject(well, offsetx, offsety, 0, useBucketOnWell, bucket, 9);
+		}
 	}
 }

@@ -23,30 +23,30 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
 #include "pent_include.h"
+
 #include "UnixSeqMidiDriver.h"
 
 #ifdef USE_UNIX_SEQ_MIDI
+#	include <fcntl.h>
+#	include <unistd.h>
 
-#include <fcntl.h>
-#include <unistd.h>
-#include <cerrno>
+#	include <array>
+#	include <cerrno>
 
-const MidiDriver::MidiDriverDesc UnixSeqMidiDriver::desc =
-		MidiDriver::MidiDriverDesc ("UnixSeq", createInstance);
+const MidiDriver::MidiDriverDesc UnixSeqMidiDriver::desc = MidiDriver::MidiDriverDesc("UnixSeq", createInstance);
 
-#define SEQ_MIDIPUTC 5
-#define SEQ_DEVICE "/dev/sequencer"
+constexpr const int              SeqMidiPutC = 5;
+constexpr const std::string_view SeqDevice   = "/dev/sequencer";
 
-UnixSeqMidiDriver::UnixSeqMidiDriver()
-	: isOpen(false), device(0), deviceNum(0)
-{
+UnixSeqMidiDriver::UnixSeqMidiDriver() : LowLevelMidiDriver(std::string(desc.name)) {
 	// see if the config file specifies an alternate midi device
-	devname = getConfigSetting("unixseqdevice", SEQ_DEVICE);
+	devname = getConfigSetting("unixseqdevice", SeqDevice.data());
 }
 
-int UnixSeqMidiDriver::open()
-{
-	if (isOpen) return 1;
+int UnixSeqMidiDriver::open() {
+	if (isOpen) {
+		return 1;
+	}
 	isOpen = true;
 	device = 0;
 
@@ -62,16 +62,14 @@ int UnixSeqMidiDriver::open()
 	return 0;
 }
 
-void UnixSeqMidiDriver::close()
-{
+void UnixSeqMidiDriver::close() {
 	::close(device);
 	isOpen = false;
 }
 
 void UnixSeqMidiDriver::send(uint32 b) {
-	unsigned char buf[256];
-	size_t position = 0;
-	size_t err;
+	std::array<uint8, 256> buf;
+	uint8*                 out = buf.data();
 
 	switch (b & 0xF0) {
 	case 0x80:
@@ -79,67 +77,66 @@ void UnixSeqMidiDriver::send(uint32 b) {
 	case 0xA0:
 	case 0xB0:
 	case 0xE0:
-		buf[position++] = SEQ_MIDIPUTC;
-		buf[position++] = static_cast<unsigned char>(b);
-		buf[position++] = deviceNum;
-		buf[position++] = 0;
-		buf[position++] = SEQ_MIDIPUTC;
-		buf[position++] = static_cast<unsigned char>((b >> 8) & 0x7F);
-		buf[position++] = deviceNum;
-		buf[position++] = 0;
-		buf[position++] = SEQ_MIDIPUTC;
-		buf[position++] = static_cast<unsigned char>((b >> 16) & 0x7F);
-		buf[position++] = deviceNum;
-		buf[position++] = 0;
+		Write1(out, SeqMidiPutC);
+		Write1(out, static_cast<uint8>(b));
+		Write1(out, static_cast<uint8>(deviceNum));
+		Write1(out, 0);
+		Write1(out, SeqMidiPutC);
+		Write1(out, static_cast<uint8>((b >> 8) & 0x7F));
+		Write1(out, static_cast<uint8>(deviceNum));
+		Write1(out, 0);
+		Write1(out, SeqMidiPutC);
+		Write1(out, static_cast<uint8>((b >> 16) & 0x7F));
+		Write1(out, static_cast<uint8>(deviceNum));
+		Write1(out, 0);
 		break;
 	case 0xC0:
 	case 0xD0:
-		buf[position++] = SEQ_MIDIPUTC;
-		buf[position++] = static_cast<unsigned char>(b);
-		buf[position++] = deviceNum;
-		buf[position++] = 0;
-		buf[position++] = SEQ_MIDIPUTC;
-		buf[position++] = static_cast<unsigned char>((b >> 8) & 0x7F);
-		buf[position++] = deviceNum;
-		buf[position++] = 0;
+		Write1(out, SeqMidiPutC);
+		Write1(out, static_cast<uint8>(b));
+		Write1(out, static_cast<uint8>(deviceNum));
+		Write1(out, 0);
+		Write1(out, SeqMidiPutC);
+		Write1(out, static_cast<uint8>((b >> 8) & 0x7F));
+		Write1(out, static_cast<uint8>(deviceNum));
+		Write1(out, 0);
 		break;
 	default:
-		perr << "UnixSeqMidiDriver: Unknown Command: "
-			 << std::hex << static_cast<int>(b) << std::dec << std::endl;
+		perr << "UnixSeqMidiDriver: Unknown Command: " << std::hex << static_cast<int>(b) << std::dec << std::endl;
 		break;
 	}
 
-	err = ::write(device, buf, position);
-	assert (err == position);
+	size_t size  = out - buf.data();
+	size_t count = ::write(device, buf.data(), static_cast<int>(size));
+	assert(count == size);
 }
 
-void UnixSeqMidiDriver::send_sysex(uint8 status,const uint8 *msg,uint16 length)
-{
+void UnixSeqMidiDriver::send_sysex(uint8 status, const uint8* msg, uint16 length) {
 	if (length > 511) {
 		perr << "UnixSeqMidiDriver: "
 			 << "Cannot send SysEx block - data too large" << std::endl;
 		return;
 	}
 
-	unsigned char buf [2048];
-	size_t position = 0;
-	const uint8 *chr = msg;
-	size_t err;
+	std::array<uint8, 2048> buf;
+	uint8*                  out = buf.data();
+	const uint8*            chr = msg;
 
-	buf[position++] = SEQ_MIDIPUTC;
-	buf[position++] = status;
-	buf[position++] = deviceNum;
-	buf[position++] = 0;
+	Write1(out, SeqMidiPutC);
+	Write1(out, status);
+	Write1(out, static_cast<uint8>(deviceNum));
+	Write1(out, 0);
 
-	for (; length; --length) {
-		buf[position++] = SEQ_MIDIPUTC;
-		buf[position++] = *chr++;
-		buf[position++] = deviceNum;
-		buf[position++] = 0;
+	for (; length != 0u; --length) {
+		Write1(out, SeqMidiPutC);
+		Write1(out, Read1(chr));
+		Write1(out, static_cast<uint8>(deviceNum));
+		Write1(out, 0);
 	}
 
-	err = ::write (device, buf, position);
-	assert (err == position);
+	size_t size  = out - buf.data();
+	size_t count = ::write(device, buf.data(), static_cast<int>(size));
+	assert(count == size);
 }
 
 #endif

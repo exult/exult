@@ -19,21 +19,17 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define WavAudioSample_H
 
 #ifndef RAWAUDIOSAMPLE_H
-#include "RawAudioSample.h"
+#	include "RawAudioSample.h"
 #endif
 
 namespace Pentagram {
-	class WavAudioSample : public RawAudioSample
-	{
+	class WavAudioSample : public RawAudioSample {
 	public:
 		WavAudioSample(std::unique_ptr<uint8[]> buffer, uint32 size);
 
-		static bool isThis(IDataSource *ds);
+		static bool isThis(IDataSource* ds);
 	};
 
-}
+}    // namespace Pentagram
 
-
-
-#endif //WavAudioSample_H
-
+#endif    // WavAudioSample_H

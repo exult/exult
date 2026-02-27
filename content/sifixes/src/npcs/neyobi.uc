@@ -13,47 +13,52 @@
  *
  *  2016-07-09 Written by Knight Captain
  */
- 
-void Neyobi object#(0x493) ()
-{
-	if (event == DOUBLECLICK)
-	{
-		if (NEYOBI->get_item_flag(SI_ZOMBIE)) // If she hasn't been cured yet.
-		{
+
+void Neyobi object#(0x493) () {
+	if (event == DOUBLECLICK) {
+		if (NEYOBI->get_item_flag(SI_ZOMBIE)) {
+			// If she hasn't been cured yet.
 			AVATAR->item_say("@Wake up, little one!@");
 			partyUtters(1, "@She cannot wake, Avatar. She is very sick.@", "@Poor little one! She is very sick.@", false);
 		}
-		if (!NEYOBI->get_item_flag(SI_ZOMBIE)) // If she is no longer sick.
-		{
+		if (!NEYOBI->get_item_flag(SI_ZOMBIE)) {
+			// If she is no longer sick.
 			AVATAR->item_say("@Good morning, little one!@");
 			delayedBark(NEYOBI, "@Tee hee hee hee!@", 3);
-			if (!NEYOBI->get_item_flag(MET)) // If we haven't met her yet, give her a schedule.
-			{
+			if (!NEYOBI->get_item_flag(MET)) {
+				// If we haven't met her yet, give her a schedule.
 				NEYOBI->set_new_schedules([MIDNIGHT   , MORNING    , AFTERNOON  , EVENING    , NIGHT      ],
 				                          [WANDER     , SLEEP      , LOITER     , WANDER     , LOITER     ],
 				                          [0x408,0x3A4, 0x3F5,0x36A, 0x3EC,0x359, 0x3B6,0x35E, 0x473,0x350]);
 			}
-			NEYOBI->set_schedule_type(TALK); // She will get up and approach the Avatar.
+			// She will get up and approach the Avatar.
+			NEYOBI->set_schedule_type(TALK);
 		}
 	}
-	if (event == STARTED_TALKING)
-	{
-		NEYOBI->run_schedule(); // Return to regularly scheduled activity.
+	if (event == STARTED_TALKING) {
+		// Return to regularly scheduled activity.
+		NEYOBI->run_schedule();
 		NEYOBI->clear_item_say();
 		NEYOBI->show_npc_face0(0);
 
-		say("@Thou be Avatar! Thou nice!@"); // First words with face shown.
-		add(["name", "What art thou doing?", "bye"]); // First questions available.
-		NEYOBI->set_item_flag(MET); // Moved this up so the schedule setting does not repeat.
+		// First words with face shown.
+		say("@Thou be Avatar! Thou nice!@");
+		// First questions available.
+		add(["name", "What art thou doing?", "bye"]);
+		// Moved this up so the schedule setting does not repeat.
+		NEYOBI->set_item_flag(MET);
 
-		converse (0)
-		{
+		converse (0) {
 			case "name" (remove):
 				say("@Mother say thou found medicine make me better. Thank thou! My name Neyobi! Thou know what that mean?@");
-				if (askYesNo()) // Yes or No prompt.
-					say("@Then thou very smart!@"); // Yes
-				else
-					say("@It mean 'little dew drops' and also mean my name. Neyobi! Me!@"); // No
+				if (askYesNo()) {
+					// Yes or No prompt.
+					// Yes
+					say("@Then thou very smart!@");
+				} else {
+					// No
+					say("@It mean 'little dew drops' and also mean my name. Neyobi! Me!@");
+				}
 
 			case "What art thou doing?" (remove):
 				say("@Early today I play! I like look at clouds! Other day I saw one that look like penguin! Later, mother and Baiyanda teach lessons.@");
@@ -63,10 +68,13 @@ void Neyobi object#(0x493) ()
 				say("@Yenani, silly! She chieftain of our tribe. She tell me one day, after I grow, that what I be.@");
 
 			case "Baiyanda" (remove):
-				if (gflags[BANES_RELEASED])
-					say("@I not see her in long time! I miss her lot.@"); // Only says this if the Banes are loose.
-				else
-					say("@She healer, and smartest person in whole world!@"); // Says this otherwise.
+				if (gflags[BANES_RELEASED]) {
+					// Only says this if the Banes are loose.
+					say("@I not see her in long time! I miss her lot.@");
+				} else {
+					// Says this otherwise.
+					say("@She healer, and smartest person in whole world!@");
+				}
 
 			case "lessons" (remove):
 				say("@Mother tells me the stories of the old days. She also teach me language of Men. She say Gwani very good at learn languages. Especially young ones.@");

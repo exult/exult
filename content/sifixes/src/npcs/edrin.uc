@@ -11,16 +11,15 @@
  *  Dream Crystal being broken by her.
  *  This code checks if the Dream Realm has been completed, and if so it
  *  sets flag 531 (0x213). In testing you must ask about his dreams in two
- *  conversations. In the first he checks for and sets flag 243 (0xF3) 
+ *  conversations. In the first he checks for and sets flag 243 (0xF3)
  *  when he speaks of her. Only after does he check for flag 531 (0x213).
  *
  *  2016-07-12 Written by Knight Captain
  */
 
-void Edrin object#(0x410) ()
-{
-	if (event == STARTED_TALKING && gflags[DREAM_REALM_COMPLETE])
+void Edrin object#(0x410) () {
+	if (event == STARTED_TALKING && gflags[DREAM_REALM_COMPLETE]) {
 		gflags[EDRIN_KNOWS_SIRANUSH_IS_REAL] = true;
-
+	}
 	Edrin.original();
 }
