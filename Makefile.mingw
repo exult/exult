@@ -400,7 +400,7 @@ endif
 CXXFLAGS:=-MMD -std=c++17 -fdiagnostics-color=always $(ARCHFLAGS) $(ARCHTYPE) $(strip $(OPT_LEVEL) $(WARNINGS) -mms-bitfields)
 
 LDFLAGS:=$(ARCHFLAGS) $(ARCHTYPE)
-LIBS:=-lmingw32 $(SDL_LIBS) $(ZIP_LIBS) -lpng $(OGG_LIBS) $(FLUIDSYNTH_LIBS) $(TIMIDITY_LIBS) $(MT32EMU_LIBS) -ldsound -luuid -lole32 -lwinmm -lws2_32 -lDbghelp $(SUBSYSTEM) $(MTHREADS)
+LIBS:=-lmingw32 $(SDL_LIBS) $(ZIP_LIBS) -lpng $(OGG_LIBS) $(FLUIDSYNTH_LIBS) $(TIMIDITY_LIBS) $(MT32EMU_LIBS) $(FREETYPE2_LIBS) -ldsound -luuid -lole32 -lwinmm -lws2_32 -lDbghelp $(SUBSYSTEM) $(MTHREADS)
 
 EXEC:=Exult.exe
 EXEEXT:=.exe
@@ -514,7 +514,7 @@ CPPFLAGS:=$(strip -DVERSION=\"$(VERSION)\" -DEXULT_DATADIR=\"data\" \
 	-DHAVE_SYS_TYPES_H=1 -DHAVE_SYS_TIME_H=1 -DHAVE_SYS_SOCKET_H=0 \
 	-DHAVE_SNPRINTF -DUSE_FMOPL_MIDI -DUSE_MT32EMU_MIDI \
 	-DUSE_EXULTSTUDIO -DHAVE_PNG_H -DHAVE_GETOPT_LONG \
-	-DHAVE_FREETYPE2 -DUSE_HQ2X_SCALER -DUSE_HQ3X_SCALER -DUSE_HQ4X_SCALER -DUSE_XBR_SCALER \
+	-DHAVE_FREETYPE2=1 -DUSE_HQ2X_SCALER -DUSE_HQ3X_SCALER -DUSE_HQ4X_SCALER -DUSE_XBR_SCALER \
 	-I$(SRC) -I$(SRC)/audio -I$(SRC)/audio/midi_drivers -I$(SRC)/conf -I$(SRC)/data \
 	-I$(SRC)/files -I$(SRC)/files/zip -I$(SRC)/gamemgr -I$(SRC)/gumps -I$(SRC)/headers \
 	-I$(SRC)/imagewin -I$(SRC)/ios/include -I$(SRC)/objs -I$(SRC)/pathfinder -I$(SRC)/server \
