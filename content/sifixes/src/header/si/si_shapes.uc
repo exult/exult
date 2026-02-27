@@ -19,6 +19,7 @@
  *	one day in the file, but it will take some time.
  *
  *	2016-08-05 Updated by Knight Captain
+ *	2026-02-27 Added energy field by Knight Captain
  */
 
 enum animations
@@ -587,3 +588,4 @@ enum amulet_frames {
 };
 
 const int FRAME_DRIED_FISH = 31;
+const int SHAPE_ENERGY_FIELD = 768;

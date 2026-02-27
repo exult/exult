@@ -75,6 +75,13 @@
 // Gives the automatons in Skullcrusher normal schedules
 #include "misc/egg_skullcrusher_automatons.uc"
 
+// Remove Selina's Spinebreaker key at the start of the game.
+#include "misc/game_start_1_egg_hide_avatar.uc"
+// Isolate mod changes to a new function.
+#include "misc/game_start_2_mod_changes.uc"
+// Return Selina's key in her final ambush.
+#include "misc/egg_spinebreaker_antechamber_ambush.uc"
+
 // Dupre now refuses to leave in Spinebreaker mountains
 #include "npcs/dupre.uc"
 // Fixing the exchanged item list; also, Shamino now refuses to leave when you

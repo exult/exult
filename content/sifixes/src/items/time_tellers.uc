@@ -70,7 +70,9 @@ void Sundial shape#(0x11C) ()
 		else if ((hour >= 6) && (hour <= 20))
 			item_say(UI_game_hour() + " o'clock");
 		else
+		{
 			var bark = "@^<Avatar>, I believe the important part of the word sundial is `sun'.@";
 			partyUtters(1, bark, bark, false);
+		}
 	}
 }
