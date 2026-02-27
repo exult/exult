@@ -1353,7 +1353,7 @@ void Cheat::create_last_shape() const {
 }
 
 void Cheat::delete_object() {
-	if (!enabled) {
+	if (!enabled || map_editor) {
 		return;
 	}
 
