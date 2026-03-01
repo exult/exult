@@ -824,7 +824,7 @@
 0x2FE:The cask is pulled out in Serpent's Fang basement, exposing stairs below.
 0x2FF:I have attached the rope found in the Abandoned Outpost to the well, allowing me to climb down.
 0x300:Isstanar has given me the magic keyring, which allows me to try every key I have at once.
-0x301	not-in-usecode
+#0x301	not-in-usecode
 0x302:WEARING_GAUNTLETS_OF_QUICKNESS
 0x303:HOLDING_ERINONS_AXE
 0x304:EXPERIENCE_FROM_ERINONS_AXE
