@@ -33,6 +33,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include <unistd.h>
 
+#include <cerrno>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
@@ -123,6 +124,10 @@ int main(int argc, char** argv) {
 	if (optind < argc) {    // Filename?
 		src  = argv[optind];
 		yyin = fopen(argv[optind], "r");
+		if (!yyin) {
+			std::cerr << "Error: Cannot open input file '" << src << "': " << strerror(errno) << "\n";
+			return 1;
+		}
 		if (!outname) {    // No -o option?
 			// Set up output name.
 			outname                    = strncpy(outbuf, src, sizeof(outbuf) - 5);
@@ -148,6 +153,7 @@ int main(int argc, char** argv) {
 	}
 	const int errs = Uc_location::get_num_errors();
 	if (errs > 0) {    // Check for errors.
+		std::cout << "\033[1;31mUsecode compilation failed!\033[0m\n";
 		return errs;
 	}
 	// Open output.
@@ -169,7 +175,20 @@ int main(int argc, char** argv) {
 	for (auto* unit : units) {
 		unit->gen(out);    // Generate function.
 	}
-	return Uc_location::get_num_errors();
+
+	if (out.fail()) {
+		std::cerr << "Error: Failed to write output file '" << outname << "'.\n";
+		std::cout << "\033[1;31mUsecode compilation failed!\033[0m\n";
+		return 1;
+	}
+
+	const int final_errs = Uc_location::get_num_errors();
+	if (final_errs == 0) {
+		std::cout << "\033[1;32mUsecode successfully compiled to " << outname << "!\033[0m\n";
+	} else {
+		std::cout << "\033[1;31mUsecode compilation failed!\033[0m\n";
+	}
+	return final_errs;
 }
 
 /*
