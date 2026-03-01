@@ -680,7 +680,7 @@ void ActionDeleteObject(const int* params) {
 	cheat.delete_object();
 }
 
-//  { ActionDeleteSelected, "Delete selected", true, ture, NONE, false },
+//  { ActionDeleteSelected, "Delete selected", true, true, NONE, false },
 void ActionDeleteSelected(const int* params) {
 	ignore_unused_variable_warning(params);
 	cheat.delete_selected();
@@ -692,6 +692,12 @@ void ActionDeleteSelected(const int* params) {
 // params[2] = deltaz
 void ActionMoveSelected(const int* params) {
 	cheat.move_selected(params[0], params[1], params[2]);
+}
+
+//  { ActionClearSelected, "Clear selected", true, true, NONE, false },
+void ActionClearSelected(const int* params) {
+	ignore_unused_variable_warning(params);
+	cheat.clear_selected();
 }
 
 void ActionCycleFrames(const int* params) {

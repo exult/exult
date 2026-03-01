@@ -701,6 +701,8 @@
 0x856:Toggle bounding boxes
 #TOGGLE_EGG_AREAS
 0x857:Toggle egg area display
+#CLEAR_SELECTED
+0x858: Clear selection
 
 
 #Shape Browser Help

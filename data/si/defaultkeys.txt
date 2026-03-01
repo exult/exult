@@ -47,6 +47,7 @@ Ctrl-down	move_selected	 0  1  0
 Ctrl-up		move_selected	 0 -1  0
 Ctrl-pageup	move_selected	 0  0  1
 Ctrl-pagedown	move_selected	 0  0 -1
+Ctrl-Shift-a	clear_selected
 Ctrl-C		copy
 Ctrl-x		cut
 Ctrl-v		paste

@@ -182,6 +182,7 @@ const struct Action {
 		{               "PASTE",              ActionPaste,           nullptr, 0x84E, Action::mapedit_keys,         NONE,  true,  true,  true, false},
 		{     "DELETE_SELECTED",     ActionDeleteSelected,           nullptr, 0x84F, Action::mapedit_keys,         NONE,  true,  true,  true, false},
 		{       "MOVE_SELECTED",       ActionMoveSelected,           nullptr, 0x850, Action::mapedit_keys,         NONE,  true,  true,  true, false},
+		{       "CLEAR_SELECTED",     ActionClearSelected,           nullptr, 0x858, Action::mapedit_keys,         NONE,  true,  true,  true, false},
 		{   "CYCLE_FRAMES_NEXT",        ActionCycleFrames,           nullptr, 0x851, Action::mapedit_keys,         NONE,  true,  true,  true, false},
 		{   "CYCLE_FRAMES_PREV",        ActionCycleFrames,           nullptr, 0X852, Action::mapedit_keys,         NONE,  true,  true,  true, false},
 		{       "ROTATE_FRAMES",       ActionRotateFrames,           nullptr, 0x853, Action::mapedit_keys,         NONE,  true,  true,  true, false},
