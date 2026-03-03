@@ -22,14 +22,49 @@
  *  Also sets MET on the other ambushers Palos, Deadeye, and Brunt.
  *
  *  2026-02-27 Knight Captain
+ *  2026-03-03 Improved method to give Selina the key, no matter what. KC
  */
 
 void eggAntechamberAmbush object#(0x73A) ()
 {
 	if (event == EGG)
 	{
+		var destination;
+		
 		// Add back the key removed in gameStartModChanges object#(0x9F3)
-		UI_add_cont_items(SELINA, 1, SHAPE_KEY, 135, 30);
+		// UI_add_cont_items fails if Selina has no container and her hands full.
+		// To more closely match the original game, Selina's key should go into
+		// her backpack. UI_find_object will return a reference to it, if found.
+		var selinas_backpack = UI_find_object(SELINA, SHAPE_BACKPACK, QUALITY_ANY, FRAME_ANY);
+		if (selinas_backpack != 0)
+		{
+			UI_error_message("Selina is wearing a backpack.");
+			destination = selinas_backpack;
+		}
+		else
+		{
+			UI_error_message("Selena is NOT wearing a backpack.");
+			destination = SELINA;
+		}
+		
+		// This more complicated method should ensure success in placing the key.
+		// I have tested this with using hack mover to overload her with weight,
+		// and filling her equipment slots, hands, etc. It works for all cases.
+		var new_key = UI_create_new_object(SHAPE_KEY);
+		if (new_key)
+		{
+			UI_set_item_frame(new_key, 30);
+			var key_quality = UI_set_item_quality(new_key, 135);
+			UI_clear_item_flag(new_key, TEMPORARY);
+			key_quality = UI_give_last_created(destination);
+			
+			// Write output confirming the key's creation.
+			if (key_quality == true) {
+				UI_error_message("Selena's key created on her."); }
+			else {
+				UI_error_message("Selina's key FAILED to be created on her."); }
+		}
+
 		// Help for identifying the bodies.
 		// The Avatar has already MET Selina.
 		UI_set_item_flag(PALOS, MET);
