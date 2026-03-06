@@ -529,29 +529,30 @@ C_EXPORT gboolean on_main_window_focus_in_event(GtkWidget* widget, GdkEventFocus
 ExultStudio::ExultStudio(int argc, char** argv)
 		: glade_path(nullptr), css_path(nullptr), css_provider(nullptr), static_path(nullptr), image_editor(nullptr),
 		  edit_filetype(nullptr), default_game(nullptr), background_color(0x808080), shape_scale(0), shape_bilinear(false),
-		  shape_info_modified(false), shape_names_modified(false), npc_modified(false), files(nullptr), presets_file(nullptr),
-		  npc_presets_file(nullptr), curfile(nullptr), vgafile(nullptr), facefile(nullptr), fontfile(nullptr), gumpfile(nullptr),
-		  spritefile(nullptr), paperdolfile(nullptr), browser(nullptr), bargewin(nullptr), barge_ctx(0), barge_status_id(0),
-		  eggwin(nullptr), egg_monster_single(nullptr), egg_missile_single(nullptr), egg_ctx(0), egg_status_id(0), npcwin(nullptr),
-		  npc_single(nullptr), npc_face_single(nullptr), npc_face_changed_handler(0), npc_ctx(0), npc_status_id(0), objwin(nullptr),
-		  obj_single(nullptr), contwin(nullptr), cont_single(nullptr), shapewin(nullptr), shape_single(nullptr),
-		  gump_single(nullptr), body_single(nullptr), explosion_single(nullptr), weapon_family_single(nullptr),
-		  weapon_projectile_single(nullptr), ammo_family_single(nullptr), ammo_sprite_single(nullptr),
-		  cntrules_shape_single(nullptr), frameflags_frame_single(nullptr), effhps_frame_single(nullptr),
-		  framenames_frame_single(nullptr), frameusecode_frame_single(nullptr), objpaperdoll_wframe_single(nullptr),
-		  objpaperdoll_spotframe_single(nullptr), brightness_frame_single(nullptr), warmth_frame_single(nullptr),
-		  npcpaperdoll_aframe_single(nullptr), npcpaperdoll_atwohanded_single(nullptr), npcpaperdoll_astaff_single(nullptr),
-		  npcpaperdoll_bframe_single(nullptr), npcpaperdoll_hframe_single(nullptr), npcpaperdoll_hhelm_single(nullptr),
-		  objpaperdoll_frame0_single(nullptr), objpaperdoll_frame1_single(nullptr), objpaperdoll_frame2_single(nullptr),
-		  objpaperdoll_frame3_single(nullptr), current_shape_frame(-1), suppress_frame_field_signal(false),
-		  shape_window_initializing(false), npc_window_initializing(false), cont_window_initializing(false),
-		  obj_window_initializing(false), barge_window_initializing(false), egg_window_initializing(false), equipwin(nullptr),
-		  locwin(nullptr), combowin(nullptr), compilewin(nullptr), compile_box(nullptr), ucbrowsewin(nullptr), gameinfowin(nullptr),
-		  game_type(BLACK_GATE), expansion(false), sibeta(false), curr_game(-1), curr_mod(-1), server_socket(-1),
-		  server_input_tag(-1), waiting_for_server(nullptr), connect_button(nullptr), connect_button_handler_id(0),
-		  connect_button_signal_id(0), play_button(nullptr), play_button_handler_id(0), play_button_signal_id(0),
-		  temp_shape_info(nullptr), shape_window_dirty(false), npc_window_dirty(false), cont_window_dirty(false),
-		  obj_window_dirty(false), barge_window_dirty(false), egg_window_dirty(false) {
+		  shape_info_modified(false), shapes_vga_info_modified(false), shape_names_modified(false), npc_modified(false),
+		  files(nullptr), presets_file(nullptr), npc_presets_file(nullptr), curfile(nullptr), vgafile(nullptr), facefile(nullptr),
+		  fontfile(nullptr), gumpfile(nullptr), spritefile(nullptr), paperdolfile(nullptr), browser(nullptr), bargewin(nullptr),
+		  barge_ctx(0), barge_status_id(0), eggwin(nullptr), egg_monster_single(nullptr), egg_missile_single(nullptr), egg_ctx(0),
+		  egg_status_id(0), npcwin(nullptr), npc_single(nullptr), npc_face_single(nullptr), npc_face_changed_handler(0), npc_ctx(0),
+		  npc_status_id(0), objwin(nullptr), obj_single(nullptr), contwin(nullptr), cont_single(nullptr), shapewin(nullptr),
+		  shape_single(nullptr), gump_single(nullptr), body_single(nullptr), explosion_single(nullptr),
+		  weapon_family_single(nullptr), weapon_projectile_single(nullptr), ammo_family_single(nullptr),
+		  ammo_sprite_single(nullptr), cntrules_shape_single(nullptr), frameflags_frame_single(nullptr),
+		  effhps_frame_single(nullptr), framenames_frame_single(nullptr), frameusecode_frame_single(nullptr),
+		  objpaperdoll_wframe_single(nullptr), objpaperdoll_spotframe_single(nullptr), brightness_frame_single(nullptr),
+		  warmth_frame_single(nullptr), npcpaperdoll_aframe_single(nullptr), npcpaperdoll_atwohanded_single(nullptr),
+		  npcpaperdoll_astaff_single(nullptr), npcpaperdoll_bframe_single(nullptr), npcpaperdoll_hframe_single(nullptr),
+		  npcpaperdoll_hhelm_single(nullptr), objpaperdoll_frame0_single(nullptr), objpaperdoll_frame1_single(nullptr),
+		  objpaperdoll_frame2_single(nullptr), objpaperdoll_frame3_single(nullptr), current_shape_frame(-1),
+		  suppress_frame_field_signal(false), shape_window_initializing(false), npc_window_initializing(false),
+		  cont_window_initializing(false), obj_window_initializing(false), barge_window_initializing(false),
+		  egg_window_initializing(false), equipwin(nullptr), locwin(nullptr), combowin(nullptr), compilewin(nullptr),
+		  compile_box(nullptr), ucbrowsewin(nullptr), gameinfowin(nullptr), game_type(BLACK_GATE), expansion(false), sibeta(false),
+		  curr_game(-1), curr_mod(-1), server_socket(-1), server_input_tag(-1), waiting_for_server(nullptr),
+		  connect_button(nullptr), connect_button_handler_id(0), connect_button_signal_id(0), play_button(nullptr),
+		  play_button_handler_id(0), play_button_signal_id(0), temp_shape_info(nullptr), shape_window_dirty(false),
+		  npc_window_dirty(false), cont_window_dirty(false), obj_window_dirty(false), barge_window_dirty(false),
+		  egg_window_dirty(false) {
 #ifdef _WIN32
 	// Enable the GTK+ 3 OLE Drag and Drop
 	g_setenv("GDK_WIN32_USE_EXPERIMENTAL_OLE2_DND", "1", 0);
@@ -1611,7 +1612,7 @@ void ExultStudio::set_game_path(const string& gamename, const string& modname) {
 	// These were owned by 'files':
 	curfile             = nullptr;
 	browser             = nullptr;
-	shape_info_modified = shape_names_modified = npc_modified = false;
+	shape_info_modified = shapes_vga_info_modified = shape_names_modified = npc_modified = false;
 	for (auto* win : group_windows) {
 		GtkWidget* grpwin  = GTK_WIDGET(win);
 		auto*      xml     = static_cast<GtkBuilder*>(g_object_get_data(G_OBJECT(grpwin), "xml"));
@@ -2259,17 +2260,22 @@ void ExultStudio::write_shape_info(bool force    // If set, always write.
 	if ((force || shape_info_modified) && vgafile) {
 		auto* svga = static_cast<Shapes_vga_file*>(vgafile->get_ifile());
 
-		// Check if shape info files exist before trying to read them
-		const string patch_path  = get_system_path("<PATCH>");
-		const string tfa_file    = patch_path + "/tfa.dat";
-		const bool   files_exist = U7exists(tfa_file);
+		if (force || shapes_vga_info_modified) {
+			// Check if shape info files exist before trying to read them.
+			const string patch_path  = get_system_path("<PATCH>");
+			const string tfa_file    = patch_path + "/tfa.dat";
+			const bool   files_exist = U7exists(tfa_file);
 
-		if (files_exist) {
-			// Make sure data's been read in.
-			svga->read_info(game_type, true);
+			if (files_exist) {
+				// Make sure data's been read in.
+				svga->read_info(game_type, true);
+			}
+
+			svga->write_info(game_type);
+		} else {
+			svga->Write_Gumpinf_text_data_file(game_type);
 		}
 
-		svga->write_info(game_type);
 		// Tell Exult to reload (only if connected).
 		if (is_server_connected()) {
 			unsigned char  buf[Exult_server::maxlength];
@@ -2278,7 +2284,8 @@ void ExultStudio::write_shape_info(bool force    // If set, always write.
 			studio->send_to_server(Exult_server::reload_shapes_info, buf, ptr - buf);
 		}
 	}
-	shape_info_modified = false;
+	shapes_vga_info_modified = false;
+	shape_info_modified      = false;
 	if (force || shape_names_modified) {
 		shape_names_modified = false;
 		Write_text_file();

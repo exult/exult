@@ -383,7 +383,8 @@ void ExultStudio::save_equip_window() {
 				gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(widgets.chance)),
 				gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(widgets.count)));
 	}
-	shape_info_modified = true;
+	shape_info_modified      = true;
+	shapes_vga_info_modified = true;
 }
 
 /*
@@ -429,7 +430,8 @@ void ExultStudio::new_equip_record() {
 	// Show new entry.
 	set_spin("equip_recnum", recnum, 1, ecnt);
 	set_sensitive("equip_new", ecnt < 255);
-	shape_info_modified = true;
+	shape_info_modified      = true;
+	shapes_vga_info_modified = true;
 }
 
 /*
@@ -3826,8 +3828,9 @@ void ExultStudio::save_shape_notebook(
 		info.clean_invalid_name_info();
 	}
 
-	shape_info_modified = true;
-	auto* shpchoose     = dynamic_cast<Shape_chooser*>(browser);
+	shape_info_modified      = true;
+	shapes_vga_info_modified = true;
+	auto* shpchoose          = dynamic_cast<Shape_chooser*>(browser);
 	if (shpchoose) {
 		shpchoose->update_statusbar();
 	}
@@ -4635,7 +4638,8 @@ void ExultStudio::save_shape_window() {
 		// Apply weapon offset changes
 		if (info) {
 			info->set_weapon_offset(frame_num, cache.wihx, cache.wihy);
-			shape_info_modified = true;
+			shape_info_modified      = true;
+			shapes_vga_info_modified = true;
 		}
 	}
 
