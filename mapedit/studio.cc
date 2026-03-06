@@ -1254,11 +1254,13 @@ void ExultStudio::create_new_game(const char* dir    // Directory for new game.
 		}
 		closedir(dirrd);
 	}
-	// Create empty gump_info.txt so that Read_Gumpinf_text_data_file
-	// doesn't throw on the missing file.
-	const string gump_info_path = static_path + "/gump_info.txt";
-	if (!U7exists(gump_info_path)) {
-		ofstream gf(gump_info_path);
+	// Create empty required text data files, so that the Read_*_text_data_file functions
+	// don't throw on missing files.
+	for (const char* txt : {"gump_info.txt", "paperdol_info.txt", "bodies.txt", "shape_info.txt"}) {
+		const string p = static_path + '/' + txt;
+		if (!U7exists(p)) {
+			ofstream f(p);
+		}
 	}
 	// Add new game to master list.
 	gamemanager->add_game(gamestr, gamestr);
