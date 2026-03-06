@@ -32,12 +32,28 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "game.h"
 #include "gamewin.h"
 #include "party.h"
+#include "shapeid.h"
 
 #define PALETTE_INDEX_RED   22
 #define PALETTE_INDEX_GREEN 64
 #define PALETTE_INDEX_BLUE  79
 
 #define PORTRAIT_NUM_MODES 5
+
+// Returns true if the actor has usable paperdoll info.
+// Suppress face stats when no paperdoll data has been loaded
+// (e.g. a new custom game).
+static bool has_paperdoll_info(Actor* a) {
+	if (a->get_info().get_npc_paperdoll()) {
+		return true;
+	}
+	const Shape_info& inf1 = ShapeID::get_info(a->get_sexed_coloured_shape());
+	if (inf1.get_npc_paperdoll()) {
+		return true;
+	}
+	const Shape_info& inf2 = ShapeID::get_info(a->get_shape_real());
+	return inf2.get_npc_paperdoll_safe(a->get_type_flag(Actor::tf_sex)) != nullptr;
+}
 
 #define PORTRAIT_WIDTH  40
 #define PORTRAIT_HEIGHT 35
@@ -451,7 +467,7 @@ void Face_stats::create_buttons() {
 		if (sman->can_use_paperdolls() ||
 			// Otherwise, show faces also if the character
 			// has paperdoll information
-			act->get_info().get_npc_paperdoll()) {
+			has_paperdoll_info(act)) {
 			++num_to_paint;
 		}
 	}
@@ -488,7 +504,10 @@ void Face_stats::create_buttons() {
 
 	std::memset(party, 0, sizeof(party));
 
-	party[0] = new Portrait_button(this, posx, posy, gwin->get_main_actor());
+	Actor* main_actor = gwin->get_main_actor();
+	if (has_paperdoll_info(main_actor)) {
+		party[0] = new Portrait_button(this, posx, posy, main_actor);
+	}
 
 	for (i = 0; i < party_size; i++) {
 		// if vertical display first 4 on left and last 4 on right
@@ -505,9 +524,10 @@ void Face_stats::create_buttons() {
 		npc_nums[i + 1] = partyman->get_member(i);
 		Actor* act      = gwin->get_npc(npc_nums[i + 1]);
 		assert(act != nullptr);
-		// Show faces if in SI, or if paperdolls are allowed
-		// Otherwise, show faces also if the character has paperdoll information
-		if (sman->can_use_paperdolls() || act->get_info().get_npc_paperdoll()) {
+		// Show face if paperdoll data is actually available for this actor
+		// (same 3-step lookup used by Face_button, avoids crash when data
+		// files are missing).
+		if (has_paperdoll_info(act)) {
 			posx += width;
 			posy += height;
 			party[i + 1] = new Portrait_button(this, posx, posy, gwin->get_npc(npc_nums[i + 1]));
@@ -608,6 +628,12 @@ bool Face_stats::Visible() {
 
 // Creates if doesn't already exist
 void Face_stats::CreateGump() {
+	// Don't show face stats if paperdoll data hasn't been loaded (e.g. a
+	// new custom game with no/empty paperdol_info.txt).
+	Actor* main_actor = gwin->get_main_actor();
+	if (!main_actor || !has_paperdoll_info(main_actor)) {
+		return;
+	}
 	if (!self) {
 		self = new Face_stats();
 		gumpman->add_gump(self);
