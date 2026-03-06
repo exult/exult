@@ -1254,6 +1254,12 @@ void ExultStudio::create_new_game(const char* dir    // Directory for new game.
 		}
 		closedir(dirrd);
 	}
+	// Create empty gump_info.txt so that Read_Gumpinf_text_data_file
+	// doesn't throw on the missing file.
+	const string gump_info_path = static_path + "/gump_info.txt";
+	if (!U7exists(gump_info_path)) {
+		ofstream gf(gump_info_path);
+	}
 	// Add new game to master list.
 	gamemanager->add_game(gamestr, gamestr);
 	set_game_path(gamestr);    // Open as current game.
