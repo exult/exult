@@ -612,5 +612,9 @@ enum amulet_frames {
 	FRAME_WHITE_DIAMOND_NECKLACE = 8
 };
 
+enum map_frames {
+	FRAME_SHAMINOS_MAP = 4
+};
+
 const int FRAME_DRIED_FISH = 31;
 const int SHAPE_ENERGY_FIELD = 768;
