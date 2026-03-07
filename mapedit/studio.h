@@ -127,7 +127,7 @@ private:
 	GtkWidget*      shape_zdown;       // Zoom down arrow.
 	static gboolean on_app_key_press(GtkEntry* entry, GdkEventKey* event, gpointer user_data);
 	// Modified one of the .dat's?
-	bool                             shape_info_modified, shape_names_modified;
+	bool                             shape_info_modified, shapes_vga_info_modified, shape_names_modified;
 	bool                             npc_modified;
 	Shape_file_set*                  files;               // All the shape files.
 	std::vector<GtkWindow*>          group_windows;       // All 'group' windows.
@@ -571,7 +571,8 @@ public:
 	}
 
 	void set_shapeinfo_modified() {
-		shape_info_modified = true;
+		shape_info_modified      = true;
+		shapes_vga_info_modified = true;
 	}
 
 	void set_npc_modified() {
