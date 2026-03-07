@@ -430,3 +430,8 @@ enum Silver_Seed_flags {
 	USED_IRON_MAIDEN = 0x314,
 	EXPERIENCE_FROM_RING_OF_REAGENTS = 0x315
 };
+
+enum SI_Fixes_flags {
+	SHAMINO_SAW_HIS_CASTLE = 810,
+	HOUND_HINT_BATLIN = 811
+};

@@ -89,6 +89,8 @@
 #include "misc/game_start_2_mod_changes.uc"
 // Return Selina's key in her final ambush.
 #include "misc/egg_spinebreaker_antechamber_ambush.uc"
+// Show a hint that tracking Batlin via his Medallion is required to progress
+#include "misc/egg_shamino_sees_his_castle.uc"
 
 // Dupre now refuses to leave in Spinebreaker mountains
 #include "npcs/dupre.uc"
