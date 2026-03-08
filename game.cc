@@ -46,6 +46,7 @@
 #include "menulist.h"
 #include "mouse.h"
 #include "palette.h"
+#include "playscene.h"
 #include "shapeid.h"
 #include "shapes/miscinf.h"
 
@@ -687,11 +688,15 @@ bool Game::show_menu(bool skip) {
 			throw quit_exception();
 #endif
 		case 0:    // Intro
-			if (game_type == EXULT_DEVEL_GAME) {
-				break;
-			}
 			pal->fade_out(c_fade_out_time);
-			play_intro();
+			if (scene_available("intro")) {
+				Audio::get_ptr()->stop_music();
+				play_scene("intro");
+			} else if (game_type == EXULT_DEVEL_GAME) {
+				break;
+			} else {
+				play_intro();
+			}
 			gwin->clear_screen(true);
 			top_menu();
 			break;
@@ -719,22 +724,37 @@ bool Game::show_menu(bool skip) {
 			break;
 		case 3:    // Credits
 			pal->fade_out(c_fade_out_time);
-			show_credits();
+			if (scene_available("credits")) {
+				Audio::get_ptr()->stop_music();
+				play_scene("credits");
+				U7open_out("<SAVEGAME>/quotes.flg");
+			} else {
+				show_credits();
+			}
 			delete menu;
 			menu = nullptr;
 			top_menu();
 			break;
 		case 4:    // Quotes
 			pal->fade_out(c_fade_out_time);
-			show_quotes();
+			if (scene_available("quotes")) {
+				Audio::get_ptr()->stop_music();
+				play_scene("quotes");
+			} else {
+				show_quotes();
+			}
 			top_menu();
 			break;
 		case 5:    // End Game
-			if (game_type == EXULT_DEVEL_GAME) {
-				break;
-			}
 			pal->fade_out(c_fade_out_time);
-			end_game(true, false);
+			if (scene_available("endgame")) {
+				Audio::get_ptr()->stop_music();
+				play_scene("endgame");
+			} else if (game_type == EXULT_DEVEL_GAME) {
+				break;
+			} else {
+				end_game(true, false);
+			}
 			top_menu();
 			break;
 		case 6:    // Return to Menu

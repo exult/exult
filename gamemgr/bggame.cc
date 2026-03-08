@@ -397,11 +397,6 @@ BG_Game::BG_Game() : shapes(ENDSHAPE_FLX, -1, PATCH_ENDSHAPE) {
 void BG_Game::play_intro() {
 	Audio* audio = Audio::get_ptr();
 	audio->stop_music();
-	if (scene_available("intro")) {
-		// Play the custom intro scene
-		play_scene("intro");
-		return;
-	}
 	MyMidiPlayer* midi = audio->get_midi();
 	if (midi) {
 		midi->set_timbre_lib(MyMidiPlayer::TIMBRE_LIB_INTRO);
@@ -1552,14 +1547,8 @@ std::vector<unsigned int> BG_Game::get_congratulations_messages() {
 
 void BG_Game::end_game(bool success, bool within_game) {
 	waitforspeech();
-	Audio* audio = Audio::get_ptr();
-	if (scene_available("endgame")) {
-		audio->stop_music();
-		// Play the custom endgame scene
-		play_scene("endgame");
-		return;
-	}
-	std::shared_ptr<Font> font = fontManager.get_font("MENU_FONT");
+	Audio*                audio = Audio::get_ptr();
+	std::shared_ptr<Font> font  = fontManager.get_font("MENU_FONT");
 
 	if (!success) {
 		audio->stop_music();
@@ -1957,25 +1946,12 @@ void BG_Game::end_game(bool success, bool within_game) {
 }
 
 void BG_Game::show_quotes() {
-	if (scene_available("quotes")) {
-		Audio::get_ptr()->stop_music();
-		// Play the custom quotes scene
-		play_scene("quotes");
-		return;
-	}
 	Audio::get_ptr()->start_music(quotes_midi, false, MyMidiPlayer::Force_None, INTROMUS);
 	TextScroller quotes(MAINSHP_FLX, 0x10, fontManager.get_font("MENU_FONT"), menushapes.extract_shape(0x14), true);
 	quotes.run(gwin);
 }
 
 void BG_Game::show_credits() {
-	if (scene_available("credits")) {
-		Audio::get_ptr()->stop_music();
-		// Play the custom credits scene
-		play_scene("credits");
-		U7open_out("<SAVEGAME>/quotes.flg");
-		return;
-	}
 	pal->load(INTROPAL_DAT, PATCH_INTROPAL, 6);
 	Audio::get_ptr()->start_music(credits_midi, false, MyMidiPlayer::Force_None, INTROMUS);
 	TextScroller credits(MAINSHP_FLX, 0x0E, fontManager.get_font("MENU_FONT"), menushapes.extract_shape(0x14), true);
