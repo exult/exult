@@ -1,5 +1,5 @@
-demodir := $(datadir)/exult/demo
-demodatadir =	$(demodir)/static
+# This is an automatically generated file; please do not edit it manually.
+# Instead, run makefile_builder.sh from the parent directory.
 
 # Base of the exult source
 UCCDIR:=$(top_builddir)/tools/compiler
@@ -27,6 +27,10 @@ USECODE_OBJECTS :=	\
 	src/usecode/spells/1st_level.uc	\
 	src/usecode/usecode.uc
 
+FACES_VGA_OBJECTS :=	\
+	src/graphics/faces.in	\
+	src/graphics/faces/0000.shp
+
 FONTS_VGA_OBJECTS :=	\
 	src/graphics/fonts.in	\
 	src/graphics/fonts/00000.shp	\
@@ -36,7 +40,8 @@ FONTS_VGA_OBJECTS :=	\
 	src/graphics/fonts/00004.shp	\
 	src/graphics/fonts/00005.shp	\
 	src/graphics/fonts/00006.shp	\
-	src/graphics/fonts/00007.shp
+	src/graphics/fonts/00007.shp	\
+	src/graphics/fonts/00008.shp
 
 GUMPS_VGA_OBJECTS :=	\
 	src/graphics/gumps.in	\
@@ -114,7 +119,8 @@ GUMPS_VGA_OBJECTS :=	\
 	src/graphics/gumps/00071_magic_scroll_6.shp	\
 	src/graphics/gumps/00072_magic_scroll_7.shp	\
 	src/graphics/gumps/00073_magic_scroll_8.shp	\
-	src/graphics/gumps/00074_magic_scroll_9.shp
+	src/graphics/gumps/00074_magic_scroll_9.shp	\
+	src/graphics/gumps/00075_magic_scroll_gump.shp
 
 MAINSHP_FLX_OBJECTS :=	\
 	src/graphics/mainshp.in	\
@@ -131,7 +137,8 @@ MAINSHP_FLX_OBJECTS :=	\
 	src/graphics/mainshp/00017_quotes.shp	\
 	src/graphics/mainshp/00018_endgame.shp	\
 	src/graphics/mainshp/00019_pointer.shp	\
-	src/graphics/mainshp/00025_face.shp
+	src/graphics/mainshp/00025_face.shp	\
+	src/graphics/mainshp/00026_mainshp.pal
 
 PALETTES_FLX_OBJECTS :=	\
 	src/graphics/palettes.in	\
@@ -144,7 +151,8 @@ PALETTES_FLX_OBJECTS :=	\
 	src/graphics/palettes/00006.pal	\
 	src/graphics/palettes/00007.pal	\
 	src/graphics/palettes/00008.pal	\
-	src/graphics/palettes/00009.pal
+	src/graphics/palettes/00009.pal	\
+	src/graphics/palettes/00010.pal
 
 PAPERDOL_VGA_OBJECTS :=	\
 	src/graphics/paperdol.in	\
@@ -174,7 +182,8 @@ PAPERDOL_VGA_OBJECTS :=	\
 	src/graphics/paperdol/00023_bow.shp	\
 	src/graphics/paperdol/00024_pickaxe.shp	\
 	src/graphics/paperdol/00025_short_sword.shp	\
-	src/graphics/paperdol/00026_two_handed_sword.shp
+	src/graphics/paperdol/00026_two_handed_sword.shp	\
+	src/graphics/paperdol/00123_paperdol.shp
 
 SHAPES_VGA_OBJECTS :=	\
 	src/graphics/shapes.in	\
@@ -282,7 +291,8 @@ SHAPES_VGA_OBJECTS :=	\
 	src/graphics/shapes/00995_cauldron.shp	\
 	src/graphics/shapes/01003_table.shp	\
 	src/graphics/shapes/01011_bed.shp	\
-	src/graphics/shapes/01018_table.shp
+	src/graphics/shapes/01018_table.shp	\
+	src/graphics/shapes/01028.shp
 
 SPRITES_VGA_OBJECTS :=	\
 	src/graphics/sprites.in	\
@@ -292,14 +302,20 @@ SPRITES_VGA_OBJECTS :=	\
 	src/graphics/sprites/00007_teleport.shp	\
 	src/graphics/sprites/00010_wizardseye.shp	\
 	src/graphics/sprites/00012_invisible.shp	\
-	src/graphics/sprites/00022_map.shp
+	src/graphics/sprites/00022_map.shp	\
+	src/graphics/sprites/00024_music_playing.shp
 
 INTRO_FLX_OBJECTS :=	\
 	src/playscene/intro.in	\
 	src/playscene/intro/intro.txt
 
-nodist_demodata_DATA :=	\
+demodir := $(datadir)/exult/demo
+
+demostaticdir =	$(demodir)/static
+
+nodist_demostatic_DATA :=	\
 	static/usecode	\
+	static/faces.vga	\
 	static/fonts.vga	\
 	static/gumps.vga	\
 	static/mainshp.flx	\
@@ -309,7 +325,7 @@ nodist_demodata_DATA :=	\
 	static/sprites.vga	\
 	static/intro.flx
 
-demodata_DATA :=	\
+demostatic_DATA :=	\
 	src/graphics/pointers/pointers.shp	\
 	static/avatar_data.txt	\
 	static/blends.dat	\
@@ -341,6 +357,7 @@ EXTRA_DIST :=	\
 	Makefile.mingw	\
 	ReadMe.txt	\
 	$(USECODE_OBJECTS)	\
+	$(FACES_VGA_OBJECTS)	\
 	$(FONTS_VGA_OBJECTS)	\
 	$(GUMPS_VGA_OBJECTS)	\
 	$(MAINSHP_FLX_OBJECTS)	\
@@ -348,11 +365,14 @@ EXTRA_DIST :=	\
 	$(PAPERDOL_VGA_OBJECTS)	\
 	$(SHAPES_VGA_OBJECTS)	\
 	$(SPRITES_VGA_OBJECTS)	\
+	$(INTRO_FLX_OBJECTS)	\
 	$(demo_DATA)	\
-	$(demodata_DATA)
+	$(demostatic_DATA)
 
 CLEANFILES :=	\
 	static/usecode	\
+	static/faces.vga	\
+	static/faces_vga.h	\
 	static/fonts.vga	\
 	static/fonts_vga.h	\
 	static/gumps.vga	\
@@ -380,6 +400,9 @@ $(UCC):
 static/usecode: $(UCC) $(USECODE_OBJECTS)
 	$(UCC) -I $(srcdir)/src/usecode -o $(srcdir)/static/usecode $(srcdir)/src/usecode/usecode.uc
 
+static/faces.vga: $(EXPACK) $(FACES_VGA_OBJECTS)
+	$(EXPACK) -i $(srcdir)/src/graphics/faces.in
+
 static/fonts.vga: $(EXPACK) $(FONTS_VGA_OBJECTS)
 	$(EXPACK) -i $(srcdir)/src/graphics/fonts.in
 
@@ -403,3 +426,4 @@ static/sprites.vga: $(EXPACK) $(SPRITES_VGA_OBJECTS)
 
 static/intro.flx: $(EXPACK) $(INTRO_FLX_OBJECTS)
 	$(EXPACK) -i $(srcdir)/src/playscene/intro.in
+

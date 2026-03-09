@@ -27,6 +27,7 @@ FACES_VGA_OBJECTS :=	\
 	src/graphics/faces/dominus.shp	\
 	src/graphics/faces/drcode.shp	\
 	src/graphics/faces/fingolfin.shp	\
+	src/graphics/faces/nadir.shp	\
 	src/graphics/faces/wjp.shp
 
 SHAPES_VGA_OBJECTS :=	\
