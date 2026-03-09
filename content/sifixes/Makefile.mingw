@@ -47,9 +47,12 @@ USECODE_OBJECTS :=	\
 	src/misc/egg_gorlab_swamp_sleep.uc	\
 	src/misc/egg_gwani_attack.uc	\
 	src/misc/egg_skullcrusher_automatons.uc	\
+	src/misc/egg_spinebreaker_antechamber_ambush.uc	\
 	src/misc/egg_starting_hints.uc	\
 	src/misc/exchanged_item_list.uc	\
 	src/misc/fawn_tower_cleanup.uc	\
+	src/misc/game_start_1_egg_hide_avatar.uc	\
+	src/misc/game_start_2_mod_changes.uc	\
 	src/misc/gwani_cloak_check.uc	\
 	src/misc/inn_keys.uc	\
 	src/misc/is_obj_blocked.uc	\
