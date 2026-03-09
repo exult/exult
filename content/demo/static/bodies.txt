@@ -1,0 +1,3 @@
+%%section version
+:2
+%%endsection

@@ -1,0 +1,67 @@
+%%section version
+:2
+%%endsection
+
+%%section defaultshape
+#Format
+#	:sex/shapenum/facenum/faceframe
+#sex = 1 for female, 0 for male
+#facenum is the face shape from faces.vga to use
+#faceframe is the frame of the face to use
+:0/721/0/0
+:1/723/0/0
+%%endsection
+
+%%section baseracesex
+#THIS MUST COME FIRST!!!!
+#Format
+#	:defaultskin/defaultsex
+#defaultskin = 0-based skin number
+#defaultsex = 1 for female, 0 for male
+:0/0
+%%endsection
+
+%%section multiracial_table
+#Format
+#	:skin/sex/shapenum/nakedshape/facenum/faceframe/alterface/alterframe/copydata
+#skin = 0-based skin number
+#sex = 1 for female, 0 for male
+#shapenum and nakedshape can be either a shape # or a reference to an imported
+#shape (either in the form of a shape number or on the form %num, as explained
+#in the multiracial_imports section.
+#facenum is the face shape from faces.vga to use
+#faceframe is the frame of the face to use
+#alterface and alterframe indicate the face/frame to use when flag 33 is set
+#copydata is optional, and can be 0 or 1. If 1, Exult will copy the shape data
+#from the default avatar shapes; if 0, Exult will use the data already available
+#for the shape.
+:0/1/720/720/0/1/0/1/1
+:0/0/721/721/0/0/0/0/0
+:1/1/718/718/0/3/0/3/1
+:1/0/723/723/0/2/0/2/0
+%%endsection
+
+%%section unselectable_races_table
+#Format
+#	:skin
+#skin = 0-based skin number of the skin to forbid in the title screen.
+#
+:2
+%%endsection
+
+%%section petra_face_table
+#Format
+#	:npcnum/borrowface
+#npcnum is the number of the NPC that uses an alternate face when Petra flag is set
+#borrowface is the number of the NPC whose face should be used instead
+%%endsection
+
+%%section usecode_info
+#Format
+#	:type/function/event
+#type is one of:
+#	0 for death usecode
+#function is either, the function number or :functionname
+#event is the event id to use or -1 if event is not important
+:0/0x400/7
+%%endsection

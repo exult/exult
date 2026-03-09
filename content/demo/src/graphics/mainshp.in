@@ -1,0 +1,16 @@
+../../static/mainshp.flx
+:2:mainshp/00002_title.shp
+:4:mainshp/00004_intro.shp
+:5:mainshp/00005_new_game.shp
+:6:mainshp/00006_credits.shp
+:7:mainshp/00007_return.shp
+:8:mainshp/00008_continue.shp
+:9:mainshp/00009_font.shp
+:12:mainshp/00012_name.shp
+:14:mainshp/00014_credits.txt
+:16:mainshp/00016_quotes.txt
+:17:mainshp/00017_quotes.shp
+:18:mainshp/00018_endgame.shp
+:19:mainshp/00019_pointer.shp
+:25:mainshp/00025_face.shp
+:26:mainshp/00026_mainshp.pal
