@@ -376,7 +376,7 @@ $(UCC):
 
 
 static/usecode: $(UCC) $(USECODE_OBJECTS)
-	$(UCC) -I $(srcdir)/src -o $(srcdir)/static/usecode $(srcdir)/src/usecode/usecode.uc
+	$(UCC) -I $(srcdir)/src/usecode -o $(srcdir)/static/usecode $(srcdir)/src/usecode/usecode.uc
 
 static/fonts.vga: $(EXPACK) $(FONTS_VGA_OBJECTS)
 	$(EXPACK) -i $(srcdir)/src/graphics/fonts.in
