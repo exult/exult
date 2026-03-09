@@ -167,7 +167,7 @@ $(UCC):
 
 
 data/usecode: $(UCC) $(USECODE_OBJECTS)
-	$(UCC) -I src -o data/usecode src/usecode.uc
+	$(UCC) -I $(srcdir)/src -o $(srcdir)/data/usecode $(srcdir)/src/usecode.uc
 
 data/faces.vga: $(EXPACK) $(FACES_VGA_OBJECTS)
 	$(EXPACK) -i $(srcdir)/src/graphics/faces.in
