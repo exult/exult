@@ -2,10 +2,10 @@
 # Instead, run makefile_builder.sh from the parent directory.
 
 # Base of the exult source
-UCCDIR:=$(top_srcdir)/tools/compiler
+UCCDIR:=$(top_builddir)/tools/compiler
 UCC:=$(UCCDIR)/ucc
 
-EXPACKDIR:=$(top_srcdir)/tools
+EXPACKDIR:=$(top_builddir)/tools
 EXPACK:=$(EXPACKDIR)/expack
 
 USECODE_OBJECTS :=	\
@@ -74,7 +74,7 @@ $(UCC):
 
 
 patch/usecode: $(UCC) $(USECODE_OBJECTS)
-	$(UCC) -I src -o patch/usecode src/usecode.uc
+	$(UCC) -I $(srcdir)/src -o $(srcdir)/patch/usecode $(srcdir)/src/usecode.uc
 
 patch/faces.vga: $(EXPACK) $(FACES_VGA_OBJECTS)
 	$(EXPACK) -i $(srcdir)/src/graphics/faces.in

@@ -40,7 +40,7 @@ find . -mindepth 2 -iname "*.cfg" | while read -r cfgfile; do
 	sourcedir=$(dirname "${sourcedir#*$moddir/}")
 	include=""
 	if [[ -n "$sourcedir" ]]; then
-		include="-I $sourcedir"
+		include="-I \$(srcdir)/$sourcedir"
 		sourcedir="$sourcedir/"
 	fi
 
@@ -73,10 +73,10 @@ find . -mindepth 2 -iname "*.cfg" | while read -r cfgfile; do
 # Instead, run makefile_builder.sh from the parent directory.
 
 # Base of the exult source
-UCCDIR:=\$(top_srcdir)/tools/compiler
+UCCDIR:=\$(top_builddir)/tools/compiler
 UCC:=\$(UCCDIR)/ucc
 
-EXPACKDIR:=\$(top_srcdir)/tools
+EXPACKDIR:=\$(top_builddir)/tools
 EXPACK:=\$(EXPACKDIR)/expack
 " >> "$modmakefile_am"
 
@@ -135,7 +135,7 @@ ${moddir}dir:=\$(U7PATH)/$basedest/mods
 		nodist_datafiles_am="$nodist_datafiles_am\\${n}${t}${patchdir}usecode${t}"
 		datafiles_mingw="$datafiles_mingw${t}cp ${patchdir}usecode $destdir_mingw/${patchdir}usecode${n}"
 		targets_mingw="$targets_mingw ${patchdir}usecode"
-		buildrules="$buildrules${n}${patchdir}usecode: \$(UCC) \$(USECODE_OBJECTS)${n}${t}\$(UCC) $include -o ${patchdir}usecode ${sourcedir}usecode.uc${n}"
+		buildrules="$buildrules${n}${patchdir}usecode: \$(UCC) \$(USECODE_OBJECTS)${n}${t}\$(UCC) $include -o \$(srcdir)/${patchdir}usecode \$(srcdir)/${sourcedir}usecode.uc${n}"
 		cleanfiles="$cleanfiles${n}${t}${patchdir}usecode${t}\\"
 		builducc="yes"
 	fi

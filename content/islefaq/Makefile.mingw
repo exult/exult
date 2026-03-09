@@ -78,7 +78,7 @@ $(UCC):
 
 
 patch/usecode: $(UCC) $(USECODE_OBJECTS)
-	$(UCC) -I src -o patch/usecode src/usecode.uc
+	$(UCC) -I $(srcdir)/src -o $(srcdir)/patch/usecode $(srcdir)/src/usecode.uc
 
 patch/faces.vga: $(EXPACK) $(FACES_VGA_OBJECTS)
 	$(EXPACK) -i $(srcdir)/src/graphics/faces.in
