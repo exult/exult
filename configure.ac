@@ -1367,6 +1367,7 @@ content/si/Makefile
 content/bgkeyring/Makefile
 content/bg/Makefile
 content/islefaq/Makefile
+content/demo/Makefile
 files/Makefile
 files/sha1/Makefile
 files/zip/Makefile
