@@ -45,7 +45,6 @@
 #include "miscinf.h"
 #include "modmgr.h"
 #include "palette.h"
-#include "playscene.h"
 #include "shapeid.h"
 #include "touchui.h"
 #include "txtscroll.h"

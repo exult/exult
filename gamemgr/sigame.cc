@@ -40,7 +40,6 @@
 #include "mappatch.h"
 #include "miscinf.h"
 #include "palette.h"
-#include "playscene.h"
 #include "shapeid.h"
 #include "span.h"
 #include "touchui.h"
