@@ -821,13 +821,22 @@ public:
  */
 class Eat_schedule : public Loiter_schedule {
 	Game_object_weak plate;
+	Game_object_weak table;
+	bool             created_plate = false;
+	bool             having_eaten  = false;
+
+	Game_object* find_eating_table();
+	Game_object* create_plate_on_table(Game_object* table_obj);
 
 	enum {
-		eat,           // eat food and say food barks
-		find_plate,    // make sure there is a plate, create one if not
-		serve_food,    // put food on the plate
-		sitting,       // sit down before eating
-		wander         // wander around when there is no plate
+		eat,            // eat food and say food barks
+		find_plate,     // make sure there is a plate, create one if not
+		find_table,     // find a table with chairs to place a plate on
+		place_plate,    // create a plate on the found table
+		serve_food,     // put food on the plate
+		sitting,        // sit down before eating
+		wander,         // wander around when there is no plate
+		cleanup         // wait then remove created plate
 	} state;
 
 public:

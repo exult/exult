@@ -5659,12 +5659,73 @@ void Forge_schedule::ending(int new_type    // New schedule.
 /*
  *  Eat without a server
  *  The original seems to pathfind to a plate, then place the food on
- *  the plate, sit down, and then eat it if the food is close enough.
+ *  the plate, sit down, and then eat silently if the food is close enough.
  *  They only seemed to eat one food item and then sit there doing nothing.
  *  If there is no plate, they will switch to loitering until a plate becomes available.
- *  When eating, there are no barks.
+ *  We do it differently:
+ *  If there is no plate, they will first loiter a bit, then find a table,
+ *  place a plate, eat with barks, and finally clean up. Then resume loitering.
  */
+
 Eat_schedule::Eat_schedule(Actor* n) : Loiter_schedule(n, 8), state(find_plate) {}
+
+/*
+ *  Find a nearby table with chairs suitable for eating.
+ */
+
+Game_object* Eat_schedule::find_eating_table() {
+	static const int table_shapes[] = {971, 633, 847, 890, 964};
+	const int        floor          = npc->get_lift() / 5;
+	for (const int shp : table_shapes) {
+		Game_object_vector tables;
+		npc->find_nearby(tables, shp, 20, 0);
+		for (auto* table_obj : tables) {
+			if (table_obj->get_lift() / 5 != floor) {
+				continue;
+			}
+			// Must have chairs nearby.
+			Game_object_vector chairs;
+			if (table_obj->find_nearby(chairs, 873, 3, 0) || table_obj->find_nearby(chairs, 292, 3, 0)) {
+				return table_obj;
+			}
+		}
+	}
+	return nullptr;
+}
+
+/*
+ *  Create a plate on the given table, similar to Waiter's
+ *  create_customer_plate().
+ */
+
+Game_object* Eat_schedule::create_plate_on_table(Game_object* table_obj) {
+	if (!table_obj) {
+		return nullptr;
+	}
+	const Tile_coord npcpos = npc->get_tile();
+	const TileRect   foot   = table_obj->get_footprint();
+	if (foot.distance(npcpos.tx, npcpos.ty) > 3) {
+		return nullptr;
+	}
+	Tile_coord spot = npcpos;
+	// East/West of table?
+	if (npcpos.ty >= foot.y && npcpos.ty < foot.y + foot.h) {
+		spot.tx = npcpos.tx <= foot.x ? foot.x : foot.x + foot.w - 1;
+	} else {    // North/south.
+		spot.ty = npcpos.ty <= foot.y ? foot.y : foot.y + foot.h - 1;
+	}
+	if (foot.has_world_point(spot.tx, spot.ty)) {
+		const Shape_info& info = table_obj->get_info();
+		spot.tz                = table_obj->get_lift() + info.get_3d_height();
+		// Small plates: frames 4, 5.
+		const Game_object_shared new_plate = gmap->create_ireg_object(717, 4 + rand() % 2);
+		new_plate->set_flag(Obj_flags::is_temporary);
+		new_plate->move(spot);
+		Audio::get_ptr()->play_sound_effect(drop_sfx_id(), spot, sfx_vol());
+		return new_plate.get();
+	}
+	return nullptr;
+}
 
 /*
  *  Just went dormant.
@@ -5699,8 +5760,13 @@ void Eat_schedule::now_what() {
 			if (npc->can_speak() && rand() % 4) {
 				npc->say(first_munch, last_munch);
 			}
-		}    // loops back to itself since npc can be pushed
-		break;    // out of their chair and not eat right away
+			having_eaten = true;
+		} else {
+			// No more food; clean up.
+			state = cleanup;
+			delay = 3000 + rand() % 5000;
+		}
+		break;
 	}
 	case find_plate: {
 		// make sure moved plate doesn't get food sent to it
@@ -5709,8 +5775,8 @@ void Eat_schedule::now_what() {
 		Game_object*       plate_obj = nullptr;
 		npc->find_nearby(plates, 717, 1, 0);
 		const int floor = npc->get_lift() / 5;    // Make sure it's on same floor.
-		for (auto* plate : plates) {
-			plate_obj = plate;
+		for (auto* p : plates) {
+			plate_obj = p;
 			if (plate_obj->get_lift() / 5 == floor) {
 				break;
 			} else {
@@ -5722,7 +5788,45 @@ void Eat_schedule::now_what() {
 			state = serve_food;
 			delay = 0;
 		} else {
-			state = wander;    // No plate; loiter until we retry.
+			// No plate nearby; wander, then find a table and make one.
+			state = wander;
+		}
+		break;
+	}
+	case find_table: {
+		Game_object* table_obj = find_eating_table();
+		if (table_obj) {
+			table = weak_from_obj(table_obj);
+			// Walk toward the table.
+			const Tile_coord dest = Map_chunk::find_spot(table_obj->get_tile(), 2, npc);
+			if (dest.tx != -1 && npc->walk_path_to_tile(dest, gwin->get_std_delay(), 500 + rand() % 1000)) {
+				state = place_plate;
+				return;    // Will come back when we arrive.
+			}
+			// Couldn't pathfind; try placing from here.
+			state = place_plate;
+			delay = 500;
+		} else {
+			// No table found; keep wandering.
+			state = wander;
+		}
+		break;
+	}
+	case place_plate: {
+		const Game_object_shared table_obj = table.lock();
+		if (!table_obj) {
+			state = wander;
+			break;
+		}
+		Game_object* new_plate = create_plate_on_table(table_obj.get());
+		if (new_plate) {
+			plate         = weak_from_obj(new_plate);
+			created_plate = true;
+			state         = find_plate;    // Will now find the plate we just placed.
+			delay         = 0;
+		} else {
+			// Failed to place plate; keep wandering.
+			state = wander;
 		}
 		break;
 	}
@@ -5751,10 +5855,32 @@ void Eat_schedule::now_what() {
 	}
 	case wander:
 		Loiter_schedule::now_what();
-		if (rand() % 2 == 0) {
-			state = find_plate;
+		if (!having_eaten) {
+			if (rand() % 3 == 0) {
+				state = find_table;    // Try to find a table and create a plate.
+			} else if (rand() % 2 == 0) {
+				state = find_plate;    // Check if a plate appeared.
+			}
 		}
 		return;
+	case cleanup: {
+		// Remove the plate we created so it doesn't remain dangling.
+		const Game_object_shared plate_obj = plate.lock();
+		if (plate_obj && created_plate) {
+			gwin->add_dirty(plate_obj.get());
+			plate_obj->remove_this();
+		}
+		plate         = Game_object_weak();
+		created_plate = false;
+		if (having_eaten) {
+			state = wander;    // Done eating; just loiter.
+		} else {
+			state = find_plate;    // Haven't eaten yet; start over.
+		}
+		break;
+	}
+	default:
+		break;
 	}
 	npc->start(250, delay);
 }
@@ -5775,6 +5901,14 @@ void Eat_schedule::ending(int new_type) {    // new schedule type
 			}
 		}
 	}
+	// Remove plate we created so it doesn't remain dangling.
+	const Game_object_shared plate_obj = plate.lock();
+	if (plate_obj && created_plate) {
+		gwin->add_dirty(plate_obj.get());
+		plate_obj->remove_this();
+	}
+	plate         = Game_object_weak();
+	created_plate = false;
 }
 
 /*
