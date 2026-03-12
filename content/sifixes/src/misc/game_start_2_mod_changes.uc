@@ -21,8 +21,12 @@
  *  To match my in-progress mod, I use this new function for all mod changes
  *  that occur at the start of the game.
  *
+ *  This should only be used for NPC changes, as map changes outside of the
+ *  nine superchunks around the Avatar will not work as expected.
+ *
  *  2026-02-27 Knight Captain
  *  Creation and removing the potentially game-breaking key from Selina.
+ *  2026-03-12 Delin and Olon fix by KC.
  */
 
 void gameStartModChanges object#(0x9F3) () // 2547
@@ -35,4 +39,13 @@ void gameStartModChanges object#(0x9F3) () // 2547
 	// https://github.com/exult/exult/issues/731
 	// Doing this via code to avoid editing binary files using Exult Studio.
 	UI_remove_cont_items(SELINA, 1, SHAPE_KEY, 135, 30);
+	
+	// In Fawn, Jendon serves food to Lady Yelinda and other leaders at 9PM.
+	// Delin and Olon sit waiting for food in The Broken Oar, never eating.
+	// See this issue link:
+	// https://github.com/exult/exult/issues/919
+	// Delin sits with Alyssand, she faces east at 0931, 1747, in EAT.
+	UI_modify_schedule(DELIN, NIGHT, EAT, [0935, 1747]);
+	// Make Olon the Drunken Sailor Man eat. There is no DRINK activity.
+	UI_modify_schedule(OLON, NIGHT, EAT, [0946, 1759]);
 }
