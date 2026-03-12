@@ -114,8 +114,13 @@ namespace {
 
 ScenePlayer::ScenePlayer(Game_window* gw, const string& scene_name_, bool use_subtitles, bool use_speech)
 		: gwin(gw), scene_name(scene_name_), subtitles(use_subtitles), speech_enabled(use_speech) {
-	flx_path  = "<PATCH>/" + scene_name_ + ".flx";
-	info_path = "<PATCH>/" + scene_name_ + "_info.txt";
+	const string patch_flx  = "<PATCH>/" + scene_name_ + ".flx";
+	const string static_flx = "<STATIC>/" + scene_name_ + ".flx";
+	flx_path = U7exists(patch_flx.c_str()) ? patch_flx : static_flx;
+
+	const string patch_info  = "<PATCH>/" + scene_name_ + "_info.txt";
+	const string static_info = "<STATIC>/" + scene_name_ + "_info.txt";
+	info_path = U7exists(patch_info.c_str()) ? patch_info : static_info;
 
 	// Initialize fonts
 	const char* fname = BUNDLE_CHECK(BUNDLE_EXULT_FLX, EXULT_FLX);

@@ -2,10 +2,10 @@
 # Instead, run makefile_builder.sh from the parent directory.
 
 # Base of the exult source
-UCCDIR:=$(top_srcdir)/tools/compiler
+UCCDIR:=$(top_builddir)/tools/compiler
 UCC:=$(UCCDIR)/ucc
 
-EXPACKDIR:=$(top_srcdir)/tools
+EXPACKDIR:=$(top_builddir)/tools
 EXPACK:=$(EXPACKDIR)/expack
 
 USECODE_OBJECTS :=	\
@@ -37,9 +37,12 @@ USECODE_OBJECTS :=	\
 	src/misc/egg_gorlab_swamp_sleep.uc	\
 	src/misc/egg_gwani_attack.uc	\
 	src/misc/egg_skullcrusher_automatons.uc	\
+	src/misc/egg_spinebreaker_antechamber_ambush.uc	\
 	src/misc/egg_starting_hints.uc	\
 	src/misc/exchanged_item_list.uc	\
 	src/misc/fawn_tower_cleanup.uc	\
+	src/misc/game_start_1_egg_hide_avatar.uc	\
+	src/misc/game_start_2_mod_changes.uc	\
 	src/misc/gwani_cloak_check.uc	\
 	src/misc/inn_keys.uc	\
 	src/misc/is_obj_blocked.uc	\
@@ -167,7 +170,7 @@ $(UCC):
 
 
 data/usecode: $(UCC) $(USECODE_OBJECTS)
-	$(UCC) -I src -o data/usecode src/usecode.uc
+	$(UCC) -I $(srcdir)/src -o $(srcdir)/data/usecode $(srcdir)/src/usecode.uc
 
 data/faces.vga: $(EXPACK) $(FACES_VGA_OBJECTS)
 	$(EXPACK) -i $(srcdir)/src/graphics/faces.in

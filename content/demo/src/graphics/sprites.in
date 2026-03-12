@@ -1,0 +1,9 @@
+../../static/sprites.vga
+:0:sprites/00000_weather.shp
+:2:sprites/00002_clouds.shp
+:5:sprites/00005_explostion.shp
+:7:sprites/00007_teleport.shp
+:10:sprites/00010_wizardseye.shp
+:12:sprites/00012_invisible.shp
+:22:sprites/00022_map.shp
+:24:sprites/00024_music_playing.shp

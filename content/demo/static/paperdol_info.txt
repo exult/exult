@@ -1,0 +1,106 @@
+#	Exult 1.5.0svn text message file.	Written by ExultStudio.
+%%section version
+:3
+%%endsection
+%%section characters
+#Shp: The NPC's SHAPE number;
+#fmale: 1 if female, 0 if male
+#trans: 1 if the shape is translucent, 0 otherwise
+#bsh: Body shape (in paperdol.vga)
+#bf: Body frame
+#hds: Head shape (in paperdol.vga)
+#hf: Head frame
+#hh: Head frame when wearing helmet
+#ash: Arm shape
+#af: Arm frame without weapons or with 1-handed weapons
+#a2: Arm frame for two-handed weapons
+#as: Arm frame for staves
+#
+#Format:
+#:Shp/	fmale/		trans/	bsh/	bf/		hds/	hf/		hh/		ash/	af/		a2/		as
+
+# White male
+:721/		0/		0/		2/		0/		0/		0/		1/		4/		1/		3/		5
+# Black male
+:723/		0/		0/		2/		0/		0/		0/		3/		5/		1/		3/		5
+# White female
+:720/		1/		0/		3/		0/		1/		0/		1/		4/		0/		2/		4
+# Black female
+:718/		1/		0/		3/		1/		1/		2/		3/		5/		0/		2/		4
+%%endsection
+
+
+%%section items
+#wshape: The entry's shape number
+#wf: Object's frame, or -1 for all frames
+#trans: 1 if the shape is translucent, 0 otherwise
+#spot: Where it should go. Takes one of the following values:
+#		head = 0
+#		backpack = 1
+#		belt = 2
+#		lhand = 3
+#		lfinger = 4
+#		legs = 5
+#		feet = 6
+#		rfinger = 7
+#		rhand = 8
+#		torso = 9
+#		amulet = 10
+#		quiver = 11
+#		back2h_spot = 12		2 handed weapons, bedroll, bodies
+#		back_shield = 13		Shield behind backpack
+#		earrings = 14
+#		cloak = 15
+#		gloves = 16				Gloves, gauntlets
+#		ucont = 17				Usecode Container
+#		cloak_clasp = 102
+#type: For two-handed weapons, the frame to use for arms when equipped in lhand spot.
+#		For headgear, the frame to use for the head when equipped in head spot.
+#		Unused for all other spots/item types.
+#gender: 1 if has different frames for male/female, 0 otherwise. The frame numbers
+#		 given are for the female paperdolls, and they are increased by 1 for the
+#		 male versions.
+#shape: The shape number (in paperdol.vga); if -1, Exult uses wshape instead
+#frame: The base frame number for the paperdol/quiver without correct missile weapon
+#f2: Two handed version/armor arms/quiver with missile weapon
+#f3: Staff version/two-handed armor arms/shield hand with missile weapon and ammo
+#f4: Staff armor arms
+#
+#Format:
+#:wshape/	wf/		trans/	spot/	type/	gender/	shape/	frame/	f2/	f3/	f4
+
+# Some items with shape 738 and 624 will need to be changed.
+# They are there so I don't need to create any new shapes of frames for them.
+# Several other items are using the wrong paperdoll for the same purpose
+
+# Arrows
+:722/		25/		1/		11/		0/		0/		22/		2/		2/	0
+:722/		26/		1/		11/		0/		0/		22/		3/		2/	0
+:722/		27/		1/		11/		0/		0/		22/		3/		3/	0
+:722/		28/		1/		11/		0/		0/		22/		4/		3/	0
+:722/		29/		1/		11/		0/		0/		22/		4/		4/	0
+:722/		30/		1/		11/		0/		0/		22/		4/		4/	0
+:722/		31/		1/		11/		0/		0/		22/		4/		4/	0
+:722/		-1/		1/		11/		0/		0/		22/		2/		1/	0
+
+# Bow
+:597/		-1/		1/		3/		0/		0/		23/		0
+:597/		-1/		1/		12/		0/		0/		23/		1
+
+#:wshape/	wf/		trans/	spot/	type/	gender/	shape/	frame/	f2/	f3/	f4
+
+# Pickaxe
+:624/		-1/		1/		3/		1/		0/		24/		0
+:624/		-1/		1/		12/		0/		0/		24/		1
+
+# Short sword
+#:624/		-1/		1/		3/		0/		0/		25/		0
+#:624/		-1/		1/		2/		0/		0/		25/		1
+
+# Two-handed sword
+#:624/		-1/		1/		3/		1/		0/		26/		0
+#:624/		-1/		1/		12/		0/		0/		26/		1
+
+#:wshape/	wf/		trans/	spot/	type/	gender/	shape/	frame/	f2/	f3/	f4
+
+%%endsection

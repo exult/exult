@@ -49,6 +49,7 @@ void MonitorBanquet object#(0x1C3) () {
 		var partymembers = removeFromArray(AVATAR->get_npc_object(), UI_get_party_list2());
 		struct<Position> pos;
 		for (npc in partymembers with index to max) {
+			npc->clear_item_flag(INVISIBLE);
 			npc->remove_from_party();
 			pos = npc->get_object_position();
 			npc->set_new_schedules(MIDNIGHT, STANDTHERE, [pos.x, pos.y]);

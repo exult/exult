@@ -1,13 +1,14 @@
 #!/bin/bash
 
-# This script generates Makefile.am and Makefile.mingw files for Exult mods that
-# follow a certain layout, as long as they (1) are in a subdir of this script
-# and (2) have their own *.cfg file. The layouts are somewhat flexible; data to
-# go into the 'patch' dir is searched for under 'patch' and 'data' subdirs. Any
-# generated files (such as flex files and usecode files) do not follow these
-# restrictions; *.in files (other than Makefile.in) are used with expack to make
-# flexes, usecode.uc file is used with ucc to make final usecode file, and they
-# will be installed wherever they are generated.
+# This script generates Makefile.am and Makefile.mingw files for Exult mods and
+# devel games that follow a certain layout, as long as they are in a subdir of
+# this script. Mods must have their own *.cfg file. Devel games must have a
+# 'static' folder but no *.cfg file. The layouts are somewhat flexible; data to
+# go into the 'patch' dir is searched for under 'patch', 'data', or 'static'
+# subdirs. Any generated files (such as flex files and usecode files) do not
+# follow these restrictions; *.in files (other than Makefile.in) are used with
+# expack to make flexes, usecode.uc file is used with ucc to make final usecode
+# file, and they will be installed wherever they are generated.
 #
 # Warning 1: This should be run only from ./content and only after a 'make clean'
 # has been executed.
@@ -19,20 +20,58 @@
 n=$'\n'
 t=$'\t'
 
-# Find all cfg files.
-find . -mindepth 2 -iname "*.cfg" | while read -r cfgfile; do
-	# Strip initial ./ from cfg name.
-	cfgfile="${cfgfile#./}"
-	# Get the dir we will process now.
-	moddir=$(dirname "$cfgfile")
-	# Destination dir for mod data (equal to cfg file name).
-	installdir=$(basename "$cfgfile" .cfg)
-	# Check for 'patch' or 'data' dirs. Only these dirs are known for now.
-	patchdir=""
-	if [[ -d "$moddir/patch" ]]; then
-		patchdir="patch/"
-	elif [[ -d "$moddir/data" ]]; then
-		patchdir="data/"
+# Build list of directories to process.
+# Mods have a .cfg file; devel games have a static/ dir but no .cfg.
+entries=()
+
+# Find cfg-based mods.
+while IFS= read -r f; do
+	entries+=("cfg:${f#./}")
+done < <(find . -mindepth 2 -iname "*.cfg" | sort)
+
+# Find devel game dirs (static/ dir, no cfg file).
+while IFS= read -r d; do
+	d="${d#./}"
+	if [[ -d "$d/static" ]]; then
+		cfgcheck=$(find "$d" -maxdepth 1 -iname "*.cfg" -print -quit 2>/dev/null)
+		if [[ -z "$cfgcheck" ]]; then
+			entries+=("game:$d")
+		fi
+	fi
+done < <(find . -mindepth 1 -maxdepth 1 -type d | sort)
+
+for entry in "${entries[@]}"; do
+	entrytype="${entry%%:*}"
+	entrypath="${entry#*:}"
+	is_develgame="no"
+
+	if [[ "$entrytype" == "cfg" ]]; then
+		cfgfile="$entrypath"
+		# Get the dir we will process now.
+		moddir=$(dirname "$cfgfile")
+		# Destination dir for mod data (equal to cfg file name).
+		installdir=$(basename "$cfgfile" .cfg)
+		# Check for 'patch' or 'data' dirs. Only these dirs are known for now.
+		patchdir=""
+		if [[ -d "$moddir/patch" ]]; then
+			patchdir="patch/"
+		elif [[ -d "$moddir/data" ]]; then
+			patchdir="data/"
+		fi
+		# Determine the base game mod. We assume forgeofvirtue except for the two
+		# we know are for silverseed.
+		case "$moddir" in
+			"si") basedest="silverseed";;
+			"sifixes") basedest="silverseed";;
+			*) basedest="forgeofvirtue";;
+		esac
+	else
+		# Devel game with static dir, no cfg file.
+		moddir="$entrypath"
+		is_develgame="yes"
+		patchdir="static/"
+		installdir=""
+		basedest=""
 	fi
 
 	# Find usecode.uc location and check if we need to set ucc includes.
@@ -40,17 +79,9 @@ find . -mindepth 2 -iname "*.cfg" | while read -r cfgfile; do
 	sourcedir=$(dirname "${sourcedir#*$moddir/}")
 	include=""
 	if [[ -n "$sourcedir" ]]; then
-		include="-I $sourcedir"
+		include="-I \$(srcdir)/$sourcedir"
 		sourcedir="$sourcedir/"
 	fi
-
-	# Determine the base game mod. We assume forgeofvirtue except for the two
-	# we know are for silverseed.
-	case "$moddir" in
-		"si") export basedest="silverseed";;
-		"sifixes") export basedest="silverseed";;
-		*) export basedest="forgeofvirtue";;
-	esac
 
 	# Variables used to build the makefiles.
 	nodist_datafiles_am=""
@@ -73,10 +104,10 @@ find . -mindepth 2 -iname "*.cfg" | while read -r cfgfile; do
 # Instead, run makefile_builder.sh from the parent directory.
 
 # Base of the exult source
-UCCDIR:=\$(top_srcdir)/tools/compiler
+UCCDIR:=\$(top_builddir)/tools/compiler
 UCC:=\$(UCCDIR)/ucc
 
-EXPACKDIR:=\$(top_srcdir)/tools
+EXPACKDIR:=\$(top_builddir)/tools
 EXPACK:=\$(EXPACKDIR)/expack
 " >> "$modmakefile_am"
 
@@ -98,21 +129,26 @@ UCC:=\$(UCCDIR)/ucc.exe
 
 EXPACKDIR:=\$(SRC)
 EXPACK:=\$(EXPACKDIR)/expack.exe
-
-${moddir}dir:=\$(U7PATH)/$basedest/mods
 " >> "$modmakefile_mingw"
-
-	# Store MinGW dest dir:
-	destdir_mingw="\$(${moddir}dir)/$installdir"
+	if [[ "$is_develgame" == "yes" ]]; then
+		echo "${moddir}dir:=\$(U7PATH)/$moddir
+" >> "$modmakefile_mingw"
+		destdir_mingw="\$(${moddir}dir)"
+	else
+		echo "${moddir}dir:=\$(U7PATH)/$basedest/mods
+" >> "$modmakefile_mingw"
+		# Store MinGW dest dir:
+		destdir_mingw="\$(${moddir}dir)/$installdir"
+	fi
 
 	# MinGW EXTRADIST
-	distfiles_mingw=$(find "$moddir" -maxdepth 1 -iname '*.ico' -or -iname '*.png' -or -iname '*.txt' | while read -r f; do file="${f#$moddir/}" ; echo "${t}cp ${file} \$(${moddir}dir)/${installdir}/${file}"; done | sort)
+	distfiles_mingw=$(find "$moddir" -maxdepth 1 -iname '*.ico' -or -iname '*.png' -or -iname '*.txt' | while read -r f; do file="${f#$moddir/}" ; echo "${t}cp ${file} $destdir_mingw/${file}"; done | sort)
 	if [[ -n "$distfiles_mingw" ]]; then
-		distfiles_mingw="${distfiles_mingw}${n}${t}cp ./../../COPYING \$(${moddir}dir)/${installdir}/License.txt"
+		distfiles_mingw="${distfiles_mingw}${n}${t}cp ./../../COPYING $destdir_mingw/License.txt"
 	elif [[ -f "$moddir/README" ]]; then
-		distfiles_mingw="${t}cp README \$(${moddir}dir)/${installdir}/Readme.txt${n}${t}cp ./../../COPYING \$(${moddir}dir)/${installdir}/License.txt"
+		distfiles_mingw="${t}cp README $destdir_mingw/Readme.txt${n}${t}cp ./../../COPYING $destdir_mingw/License.txt"
 	else
-		distfiles_mingw="${t}cp ./../../COPYING \$(${moddir}dir)/${installdir}/License.txt"
+		distfiles_mingw="${t}cp ./../../COPYING $destdir_mingw/License.txt"
 	fi
 
 	# Automake EXTRADIST
@@ -135,7 +171,7 @@ ${moddir}dir:=\$(U7PATH)/$basedest/mods
 		nodist_datafiles_am="$nodist_datafiles_am\\${n}${t}${patchdir}usecode${t}"
 		datafiles_mingw="$datafiles_mingw${t}cp ${patchdir}usecode $destdir_mingw/${patchdir}usecode${n}"
 		targets_mingw="$targets_mingw ${patchdir}usecode"
-		buildrules="$buildrules${n}${patchdir}usecode: \$(UCC) \$(USECODE_OBJECTS)${n}${t}\$(UCC) $include -o ${patchdir}usecode ${sourcedir}usecode.uc${n}"
+		buildrules="$buildrules${n}${patchdir}usecode: \$(UCC) \$(USECODE_OBJECTS)${n}${t}\$(UCC) $include -o \$(srcdir)/${patchdir}usecode \$(srcdir)/${sourcedir}usecode.uc${n}"
 		cleanfiles="$cleanfiles${n}${t}${patchdir}usecode${t}\\"
 		builducc="yes"
 	fi
@@ -155,9 +191,11 @@ ${moddir}dir:=\$(U7PATH)/$basedest/mods
 		fpath="$(basename "$flexname")"
 		fname="${f#*$moddir/}"
 		fnamep="${patchdir}$fpath"
+		# Derive the base dir for dependencies from the .in file's location.
+		in_basedir="$(dirname "$fname")/"
 		skippedfirst="no"
 		# Parse, format and sort dependencies.
-		flist=$(sed '/^$/d' "$f" | while read -r g; do if [[ "$skippedfirst" == "no" ]]; then skippedfirst="yes"; else echo "	${sourcedir}graphics/${g#:*:}	\\"; fi; done | sort)
+		flist=$(sed '/^$/d' "$f" | while read -r g || [[ -n "$g" ]]; do if [[ "$skippedfirst" == "no" ]]; then skippedfirst="yes"; else echo "	${in_basedir}${g#:*:}	\\"; fi; done | sort)
 		if [[ -n "$flist" ]]; then
 			fnameu=$(echo "${fpath//./_}_OBJECTS" | tr "[:lower:]" "[:upper:]")
 			extradist_am="$extradist_am${t}\\${n}${t}\$($fnameu)"
@@ -173,12 +211,41 @@ ${moddir}dir:=\$(U7PATH)/$basedest/mods
 		fi
 	done
 
-	# Automake dest dir:
-	destdir_am="\$(datadir)/exult/$basedest/mods"
-	extradist_am="$extradist_am${t}\\${n}${t}\$(${moddir}_DATA)"
-	echo -e "${n}${moddir}dir := $destdir_am${n}${n}${moddir}_DATA :=${t}\\${n}${t}$(basename "$cfgfile")${n}" >> "$modmakefile_am"
+	# Find .shp files in subdirectories of .in file parent dirs not covered by
+	# .in files. These are loose shape files that should be installed alongside
+	# generated flex and usecode data.
+	if [[ -n "$infiles" ]]; then
+		for in_parent in $(for f in $infiles; do dirname "$f"; done | sort -u); do
+			for subdir in $(find "$in_parent" -mindepth 1 -maxdepth 1 -type d 2>/dev/null | sort); do
+				subdir_name=$(basename "$subdir")
+				# Skip if a corresponding .in file exists for this subdirectory
+				if [[ ! -f "$in_parent/${subdir_name}.in" ]]; then
+					shp_files=$(find "$subdir" -maxdepth 1 -iname "*.shp" -type f | sort)
+					if [[ -n "$shp_files" ]]; then
+						while IFS= read -r shp; do
+							rel_path="${shp#$moddir/}"
+							shp_basename=$(basename "$shp")
+							datafiles_am="${datafiles_am}${t}${rel_path}${t}\\${n}"
+							datafiles_mingw="${datafiles_mingw}${t}cp ${rel_path} ${destdir_mingw}/${patchdir}${shp_basename}${n}"
+						done <<< "$shp_files"
+					fi
+				fi
+			done
+		done
+	fi
 
-	destdir_am="\$(${moddir}dir)/$installdir"
+	# Automake dest dir:
+	if [[ "$is_develgame" == "yes" ]]; then
+		destdir_am="\$(datadir)/exult/$moddir"
+		extradist_am="$extradist_am${t}\\${n}${t}\$(${moddir}_DATA)"
+		echo -e "${n}${moddir}dir := $destdir_am${n}" >> "$modmakefile_am"
+		destdir_am="\$(${moddir}dir)"
+	else
+		destdir_am="\$(datadir)/exult/$basedest/mods"
+		extradist_am="$extradist_am${t}\\${n}${t}\$(${moddir}_DATA)"
+		echo -e "${n}${moddir}dir := $destdir_am${n}${n}${moddir}_DATA :=${t}\\${n}${t}$(basename "$cfgfile")${n}" >> "$modmakefile_am"
+		destdir_am="\$(${moddir}dir)/$installdir"
+	fi
 
 	# MinGW install mkdir for generated files. We set a flag to prevent the
 	# output of a second mkdir for this same directory later on.
@@ -264,7 +331,11 @@ $datafiles_mingw"
 	else
 		datafiles_mingw=""
 	fi
-	echo -e "$targets_mingw${n}\ninstall: all${n}\tmkdir -p \$(${moddir}dir)${n}\tcp $(basename "$cfgfile") \$(${moddir}dir)/$(basename "$cfgfile")${n}$datafiles_mingw${n}\nuninstall:${n}\trm -f \$(${moddir}dir)/$(basename "$cfgfile")${n}\trm -rf $destdir_mingw${n}" >> "$modmakefile_mingw"
+	if [[ "$is_develgame" == "yes" ]]; then
+		echo -e "$targets_mingw${n}\ninstall: all${n}\tmkdir -p \$(${moddir}dir)${n}$datafiles_mingw${n}\nuninstall:${n}\trm -rf \$(${moddir}dir)/${patchdir%/}${n}" >> "$modmakefile_mingw"
+	else
+		echo -e "$targets_mingw${n}\ninstall: all${n}\tmkdir -p \$(${moddir}dir)${n}\tcp $(basename "$cfgfile") \$(${moddir}dir)/$(basename "$cfgfile")${n}$datafiles_mingw${n}\nuninstall:${n}\trm -f \$(${moddir}dir)/$(basename "$cfgfile")${n}\trm -rf $destdir_mingw${n}" >> "$modmakefile_mingw"
+	fi
 
 	# Output rule to build expack, if needed.
 	if [[ "$buildexpack" == "yes" ]]; then

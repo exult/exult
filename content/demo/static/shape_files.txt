@@ -1,0 +1,43 @@
+#
+#	Tells Exult extra data to load for Dev games.
+#
+#	Febuary 05, 2011
+#
+
+%%section version
+:1
+%%endsection
+
+%%section paperdoll_source
+#Format
+#game = bg or si to import paperdolls from BG or SI
+#		static to read paperdolls from static dir
+#		flx to read paperdolls from the game's flx
+#The file in the patch folder is always loaded last, and does not (and
+#*should* not) appear in the list. The other files are loaded only if they
+#show on the list, and are loaded in the order specified.
+#This section is REPLACED by its corresponding section in the patch dir.
+:static
+%%endsection
+
+%%section gump_imports
+#Ignored in all but BG.
+%%endsection
+
+%%section blue_shapes
+#Format
+#	:spot/shapenum
+#See the items section for values of spot. Can be -1 for all nonlisted spots.
+#shapenum can be either a shape # or a reference to an imported shape (either
+#in the form of a shape number or on the form %num, as explained in the
+#gump_imports section.
+:3/55
+:4/55
+:9/55
+:12/55
+:-1/54
+%%endsection
+
+%%section multiracial_imports
+#Ignored in all but BG.
+%%endsection

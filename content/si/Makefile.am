@@ -2,10 +2,10 @@
 # Instead, run makefile_builder.sh from the parent directory.
 
 # Base of the exult source
-UCCDIR:=$(top_srcdir)/tools/compiler
+UCCDIR:=$(top_builddir)/tools/compiler
 UCC:=$(UCCDIR)/ucc
 
-EXPACKDIR:=$(top_srcdir)/tools
+EXPACKDIR:=$(top_builddir)/tools
 EXPACK:=$(EXPACKDIR)/expack
 
 USECODE_OBJECTS :=	\
@@ -34,5 +34,5 @@ $(UCC):
 
 
 usecode: $(UCC) $(USECODE_OBJECTS)
-	$(UCC) -I . -o usecode ./usecode.uc
+	$(UCC) -I $(srcdir)/. -o $(srcdir)/usecode $(srcdir)/./usecode.uc
 

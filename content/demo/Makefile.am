@@ -1,0 +1,429 @@
+# This is an automatically generated file; please do not edit it manually.
+# Instead, run makefile_builder.sh from the parent directory.
+
+# Base of the exult source
+UCCDIR:=$(top_builddir)/tools/compiler
+UCC:=$(UCCDIR)/ucc
+
+EXPACKDIR:=$(top_builddir)/tools
+EXPACK:=$(EXPACKDIR)/expack
+
+USECODE_OBJECTS :=	\
+	src/usecode/headers/constants.uc	\
+	src/usecode/headers/functions.uc	\
+	src/usecode/headers/npcs.uc	\
+	src/usecode/headers/shapes.uc	\
+	src/usecode/items.uc	\
+	src/usecode/items/book.uc	\
+	src/usecode/items/doors.uc	\
+	src/usecode/items/gold_sign.uc	\
+	src/usecode/items/key.uc	\
+	src/usecode/items/keyring.uc	\
+	src/usecode/items/pickaxe.uc	\
+	src/usecode/items/scroll.uc	\
+	src/usecode/items/tombstone.uc	\
+	src/usecode/items/wood_sign.uc	\
+	src/usecode/spells.uc	\
+	src/usecode/spells/1st_level.uc	\
+	src/usecode/usecode.uc
+
+FACES_VGA_OBJECTS :=	\
+	src/graphics/faces.in	\
+	src/graphics/faces/0000.shp
+
+FONTS_VGA_OBJECTS :=	\
+	src/graphics/fonts.in	\
+	src/graphics/fonts/00000.shp	\
+	src/graphics/fonts/00001.shp	\
+	src/graphics/fonts/00002.shp	\
+	src/graphics/fonts/00003.shp	\
+	src/graphics/fonts/00004.shp	\
+	src/graphics/fonts/00005.shp	\
+	src/graphics/fonts/00006.shp	\
+	src/graphics/fonts/00007.shp	\
+	src/graphics/fonts/00008.shp
+
+GUMPS_VGA_OBJECTS :=	\
+	src/graphics/gumps.in	\
+	src/graphics/gumps/00000.shp	\
+	src/graphics/gumps/00001_crate.shp	\
+	src/graphics/gumps/00002_checkmark.shp	\
+	src/graphics/gumps/00003_filegump.shp	\
+	src/graphics/gumps/00004_filegump_line.shp	\
+	src/graphics/gumps/00005_load_button.shp	\
+	src/graphics/gumps/00006_save_button.shp	\
+	src/graphics/gumps/00007_protection.shp	\
+	src/graphics/gumps/00008_barrel.shp	\
+	src/graphics/gumps/00009_bag.shp	\
+	src/graphics/gumps/00010_backpack.shp	\
+	src/graphics/gumps/00011_basket.shp	\
+	src/graphics/gumps/00012_combat_strategy.shp	\
+	src/graphics/gumps/00013_combat_stat_button.shp	\
+	src/graphics/gumps/00014_slider.shp	\
+	src/graphics/gumps/00015_slider_diamond.shp	\
+	src/graphics/gumps/00016_slider_right.shp	\
+	src/graphics/gumps/00017_slider_left.shp	\
+	src/graphics/gumps/00018_chest.shp	\
+	src/graphics/gumps/00019_disk.shp	\
+	src/graphics/gumps/00020_stats.shp	\
+	src/graphics/gumps/00021_shiphold.shp	\
+	src/graphics/gumps/00022_drawer.shp	\
+	src/graphics/gumps/00023_npc_properties.shp	\
+	src/graphics/gumps/00024_music_button.shp	\
+	src/graphics/gumps/00025_speech_button.shp	\
+	src/graphics/gumps/00026_sfx_button.shp	\
+	src/graphics/gumps/00027_book.shp	\
+	src/graphics/gumps/00028_spell_1.shp	\
+	src/graphics/gumps/00029_spell_2.shp	\
+	src/graphics/gumps/00030_spell_3.shp	\
+	src/graphics/gumps/00031_spell_4.shp	\
+	src/graphics/gumps/00032_spell_5.shp	\
+	src/graphics/gumps/00033_spell_6.shp	\
+	src/graphics/gumps/00034_spell_7.shp	\
+	src/graphics/gumps/00035_spell_8.shp	\
+	src/graphics/gumps/00036_page_turn.shp	\
+	src/graphics/gumps/00037_spellbook_bookmark.shp	\
+	src/graphics/gumps/00038_spellbook.shp	\
+	src/graphics/gumps/00039_spellbook_earmark.shp	\
+	src/graphics/gumps/00040_spellbook_earmark.shp	\
+	src/graphics/gumps/00041_combat_toggle.shp	\
+	src/graphics/gumps/00042_stats_list.shp	\
+	src/graphics/gumps/00043_body.shp	\
+	src/graphics/gumps/00044_wood_sign.shp	\
+	src/graphics/gumps/00045_tombstone.shp	\
+	src/graphics/gumps/00046_gold_sign.shp	\
+	src/graphics/gumps/00047_box.shp	\
+	src/graphics/gumps/00048_two_handed_brown.shp	\
+	src/graphics/gumps/00049_scroll.shp	\
+	src/graphics/gumps/00050_quit_button.shp	\
+	src/graphics/gumps/00051_yes_no.shp	\
+	src/graphics/gumps/00052_yes_button.shp	\
+	src/graphics/gumps/00053_no_button.shp	\
+	src/graphics/gumps/00054_marker.shp	\
+	src/graphics/gumps/00055_marker.shp	\
+	src/graphics/gumps/00056_combat_stats_1.shp	\
+	src/graphics/gumps/00057_combat_stats_2.shp	\
+	src/graphics/gumps/00058_combat_stats_3.shp	\
+	src/graphics/gumps/00059_combat_stats_4.shp	\
+	src/graphics/gumps/00060_combat_stats_5.shp	\
+	src/graphics/gumps/00061_combat_stats_6.shp	\
+	src/graphics/gumps/00062_combat_stats_7.shp	\
+	src/graphics/gumps/00063_combat_stats_8.shp	\
+	src/graphics/gumps/00064_tree.shp	\
+	src/graphics/gumps/00065_old_style_paperdol.shp	\
+	src/graphics/gumps/00066_magic_scroll_1.shp	\
+	src/graphics/gumps/00067_magic_scroll_2.shp	\
+	src/graphics/gumps/00068_magic_scroll_3.shp	\
+	src/graphics/gumps/00069_magic_scroll_4.shp	\
+	src/graphics/gumps/00070_magic_scroll_5.shp	\
+	src/graphics/gumps/00071_magic_scroll_6.shp	\
+	src/graphics/gumps/00072_magic_scroll_7.shp	\
+	src/graphics/gumps/00073_magic_scroll_8.shp	\
+	src/graphics/gumps/00074_magic_scroll_9.shp	\
+	src/graphics/gumps/00075_magic_scroll_gump.shp
+
+MAINSHP_FLX_OBJECTS :=	\
+	src/graphics/mainshp.in	\
+	src/graphics/mainshp/00002_title.shp	\
+	src/graphics/mainshp/00004_intro.shp	\
+	src/graphics/mainshp/00005_new_game.shp	\
+	src/graphics/mainshp/00006_credits.shp	\
+	src/graphics/mainshp/00007_return.shp	\
+	src/graphics/mainshp/00008_continue.shp	\
+	src/graphics/mainshp/00009_font.shp	\
+	src/graphics/mainshp/00012_name.shp	\
+	src/graphics/mainshp/00014_credits.txt	\
+	src/graphics/mainshp/00016_quotes.txt	\
+	src/graphics/mainshp/00017_quotes.shp	\
+	src/graphics/mainshp/00018_endgame.shp	\
+	src/graphics/mainshp/00019_pointer.shp	\
+	src/graphics/mainshp/00025_face.shp	\
+	src/graphics/mainshp/00026_mainshp.pal
+
+PALETTES_FLX_OBJECTS :=	\
+	src/graphics/palettes.in	\
+	src/graphics/palettes/00000.pal	\
+	src/graphics/palettes/00001.pal	\
+	src/graphics/palettes/00002.pal	\
+	src/graphics/palettes/00003.pal	\
+	src/graphics/palettes/00004.pal	\
+	src/graphics/palettes/00005.pal	\
+	src/graphics/palettes/00006.pal	\
+	src/graphics/palettes/00007.pal	\
+	src/graphics/palettes/00008.pal	\
+	src/graphics/palettes/00009.pal	\
+	src/graphics/palettes/00010.pal
+
+PAPERDOL_VGA_OBJECTS :=	\
+	src/graphics/paperdol.in	\
+	src/graphics/paperdol/00000_head_male.shp	\
+	src/graphics/paperdol/00001_head_female.shp	\
+	src/graphics/paperdol/00002_body_male.shp	\
+	src/graphics/paperdol/00003_body_female.shp	\
+	src/graphics/paperdol/00004_arms_1.shp	\
+	src/graphics/paperdol/00005_arms_2.shp	\
+	src/graphics/paperdol/00006_white_wig.shp	\
+	src/graphics/paperdol/00007_black_wig.shp	\
+	src/graphics/paperdol/00008_bandana.shp	\
+	src/graphics/paperdol/00009_bracelet.shp	\
+	src/graphics/paperdol/00010_belt.shp	\
+	src/graphics/paperdol/00011_sash.shp	\
+	src/graphics/paperdol/00012_medallion.shp	\
+	src/graphics/paperdol/00013_earrings.shp	\
+	src/graphics/paperdol/00014_ring.shp	\
+	src/graphics/paperdol/00015_gauntlet.shp	\
+	src/graphics/paperdol/00016_trousers.shp	\
+	src/graphics/paperdol/00017_shoes.shp	\
+	src/graphics/paperdol/00018_shirt.shp	\
+	src/graphics/paperdol/00019_cloak.shp	\
+	src/graphics/paperdol/00020_backpack.shp	\
+	src/graphics/paperdol/00021_shield.shp	\
+	src/graphics/paperdol/00022_arrow.shp	\
+	src/graphics/paperdol/00023_bow.shp	\
+	src/graphics/paperdol/00024_pickaxe.shp	\
+	src/graphics/paperdol/00025_short_sword.shp	\
+	src/graphics/paperdol/00026_two_handed_sword.shp	\
+	src/graphics/paperdol/00123_paperdol.shp
+
+SHAPES_VGA_OBJECTS :=	\
+	src/graphics/shapes.in	\
+	src/graphics/shapes/00000_terrain_0.shp	\
+	src/graphics/shapes/00001_terrain_1.shp	\
+	src/graphics/shapes/00002_terrain_2.shp	\
+	src/graphics/shapes/00003_terrain_3.shp	\
+	src/graphics/shapes/00004_terrain_4.shp	\
+	src/graphics/shapes/00005_terrain_5.shp	\
+	src/graphics/shapes/00150_box.shp	\
+	src/graphics/shapes/00151_crate.shp	\
+	src/graphics/shapes/00152_barrel.shp	\
+	src/graphics/shapes/00153_bag.shp	\
+	src/graphics/shapes/00154_backpack.shp	\
+	src/graphics/shapes/00155_basket.shp	\
+	src/graphics/shapes/00156_chest.shp	\
+	src/graphics/shapes/00157_locked_chest.shp	\
+	src/graphics/shapes/00158_hold.shp	\
+	src/graphics/shapes/00159_drawer.shp	\
+	src/graphics/shapes/00160_body.shp	\
+	src/graphics/shapes/00161_tree.shp	\
+	src/graphics/shapes/00162_horizontal_wall.shp	\
+	src/graphics/shapes/00163_vertical_wall.shp	\
+	src/graphics/shapes/00164_spell_scroll.shp	\
+	src/graphics/shapes/00165_keyring.shp	\
+	src/graphics/shapes/00166_scroll.shp	\
+	src/graphics/shapes/00167_wood_sign.shp	\
+	src/graphics/shapes/00168_gold_sign.shp	\
+	src/graphics/shapes/00169_tombstone.shp	\
+	src/graphics/shapes/00200_trap.shp	\
+	src/graphics/shapes/00249_clothes.shp	\
+	src/graphics/shapes/00261_loom.shp	\
+	src/graphics/shapes/00275_egg.shp	\
+	src/graphics/shapes/00283_desk.shp	\
+	src/graphics/shapes/00290_shutters_1.shp	\
+	src/graphics/shapes/00291_shutters_2.shp	\
+	src/graphics/shapes/00292_chair.shp	\
+	src/graphics/shapes/00333_table.shp	\
+	src/graphics/shapes/00340_potion.shp	\
+	src/graphics/shapes/00377_food.shp	\
+	src/graphics/shapes/00400_body.shp	\
+	src/graphics/shapes/00407_desk.shp	\
+	src/graphics/shapes/00431_bellows.shp	\
+	src/graphics/shapes/00525_sea_serpent.shp	\
+	src/graphics/shapes/00526_lit_lamp_post.shp	\
+	src/graphics/shapes/00529_no_attack_frames.shp	\
+	src/graphics/shapes/00597_bow.shp	\
+	src/graphics/shapes/00602_duel_weapon.shp	\
+	src/graphics/shapes/00607_path.shp	\
+	src/graphics/shapes/00618_scythe.shp	\
+	src/graphics/shapes/00623_hammer.shp	\
+	src/graphics/shapes/00624_pickaxe.shp	\
+	src/graphics/shapes/00633_table.shp	\
+	src/graphics/shapes/00641_key.shp	\
+	src/graphics/shapes/00642_book.shp	\
+	src/graphics/shapes/00644_stealable.shp	\
+	src/graphics/shapes/00645_gold_nugget.shp	\
+	src/graphics/shapes/00646_stealable.shp	\
+	src/graphics/shapes/00650_sextant.shp	\
+	src/graphics/shapes/00651_spinwheel.shp	\
+	src/graphics/shapes/00653_bale.shp	\
+	src/graphics/shapes/00654_spindle.shp	\
+	src/graphics/shapes/00658_dough.shp	\
+	src/graphics/shapes/00664_stove.shp	\
+	src/graphics/shapes/00668_blank.shp	\
+	src/graphics/shapes/00696_bed.shp	\
+	src/graphics/shapes/00697_podium.shp	\
+	src/graphics/shapes/00698_shears.shp	\
+	src/graphics/shapes/00704_exploding.shp	\
+	src/graphics/shapes/00705_font_8_book.shp	\
+	src/graphics/shapes/00707_font_8_scroll.shp	\
+	src/graphics/shapes/00717_plate.shp	\
+	src/graphics/shapes/00718_npc.shp	\
+	src/graphics/shapes/00719_trough.shp	\
+	src/graphics/shapes/00720_npc.shp	\
+	src/graphics/shapes/00721_npc.shp	\
+	src/graphics/shapes/00722_arrows.shp	\
+	src/graphics/shapes/00723_npc.shp	\
+	src/graphics/shapes/00724_icon.shp	\
+	src/graphics/shapes/00735_target.shp	\
+	src/graphics/shapes/00738_clothes.shp	\
+	src/graphics/shapes/00739_firepit.shp	\
+	src/graphics/shapes/00760_gem.shp	\
+	src/graphics/shapes/00761_spellbook.shp	\
+	src/graphics/shapes/00831_oven.shp	\
+	src/graphics/shapes/00842_reagent.shp	\
+	src/graphics/shapes/00847_table.shp	\
+	src/graphics/shapes/00851_cloth.shp	\
+	src/graphics/shapes/00859_casting.shp	\
+	src/graphics/shapes/00860_dummy.shp	\
+	src/graphics/shapes/00863_flour_bag.shp	\
+	src/graphics/shapes/00873_chair.shp	\
+	src/graphics/shapes/00889_lamp_post.shp	\
+	src/graphics/shapes/00890_table.shp	\
+	src/graphics/shapes/00895_fire_field.shp	\
+	src/graphics/shapes/00912_blood.shp	\
+	src/graphics/shapes/00915_ore_a.shp	\
+	src/graphics/shapes/00916_ore_b.shp	\
+	src/graphics/shapes/00946_npc.shp	\
+	src/graphics/shapes/00961_barge.shp	\
+	src/graphics/shapes/00964_table.shp	\
+	src/graphics/shapes/00971_table.shp	\
+	src/graphics/shapes/00991_anvil.shp	\
+	src/graphics/shapes/00994_tongs.shp	\
+	src/graphics/shapes/00995_cauldron.shp	\
+	src/graphics/shapes/01003_table.shp	\
+	src/graphics/shapes/01011_bed.shp	\
+	src/graphics/shapes/01018_table.shp	\
+	src/graphics/shapes/01028.shp
+
+SPRITES_VGA_OBJECTS :=	\
+	src/graphics/sprites.in	\
+	src/graphics/sprites/00000_weather.shp	\
+	src/graphics/sprites/00002_clouds.shp	\
+	src/graphics/sprites/00005_explostion.shp	\
+	src/graphics/sprites/00007_teleport.shp	\
+	src/graphics/sprites/00010_wizardseye.shp	\
+	src/graphics/sprites/00012_invisible.shp	\
+	src/graphics/sprites/00022_map.shp	\
+	src/graphics/sprites/00024_music_playing.shp
+
+INTRO_FLX_OBJECTS :=	\
+	src/playscene/intro.in	\
+	src/playscene/intro/intro.txt
+
+demodir := $(datadir)/exult/demo
+
+demostaticdir =	$(demodir)/static
+
+nodist_demostatic_DATA :=	\
+	static/usecode	\
+	static/faces.vga	\
+	static/fonts.vga	\
+	static/gumps.vga	\
+	static/mainshp.flx	\
+	static/palettes.flx	\
+	static/paperdol.vga	\
+	static/shapes.vga	\
+	static/sprites.vga	\
+	static/intro.flx
+
+demostatic_DATA :=	\
+	src/graphics/pointers/pointers.shp	\
+	static/avatar_data.txt	\
+	static/blends.dat	\
+	static/bodies.txt	\
+	static/combos.flx	\
+	static/container.dat	\
+	static/equip.dat	\
+	static/exultgame.xml	\
+	static/gump_info.txt	\
+	static/initgame.dat	\
+	static/intro_info.txt	\
+	static/monsters.dat	\
+	static/paperdol_info.txt	\
+	static/ready.dat	\
+	static/shape_files.txt	\
+	static/shape_info.txt	\
+	static/textmsg.txt	\
+	static/tfa.dat	\
+	static/u7chunks	\
+	static/u7ifix42	\
+	static/u7ifix4d	\
+	static/u7ifix4e	\
+	static/u7map	\
+	static/weapons.dat	\
+	static/wgtvol.dat	\
+	static/wihh.dat
+
+EXTRA_DIST :=	\
+	Makefile.mingw	\
+	ReadMe.txt	\
+	$(USECODE_OBJECTS)	\
+	$(FACES_VGA_OBJECTS)	\
+	$(FONTS_VGA_OBJECTS)	\
+	$(GUMPS_VGA_OBJECTS)	\
+	$(MAINSHP_FLX_OBJECTS)	\
+	$(PALETTES_FLX_OBJECTS)	\
+	$(PAPERDOL_VGA_OBJECTS)	\
+	$(SHAPES_VGA_OBJECTS)	\
+	$(SPRITES_VGA_OBJECTS)	\
+	$(INTRO_FLX_OBJECTS)	\
+	$(demo_DATA)	\
+	$(demostatic_DATA)
+
+CLEANFILES :=	\
+	static/usecode	\
+	static/faces.vga	\
+	static/faces_vga.h	\
+	static/fonts.vga	\
+	static/fonts_vga.h	\
+	static/gumps.vga	\
+	static/gumps_vga.h	\
+	static/mainshp.flx	\
+	static/mainshp_flx.h	\
+	static/palettes.flx	\
+	static/palettes_flx.h	\
+	static/paperdol.vga	\
+	static/paperdol_vga.h	\
+	static/shapes.vga	\
+	static/shapes_vga.h	\
+	static/sprites.vga	\
+	static/sprites_vga.h	\
+	static/intro.flx	\
+	static/intro_flx.h
+
+$(EXPACK):
+	+(cd $(EXPACKDIR);$(MAKE) expack)
+
+$(UCC):
+	+(cd $(UCCDIR);$(MAKE))
+
+
+static/usecode: $(UCC) $(USECODE_OBJECTS)
+	$(UCC) -I $(srcdir)/src/usecode -o $(srcdir)/static/usecode $(srcdir)/src/usecode/usecode.uc
+
+static/faces.vga: $(EXPACK) $(FACES_VGA_OBJECTS)
+	$(EXPACK) -i $(srcdir)/src/graphics/faces.in
+
+static/fonts.vga: $(EXPACK) $(FONTS_VGA_OBJECTS)
+	$(EXPACK) -i $(srcdir)/src/graphics/fonts.in
+
+static/gumps.vga: $(EXPACK) $(GUMPS_VGA_OBJECTS)
+	$(EXPACK) -i $(srcdir)/src/graphics/gumps.in
+
+static/mainshp.flx: $(EXPACK) $(MAINSHP_FLX_OBJECTS)
+	$(EXPACK) -i $(srcdir)/src/graphics/mainshp.in
+
+static/palettes.flx: $(EXPACK) $(PALETTES_FLX_OBJECTS)
+	$(EXPACK) -i $(srcdir)/src/graphics/palettes.in
+
+static/paperdol.vga: $(EXPACK) $(PAPERDOL_VGA_OBJECTS)
+	$(EXPACK) -i $(srcdir)/src/graphics/paperdol.in
+
+static/shapes.vga: $(EXPACK) $(SHAPES_VGA_OBJECTS)
+	$(EXPACK) -i $(srcdir)/src/graphics/shapes.in
+
+static/sprites.vga: $(EXPACK) $(SPRITES_VGA_OBJECTS)
+	$(EXPACK) -i $(srcdir)/src/graphics/sprites.in
+
+static/intro.flx: $(EXPACK) $(INTRO_FLX_OBJECTS)
+	$(EXPACK) -i $(srcdir)/src/playscene/intro.in
+

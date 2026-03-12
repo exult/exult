@@ -1,0 +1,9 @@
+\CWelcome to the Exult Demo Game.
+
+\CYou will notice that the Demo game looks
+\Cvery different than the Ultima VII games.
+
+\CDon't forget to add the Ultima VII games
+\Cto Exult.
+
+\CHappy Playing!
