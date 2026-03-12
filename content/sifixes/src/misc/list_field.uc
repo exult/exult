@@ -20,6 +20,10 @@
  */
 
 void ListFieldReturnGear 0x931 (var obj) {
+	// Getting the path egg quality early because it is reset to zero in the
+	// original function.
+	var pathEgg = getPathEgg(1, 2);
+	var quality = pathEgg->get_item_quality();
 	// Just in case.
 	try {
 		ListFieldReturnGear.original(obj);
@@ -28,4 +32,15 @@ void ListFieldReturnGear 0x931 (var obj) {
 	if (UI_get_npc_object(BOYDON) == obj) {
 		UI_set_item_flag(obj, SI_TOURNAMENT);
 	}
+	if (quality) {
+		var joinables = AVATAR->find_nearby(ANY_SHAPE, 45, MASK_NPC|MASK_INVISIBLE);
+		for (npc in joinables) {
+			if (npc->get_npc_id() == 13) {
+				npc->add_to_party();
+				npc->set_npc_id(0);
+			}
+		}
+	}
 }
+
+
