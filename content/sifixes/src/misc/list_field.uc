@@ -35,7 +35,7 @@ void ListFieldReturnGear 0x931 (var obj) {
 	if (quality) {
 		var joinables = AVATAR->find_nearby(SHAPE_ANY, 45, MASK_NPC + MASK_INVISIBLE);
 		for (npc in joinables) {
-			if (npc->get_npc_id() == 13) {
+			if (npc->get_npc_id() == 13 && !npc->get_item_flag(IN_PARTY)) {
 				npc->add_to_party();
 				npc->set_npc_id(0);
 			}

@@ -419,6 +419,13 @@ void spellSerpentBond object#(0x67D) () {
 				AVATAR->set_polymorph(SHAPE_MALE_AVATAR);
 			}
 			item->serpentbondAddNPCsBackToParty();
+			var joinables = AVATAR->find_nearby(SHAPE_ANY, 550, MASK_NPC);
+			for (npc in joinables) {
+				if (npc->get_npc_id() == 31 && !npc->get_item_flag(IN_PARTY)) {
+					npc->add_to_party();
+					npc->set_npc_id(0);
+				}
+			}
 		} else {
 			script getPathEgg(5, 1) after 10 ticks {
 				nohalt;

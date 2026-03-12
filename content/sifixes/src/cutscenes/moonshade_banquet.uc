@@ -23,11 +23,11 @@ void MoonshadeBanquet shape#(0x32E)() {
 			MoonshadeBanquet.original();
 		} catch() {
 			if (gflags[POTHOS_RETURNED]) {
-				var joinables = getJoinableNPCNumbers();
+				var joinables = AVATAR->find_nearby(SHAPE_ANY, 45, MASK_NPC + MASK_INVISIBLE);
 				for (npc in joinables) {
-					if (npc->get_npc_id() == 11
-						&& !npc->get_item_flag(IN_PARTY)) {
+					if (npc->get_npc_id() == 11 && !npc->get_item_flag(IN_PARTY)) {
 						npc->add_to_party();
+						npc->set_npc_id(0);
 					}
 				}
 			}
