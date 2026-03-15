@@ -139,6 +139,8 @@
 #include "items/hourglass.uc"
 // Fixes the missing face for Smith in the Dream Realm.
 #include "items/nightmare.uc"
+// Fixes a spelling error "Choas" -> "Chaos"
+#include "items/plaque_ophidian.uc"
 // Can no longer get to Test of Purity from SS
 #include "items/pillar.uc"
 // Iolo, Shamino and Dupre refuse blue potions in Spinebreaker mountains
