@@ -174,3 +174,5 @@
 #include "npcs/hound.uc"
 // Fixes Topo's schedule to let him be at the inn when he is eating.
 #include "npcs/topo.uc"
+// Fixes Batlin's face showing with the fellowship medallion in the spinebreaker vision.
+#include "npcs/batlin.uc"
