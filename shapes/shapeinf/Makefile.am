@@ -1,4 +1,4 @@
-AM_CPPFLAGS = -I$(top_srcdir)/headers -I$(top_srcdir) -I$(top_srcdir)/files \
+AM_CPPFLAGS = -I$(top_srcdir)/headers -I$(top_srcdir) -I$(top_srcdir)/files -I$(top_srcdir)/imagewin \
 	-I$(top_srcdir)/shapes $(INCDIRS) $(WINDOWING_SYSTEM) $(DEBUG_LEVEL) $(OPT_LEVEL) $(WARNINGS) $(CPPFLAGS)
 
 noinst_LTLIBRARIES = libshapeinf.la

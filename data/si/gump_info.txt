@@ -218,3 +218,57 @@
 # :111/center_focus/55/55/20/20/65/65/4/focus
 #
 %%endsection
+
+%%section shortcutbar_icon
+# :slot/bool transparent/select vga/shape/frame/extra frame/bool is_party_item/select fallback vga/fallback shape/fallback frame/fallback extra frame
+# slots are 0/1/.../9. 0 is the first slot
+# bool transparent: when 1 it is the transparent icon (if a slot exists but no transparent icon is set, this icon will not be transparent - if a patch gumps_info.txt is used and the transparent icon is not set the default will be used)
+# select .vga: 0 shortcutbar.vga, 1 shapes.vga, 2 gumps.vga, 3 paperdol.vga, -1 disables this slots, makes it invisble without a gap)
+# frame/extra frame: frame of the shape to use. Extra frame is used if the action uses that (combat)
+# bool is_party_item: if the shape is from shapes.vga it will check if the item is in the party - if not the slot is hidden or the fallback shape will be used if given.
+# select fallback vga: same as select .vga.
+# fallback shape: same as shape.
+# fallback frame: same as shape.
+# fallback extra frame: same as extra frame.
+
+# disk
+:0/0/0/1/0
+:0/1/0/1/1
+
+# combat
+:1/0/0/0/0/2
+:1/1/0/0/1/3
+
+# map
+:2/0/1/178/0
+:2/1/0/8/1
+
+#spellbook
+:3/0/1/761/0/-1/1
+:3/1/0/4/3
+
+# backpack
+:4/0/1/801/0
+:4/1/0/10/0
+
+# key/keyring
+:5/0/1/485/0/-1/1/1/641/28
+:5/1/0/3/0/-1/1/0/7/0
+
+# notebook
+:6/0/1/642/7
+:6/1/0/9/0
+
+# target
+:7/0/0/5/0
+:7/1/0/5/1
+
+# feed
+:8/0/2/23/3
+:8/1/0/6/0
+
+# jawbone
+:9/0/1/555/0/-1/1
+:9/1/0/2/0
+
+%%endsection

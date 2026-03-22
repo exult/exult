@@ -258,6 +258,14 @@ void Shape_manager::load() {
 	std::cout << "Loading " << gamedata << "..." << std::endl;
 	files[SF_GAME_FLX].load(gamedata);
 
+	{
+		const char*               fname = BUNDLE_CHECK(BUNDLE_EXULT_FLX, EXULT_FLX);
+		vector<pair<string, int>> sbsource;
+		sbsource.emplace_back(fname, EXULT_FLX_SHORTCUTBAR_VGA);
+		sbsource.emplace_back(PATCH_SHORTCUTBAR_VGA, -1);
+		files[SF_SHORTCUTBAR_VGA].load(sbsource);
+	}
+
 	read_shape_info();
 
 	// Load fonts from config-selected source

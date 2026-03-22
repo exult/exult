@@ -24,9 +24,10 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include <map>
 
-// Storage for gump info - static member
-std::map<int, Gump_info> Gump_info::gump_info_map;
-bool                     Gump_info::any_modified = false;
+// Storage for gump info - static members
+std::map<int, Gump_info>             Gump_info::gump_info_map;
+std::map<int, Shortcutbar_icon_info> Gump_info::shortcutbar_icon_map;
+bool                                 Gump_info::any_modified = false;
 
 Gump_info::Gump_info()
 		: container_from_patch(false), checkmark_from_patch(false), special_from_patch(false), snapzones_from_patch(false),
@@ -45,5 +46,15 @@ Gump_info& Gump_info::get_or_create_gump_info(int shapenum) {
 
 void Gump_info::clear() {
 	gump_info_map.clear();
+	shortcutbar_icon_map.clear();
 	any_modified = false;
+}
+
+const Shortcutbar_icon_info* Gump_info::get_shortcutbar_icon(int slot) {
+	auto it = shortcutbar_icon_map.find(slot);
+	return it != shortcutbar_icon_map.end() ? &it->second : nullptr;
+}
+
+const std::map<int, Shortcutbar_icon_info>& Gump_info::get_shortcutbar_icons() {
+	return shortcutbar_icon_map;
 }

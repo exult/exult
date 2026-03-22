@@ -44,6 +44,7 @@ enum ShapeFile {
 	SF_FACES_VGA,         // <STATIC>/faces.vga
 	SF_EXULT_FLX,         // <DATA>/exult.flx
 	SF_GAME_FLX,          // <DATA>/bg_data.flx or <DATA>/si_data.flx
+	SF_SHORTCUTBAR_VGA,   // EXULT_FLX_SHORTCUTBAR_VGA in <DATA>/exult.flx
 	// Not yet
 	// SF_FONTS_VGA,     // <STATIC>/fonts.vga
 	SF_OTHER,    // Other unknown FLX

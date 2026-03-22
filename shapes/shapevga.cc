@@ -389,7 +389,7 @@ void Shapes_vga_file::Read_Gumpinf_text_data_file(bool editing, Exult_Game game_
 	if (Gump_info::was_any_modified()) {
 		return;
 	}
-	std::array sections{"container_area"sv, "checkmark_pos"sv, "special"sv, "snap_zones"sv};
+	std::array sections{"container_area"sv, "checkmark_pos"sv, "special"sv, "snap_zones"sv, "shortcutbar_icon"sv};
 
 	// Functor for reading container area
 	// Format: :shape/x/y/w/h[/debug_flags]
@@ -488,11 +488,57 @@ void Shapes_vga_file::Read_Gumpinf_text_data_file(bool editing, Exult_Game game_
 	using Special_reader        = Functor_multidata_reader<Gump_info, Special_functor>;
 	using Snap_zones_reader     = Functor_multidata_reader<Gump_info, Snap_zones_functor>;
 
+	// Functor for reading shortcutbar icon entries
+	// Format: :slot/transparent/vga/shape[/frame[/extra_frame
+	//         [/is_party_item[/fallback_vga[/fallback_shape
+	//         [/fallback_frame[/fallback_extra_frame]]]]]]]
+	struct Shortcutbar_icon_functor {
+		bool operator()(
+				std::istream& in, int version, bool patch, Exult_Game game,
+				Shortcutbar_icon_info& sinfo) const {
+			ignore_unused_variable_warning(version, patch, game);
+			const int transparent    = ReadInt(in);
+			const int shapefile_type = ReadInt(in);
+			const int shape          = ReadInt(in);
+			auto      has_more       = [&in]() {
+				return in.peek() != '\n' && in.peek() != '\r'
+					   && !in.eof();
+			};
+			const int frame     = has_more() ? ReadInt(in, 0)  : 0;
+			const int extra     = has_more() ? ReadInt(in, -1) : -1;
+			const int party     = has_more() ? ReadInt(in, 0)  : 0;
+			const int fb_vga    = has_more() ? ReadInt(in, -1) : -1;
+			const int fb_shape  = has_more() ? ReadInt(in, 0)  : 0;
+			const int fb_frame  = has_more() ? ReadInt(in, 0)  : 0;
+			const int fb_extra  = has_more() ? ReadInt(in, -1) : -1;
+			Shortcutbar_icon_entry entry;
+			entry.shapefile_type       = shapefile_type;
+			entry.shape                = shape;
+			entry.frame                = frame;
+			entry.extra_frame          = extra;
+			entry.check_party_item     = party != 0;
+			entry.fallback_vga         = fb_vga;
+			entry.fallback_shape       = fb_shape;
+			entry.fallback_frame       = fb_frame;
+			entry.fallback_extra_frame = fb_extra;
+			entry.valid                = true;
+			if (transparent) {
+				sinfo.translucent = entry;
+			} else {
+				sinfo.normal = entry;
+			}
+			return true;
+		}
+	};
+	using Shortcutbar_icon_reader
+			= Functor_multidata_reader<Shortcutbar_icon_info, Shortcutbar_icon_functor>;
+
 	std::array readers = make_unique_array<Base_reader>(
 			std::make_unique<Container_area_reader>(Gump_info::gump_info_map),
 			std::make_unique<Checkmark_pos_reader>(Gump_info::gump_info_map),
 			std::make_unique<Special_reader>(Gump_info::gump_info_map),
-			std::make_unique<Snap_zones_reader>(Gump_info::gump_info_map));
+			std::make_unique<Snap_zones_reader>(Gump_info::gump_info_map),
+			std::make_unique<Shortcutbar_icon_reader>(Gump_info::shortcutbar_icon_map));
 	static_assert(sections.size() == readers.size());
 
 	const int flxres = game_type == BLACK_GATE ? EXULT_BG_FLX_GUMP_INFO_TXT : EXULT_SI_FLX_GUMP_INFO_TXT;

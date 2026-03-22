@@ -18,17 +18,6 @@ sfx_icon.shp
 notebook.shp
 stats_extra.shp
 mtgm.mid
-sb_combat.shp
-sb_disk.shp
-sb_jawbone.shp
-sb_keyring.shp
-sb_spellbook.shp
-sb_target.shp
-sb_food.shp
-sb_key.shp
-sb_maps.shp
-sb_notebook.shp
-sb_backpack.shp
 transparentmenu.shp
 exultmsg.txt
 exultmsg_de.txt
@@ -41,3 +30,4 @@ checkmark_background.shp
 fs_badges.shp
 fonts_original.vga
 fonts_serif.vga
+shortcutbar.vga

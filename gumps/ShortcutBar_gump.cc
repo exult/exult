@@ -34,6 +34,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "fnames.h"
 #include "game.h"
 #include "gamewin.h"
+#include "gumpinf.h"
 #include "keyactions.h"
 #include "party.h"
 #include "shapeid.h"
@@ -65,8 +66,17 @@ Game_object* is_party_item(
 }
 
 void ShortcutBar_gump::check_for_updates(int shnum) {
-	if (shnum == 761 || (GAME_SI && (shnum == 485 || shnum == 555))) {    // spellbook, keyring, jawbone
-		has_changed = true;
+	// Data-driven: check if any shortcutbar entry monitors this shape
+	const auto& icons = Gump_info::get_shortcutbar_icons();
+	for (const auto& [slot, info] : icons) {
+		auto check = [shnum](const Shortcutbar_icon_entry& e) {
+			return e.valid && e.check_party_item
+				   && e.shapefile_type == 1 && e.shape == shnum;
+		};
+		if (check(info.normal) || check(info.translucent)) {
+			has_changed = true;
+			return;
+		}
 	}
 }
 
@@ -125,143 +135,109 @@ void ShortcutBar_gump::createButtons() {
 
 	memset(buttonItems, 0, sizeof(buttonItems));
 	const bool trlucent = gwin->get_shortcutbar_type() == 1 && starty >= 0;
-	// disk
-	buttonItems[0].shapeId = new ShapeID(EXULT_FLX_SB_DISK_SHP, trlucent ? 1 : 0, SF_EXULT_FLX);
-	buttonItems[0].name    = "disk";
-	buttonItems[0].type    = SB_ITEM_DISK;
 
-	// peace/combat
-	if (gwin->in_combat()) {
-		buttonItems[1].shapeId = new ShapeID(EXULT_FLX_SB_COMBAT_SHP, trlucent ? 3 : 2, SF_EXULT_FLX);
-	} else {
-		buttonItems[1].shapeId = new ShapeID(EXULT_FLX_SB_COMBAT_SHP, trlucent ? 1 : 0, SF_EXULT_FLX);
-	}
-	buttonItems[1].name = "toggle combat";
-	buttonItems[1].type = SB_ITEM_TOGGLE_COMBAT;
+	// Slot-to-type mapping (slot index matches gump_info.txt shortcutbar_icon)
+	static const struct {
+		ShortcutBarButtonItemType type;
+		const char*               name;
+	} slot_defs[] = {
+			{SB_ITEM_DISK, "disk"},                      // slot 0
+			{SB_ITEM_TOGGLE_COMBAT, "toggle combat"},    // slot 1
+			{SB_ITEM_MAP, "map"},                        // slot 2
+			{SB_ITEM_SPELLBOOK, "spellbook"},            // slot 3
+			{SB_ITEM_BACKPACK, "backpack"},               // slot 4
+			{SB_ITEM_KEY, "key"},                        // slot 5
+			{SB_ITEM_NOTEBOOK, "notebook"},              // slot 6
+			{SB_ITEM_TARGET, "target"},                  // slot 7
+			{SB_ITEM_FEED, "feed"},                      // slot 8
+			{SB_ITEM_JAWBONE, "jawbone"},                // slot 9
+	};
+	static constexpr int num_slot_defs
+			= sizeof(slot_defs) / sizeof(slot_defs[0]);
 
-	// map
-	if (trlucent) {
-		if (GAME_SI) {
-			buttonItems[2].shapeId = new ShapeID(EXULT_FLX_SB_MAPS_SHP, 1, SF_EXULT_FLX);
-		} else {
-			buttonItems[2].shapeId = new ShapeID(EXULT_FLX_SB_MAPS_SHP, 0, SF_EXULT_FLX);
+	numButtons = 0;
+	for (int slot = 0; slot < num_slot_defs; slot++) {
+		const auto* icon = Gump_info::get_shortcutbar_icon(slot);
+		if (!icon) {
+			continue;
 		}
-	} else {
-		buttonItems[2].shapeId = new ShapeID(178, 0, SF_SHAPES_VGA);
-	}
-	buttonItems[2].name = "map";
-	buttonItems[2].type = SB_ITEM_MAP;
 
-	// spellbook
-	if (GAME_SI) {
-		if (is_party_item(761)) {
-			if (trlucent) {
-				buttonItems[3].shapeId = new ShapeID(EXULT_FLX_SB_SPELLBOOK_SHP, 2, SF_EXULT_FLX);
-			} else {
-				buttonItems[3].shapeId = new ShapeID(761, 0, SF_SHAPES_VGA);
-			}
-		} else {
-			if (gwin->sb_hide_missing_items()) {
-				buttonItems[3].shapeId = new ShapeID(EXULT_FLX_TRANSPARENTMENU_SHP, 0, SF_EXULT_FLX);
-			} else {
-				buttonItems[3].shapeId     = new ShapeID(EXULT_FLX_SB_SPELLBOOK_SHP, 3, SF_EXULT_FLX);
-				buttonItems[3].translucent = true;
-			}
+		// Pick normal or translucent entry based on bar type
+		const auto& entry = trlucent ? icon->translucent : icon->normal;
+		if (!entry.valid) {
+			continue;
 		}
-	} else {
-		if (is_party_item(761)) {
-			if (trlucent) {
-				buttonItems[3].shapeId = new ShapeID(EXULT_FLX_SB_SPELLBOOK_SHP, 0, SF_EXULT_FLX);
-			} else {
-				buttonItems[3].shapeId = new ShapeID(761, 0, SF_SHAPES_VGA);
-			}
-		} else {
-			if (gwin->sb_hide_missing_items()) {
-				buttonItems[3].shapeId = new ShapeID(EXULT_FLX_TRANSPARENTMENU_SHP, 0, SF_EXULT_FLX);
-			} else {
-				buttonItems[3].shapeId     = new ShapeID(EXULT_FLX_SB_SPELLBOOK_SHP, 1, SF_EXULT_FLX);
-				buttonItems[3].translucent = true;
-			}
+		if (entry.shapefile_type == -1) {
+			continue;
 		}
-	}
-	buttonItems[3].name = "spellbook";
-	buttonItems[3].type = SB_ITEM_SPELLBOOK;
 
-	// backpack
-	if (trlucent) {
-		buttonItems[4].shapeId = new ShapeID(EXULT_FLX_SB_BACKPACK_SHP, 0, SF_EXULT_FLX);
-	} else {
-		buttonItems[4].shapeId = new ShapeID(801, 0, SF_SHAPES_VGA);
-	}
-	buttonItems[4].name = "backpack";
-	buttonItems[4].type = SB_ITEM_BACKPACK;
+		ShapeFile sf = entry.get_shapefile();
+		int                       shape = entry.shape;
+		int                       frame = entry.frame;
+		ShortcutBarButtonItemType type  = slot_defs[slot].type;
+		const char*               name  = slot_defs[slot].name;
+		bool force_translucent          = false;
 
-	// key/keyring
-	if (GAME_SI && is_party_item(485)) {
-		buttonItems[5].shapeId = new ShapeID(EXULT_FLX_SB_KEYRING_SHP, trlucent ? 1 : 0, SF_EXULT_FLX);
-		buttonItems[5].name    = "keyring";
-		buttonItems[5].type    = SB_ITEM_KEYRING;
-	} else {
-		if (trlucent) {
-			buttonItems[5].shapeId = new ShapeID(EXULT_FLX_SB_KEY_SHP, 0, SF_EXULT_FLX);
-		} else {
-			buttonItems[5].shapeId = new ShapeID(641, 28, SF_SHAPES_VGA);
-		}
-		buttonItems[5].name = "key";
-		buttonItems[5].type = SB_ITEM_KEY;
-	}
-
-	// notebook
-	if (trlucent) {
-		buttonItems[6].shapeId = new ShapeID(EXULT_FLX_SB_NOTEBOOK_SHP, 0, SF_EXULT_FLX);
-	} else {
-		buttonItems[6].shapeId = new ShapeID(642, 7, SF_SHAPES_VGA);
-	}
-	buttonItems[6].name = "notebook";
-	buttonItems[6].type = SB_ITEM_NOTEBOOK;
-
-	// target
-	buttonItems[7].shapeId = new ShapeID(EXULT_FLX_SB_TARGET_SHP, trlucent ? 1 : 0, SF_EXULT_FLX);
-	buttonItems[7].name    = "target";
-	buttonItems[7].type    = SB_ITEM_TARGET;
-
-	// feed
-	if (trlucent) {
-		buttonItems[8].shapeId = new ShapeID(EXULT_FLX_SB_FOOD_SHP, 0, SF_EXULT_FLX);
-	} else if (GAME_SI) {
-		buttonItems[8].shapeId = new ShapeID(23, 3, SF_GUMPS_VGA);
-	} else {
-		buttonItems[8].shapeId = new ShapeID(28, 3, SF_GUMPS_VGA);
-	}
-	buttonItems[8].name = "feed";
-	buttonItems[8].type = SB_ITEM_FEED;
-
-	// jawbone
-	if (GAME_SI) {
-		Game_object* jawbone;
-		if ((jawbone = is_party_item(555))) {
-			if (trlucent) {
-				buttonItems[9].shapeId = new ShapeID(EXULT_FLX_SB_JAWBONE_SHP, 0, SF_EXULT_FLX);
-			} else {
-				buttonItems[9].shapeId = new ShapeID(555, jawbone->get_framenum(), SF_SHAPES_VGA);
-			}
-		} else {
-			if (gwin->sb_hide_missing_items()) {
-				buttonItems[9].shapeId = new ShapeID(EXULT_FLX_TRANSPARENTMENU_SHP, 0, SF_EXULT_FLX);
-			} else {
-				buttonItems[9].shapeId     = new ShapeID(EXULT_FLX_SB_JAWBONE_SHP, 1, SF_EXULT_FLX);
-				buttonItems[9].translucent = true;
+		// Data-driven is_party_item check — always use the normal entry
+		// to determine which shapes.vga item to look for, regardless
+		// of which variant (normal/translucent) is being displayed.
+		const auto& nentry     = icon->normal;
+		Game_object* party_obj = nullptr;
+		if (nentry.valid && nentry.check_party_item
+			&& nentry.shapefile_type == 1) {
+			party_obj = is_party_item(nentry.shape);
+			if (!party_obj) {
+				if (entry.fallback_vga >= 0) {
+					// Use this variant's fallback icon (always shown, dimmed)
+					sf    = entry.get_fallback_shapefile();
+					shape = entry.fallback_shape;
+					frame = entry.fallback_frame;
+				} else if (gwin->sb_hide_missing_items()) {
+					continue;
+				} else {
+					// No fallback — use translucent icon as dimmed indicator
+					const auto& tentry = icon->translucent;
+					if (tentry.valid && tentry.shapefile_type != -1) {
+						sf    = tentry.get_shapefile();
+						shape = tentry.shape;
+						frame = tentry.frame;
+					}
+				}
+				force_translucent = true;
 			}
 		}
-		buttonItems[9].name = "jawbone";
-		buttonItems[9].type = SB_ITEM_JAWBONE;
 
-		numButtons = 10;
-	} else {
-		numButtons = 9;
+		// Per-slot game logic overrides
+		switch (slot) {
+		case 1:    // combat - use extra_frame when in combat
+			if (gwin->in_combat() && entry.extra_frame >= 0) {
+				frame = entry.extra_frame;
+			}
+			break;
+		case 5:    // key/keyring - SI keyring override
+			if (GAME_SI && is_party_item(485)) {
+				sf    = SF_SHORTCUTBAR_VGA;
+				shape = 3;    // keyring shape in shortcutbar.vga
+				frame = trlucent ? 1 : 0;
+				type  = SB_ITEM_KEYRING;
+				name  = "keyring";
+			}
+			break;
+		case 9:    // jawbone - use actual game object frame
+			if (party_obj && sf == SF_SHAPES_VGA) {
+				frame = party_obj->get_framenum();
+			}
+			break;
+		}
+
+		buttonItems[numButtons].shapeId = new ShapeID(shape, frame, sf);
+		buttonItems[numButtons].name    = name;
+		buttonItems[numButtons].type    = type;
+		buttonItems[numButtons].translucent = force_translucent;
+		numButtons++;
 	}
 
-	const int barItemWidth = (320 / numButtons);
+	const int barItemWidth = numButtons > 0 ? (320 / numButtons) : 320;
 
 	for (int i = 0; i < numButtons; i++, x += barItemWidth) {
 		Shape_frame* frame  = buttonItems[i].shapeId->get_shape();
@@ -335,10 +311,12 @@ void ShortcutBar_gump::paint() {
 		const ShortcutBarButtonItem& item = buttonItems[i];
 		const int                    x    = locx + item.mx;
 		const int                    y    = locy + item.my;
-		sman->paint_shape(x, y, item.shapeId->get_shape(), item.translucent);
+		Shape_frame* frame = item.shapeId->get_shape();
+		sman->paint_shape(x, y, frame, item.translucent);
 		// when the bar is on the game screen it may need an outline
-		if (gwin->get_outline_color() < NPIXCOLORS && starty >= 0) {
-			sman->paint_outline(x, y, item.shapeId->get_shape(), gwin->get_outline_color());
+		if (frame && frame->is_rle()
+			&& gwin->get_outline_color() < NPIXCOLORS && starty >= 0) {
+			sman->paint_outline(x, y, frame, gwin->get_outline_color());
 		}
 	}
 
@@ -497,7 +475,7 @@ void ShortcutBar_gump::onItemClicked(int index, bool doubleClicked) {
 	}
 	case SB_ITEM_NOTEBOOK: {
 		if (doubleClicked && cheat()) {
-			cheat.cheat_screen();    // cheat_screen
+			ActionCheatScreen(nullptr);    // cheat_screen
 		} else if (!doubleClicked) {
 			ActionNotebook(nullptr);    // notebook
 		}
@@ -546,11 +524,6 @@ void ShortcutBar_gump::onItemClicked(int index, bool doubleClicked) {
 	case SB_ITEM_FEED: {
 		if (doubleClicked) {
 			ActionUseHealingItems(nullptr);    // use_healing_items
-		} else if (GAME_SI) {
-			int params[2];
-			params[0] = 1557;
-			params[1] = 0;
-			ActionCallUsecode(params);    // call_usecode 1557 0
 		} else {
 			ActionUseFood(nullptr);    // usefood
 		}
