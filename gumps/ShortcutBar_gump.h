@@ -40,30 +40,17 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 /* -------------------------------------------- */
 
-enum ShortcutBarButtonItemType {
-	SB_ITEM_DISK,
-	SB_ITEM_TOGGLE_COMBAT,
-	SB_ITEM_MAP,
-	SB_ITEM_SPELLBOOK,
-	SB_ITEM_BACKPACK,
-	SB_ITEM_KEY,
-	SB_ITEM_KEYRING,
-	SB_ITEM_NOTEBOOK,
-	SB_ITEM_TARGET,
-	SB_ITEM_JAWBONE,
-	SB_ITEM_FEED
-};
-
 Game_object* is_party_item(int shnum, int frnum = c_any_framenum, int qual = c_any_qual);
 
 struct ShortcutBarButtonItem {
-	const char*               name;
-	ShortcutBarButtonItemType type;
-	ShapeID*                  shapeId;
-	TileRect                  rect;      // Shortcut bar button click area
-	int                       mx, my;    // Coordinates where shape is to be drawn
-	bool                      pushed;
-	bool                      translucent;
+	const char* name;
+	ShapeID*    shapeId;
+	TileRect    rect;      // Shortcut bar button click area
+	int         mx, my;    // Coordinates where shape is to be drawn
+	bool        pushed;
+	bool        translucent;
+	int         slot;
+	int         activate_shape;
 };
 
 #define MAX_SHORTCUT_BAR_ITEMS 10

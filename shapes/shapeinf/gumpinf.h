@@ -44,19 +44,27 @@ struct Shortcutbar_icon_entry {
 
 	ShapeFile get_shapefile() const {
 		switch (shapefile_type) {
-		case 1:  return SF_SHAPES_VGA;
-		case 2:  return SF_GUMPS_VGA;
-		case 3:  return SF_PAPERDOL_VGA;
-		default: return SF_SHORTCUTBAR_VGA;
+		case 1:
+			return SF_SHAPES_VGA;
+		case 2:
+			return SF_GUMPS_VGA;
+		case 3:
+			return SF_PAPERDOL_VGA;
+		default:
+			return SF_SHORTCUTBAR_VGA;
 		}
 	}
 
 	ShapeFile get_fallback_shapefile() const {
 		switch (fallback_vga) {
-		case 1:  return SF_SHAPES_VGA;
-		case 2:  return SF_GUMPS_VGA;
-		case 3:  return SF_PAPERDOL_VGA;
-		default: return SF_SHORTCUTBAR_VGA;
+		case 1:
+			return SF_SHAPES_VGA;
+		case 2:
+			return SF_GUMPS_VGA;
+		case 3:
+			return SF_PAPERDOL_VGA;
+		default:
+			return SF_SHORTCUTBAR_VGA;
 		}
 	}
 };
@@ -68,6 +76,20 @@ struct Shortcutbar_icon_entry {
 struct Shortcutbar_icon_info {
 	Shortcutbar_icon_entry normal;
 	Shortcutbar_icon_entry translucent;
+};
+
+/**
+ * Action binding for a shortcutbar slot.
+ * primary = single click, secondary = double click.
+ * Action strings: Action function names, "activate_item",
+ * "activate_item(N)", "inventory".
+ */
+struct Shortcutbar_action_entry {
+	std::string primary_cmd;
+	bool        primary_cheat = false;
+	std::string secondary_cmd;
+	bool        secondary_cheat = false;
+	bool        valid           = false;
 };
 
 /**
@@ -106,6 +128,7 @@ struct Snap_zone {
 class Gump_info {
 	static std::map<int, Gump_info>                gump_info_map;
 	static std::map<int, Shortcutbar_icon_info>    shortcutbar_icon_map;
+	static std::map<int, Shortcutbar_action_entry> shortcutbar_action_map;
 	static bool                                    any_modified;
 
 	friend class Shapes_vga_file;
@@ -214,8 +237,9 @@ public:
 	static Gump_info&       get_or_create_gump_info(int shapenum);
 	static void             clear();
 
-	static const Shortcutbar_icon_info* get_shortcutbar_icon(int slot);
+	static const Shortcutbar_icon_info*                get_shortcutbar_icon(int slot);
 	static const std::map<int, Shortcutbar_icon_info>& get_shortcutbar_icons();
+	static const Shortcutbar_action_entry*             get_shortcutbar_action(int slot);
 };
 
 #endif

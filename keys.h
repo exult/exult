@@ -45,7 +45,11 @@ typedef struct ExultKey {
 
 const int c_maxparams = 4;
 
+using ActionFunc = void (*)(const int*);
+
 struct Action;
+
+ActionFunc GetExultAction(const std::string& name);
 
 struct ActionType {
 	const Action* action;

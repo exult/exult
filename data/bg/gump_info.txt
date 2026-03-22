@@ -216,7 +216,8 @@
 %%endsection
 
 %%section shortcutbar_icon
-# :slot/bool transparent/select vga/shape/frame/extra frame/bool is_party_item/select fallback vga/fallback shape/fallback frame/fallback extra frame
+# Set the icons for the shortcut bar buttons.
+# Format: :slot/bool transparent/select vga/shape/frame/extra frame/bool is_party_item/select fallback vga/fallback shape/fallback frame/fallback extra frame
 # slots are 0/1/.../9. 0 is the first slot
 # bool transparent: when 1 it is the transparent icon (if a slot exists but no transparent icon is set, this icon will not be transparent - if a patch gumps_info.txt is used and the transparent icon is not set the default will be used)
 # select .vga: 0 shortcutbar.vga, 1 shapes.vga, 2 gumps.vga, 3 paperdol.vga, -1 disables this slots, makes it invisble without a gap)
@@ -262,5 +263,47 @@
 # feed
 :8/0/2/28/3
 :8/1/0/6/0
+
+%%endsection
+
+%%section shortcutbar_action
+# Set the primary (single click) and secondary (double click) action for the
+# shortcut bar.
+# Format: :slot/primary/bool cheat/secondary/bool cheat
+# slot       = shortcut bar button number, beginning with 0.
+# primary    = action to be used for single click. Uses the same actions 
+#              as our keyboard mappings.
+# secondary  = action to be used for double click. Uses the same actions 
+#              as our keyboard mappings.
+# bool cheat = only use this action if cheats are enabled.
+# activate_item uses the shape of shape.vga set in section shortcutbar_icon
+# unless a specific shape is given (activate_item(shape)).
+
+# disk
+:0/CLOSE_OR_MENU/0/SAVE_RESTORE/0
+
+# combat
+:1/TOGGLE_COMBAT/0
+
+# map
+:2/activate_item/0/MAP_TELEPORT/1
+
+#spellbook
+:3/activate_item/0
+
+# backpack
+:4/INVENTORY/0
+
+# key/keyring
+:5/TRY_KEYS/0/activate_item(627)/0
+
+# notebook
+:6/NOTEBOOK/0/CHEAT_SCREEN/1
+
+# target
+:7/TARGET_MODE/0/TARGET_MODE_TELEPORT/1
+
+# feed
+:8/USEFOOD/0/USE_HEALING_ITEMS/0
 
 %%endsection

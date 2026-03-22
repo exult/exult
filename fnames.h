@@ -163,11 +163,11 @@
 #define MAINMENU_TIM "<STATIC>/mainmenu.tim"
 #define INTRO_TIM    "<STATIC>/u7intro.tim"
 
-#define EXULT_FLX          "<DATA>/exult.flx"
-#define EXULT_BG_FLX       "<DATA>/exult_bg.flx"
-#define EXULT_SI_FLX       "<DATA>/exult_si.flx"
+#define EXULT_FLX             "<DATA>/exult.flx"
+#define EXULT_BG_FLX          "<DATA>/exult_bg.flx"
+#define EXULT_SI_FLX          "<DATA>/exult_si.flx"
 #define PATCH_SHORTCUTBAR_VGA "<PATCH>/shortcutbar.vga"
-#define EXULT_GAM_FLX "<DATA>/exult_%s.flx"
+#define EXULT_GAM_FLX         "<DATA>/exult_%s.flx"
 
 #define BUNDLE_EXULT_FLX     "<BUNDLE>/exult.flx"
 #define BUNDLE_EXULT_BG_FLX  "<BUNDLE>/exult_bg.flx"
