@@ -368,7 +368,7 @@ EXULT_FONTS_SERIF_VGA_OBJECTS := \
 	data/fonts/navfonton.shp
 
 EXULT_SHORTCUTBAR_VGA := data/shortcutbar.vga data/shortcutbar_vga.h
-EXULT_SHORTCUTBAR_VGAOBJECTS := \
+EXULT_SHORTCUTBAR_VGA_OBJECTS := \
 	data/sb_combat.shp \
 	data/sb_disk.shp \
 	data/sb_jawbone.shp \
@@ -621,8 +621,8 @@ $(EXULT_FONTS_ORIGINAL_VGA): expack$(EXEEXT) $(EXULT_FONTS_ORIGINAL_VGA_OBJECTS)
 $(EXULT_FONTS_SERIF_VGA): expack$(EXEEXT) $(EXULT_FONTS_SERIF_VGA_OBJECTS)
 	$(SRC)/expack$(EXEEXT) -i data/fonts/serif.in
 
-$(EXULT_SHORTCUTBAR_VGA):  expack$(EXEEXT)  $(EXULT_SHORTCUTBAR_VGA_OBJECTS)
-	$(expack) -i $(srcdir)/data/shortcutbar.in
+$(EXULT_SHORTCUTBAR_VGA): expack$(EXEEXT) $(EXULT_SHORTCUTBAR_VGA_OBJECTS)
+	$(SRC)/expack$(EXEEXT) -i data/shortcutbar.in
 
 $(EXULT_BG_FLX): expack$(EXEEXT) $(EXULT_BG_FLX_OBJECTS)
 	$(SRC)/expack$(EXEEXT) -i data/bg/flx.in
