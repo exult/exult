@@ -19,17 +19,6 @@ EXULT_FLX_OBJECTS = \
 	hp_bar.shp		\
 	sfx_icon.shp		\
 	mtgm.mid			\
-	sb_combat.shp \
-	sb_disk.shp \
-	sb_jawbone.shp \
-	sb_keyring.shp \
-	sb_spellbook.shp \
-	sb_target.shp \
-	sb_food.shp \
-	sb_key.shp \
-	sb_maps.shp \
-	sb_notebook.shp \
-	sb_backpack.shp \
 	transparentmenu.shp \
 	exultmsg.txt \
 	exultmsg_de.txt \
@@ -90,6 +79,20 @@ EXULT_FONTS_SERIF_VGA_OBJECTS = \
 	fonts/fonton.shp \
 	fonts/navfont.shp \
 	fonts/navfonton.shp
+
+EXULT_SHORTCUTBAR_VGA_OBJECTS = \
+	shortcutbar.in
+	sb_combat.shp \
+	sb_disk.shp \
+	sb_jawbone.shp \
+	sb_keyring.shp \
+	sb_spellbook.shp \
+	sb_target.shp \
+	sb_food.shp \
+	sb_key.shp \
+	sb_maps.shp \
+	sb_notebook.shp \
+	sb_backpack.shp
 
 EXULT_BG_FLX_OBJECTS = \
 	bg/flx.in \
@@ -244,6 +247,7 @@ if DATA_FILES
 EXULT_FLX = exult.flx
 EXULT_FONTS_ORIGINAL_VGA = fonts_original.vga
 EXULT_FONTS_SERIF_VGA = fonts_serif.vga
+EXULT_SHORTCUTBAR_VGA = shortcutbar.vga
 EXULT_BG_FLX = exult_bg.flx
 EXULT_SI_FLX = exult_si.flx
 EXULT_BG_PAPERDOL_VGA = bg/bg_paperdol.vga
@@ -252,6 +256,7 @@ else
 EXULT_FLX =
 EXULT_FONTS_ORIGINAL_VGA =
 EXULT_FONTS_SERIF_VGA =
+EXULT_SHORTCUTBAR_VGA =
 EXULT_BG_FLX =
 EXULT_SI_FLX =
 EXULT_BG_PAPERDOL_VGA =
@@ -259,7 +264,7 @@ EXULT_BG_MR_FACES_VGA =
 endif
 
 flex_DATA =  \
-		$(EXULT_FLX) $(EXULT_BG_FLX) $(EXULT_SI_FLX) $(EXULT_FONTS_ORIGINAL_VGA) $(EXULT_FONTS_SERIF_VGA) midisfx.flx
+		$(EXULT_FLX) $(EXULT_BG_FLX) $(EXULT_SI_FLX) $(EXULT_FONTS_ORIGINAL_VGA) $(EXULT_FONTS_SERIF_VGA) $(EXULT_SHORTCUTBAR_VGA) midisfx.flx
 
 if BUILD_STUDIO
 estudionew_DATA = $(ESTUDIO_NEW_FILES)
@@ -267,14 +272,15 @@ else
 estudionew_DATA =
 endif
 
-CLEANFILES = exult.flx exult_bg.flx exult_si.flx bg/bg_paperdol.vga bg/bg_mr_faces.vga bg/introsfx_mt32.flx bg/introsfx_mt.flx fonts_original.vga fonts_serif.vga *~
+CLEANFILES = exult.flx exult_bg.flx exult_si.flx bg/bg_paperdol.vga bg/bg_mr_faces.vga bg/introsfx_mt32.flx bg/introsfx_mt.flx fonts_original.vga fonts_serif.vga shortcutbar.vga *~
 
 EXTRA_DIST = flx.in $(EXULT_FLX_OBJECTS) $(EXULT_BG_FLX_OBJECTS) \
 	$(EXULT_SI_FLX_OBJECTS) $(ESTUDIO_NEW_FILES) midisfx.flx \
 	$(EXULT_BG_INTROSFX_MT32_OBJECTS) $(EXULT_BG_INTROSFX_SB_OBJECTS) \
 	exultmsg.txt bginclude.uc marketpl.mid myusecode.uc \
 	$(EXULT_BG_PAPERDOL_VGA_OBJECTS) $(EXULT_BG_MR_FACES_VGA_OBJECTS) \
-	$(EXULT_FONTS_ORIGINAL_VGA_OBJECTS) $(EXULT_FONTS_SERIF_VGA_OBJECTS)
+	$(EXULT_FONTS_ORIGINAL_VGA_OBJECTS) $(EXULT_FONTS_SERIF_VGA_OBJECTS) \
+	$(EXULT_SHORTCUTBAR_VGA)
 
 if CROSS_COMPILING
 expack = $(EXPACK_PROG)
@@ -296,6 +302,9 @@ fonts_original.vga: $(expack) $(EXULT_FONTS_ORIGINAL_VGA_OBJECTS)
 
 fonts_serif.vga: $(expack) $(EXULT_FONTS_SERIF_VGA_OBJECTS)
 	$(expack) -i $(srcdir)/fonts/serif.in
+
+shortcutbar.vga:  $(expack) $(EXULT_SHORTCUTBAR_VGA_OBJECTS)
+	$(expack) -i $(srcdir)/shortcutbar.in
 
 exult.flx: $(expack) $(EXULT_FLX_OBJECTS) fonts_original.vga fonts_serif.vga
 	$(expack) -i $(srcdir)/flx.in

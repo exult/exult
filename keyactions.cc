@@ -282,9 +282,13 @@ void ActionUseItem(const int* params) {
 void ActionUseFood(const int* params) {
 	ignore_unused_variable_warning(params);
 	Game_window* gwin = Game_window::get_instance();
-	if (gwin->activate_item(377) ||                 // Food
-		(GAME_SI && gwin->activate_item(404)) ||    // Special SI food
-		gwin->activate_item(616)) {                 // Drinks
+	if (GAME_SI) {
+		int p[2];
+		p[0] = 1557;
+		p[1] = 0;
+		ActionCallUsecode(p);
+	} else if (gwin->activate_item(377) ||          // Food
+			   gwin->activate_item(616)) {          // Drinks
 		Mouse::mouse()->set_speed_cursor();
 	}
 }

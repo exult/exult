@@ -19,9 +19,56 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #ifndef GUMPINFO_H
 #define GUMPINFO_H
 
+#include "shapeid.h"
+
 #include <map>
 #include <string>
 #include <vector>
+
+/**
+ * A single shortcutbar icon variant (normal or translucent).
+ * shapefile_type: 0=shortcutbar.vga, 1=shapes.vga, 2=gumps.vga,
+ *                 3=paperdol.vga, -1=hidden/skip slot
+ */
+struct Shortcutbar_icon_entry {
+	int  shapefile_type       = 0;
+	int  shape                = 0;
+	int  frame                = 0;
+	int  extra_frame          = -1;
+	bool check_party_item     = false;
+	int  fallback_vga         = -1;
+	int  fallback_shape       = 0;
+	int  fallback_frame       = 0;
+	int  fallback_extra_frame = -1;
+	bool valid                = false;
+
+	ShapeFile get_shapefile() const {
+		switch (shapefile_type) {
+		case 1:  return SF_SHAPES_VGA;
+		case 2:  return SF_GUMPS_VGA;
+		case 3:  return SF_PAPERDOL_VGA;
+		default: return SF_SHORTCUTBAR_VGA;
+		}
+	}
+
+	ShapeFile get_fallback_shapefile() const {
+		switch (fallback_vga) {
+		case 1:  return SF_SHAPES_VGA;
+		case 2:  return SF_GUMPS_VGA;
+		case 3:  return SF_PAPERDOL_VGA;
+		default: return SF_SHORTCUTBAR_VGA;
+		}
+	}
+};
+
+/**
+ * Shortcutbar icon info for a single slot.
+ * Each slot has a normal and translucent variant.
+ */
+struct Shortcutbar_icon_info {
+	Shortcutbar_icon_entry normal;
+	Shortcutbar_icon_entry translucent;
+};
 
 /**
  * A snap zone defines an area in a container gump where objects
@@ -57,8 +104,9 @@ struct Snap_zone {
 };
 
 class Gump_info {
-	static std::map<int, Gump_info> gump_info_map;
-	static bool                     any_modified;
+	static std::map<int, Gump_info>                gump_info_map;
+	static std::map<int, Shortcutbar_icon_info>    shortcutbar_icon_map;
+	static bool                                    any_modified;
 
 	friend class Shapes_vga_file;
 
@@ -165,6 +213,9 @@ public:
 	static const Gump_info* get_gump_info(int shapenum);
 	static Gump_info&       get_or_create_gump_info(int shapenum);
 	static void             clear();
+
+	static const Shortcutbar_icon_info* get_shortcutbar_icon(int slot);
+	static const std::map<int, Shortcutbar_icon_info>& get_shortcutbar_icons();
 };
 
 #endif
