@@ -35,7 +35,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "game.h"
 #include "gamewin.h"
 #include "gumpinf.h"
-#include "keyactions.h"
+#include "keys.h"
 #include "party.h"
 #include "shapeid.h"
 #include "ucmachine.h"
@@ -70,8 +70,7 @@ void ShortcutBar_gump::check_for_updates(int shnum) {
 	const auto& icons = Gump_info::get_shortcutbar_icons();
 	for (const auto& [slot, info] : icons) {
 		auto check = [shnum](const Shortcutbar_icon_entry& e) {
-			return e.valid && e.check_party_item
-				   && e.shapefile_type == 1 && e.shape == shnum;
+			return e.valid && e.check_party_item && e.shapefile_type == 1 && e.shape == shnum;
 		};
 		if (check(info.normal) || check(info.translucent)) {
 			has_changed = true;
@@ -136,31 +135,13 @@ void ShortcutBar_gump::createButtons() {
 	memset(buttonItems, 0, sizeof(buttonItems));
 	const bool trlucent = gwin->get_shortcutbar_type() == 1 && starty >= 0;
 
-	// Slot-to-type mapping (slot index matches gump_info.txt shortcutbar_icon)
-	static const struct {
-		ShortcutBarButtonItemType type;
-		const char*               name;
-	} slot_defs[] = {
-			{SB_ITEM_DISK, "disk"},                      // slot 0
-			{SB_ITEM_TOGGLE_COMBAT, "toggle combat"},    // slot 1
-			{SB_ITEM_MAP, "map"},                        // slot 2
-			{SB_ITEM_SPELLBOOK, "spellbook"},            // slot 3
-			{SB_ITEM_BACKPACK, "backpack"},               // slot 4
-			{SB_ITEM_KEY, "key"},                        // slot 5
-			{SB_ITEM_NOTEBOOK, "notebook"},              // slot 6
-			{SB_ITEM_TARGET, "target"},                  // slot 7
-			{SB_ITEM_FEED, "feed"},                      // slot 8
-			{SB_ITEM_JAWBONE, "jawbone"},                // slot 9
-	};
-	static constexpr int num_slot_defs
-			= sizeof(slot_defs) / sizeof(slot_defs[0]);
-
-	numButtons = 0;
-	for (int slot = 0; slot < num_slot_defs; slot++) {
-		const auto* icon = Gump_info::get_shortcutbar_icon(slot);
-		if (!icon) {
-			continue;
+	numButtons        = 0;
+	const auto& icons = Gump_info::get_shortcutbar_icons();
+	for (const auto& [slot, icon_info] : icons) {
+		if (numButtons >= MAX_SHORTCUT_BAR_ITEMS) {
+			break;
 		}
+		const auto* icon = &icon_info;
 
 		// Pick normal or translucent entry based on bar type
 		const auto& entry = trlucent ? icon->translucent : icon->normal;
@@ -171,20 +152,17 @@ void ShortcutBar_gump::createButtons() {
 			continue;
 		}
 
-		ShapeFile sf = entry.get_shapefile();
-		int                       shape = entry.shape;
-		int                       frame = entry.frame;
-		ShortcutBarButtonItemType type  = slot_defs[slot].type;
-		const char*               name  = slot_defs[slot].name;
-		bool force_translucent          = false;
+		ShapeFile sf                = entry.get_shapefile();
+		int       shape             = entry.shape;
+		int       frame             = entry.frame;
+		bool      force_translucent = false;
 
 		// Data-driven is_party_item check — always use the normal entry
 		// to determine which shapes.vga item to look for, regardless
 		// of which variant (normal/translucent) is being displayed.
-		const auto& nentry     = icon->normal;
+		const auto&  nentry    = icon->normal;
 		Game_object* party_obj = nullptr;
-		if (nentry.valid && nentry.check_party_item
-			&& nentry.shapefile_type == 1) {
+		if (nentry.valid && nentry.check_party_item && nentry.shapefile_type == 1) {
 			party_obj = is_party_item(nentry.shape);
 			if (!party_obj) {
 				if (entry.fallback_vga >= 0) {
@@ -207,33 +185,59 @@ void ShortcutBar_gump::createButtons() {
 			}
 		}
 
-		// Per-slot game logic overrides
-		switch (slot) {
-		case 1:    // combat - use extra_frame when in combat
-			if (gwin->in_combat() && entry.extra_frame >= 0) {
-				frame = entry.extra_frame;
+		// Data-driven game logic overrides
+		const auto* cmd = Gump_info::get_shortcutbar_action(slot);
+
+		// Toggle combat: use extra_frame when in combat
+		if (cmd && cmd->primary_cmd == "TOGGLE_COMBAT" && gwin->in_combat() && entry.extra_frame >= 0) {
+			frame = entry.extra_frame;
+		}
+
+		// SI jawbone (shape 555): use actual game object frame to show teeth
+		if (GAME_SI && nentry.valid && nentry.shapefile_type == 1 && nentry.shape == 555 && party_obj && sf == SF_SHAPES_VGA) {
+			frame = party_obj->get_framenum();
+		}
+
+		// SI keyring (shape 485): override icon to shortcutbar.vga shape 3
+		if (GAME_SI && !trlucent && nentry.valid && nentry.shapefile_type == 1 && nentry.shape == 485 && party_obj) {
+			sf    = SF_SHORTCUTBAR_VGA;
+			shape = 3;
+			frame = 0;
+		}
+
+		// Determine activate_shape for activate_item action
+		int act_shape = -1;
+		if (nentry.valid && nentry.shapefile_type == 1) {
+			if (!nentry.check_party_item || party_obj) {
+				act_shape = nentry.shape;
+			} else if (entry.fallback_vga == 1) {
+				act_shape = entry.fallback_shape;
 			}
-			break;
-		case 5:    // key/keyring - SI keyring override
-			if (GAME_SI && is_party_item(485)) {
-				sf    = SF_SHORTCUTBAR_VGA;
-				shape = 3;    // keyring shape in shortcutbar.vga
-				frame = trlucent ? 1 : 0;
-				type  = SB_ITEM_KEYRING;
-				name  = "keyring";
-			}
-			break;
-		case 9:    // jawbone - use actual game object frame
-			if (party_obj && sf == SF_SHAPES_VGA) {
-				frame = party_obj->get_framenum();
-			}
-			break;
 		}
 
 		buttonItems[numButtons].shapeId = new ShapeID(shape, frame, sf);
-		buttonItems[numButtons].name    = name;
-		buttonItems[numButtons].type    = type;
-		buttonItems[numButtons].translucent = force_translucent;
+
+		// Validate that shape and frame exist in the VGA file
+		const int num_frames = buttonItems[numButtons].shapeId->get_num_frames();
+		if (num_frames == 0) {
+			printf("Shortcut bar: slot %d hidden — shape %d does not exist\n", slot, shape);
+			delete buttonItems[numButtons].shapeId;
+			buttonItems[numButtons].shapeId = nullptr;
+			continue;
+		}
+		if (frame >= num_frames) {
+			printf("Shortcut bar: slot %d hidden — frame %d does not exist "
+				   "for shape %d\n",
+				   slot, frame, shape);
+			delete buttonItems[numButtons].shapeId;
+			buttonItems[numButtons].shapeId = nullptr;
+			continue;
+		}
+
+		buttonItems[numButtons].name           = cmd ? cmd->primary_cmd.c_str() : "";
+		buttonItems[numButtons].translucent    = force_translucent;
+		buttonItems[numButtons].slot           = slot;
+		buttonItems[numButtons].activate_shape = act_shape;
 		numButtons++;
 	}
 
@@ -308,14 +312,13 @@ void ShortcutBar_gump::paint() {
 	Gump::paint();
 
 	for (int i = 0; i < numButtons; i++) {
-		const ShortcutBarButtonItem& item = buttonItems[i];
-		const int                    x    = locx + item.mx;
-		const int                    y    = locy + item.my;
-		Shape_frame* frame = item.shapeId->get_shape();
+		const ShortcutBarButtonItem& item  = buttonItems[i];
+		const int                    x     = locx + item.mx;
+		const int                    y     = locy + item.my;
+		Shape_frame*                 frame = item.shapeId->get_shape();
 		sman->paint_shape(x, y, frame, item.translucent);
 		// when the bar is on the game screen it may need an outline
-		if (frame && frame->is_rle()
-			&& gwin->get_outline_color() < NPIXCOLORS && starty >= 0) {
+		if (frame && frame->is_rle() && gwin->get_outline_color() < NPIXCOLORS && starty >= 0) {
 			sman->paint_outline(x, y, frame, gwin->get_outline_color());
 		}
 	}
@@ -452,85 +455,58 @@ void ShortcutBar_gump::sdl_mouse_up(SDL_Event* event, int mx, int my) {
 	}
 }
 
-void ShortcutBar_gump::onItemClicked(int index, bool doubleClicked) {
-	printf("Item %s is %sclicked\n", buttonItems[index].name, doubleClicked ? "double " : "");
+static void dispatch_action(const std::string& cmd, int activate_shape) {
+	if (cmd.empty()) {
+		return;
+	}
 
-	switch (buttonItems[index].type) {
-	case SB_ITEM_DISK: {
-		if (doubleClicked) {
-			ActionFileGump(nullptr);    // save_restore
-		} else {
-			ActionCloseOrMenu(nullptr);    // close_or_menu
+	Game_window* gwin = Game_window::get_instance();
+
+	// activate_item(N) — activate specific item by shape number
+	if (cmd.compare(0, 14, "activate_item(") == 0) {
+		const auto close = cmd.find(')');
+		if (close != std::string::npos) {
+			const int shape = std::stoi(cmd.substr(14, close - 14));
+			gwin->activate_item(shape);
 		}
-		break;
+		return;
 	}
-	case SB_ITEM_BACKPACK: {
-		const int j = -1;
-		ActionInventory(&j);    // inventory
-		break;
-	}
-	case SB_ITEM_SPELLBOOK: {
-		gwin->activate_item(761);    // useitem 761
-		break;
-	}
-	case SB_ITEM_NOTEBOOK: {
-		if (doubleClicked && cheat()) {
-			ActionCheatScreen(nullptr);    // cheat_screen
-		} else if (!doubleClicked) {
-			ActionNotebook(nullptr);    // notebook
+
+	// activate_item — use the button's associated shapes.vga shape
+	if (cmd == "activate_item") {
+		if (activate_shape >= 0) {
+			gwin->activate_item(activate_shape);
 		}
-		break;
+		return;
 	}
-	case SB_ITEM_KEY: {
-		if (doubleClicked) {             // Lockpicks
-			gwin->activate_item(627);    // useitem 627
-		} else {
-			ActionTryKeys(nullptr);    // try_keys
+
+	// Look up action by name in ExultActions table (same names as key bindings)
+	auto func = GetExultAction(cmd);
+	if (func) {
+		// Default params to -1, matching key binding behavior
+		const int params[c_maxparams] = {-1, -1, -1, -1};
+		func(params);
+	}
+}
+
+void ShortcutBar_gump::onItemClicked(int index, bool doubleClicked) {
+#ifdef DEBUG
+	printf("Shortcut bar slot %d is %sclicked\n", buttonItems[index].slot, doubleClicked ? "double " : "");
+#endif
+	const auto* cmd = Gump_info::get_shortcutbar_action(buttonItems[index].slot);
+	if (!cmd) {
+		return;
+	}
+
+	if (doubleClicked && !cmd->secondary_cmd.empty()) {
+		if (cmd->secondary_cheat && !cheat()) {
+			return;
 		}
-		break;
-	}
-	case SB_ITEM_KEYRING: {
-		if (doubleClicked) {             // Lockpicks
-			gwin->activate_item(627);    // useitem 627
-		} else {
-			gwin->activate_item(485);    // useitem 485
+		dispatch_action(cmd->secondary_cmd, buttonItems[index].activate_shape);
+	} else {
+		if (cmd->primary_cheat && !cheat()) {
+			return;
 		}
-		break;
-	}
-	case SB_ITEM_MAP: {
-		if (doubleClicked && cheat()) {
-			cheat.map_teleport();    // map_teleport
-		} else if (!doubleClicked) {
-			gwin->activate_item(178, 0);    // useitem 178, frame 0
-		}
-		break;
-	}
-	case SB_ITEM_TOGGLE_COMBAT: {
-		ActionCombat(nullptr);    // toggle_combat
-		break;
-	}
-	case SB_ITEM_TARGET: {
-		if (doubleClicked && cheat()) {
-			ActionTeleportTargetMode(nullptr);    // target_mode_teleport
-		} else if (!doubleClicked) {
-			ActionTarget(nullptr);    // target_mode
-		}
-		break;
-	}
-	case SB_ITEM_JAWBONE: {
-		gwin->activate_item(555);    // useitem 555 #SI only
-		break;
-	}
-	case SB_ITEM_FEED: {
-		if (doubleClicked) {
-			ActionUseHealingItems(nullptr);    // use_healing_items
-		} else {
-			ActionUseFood(nullptr);    // usefood
-		}
-		break;
-	}
-	default: {
-		break;
-	}
+		dispatch_action(cmd->primary_cmd, buttonItems[index].activate_shape);
 	}
 }

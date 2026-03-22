@@ -70,8 +70,6 @@ public:
 	}
 } chardata;
 
-using ActionFunc = void (*)(const int*);
-
 const struct Action {
 	const char*  s;
 	ActionFunc   func;
@@ -192,6 +190,15 @@ const struct Action {
 		{                    "",                  nullptr,           nullptr,     0,    Action::dont_show,         NONE, false, false, false, false}  //  terminator
 		// clang-format on
 };
+
+ActionFunc GetExultAction(const std::string& name) {
+	for (int i = 0; ExultActions[i].s[0] != '\0'; i++) {
+		if (name == ExultActions[i].s) {
+			return ExultActions[i].func;
+		}
+	}
+	return nullptr;
+}
 
 const struct {
 	const char* s;

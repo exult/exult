@@ -287,8 +287,9 @@ void ActionUseFood(const int* params) {
 		p[0] = 1557;
 		p[1] = 0;
 		ActionCallUsecode(p);
-	} else if (gwin->activate_item(377) ||          // Food
-			   gwin->activate_item(616)) {          // Drinks
+	} else if (
+			gwin->activate_item(377) ||    // Food
+			gwin->activate_item(616)) {    // Drinks
 		Mouse::mouse()->set_speed_cursor();
 	}
 }

@@ -253,7 +253,7 @@
 
 # key/keyring
 :5/0/1/485/0/-1/1/1/641/28
-:5/1/0/3/0/-1/1/0/7/0
+:5/1/0/3/1/-1/1/0/7/0
 
 # notebook
 :6/0/1/642/7
@@ -270,5 +270,50 @@
 # jawbone
 :9/0/1/555/0/-1/1
 :9/1/0/2/0
+
+%%endsection
+
+%%section shortcutbar_action
+# Set the primary (single click) and secondary (double click) action for the
+# shortcut bar.
+# Format: :slot/primary/bool cheat/secondary/bool cheat
+# slot       = shortcut bar button number, beginning with 0.
+# primary    = action to be used for single click. Uses the same actions 
+#              as our keyboard mappings.
+# secondary  = action to be used for double click. Uses the same actions 
+#              as our keyboard mappings.
+# bool cheat = only use this action if cheats are enabled.
+# activate_item uses the shape of shape.vga set in section shortcutbar_icon
+# unless a specific shape is given (activate_item(shape)).
+
+# disk
+:0/CLOSE_OR_MENU/0/SAVE_RESTORE/0
+
+# combat
+:1/TOGGLE_COMBAT/0
+
+# map
+:2/activate_item/0/MAP_TELEPORT/1
+
+#spellbook
+:3/activate_item/0
+
+# backpack
+:4/INVENTORY/0
+
+# key/keyring
+:5/activate_item/0/activate_item(627)/0
+
+# notebook
+:6/NOTEBOOK/0/CHEAT_SCREEN/1
+
+# target
+:7/TARGET_MODE/0/TARGET_MODE_TELEPORT/1
+
+# feed
+:8/USEFOOD/0/USE_HEALING_ITEMS/0
+
+# jawbone
+:9/activate_item/0
 
 %%endsection

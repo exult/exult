@@ -37,14 +37,14 @@ class Image_buffer8;
 struct Cursor_info;
 
 enum ShapeFile {
-	SF_SHAPES_VGA = 0,    // <STATIC>/shapes.vga.  MUST be first.
-	SF_GUMPS_VGA,         // <STATIC>/gumps.vga
-	SF_PAPERDOL_VGA,      // <STATIC>/paperdol.vga
-	SF_SPRITES_VGA,       // <STATIC>/sprites.vga
-	SF_FACES_VGA,         // <STATIC>/faces.vga
-	SF_EXULT_FLX,         // <DATA>/exult.flx
-	SF_GAME_FLX,          // <DATA>/bg_data.flx or <DATA>/si_data.flx
-	SF_SHORTCUTBAR_VGA,   // EXULT_FLX_SHORTCUTBAR_VGA in <DATA>/exult.flx
+	SF_SHAPES_VGA = 0,     // <STATIC>/shapes.vga.  MUST be first.
+	SF_GUMPS_VGA,          // <STATIC>/gumps.vga
+	SF_PAPERDOL_VGA,       // <STATIC>/paperdol.vga
+	SF_SPRITES_VGA,        // <STATIC>/sprites.vga
+	SF_FACES_VGA,          // <STATIC>/faces.vga
+	SF_EXULT_FLX,          // <DATA>/exult.flx
+	SF_GAME_FLX,           // <DATA>/bg_data.flx or <DATA>/si_data.flx
+	SF_SHORTCUTBAR_VGA,    // EXULT_FLX_SHORTCUTBAR_VGA in <DATA>/exult.flx
 	// Not yet
 	// SF_FONTS_VGA,     // <STATIC>/fonts.vga
 	SF_OTHER,    // Other unknown FLX
