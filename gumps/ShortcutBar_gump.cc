@@ -72,7 +72,7 @@ void ShortcutBar_gump::check_for_updates(int shnum) {
 		auto check = [shnum](const Shortcutbar_icon_entry& e) {
 			return e.valid && e.check_party_item && e.shapefile_type == 1 && e.shape == shnum;
 		};
-		if (check(info.normal) || check(info.translucent)) {
+		if (check(info.normal) || check(info.translucent) || check(info.found)) {
 			has_changed = true;
 			return;
 		}
@@ -198,11 +198,11 @@ void ShortcutBar_gump::createButtons() {
 			frame = party_obj->get_framenum();
 		}
 
-		// SI keyring (shape 485): override icon to shortcutbar.vga shape 3
-		if (GAME_SI && !trlucent && nentry.valid && nentry.shapefile_type == 1 && nentry.shape == 485 && party_obj) {
-			sf    = SF_SHORTCUTBAR_VGA;
-			shape = 3;
-			frame = 0;
+		// Found variant: override display icon when party item is present
+		if (!trlucent && party_obj && icon->found.valid) {
+			sf    = icon->found.get_shapefile();
+			shape = icon->found.shape;
+			frame = icon->found.frame;
 		}
 
 		// Determine activate_shape for activate_item action

@@ -76,6 +76,7 @@ struct Shortcutbar_icon_entry {
 struct Shortcutbar_icon_info {
 	Shortcutbar_icon_entry normal;
 	Shortcutbar_icon_entry translucent;
+	Shortcutbar_icon_entry found;
 };
 
 /**
