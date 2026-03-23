@@ -217,10 +217,12 @@
 
 %%section shortcutbar_icon
 # Set the icons for the shortcut bar buttons.
-# Format: :slot/bool transparent/select vga/shape/frame/extra frame/bool is_party_item/select fallback vga/fallback shape/fallback frame/fallback extra frame
+# Format: :slot/variant/select vga/shape/frame/extra frame/bool is_party_item/select fallback vga/fallback shape/fallback frame/fallback extra frame
 # slots are 0/1/.../9. 0 is the first slot
-# bool transparent: when 1 it is the transparent icon (if a slot exists but no transparent icon is set, this icon will not be transparent - if a patch gumps_info.txt is used and the transparent icon is not set the default will be used)
-# select .vga: 0 shortcutbar.vga, 1 shapes.vga, 2 gumps.vga, 3 paperdol.vga, -1 disables this slots, makes it invisble without a gap)
+# variant: 0 normal icon, 1 transparent icon, 2 found icon (displayed when is_party_item check succeeds)
+#          (if a slot exists but no transparent icon is set, this icon will not be transparent
+#          - if a patch gump_info.txt is used and the transparent icon is not set the default will be used)
+# select .vga: 0 shortcutbar.vga, 1 shapes.vga, 2 gumps.vga, 3 paperdol.vga, -1 disables this slot, makes it invisible without a gap)
 # frame/extra frame: frame of the shape to use. Extra frame is used if the action uses that (combat)
 # bool is_party_item: if the shape is from shapes.vga it will check if the item is in the party - if not the slot is hidden or the fallback shape will be used if given.
 # select fallback vga: same as select .vga.

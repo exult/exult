@@ -520,7 +520,9 @@ void Shapes_vga_file::Read_Gumpinf_text_data_file(bool editing, Exult_Game game_
 			entry.fallback_frame       = fb_frame;
 			entry.fallback_extra_frame = fb_extra;
 			entry.valid                = true;
-			if (transparent) {
+			if (transparent == 2) {
+				sinfo.found = entry;
+			} else if (transparent == 1) {
 				sinfo.translucent = entry;
 			} else {
 				sinfo.normal = entry;
