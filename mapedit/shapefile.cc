@@ -567,6 +567,15 @@ Shape_file_info* Shape_file_set::create(const char* basename    // Like 'shapes.
 		sources.emplace_back(exultflx, EXULT_FLX_FONTS_SERIF_VGA);
 		sources.emplace_back(PATCH_SERIF_FONTS, -1);    // Patch file
 		return append(new Image_file_info(basename, exultflx, new Vga_file(sources, U7_SHAPE_FONTS), groups));
+	} else if (strcasecmp(basename, "shortcutbar.vga") == 0) {
+		string group_name(basename);
+		group_name += ".grp";
+		auto*                                    groups   = new Shape_group_file(group_name.c_str());
+		const char*                              exultflx = BUNDLE_CHECK(BUNDLE_EXULT_FLX, EXULT_FLX);
+		std::vector<std::pair<std::string, int>> sources;
+		sources.emplace_back(exultflx, EXULT_FLX_SHORTCUTBAR_VGA);
+		sources.emplace_back(PATCH_SHORTCUTBAR_VGA, -1);    // Patch file
+		return append(new Image_file_info(basename, exultflx, new Vga_file(sources), groups));
 	} else if (strcasecmp(basename, "bg_paperdol.vga") == 0) {
 		string group_name(basename);
 		group_name += ".grp";

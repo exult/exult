@@ -2007,9 +2007,10 @@ void add_to_tree(GtkTreeStore* model, const char* folderName, const char* files,
 				if (!strcasecmp(fname, "font0000.vga")) {
 					continue;
 				}
-				// Skip fonts_original.vga and fonts_serif.vga - handled
-				// separately.
-				if (!strcasecmp(fname, "fonts_original.vga") || !strcasecmp(fname, "fonts_serif.vga")) {
+				// Skip fonts_original.vga, fonts_serif.vga and
+				// shortcutbar.vga - handled separately.
+				if (!strcasecmp(fname, "fonts_original.vga") || !strcasecmp(fname, "fonts_serif.vga")
+					|| !strcasecmp(fname, "shortcutbar.vga")) {
 					continue;
 				}
 				// Skip bg_paperdol.vga and bg_mr_faces.vga - handled
@@ -2090,6 +2091,7 @@ void ExultStudio::setup_file_list() {
 	// If in patch, they'll be picked up by the normal directory scan.
 	const bool has_patch_fonts_original = U7exists(PATCH_ORIGINAL_FONTS);
 	const bool has_patch_fonts_serif    = U7exists(PATCH_SERIF_FONTS);
+	const bool has_patch_shortcutbar    = U7exists(PATCH_SHORTCUTBAR_VGA);
 	// BG-specific files from exult_bg.flx: only add for BG games.
 	const bool is_bg                 = (game_type == BLACK_GATE);
 	const bool has_patch_bg_paperdol = U7exists(PATCH_BG_PAPERDOL);
@@ -2110,6 +2112,9 @@ void ExultStudio::setup_file_list() {
 	}
 	if (!has_patch_fonts_serif) {
 		extras.push_back({"FONTS_SERIF.VGA", ShapeArchive});
+	}
+	if (!has_patch_shortcutbar) {
+		extras.push_back({"SHORTCUTBAR.VGA", ShapeArchive});
 	}
 	if (is_bg && !has_patch_bg_paperdol) {
 		extras.push_back({"BG_PAPERDOL.VGA", ShapeArchive});
@@ -2152,6 +2157,12 @@ void ExultStudio::setup_file_list() {
 					model, "Shape Files", "*.vga,*.shp", ShapeArchive, extra_cnt, extras[0].name, extras[0].type, extras[1].name,
 					extras[1].type, extras[2].name, extras[2].type, extras[3].name, extras[3].type, extras[4].name, extras[4].type,
 					extras[5].name, extras[5].type);
+			break;
+		case 7:
+			add_to_tree(
+					model, "Shape Files", "*.vga,*.shp", ShapeArchive, extra_cnt, extras[0].name, extras[0].type, extras[1].name,
+					extras[1].type, extras[2].name, extras[2].type, extras[3].name, extras[3].type, extras[4].name, extras[4].type,
+					extras[5].name, extras[5].type, extras[6].name, extras[6].type);
 			break;
 		default:
 			add_to_tree(model, "Shape Files", "*.vga,*.shp", ShapeArchive, 1, "combos.flx", ComboArchive);
