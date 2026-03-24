@@ -21,32 +21,29 @@ OutputDir=.
 DisableWelcomePage=no
 WizardStyle=modern
 ArchitecturesInstallIn64BitMode=x64compatible
+ArchitecturesAllowed=x64compatible
 
 [Files]
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
-; 32-bit files
-Source: Studio-i686\exult_studio.exe; DestDir: {app}; Flags: ignoreversion; Check: not Is64BitInstallMode
-Source: Studio-i686\*.dll; DestDir: {app}; Flags: ignoreversion; Check: not Is64BitInstallMode
-Source: Studio-i686\lib\*; DestDir: {app}\lib\; Flags: ignoreversion recursesubdirs; Check: not Is64BitInstallMode
 ; 64-bit files
 Source: Studio-x86_64\exult_studio.exe; DestDir: {app}; Flags: ignoreversion; Check: Is64BitInstallMode
 Source: Studio-x86_64\*.dll; DestDir: {app}; Flags: ignoreversion; Check: Is64BitInstallMode
 Source: Studio-x86_64\lib\*; DestDir: {app}\lib\; Flags: ignoreversion recursesubdirs; Check: Is64BitInstallMode
 ; Architecture-neutral files
-Source: Studio-i686\share\*; DestDir: {app}\share\; Flags: ignoreversion recursesubdirs
-Source: Studio-i686\COPYING.txt; DestDir: {app}; Flags: onlyifdoesntexist
-Source: Studio-i686\Exult Source Code.url; DestDir: {app}; Flags: ignoreversion;
-Source: Studio-i686\AUTHORS.txt; DestDir: {app}; Flags: onlyifdoesntexist
-Source: Studio-i686\images\*.gif; DestDir: {app}\images\; Flags: ignoreversion
-Source: Studio-i686\images\*.svg; DestDir: {app}\images\; Flags: ignoreversion
-Source: Studio-i686\images\studio*.png; DestDir: {app}\images\; Flags: ignoreversion
-Source: Studio-i686\exult_studio.html; DestDir: {app}; Flags: ignoreversion
-Source: Studio-i686\exult_studio.txt; DestDir: {app}; Flags: ignoreversion
-Source: Studio-i686\data\estudio\new\*.flx; DestDir: {app}\data\estudio\new; Flags: ignoreversion
-Source: Studio-i686\data\estudio\new\*.vga; DestDir: {app}\data\estudio\new; Flags: ignoreversion
-Source: Studio-i686\data\estudio\new\*.shp; DestDir: {app}\data\estudio\new; Flags: ignoreversion
-Source: Studio-i686\data\estudio\new\blends.dat; DestDir: {app}\data\estudio\new; Flags: ignoreversion
-Source: Studio-i686\data\exult_studio.glade; DestDir: {app}\data\; Flags: ignoreversion
+Source: Studio-x86_64\share\*; DestDir: {app}\share\; Flags: ignoreversion recursesubdirs
+Source: Studio-x86_64\COPYING.txt; DestDir: {app}; Flags: onlyifdoesntexist
+Source: Studio-x86_64\Exult Source Code.url; DestDir: {app}; Flags: ignoreversion;
+Source: Studio-x86_64\AUTHORS.txt; DestDir: {app}; Flags: onlyifdoesntexist
+Source: Studio-x86_64\images\*.gif; DestDir: {app}\images\; Flags: ignoreversion
+Source: Studio-x86_64\images\*.svg; DestDir: {app}\images\; Flags: ignoreversion
+Source: Studio-x86_64\images\studio*.png; DestDir: {app}\images\; Flags: ignoreversion
+Source: Studio-x86_64\exult_studio.html; DestDir: {app}; Flags: ignoreversion
+Source: Studio-x86_64\exult_studio.txt; DestDir: {app}; Flags: ignoreversion
+Source: Studio-x86_64\data\estudio\new\*.flx; DestDir: {app}\data\estudio\new; Flags: ignoreversion
+Source: Studio-x86_64\data\estudio\new\*.vga; DestDir: {app}\data\estudio\new; Flags: ignoreversion
+Source: Studio-x86_64\data\estudio\new\*.shp; DestDir: {app}\data\estudio\new; Flags: ignoreversion
+Source: Studio-x86_64\data\estudio\new\blends.dat; DestDir: {app}\data\estudio\new; Flags: ignoreversion
+Source: Studio-x86_64\data\exult_studio.glade; DestDir: {app}\data\; Flags: ignoreversion
 
 [Icons]
 Name: {group}\Exult Studio; Filename: {app}\exult_studio.exe; WorkingDir: {app}
