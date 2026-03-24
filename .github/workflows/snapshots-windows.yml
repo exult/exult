@@ -46,8 +46,8 @@ jobs:
             mingw-w64-i686-toolchain mingw-w64-i686-binutils mingw-w64-i686-ntldd
             mingw-w64-i686-fluidsynth mingw-w64-i686-libogg mingw-w64-i686-libvorbis
             mingw-w64-i686-libpng mingw-w64-i686-zlib
-            mingw-w64-i686-gtk3 mingw-w64-i686-adwaita-icon-theme mingw-w64-i686-libxml2 mingw-w64-i686-freetype
-            mingw-w64-i686-gimp mingw-w64-i686-autotools mingw-w64-i686-cmake
+            mingw-w64-i686-libxml2 mingw-w64-i686-freetype
+            mingw-w64-i686-autotools mingw-w64-i686-cmake
       - name: Checkout munt
         if: ${{ steps.activity_check.outputs.repo_alive == 'true' }}
         uses: actions/checkout@v4
@@ -185,7 +185,7 @@ jobs:
           SNAPSHOT_PATH=$(cygpath -m ~/Exult-dist)
           cd $GITHUB_WORKSPACE/exult-$ARCH
           mkdir -p ${SNAPSHOT_PATH}
-          make -j 2 -f Makefile.mingw SNAPSHOT=1 DISTPATH=${SNAPSHOT_PATH} DEBUG_LEVEL=-g1 dist studiodist toolsdist plugindist
+          make -j 2 -f Makefile.mingw SNAPSHOT=1 DISTPATH=${SNAPSHOT_PATH} DEBUG_LEVEL=-g1 dist
           for ff in bgkeyring islefaq sifixes; do
             pushd content/${ff}
             make -j 2 -f Makefile.mingw ${ff}dir=${SNAPSHOT_PATH}/${ff} install
