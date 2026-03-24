@@ -47,38 +47,55 @@ CreateUninstallRegKey=no
 UpdateUninstallLogAppName=no
 AppID=GIMP-U7SHP-Plugin
 PrivilegesRequired=none
+ArchitecturesAllowed=x64compatible
+;use this when ARM64 plugin compilation is enabled
+;ArchitecturesAllowed=x64compatible arm64
 
 [Files]
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
-; The official Gimp 3 32 bits is built with MingW32 and so is Exult, the official Gimp 3 64 bits is built with CLang64 and so is Exult
+; The official Gimp 3 64 bits is built with CLang64 and so is Exult
 ; => The dependent DLLs of the Gimp plugin are provided by Gimp
-; 32-bit files
-Source: "GimpPlugin-i686\u7shp.exe"; DestDir: "{userappdata}\gimp\3.0\plug-ins\u7shp"; Flags: ignoreversion; Check: not Is64BitGIMP
-; 64-bit files
-Source: "GimpPlugin-x86_64\u7shp.exe"; DestDir: "{userappdata}\gimp\3.0\plug-ins\u7shp"; Flags: ignoreversion; Check: Is64BitGIMP
+; x86_64 files
+Source: "GimpPlugin-x86_64\u7shp.exe"; DestDir: "{userappdata}\gimp\3.0\plug-ins\u7shp"; Flags: ignoreversion; Check: IsGIMPx64
+; ARM64 files
+;Source: "GimpPlugin-ARM64\u7shp.exe"; DestDir: "{userappdata}\gimp\3.0\plug-ins\u7shp"; Flags: ignoreversion; Check: IsGIMPARM64
 
 [Code]
 const
 	RegPath = 'SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\WinGimp-3.0_is1';
 	RegPathNew = 'SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\GIMP-3_is1';
-	RegKey = 'Inno Setup: App Path';
-	VerKey = 'DisplayName';
+	PathValue = 'Inno Setup: App Path';
+	VerValue = 'DisplayName';
+	CompValue = 'Inno Setup: Selected Components';
 
 var
 	GimpPath: String;
 	GimpVer: String;
-
-	InstallType: (itOld, itNew, itNew64);
+	GimpArch: (GimpUnknown,gimpx64,gimpARM64);
 
 procedure GetGimpInfo(const pRootKey: Integer; const pRegPath: String);
 var p: Integer;
+var comps: string;
 begin
-	If not RegQueryStringValue(pRootKey, pRegPath, RegKey, GimpPath) then //find Gimp install dir
+	If not RegQueryStringValue(pRootKey, pRegPath, PathValue, GimpPath) then //find Gimp install dir
 	begin
 		GimpPath := ExpandConstant('{pf}\GIMP 3');
 	end;
+	If not RegQueryStringValue(pRootKey, pRegPath, CompValue , comps) then //Get the installed arch
+	begin
+	comps := '';
+	end;
 
-	If not RegQueryStringValue(pRootKey, pRegPath, VerKey, GimpVer) then //find Gimp version
+	if Pos('gimpx64',comps) <> 0 then begin
+		GimpArch := gimpx64;
+	end else
+	if Pos('gimpARM64',comps) <> 0 then begin
+		GimpArch := gimpARM64;
+    end;
+
+
+
+	If not RegQueryStringValue(pRootKey, pRegPath, VerValue, GimpVer) then //find Gimp version
 	begin
 		GimpVer := '0';
 	end;
@@ -98,28 +115,31 @@ function InitializeSetup(): Boolean;
 begin
 	Result := True;
 
-	if IsWin64 and RegValueExists(HKLM64, RegPathNew, RegKey) then //check for 64bit GIMP with new installer first
+	GimpArch:=GimpUnknown
+	if RegValueExists(HKLM64, RegPathNew, PathValue) then 
 	begin
 		GetGimpInfo(HKLM64, RegPathNew);
-		InstallType := itNew64;
 	end else
-	if RegValueExists(HKLM, RegPathNew, RegKey) then //then for 32bit GIMP with new installer
+	if RegValueExists(HKCU, RegPathNew, PathValue) then 
 	begin
-		GetGimpInfo(HKLM, RegPathNew);
-		InstallType := itNew;
+		GetGimpInfo(HKCU, RegPathNew);
 	end else
-	if RegValueExists(HKLM, RegPath, RegKey) then //and finally for old installer
+
+	if	GimpArch=GimpUnknown
+	then
 	begin
-		GetGimpInfo(HKLM, RegPath);
-		InstallType := itOld;
-	end else
-	begin
-		GimpPath := ExpandConstant('{pf}\GIMP 3'); //provide some defaults
-		GimpVer := '0';
+	MsgBox('Error unable to dectect Architecture of Gimp. Aborting',mbError, MB_OK);
+	result:= False;
 	end;
+
 end;
 
-function Is64BitGIMP(): boolean;
+function IsGIMPx64(): boolean;
 begin
-	Result := InstallType = itNew64;
+	Result := GimpArch = gimpx64;
+end;
+
+function IsGIMPARM64(): boolean;
+begin
+	Result := GimpArch = gimpARM64;
 end;
