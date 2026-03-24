@@ -813,7 +813,10 @@ clean:
 	rm -f $(OBJS) $(OBJS:%.o=%.d) tools/expack.o $(EXEC) expack$(EXEEXT) tools/ipack.o ipack$(EXEEXT) data/exult.flx data/exult_flx.h data/exult_bg.flx data/exult_bg_flx.h data/exult_si.flx data/exult_si_flx.h data/bg/bg_paperdol.vga data/bg/bg_mr_faces.vga data/bg/bg_paperdol_vga.h data/bg/bg_mr_faces_vga.h gitinfo.h data/fonts_original.vga data/fonts_original.vga.h data/fonts_serif.vga data/fonts_serif.vga.h data/shortcutbar.vga data/shortcutbar.vga.h
 
 tools:  expack$(EXEEXT) cmanip$(EXEEXT) ipack$(EXEEXT) mklink$(EXEEXT) mockup$(EXEEXT) rip$(EXEEXT) shp2pcx$(EXEEXT) smooth$(EXEEXT) splitshp$(EXEEXT) textpack$(EXEEXT) wuc$(EXEEXT) u7voice2syx$(EXEEXT) ucc$(EXEEXT) ucxt$(EXEEXT)  \
-	$(SRC)/head2data$(EXEEXT) head2data.test libsmooth_randomize$(LIBEXT) libsmooth_smooth$(LIBEXT) libsmooth_stream$(LIBEXT) exult_shp_thumbnailer$(EXEEXT)
+	$(SRC)/head2data$(EXEEXT) head2data.test libsmooth_randomize$(LIBEXT) libsmooth_smooth$(LIBEXT) libsmooth_stream$(LIBEXT)
+
+# Thumbnailer needs gdk so don't include it in the default tools target
+alltools:  tools exult_shp_thumbnailer$(EXEEXT)
 
 toolsclean:
 	rm -f $(TOOL_OBJS:%.o=%.d)
