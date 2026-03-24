@@ -772,7 +772,7 @@ TOOL_OBJS:=tools/expack.o $(FILE_OBJS) tools/cmanip.o tools/ipack.o $(IPACK_OBJS
 	tools/splitshp.o $(SMOOTH_OBJS) tools/smooth/plugins/plugin_smooth.o \
 	tools/smooth/plugins/plugin_randomize.o tools/smooth/plugins/plugin_stream.o \
 	tools/textpack.o tools/u7voice2syx.o tools/wuc.o $(UCXT_OBJS) $(UCC_OBJS) \
-	$(CONFREGRESS_OBJS) tools/ucxt/head2data.o tools/exult_shp_thumbnailer.o
+	$(CONFREGRESS_OBJS) tools/ucxt/head2data.o
 
 head2data.o : tools/ucxt/head2data.cc usecode/bgintrinsics.h usecode/siintrinsics.h usecode/sibetaintrinsics.h
 
