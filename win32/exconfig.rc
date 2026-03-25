@@ -1,6 +1,16 @@
 // Exult Resource Script
 #include "winresrc.h"
 
+#define IDI_MANIFEST                      1
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Manifest
+//
+
+// Manifest file should default to id 1.
+IDI_MANIFEST            RT_MANIFEST             "exconfig.exe.manifest"
+
 
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENA)
@@ -35,12 +45,12 @@ BEGIN
         BEGIN
             VALUE "Comments", "\0"
             VALUE "CompanyName", "\0"
-            VALUE "FileDescription", "Exult Config Helper DLL for InnoSetup\0"
+            VALUE "FileDescription", "Exult Config Helper for InnoSetup\0"
             VALUE "FileVersion", "1.13.1git\0"
             VALUE "InternalName", "exconfig\0"
             VALUE "LegalCopyright", "Copyright © 2025\0"
             VALUE "LegalTrademarks", "\0"
-            VALUE "OriginalFilename", "exconfig.dll\0"
+            VALUE "OriginalFilename", "exconfig.exe\0"
             VALUE "PrivateBuild", "\0"
             VALUE "ProductName", "Exult\0"
             VALUE "ProductVersion", "1.13.1git\0"
@@ -52,6 +62,8 @@ BEGIN
         VALUE "Translation", 0xc09, 1200
 	    END
 END
+
+
 
 #endif    // !_MAC
 

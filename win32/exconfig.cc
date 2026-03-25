@@ -80,9 +80,9 @@ constexpr static const std::array BG_Files{ENDGAME};
 constexpr static const std::array SI_Files{PAPERDOL};
 
 extern "C" {
-__declspec(dllexport) int __cdecl VerifySIDirectory(char* path);
+EXCONFIG_EXPORT int __cdecl VerifySIDirectory(char* path);
 
-__declspec(dllexport) int __cdecl VerifyBGDirectory(char* path);
+EXCONFIG_EXPORT int __cdecl VerifyBGDirectory(char* path);
 }
 
 void strcat_safe(char* dest, const char* src, size_t size_dest) {
@@ -271,7 +271,7 @@ extern "C" {
 //
 // Get the Game paths from the config file
 //
-__declspec(dllexport) void __cdecl GetExultGamePaths(char* ExultDir, char* BGPath, char* SIPath, int MaxPath) {
+EXCONFIG_EXPORT void __cdecl GetExultGamePaths(char* ExultDir, char* BGPath, char* SIPath, int MaxPath) {
 	MessageBoxDebug(nullptr, ExultDir, "ExultDir", MB_OK);
 	MessageBoxDebug(nullptr, BGPath, "BGPath", MB_OK);
 	MessageBoxDebug(nullptr, SIPath, "SIPath", MB_OK);
@@ -349,7 +349,7 @@ bool IsNullEmptyOrWhitespace(const char* s) {
 // Set Game paths in the config file
 //
 
-__declspec(dllexport) void __cdecl SetExultGamePaths(char* ExultDir, char* BGPath, char* SIPath) {
+EXCONFIG_EXPORT void __cdecl SetExultGamePaths(char* ExultDir, char* BGPath, char* SIPath) {
 	MessageBoxDebug(nullptr, ExultDir, "ExultDir", MB_OK);
 	MessageBoxDebug(nullptr, BGPath, "BGPath", MB_OK);
 	MessageBoxDebug(nullptr, SIPath, "SIPath", MB_OK);
@@ -433,7 +433,7 @@ __declspec(dllexport) void __cdecl SetExultGamePaths(char* ExultDir, char* BGPat
 //
 // Verify the BG Directory contains the right stuff
 //
-__declspec(dllexport) int __cdecl VerifyBGDirectory(char* path) {
+EXCONFIG_EXPORT int __cdecl VerifyBGDirectory(char* path) {
 	if (IsNullEmptyOrWhitespace(path)) {
 		return false;
 	}
@@ -473,7 +473,7 @@ __declspec(dllexport) int __cdecl VerifyBGDirectory(char* path) {
 //
 // Verify the SI Directorys contains the right stuff
 //
-__declspec(dllexport) int __cdecl VerifySIDirectory(char* path) {
+EXCONFIG_EXPORT int __cdecl VerifySIDirectory(char* path) {
 	if (IsNullEmptyOrWhitespace(path)) {
 		return false;
 	}
@@ -510,7 +510,7 @@ __declspec(dllexport) int __cdecl VerifySIDirectory(char* path) {
 	return true;
 }
 }
-
+#ifdef EXCONFIG_IS_DLL
 BOOL APIENTRY DllMain(HINSTANCE hModule, DWORD ul_reason_for_call, LPVOID lpReserved) {
 	ignore_unused_variable_warning(hModule, lpReserved);
 	switch (ul_reason_for_call) {
@@ -522,3 +522,66 @@ BOOL APIENTRY DllMain(HINSTANCE hModule, DWORD ul_reason_for_call, LPVOID lpRese
 	}
 	return TRUE;
 }
+#else
+
+int main(int argc, char**argv)
+{ 
+	if (argc < 2) {
+		return -1;
+	}
+	if (!strcasecmp(argv[1], "GetExultGamePaths"))
+	{
+		if (argc != 3) {
+			return -2;
+		}
+
+		char bg_path[MAX_PATH];
+		char si_path[MAX_PATH];
+
+		GetExultGamePaths(argv[2],bg_path,si_path,MAX_PATH);
+
+		std::cout << bg_path << std::endl  << si_path << std::endl;
+		std::cout.flush();
+		return 0;
+	}
+	else if (!strcasecmp(argv[1], "SetExultGamePaths"))
+	{
+		if (argc != 5) {
+			return -3;
+		}
+
+		SetExultGamePaths(argv[2],argv[3],argv[4]);
+		return 0;
+	}
+	else if (!strcasecmp(argv[1], "VerifyBGDirectory"))
+	{
+		if (argc != 3) {
+			return -4;
+		}
+
+		return VerifyBGDirectory(argv[2]);
+	}
+	else if (!strcasecmp(argv[1], "VerifySIDirectory"))
+	{
+		if (argc != 3) {
+			return -5;
+		}
+
+		return VerifySIDirectory(argv[2]);
+	}
+	else if (!strcasecmp(argv[1], "test"))
+	{
+		if (argc < 3) {
+			return -6;
+		}
+
+		for (int i = 2; i < argc; i++) {
+			std::cout << argv[i] << std::endl;
+			std::cout.flush();
+		}
+		return 0;
+	}
+	return -7;
+}
+
+#endif
