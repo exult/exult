@@ -133,14 +133,13 @@ jobs:
         uses: actions/checkout@v4
       - name: Build
         run: |
-          make -j 2 -f Makefile.mingw DEBUG=1 USECODE_DEBUGGER=1 DISTPATH=disttest Exult.exe exult_studio.exe tools u7shp.exe exult_shp.exe exconfig.dll dist studiodist toolsdist plugindist aseprite-plugindist
+          make -j 2 -f Makefile.mingw DEBUG=1 USECODE_DEBUGGER=1 DISTPATH=disttest Exult.exe exult_studio.exe tools u7shp.exe exult_shp.exe exconfig.exe dist studiodist toolsdist plugindist aseprite-plugindist
           for ff in $(find content -name 'Makefile.mingw' -exec dirname {} \;); do
             pushd "${ff}"
             make -j 2 -f Makefile.mingw
             popd
           done
           cd disttest
-          mv exconfig-x86_64.dll exconfig-i686.dll
           mkdir Exult-i686
           cp -r Exult-x86_64/* Exult-i686
           mkdir studio-i686

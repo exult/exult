@@ -47,8 +47,8 @@ Name: "downloads\3rdpartymods\glimmerscape"; Description: "Glimmerscape by Donfr
 
 [Files]
 ; donotcopy files should be first
-; Always the 32-bit version of exconfig
-Source: exconfig-i686.dll; Flags: dontcopy
+; Include all versions of exconfig
+Source: exconfig*.exe; Flags: dontcopy
 ; Mod zip files
 Source: mods\sifixes.zip; Flags: dontcopy
 Source: mods\bgkeyring.zip; Flags: dontcopy
@@ -116,22 +116,162 @@ var
   iSIVerified: Integer;
   iExultSupportsInstall: Integer;
   sNewLine: String;
+  sExConfigPath:String;
+
+function ExtactAndTextExconfig(sExConfigExe: String):Boolean;
+var
+  Success: Boolean;
+  ResultCode: Integer;
+  Output: TExecOutput;
+begin
+    try
+      ExtractTemporaryFile(sExConfigExe);
+    sExConfigExe :=ExpandConstant('{tmp}\'+sExConfigExe);
+      Success := ExecAndCaptureOutput(sExConfigExe, 'test "'+sExConfigExe+'"', '', SW_SHOWNORMAL, ewWaitUntilTerminated, ResultCode, Output);
+    except
+      Success := False;
+      Log(GetExceptionMessage);
+    end;
+
+    if Success and (ResultCode = 0) and (Length(Output.StdOut)=1) and (Output.StdOut[Low(Output.StdOut)] = sExConfigExe)then begin
+    sExConfigPath:=sExConfigExe;
+    Result := true;
+    end else begin
+     Result := False;
+     sExConfigPath := '';
+    end;
+end;
+
+procedure ExtractExConfig();
+begin
+// Try 64 bit exconfigs first
+  if Is64BitInstallMode() then begin
+
+    if (sExConfigPath = '') and IsARM64 then begin
+      ExtactAndTextExconfig('exconfig-aarch64.exe')
+    end;  
+    if (sExConfigPath = '') and IsX64Compatible then begin    
+      ExtactAndTextExconfig('exconfig-x86_64.exe')
+    end;
+    
+  end;
+
+  // Didn't find a usable 64 bit exconfig so fallback to 32 bit i686
+  if (sExConfigPath = '') then begin
+    ExtactAndTextExconfig('exconfig-i686.exe');
+  end;
+  // Still don't have exconfig so try one one with no specified arch
+  if (sExConfigPath = '') then begin
+    ExtactAndTextExconfig('exconfig.exe');
+  end;
+
+  // No exconfig is a fatal error
+  if (sExConfigPath = '') then begin
+    MsgBox('Failed to extract exconfig for this system. Aborting', mbCriticalError, MB_OK);
+    Abort();
+  end;
+  
+end;
 
 // Get Paths from Exult.cfg
-procedure GetExultGamePaths(sExultDir, sBGPath, sSIPath: AnsiString; iMaxPath: Integer);
-external 'GetExultGamePaths@files:exconfig-i686.dll cdecl';
+procedure GetExultGamePaths(sExultDir: String; var sBGPath: String; var sSIPath: String);
+var
+  Success: Boolean;
+  ResultCode: Integer;
+  Output: TExecOutput;
+begin
+  ExtractExConfig();
+    try
+      // Get the system configuration
+      Success := ExecAndCaptureOutput(sExConfigPath, 'GetExultGamePaths "'+sExultDir+'"', '', SW_SHOWNORMAL, ewWaitUntilTerminated, ResultCode, Output);
+    except
+      Success := False;
+      Log(GetExceptionMessage);
+    end;
+
+    if Success and (ResultCode = 0) then begin
+      sBGPath := Output.StdOut[Low(Output.StdOut)];
+      sSIPath := Output.StdOut[High(Output.StdOut)];
+    end else begin
+      Log('GetExultGamePaths failed : '+  IntToStr(ResultCode));
+      sBGPath := '';
+      sSIPath := '';
+    end;
+end;
 
 // Write Paths into Exult.cfg
-procedure SetExultGamePaths(sExultDir, sBGPath, sSIPath: AnsiString);
-external 'SetExultGamePaths@files:exconfig-i686.dll cdecl';
+procedure SetExultGamePaths(sExultDir, sBGPath, sSIPath: String);
+var
+  Success: Boolean;
+  ResultCode: Integer;
+  Output: TExecOutput;
+begin
+  ExtractExConfig();
+    try
+      // Get the system configuration
+      Success := ExecAndCaptureOutput(sExConfigPath, 'SetExultGamePaths "'+sExultDir+'" "'+sBGPath+'" "'+sSIPath+'"', '', SW_SHOWNORMAL, ewWaitUntilTerminated, ResultCode, Output);
+    except
+      Success := False;
+      Log(GetExceptionMessage);
+    end;
+
+    if Success and (ResultCode = 0) then begin
+
+    end else begin
+      Log('SetExultGamePaths failed: '+  IntToStr(ResultCode));
+
+    end;
+end;
 
 // Verify BG Dir
-function VerifyBGDirectory(sPath: AnsiString) : Integer;
-external 'VerifyBGDirectory@files:exconfig-i686.dll cdecl';
+function VerifyBGDirectory(sPath: String) : Integer;
+var
+  Success: Boolean;
+  ResultCode: Integer;
+  Output: TExecOutput;
+begin
+  ExtractExConfig();
+    try
+      // Get the system configuration
+      Success := ExecAndCaptureOutput(sExConfigPath, 'VerifyBGDirectory "'+sPath+'"', '', SW_SHOWNORMAL, ewWaitUntilTerminated, ResultCode, Output);
+    except
+      Success := False;
+      Log(GetExceptionMessage);
+    end;
+
+    if Success and (ResultCode >= 0) then begin
+     Result := ResultCode;
+
+    end else begin
+      Log('VerifyBGDirectory Failed: ' +  IntToStr(ResultCode));
+
+    end;
+end;
 
 // Verify SI Dir
 function VerifySIDirectory(sPath: AnsiString) : Integer;
-external 'VerifySIDirectory@files:exconfig-i686.dll cdecl';
+var
+  Success: Boolean;
+  ResultCode: Integer;
+  Output: TExecOutput;
+begin
+  ExtractExConfig();
+    try
+      // Get the system configuration
+      Success := ExecAndCaptureOutput(sExConfigPath, 'VerifySIDirectory "'+sPath+'"', '', SW_SHOWNORMAL, ewWaitUntilTerminated, ResultCode, Output);
+    except
+      Success := False;
+      Log(GetExceptionMessage);
+    end;
+
+    if Success and (ResultCode >= 0) then begin
+     Result := ResultCode;
+
+    end else begin
+      Log('VerifySIDirectory failed: '+  IntToStr(ResultCode));
+
+    end;
+end;
 
 // Get the Previous Exult Installation Dir
 // This is done in a manner that is compatible with the old InstallShield setup
@@ -285,7 +425,6 @@ var
   Success: Boolean;
   ResultCode: Integer;
   Output: TExecOutput;
-  stdout:String;
   stderr:String;
   I: integer;
 begin
@@ -328,7 +467,6 @@ var
   Success: Boolean;
   ResultCode: Integer;
   Output: TExecOutput;
-  stdout:String;
   stderr:String;
   I: integer;
 begin
@@ -366,6 +504,11 @@ end;
 //
 procedure InitializeWizard;
 begin
+
+  sExConfigPath :='';
+  // Extract exconfig.exe - will Abort on failure
+  ExtractExConfig();
+
   iExultSupportsInstall := 0
   sNewLine := Chr(10);
   DataDirPage := CreateCustomPage(wpSelectTasks,
@@ -418,6 +561,7 @@ begin
   bSetPaths := False;
 
   DownloadPage := CreateDownloadPage(SetupMessage(msgWizardPreparing), SetupMessage(msgPreparingDesc), @OnDownloadProgress);
+
 end;
 
 //
@@ -425,14 +569,12 @@ end;
 //
 procedure CurPageChanged(CurPageID: Integer);
 var
-  sBGPath: AnsiString;
-  sSIPath: AnsiString;
+  sBGPath: String;
+  sSIPath: String;
 begin
   if CurPageID = DataDirPage.ID then begin
     if bSetPaths = False then begin
-      setlength(sBGPath, 1024);
-      setlength(sSIPath, 1024);
-      GetExultGamePaths(ExpandConstant('{app}'), sBGPath, sSIPath, 1023 );
+      GetExultGamePaths(ExpandConstant('{app}'), sBGPath, sSIPath );
       BGEdit.Text := sBGPath;
       SIEdit.Text := sSIPath;
     end
@@ -517,8 +659,8 @@ end;
 //
 function ShouldSkipPage(PageID: Integer): Boolean;
 var
-  sBGPath: AnsiString;
-  sSIPath: AnsiString;
+  sBGPath: String;
+  sSIPath: String;
 begin
   if PageID = DataDirPage.ID then begin
     Result := (WizardIsComponentSelected('Paths') = False);
@@ -527,7 +669,7 @@ begin
       if bSetPaths = False then begin
         setlength(sBGPath, 1024);
         setlength(sSIPath, 1024);
-        GetExultGamePaths(ExpandConstant('{app}'), sBGPath, sSIPath, 1023 );
+        GetExultGamePaths(ExpandConstant('{app}'), sBGPath, sSIPath );
         BGEdit.Text := sBGPath;
         SIEdit.Text := sSIPath;
         BGPath := sBGPath;

@@ -562,8 +562,8 @@ exultico.o: win32/exultico.rc win32/exult.ico win32/exult.exe.manifest
 exconfig_rc.o: win32/exconfig.rc
 	windres --include-dir win32 win32/exconfig.rc exconfig_rc.o
 
-exconfig.dll: $(FILE_OBJS) $(CONF_OBJS) exconfig_rc.o win32/exconfig.o
-	$(CXX) $(LDFLAGS) -shared -o $@ $^ -static -lstdc++ -Wl,--dynamicbase
+exconfig.exe: $(FILE_OBJS) $(CONF_OBJS) exconfig_rc.o win32/exconfig.o
+	$(CXX) $(LDFLAGS) -o $@ $^ -static -lstdc++
 
 exult_studio$(EXEEXT): $(BG_PAPERDOLL) $(FLEXES) $(ES_OBJS)
 	$(CXX) $(LDFLAGS) -o $@ $(ES_OBJS) $(ES_LIBS)
@@ -635,7 +635,7 @@ modsclean:
 
 
 dist:   U7PATH:=$(DISTPATH)/Exult-$(MSYSTEM_CARCH)
-dist:   $(EXEC) exconfig.dll install Exult\ Source\ Code.url mods
+dist:   $(EXEC) exconfig.exe install Exult\ Source\ Code.url mods
 	mkdir -p $(DISTPATH)
 	cp AUTHORS $(U7PATH)/AUTHORS.txt
 	cp ChangeLog $(U7PATH)/ChangeLog.txt
@@ -654,7 +654,7 @@ dist:   $(EXEC) exconfig.dll install Exult\ Source\ Code.url mods
 	cp data/bg/defaultkeys.txt $(U7PATH)/bgdefaultkeys.txt
 	cp data/si/defaultkeys.txt $(U7PATH)/sidefaultkeys.txt
 	u2d $(U7PATH)/*.txt
-	strip exconfig.dll -o $(DISTPATH)/exconfig-$(MSYSTEM_CARCH).dll
+	strip exconfig.exe -o $(DISTPATH)/exconfig-$(MSYSTEM_CARCH).exe
 	cp win32/exult_installer.iss $(DISTPATH)
 	mkdir -p $(DISTPATH)/mods
 	for mod in $(MODS); do \
@@ -807,7 +807,7 @@ aseprite-plugindist: aseprite-plugin
 	$(call copy_dlls_for_exe, $(ASEPRITEPATH)/exult_shp$(EXEEXT), $(ASEPRITEPATH))
 
 allclean: clean toolsclean studioclean modsclean pluginclean aseprite-pluginclean
-	rm -f exconfig.dll exconfig_rc.o win32/exconfig.o
+	rm -f exconfig.exe exconfig_rc.o win32/exconfig.o
 	rm -f Exult\ Source\ Code.url
 
 allinstall: install toolsinstall studioinstall
