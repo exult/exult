@@ -479,5 +479,6 @@ void Dynamic_container_gump::paint() {
 
 bool Dynamic_container_gump::has_config(int shapenum) {
 	const Gump_info* info = Gump_info::get_gump_info(shapenum);
-	return info && info->has_area;
+	// Only use Dynamic_container_gump when snap zones are configured
+	return info && info->has_area && info->has_snap_zones();
 }
