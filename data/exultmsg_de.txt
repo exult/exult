@@ -490,6 +490,18 @@
 0x71D: NPC-Tool autom. NPC Auswahl deaktiviert
 0x71E: NPC Nummern aktiviert
 0x71F: NPC Nummern deaktiviert
+0x720: Event Trigger Bereich (Eggs): Alle Arten
+0x721: Event Trigger Bereich (Eggs): Aus
+0x722: Event Trigger Bereich (Eggs): Monster
+0x723: Event Trigger Bereich (Eggs): Musik
+0x724: Event Trigger Bereich (Eggs): Soundeffekte
+0x725: Event Trigger Bereich (Eggs): Sprache
+0x726: Event Trigger Bereich (Eggs): Usecode
+0x727: Event Trigger Bereich (Eggs): Geschoss
+0x728: Event Trigger Bereich (Eggs): Teleport
+0x729: Event Trigger Bereich (Eggs): Wetter
+0x72A: Event Trigger Bereich (Eggs): Schalter
+0x72B: Event Trigger Bereich (Eggs): Kartenwechsel
 
 # combat.cc
 0x730: Kampf wieder aufgenommen
