@@ -32,8 +32,7 @@
 #define WANT_x64 !Int(NO_x64)
 
 #ifndef NO_ARM64
- ; #if (MINGW_SYS == "clangarm64") || (MINGW_SYS == "")
-  #if (MINGW_SYS == "clangarm64")
+  #if (MINGW_SYS == "clangarm64") || (MINGW_SYS == "")
     #define NO_ARM64 0    
   #else
     #define NO_ARM64 1
