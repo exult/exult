@@ -47,18 +47,21 @@ CreateUninstallRegKey=no
 UpdateUninstallLogAppName=no
 AppID=GIMP-U7SHP-Plugin
 PrivilegesRequired=none
-ArchitecturesAllowed=x64compatible
-;use this when ARM64 plugin compilation is enabled
-;ArchitecturesAllowed=x64compatible arm64
+#include "archs_include.iss"
+ArchitecturesInstallIn64BitMode={#archs64}
+ArchitecturesAllowed={#archs}
 
 [Files]
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 ; The official Gimp 3 64 bits is built with CLang64 and so is Exult
 ; => The dependent DLLs of the Gimp plugin are provided by Gimp
-; x86_64 files
+
+#if WANT_x64
 Source: "GimpPlugin-x86_64\u7shp.exe"; DestDir: "{userappdata}\gimp\3.0\plug-ins\u7shp"; Flags: ignoreversion; Check: IsGIMPx64
-; ARM64 files
-;Source: "GimpPlugin-ARM64\u7shp.exe"; DestDir: "{userappdata}\gimp\3.0\plug-ins\u7shp"; Flags: ignoreversion; Check: IsGIMPARM64
+#endif
+#if WANT_ARM64
+Source: "GimpPlugin-aarch64\u7shp.exe"; DestDir: "{userappdata}\gimp\3.0\plug-ins\u7shp"; Flags: ignoreversion; Check: IsGIMPARM64
+#endif
 
 [Code]
 const

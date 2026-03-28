@@ -215,9 +215,9 @@ jobs:
           SNAPSHOT_PATH=$(cygpath -m ~/Exult-dist)
           cd "${SNAPSHOT_PATH}"
           "/c/Program Files (x86)/Inno Setup 6/ISCC.exe" exult_installer.iss
-          "/c/Program Files (x86)/Inno Setup 6/ISCC.exe" exult_studio_installer.iss
-          "/c/Program Files (x86)/Inno Setup 6/ISCC.exe" exult_tools_installer.iss
-          "/c/Program Files (x86)/Inno Setup 6/ISCC.exe" exult_shpplugin_installer.iss
+          "/c/Program Files (x86)/Inno Setup 6/ISCC.exe" -NO_i686=1 exult_studio_installer.iss
+          "/c/Program Files (x86)/Inno Setup 6/ISCC.exe" -NO_i686=1 exult_tools_installer.iss
+          "/c/Program Files (x86)/Inno Setup 6/ISCC.exe" -NO_i686=1 exult_shpplugin_installer.iss
           "/c/Program Files/7-Zip/7z.exe" -tzip a Keyring.zip -mx9 -mmt ./bgkeyring/*
           "/c/Program Files/7-Zip/7z.exe" -tzip a SFisland.zip -mx9 -mmt ./islefaq/*
           "/c/Program Files/7-Zip/7z.exe" -tzip a Sifixes.zip -mx9 -mmt ./sifixes/*
