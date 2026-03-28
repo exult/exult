@@ -1,3 +1,5 @@
+
+
 [Setup]
 AppName=Exult
 AppVerName=Exult 1.13.1git Snapshot
@@ -18,7 +20,9 @@ InternalCompressLevel=max
 OutputDir=.
 DisableWelcomePage=no
 WizardStyle=modern
-ArchitecturesInstallIn64BitMode=x64compatible
+#include "archs_include.iss"
+ArchitecturesInstallIn64BitMode={#archs64}
+ArchitecturesAllowed={#archs}
 
 [Dirs]
 Name: "{app}\data"
@@ -47,39 +51,44 @@ Name: "downloads\3rdpartymods\glimmerscape"; Description: "Glimmerscape by Donfr
 
 [Files]
 ; donotcopy files should be first
-; Include all versions of exconfig
+; Include all versions of exconfig in the dist dir
 Source: exconfig*.exe; Flags: dontcopy
 ; Mod zip files
-Source: mods\sifixes.zip; Flags: dontcopy
-Source: mods\bgkeyring.zip; Flags: dontcopy
-Source: mods\islefaq.zip; Flags: dontcopy
-; NOTE: Don't use "Flags: ignoreversion" on any shared system files
-; 32-bit files
-Source: Exult-i686\Exult.exe; DestDir: {app}; Flags: ignoreversion; Components: Exult; Check: not Is64BitInstallMode
-Source: Exult-i686\*.dll; DestDir: {app};  Flags: ignoreversion; Components: Exult; Check: not Is64BitInstallMode
-; 64-bit files
-Source: Exult-x86_64\Exult.exe; DestDir: {app}; Flags: ignoreversion; Components: Exult; Check: Is64BitInstallMode
-Source: Exult-x86_64\*.dll; DestDir: {app};  Flags: ignoreversion; Components: Exult; Check: Is64BitInstallMode
+Source: Exult\mods\sifixes.zip; Flags: dontcopy
+Source: Exult\mods\bgkeyring.zip; Flags: dontcopy
+Source: Exult\mods\islefaq.zip; Flags: dontcopy
+#if WANT_i686
+Source: Exult\i686\Exult.exe; DestDir: {app}; Flags: ignoreversion; Components: Exult; Check: not Is64BitInstallMode
+Source: Exult\i686\*.dll; DestDir: {app};  Flags: ignoreversion; Components: Exult; Check: not Is64BitInstallMode
+#endif
+#if WANT_x64
+Source: Exult\x86_64\Exult.exe; DestDir: {app}; Flags: ignoreversion; Components: Exult; Check: Is64BitInstallMode and {#x64Check}
+Source: Exult\x86_64\*.dll; DestDir: {app};  Flags: ignoreversion; Components: Exult; Check: Is64BitInstallMode and {#x64Check}
+#endif
+#if WANT_ARM64
+Source: Exult\aarch64\Exult.exe; DestDir: {app}; Flags: ignoreversion; Components: Exult; Check: IsArm64
+Source: Exult\aarch64\*.dll; DestDir: {app};  Flags: ignoreversion; Components: Exult; Check: IsArm64
+#endif
 ; Architecture-neutral files
-Source: Exult-i686\COPYING.txt; DestDir: {app}; Flags: ignoreversion; Components: GPL
-Source: Exult-i686\Exult Source Code.url; DestDir: {app}; Flags: ignoreversion; Components: GPL
-Source: Exult-i686\README-SDL.txt; DestDir: {app}; Flags: ignoreversion; Components: Exult
-Source: Exult-i686\AUTHORS.txt; DestDir: {app}; Flags: ignoreversion; Components: Docs
-Source: Exult-i686\bgdefaultkeys.txt; DestDir: {app}; Flags: ignoreversion; Components: Docs
-Source: Exult-i686\ChangeLog.txt; DestDir: {app}; Flags: ignoreversion; Components: Docs
-Source: Exult-i686\faq.html; DestDir: {app}; Flags: ignoreversion; Components: Docs
-Source: Exult-i686\FAQ.txt; DestDir: {app}; Flags: ignoreversion; Components: Docs
-Source: Exult-i686\NEWS.txt; DestDir: {app}; Flags: ignoreversion; Components: Docs
-Source: Exult-i686\ReadMe.html; DestDir: {app}; Flags: ignoreversion isreadme; Components: Docs
-Source: Exult-i686\README.txt; DestDir: {app}; Flags: ignoreversion; Components: Docs
-Source: Exult-i686\README.windows.txt; DestDir: {app}; Flags: ignoreversion; Components: Docs
-Source: Exult-i686\sidefaultkeys.txt; DestDir: {app}; Flags: ignoreversion; Components: Docs
-Source: Exult-i686\images\*.gif; DestDir: {app}\images; Flags: ignoreversion nocompression; Components: Docs
-Source: Exult-i686\images\*.svg; DestDir: {app}\images; Flags: ignoreversion nocompression; Components: Docs
-Source: Exult-i686\images\docs*.png; DestDir: {app}\images; Flags: ignoreversion nocompression; Components: Docs
-Source: Exult-i686\Data\exult.flx; DestDir: {app}\data; Flags: ignoreversion; Components: Exult
-Source: Exult-i686\Data\exult_bg.flx; DestDir: {app}\data; Flags: ignoreversion; Components: Exult
-Source: Exult-i686\Data\exult_si.flx; DestDir: {app}\data; Flags: ignoreversion; Components: Exult
+Source: Exult\COPYING.txt; DestDir: {app}; Flags: ignoreversion; Components: GPL
+Source: Exult\Exult Source Code.url; DestDir: {app}; Flags: ignoreversion; Components: GPL
+Source: Exult\README-SDL.txt; DestDir: {app}; Flags: ignoreversion; Components: Exult
+Source: Exult\AUTHORS.txt; DestDir: {app}; Flags: ignoreversion; Components: Docs
+Source: Exult\bgdefaultkeys.txt; DestDir: {app}; Flags: ignoreversion; Components: Docs
+Source: Exult\ChangeLog.txt; DestDir: {app}; Flags: ignoreversion; Components: Docs
+Source: Exult\faq.html; DestDir: {app}; Flags: ignoreversion; Components: Docs
+Source: Exult\FAQ.txt; DestDir: {app}; Flags: ignoreversion; Components: Docs
+Source: Exult\NEWS.txt; DestDir: {app}; Flags: ignoreversion; Components: Docs
+Source: Exult\ReadMe.html; DestDir: {app}; Flags: ignoreversion isreadme; Components: Docs
+Source: Exult\README.txt; DestDir: {app}; Flags: ignoreversion; Components: Docs
+Source: Exult\README.windows.txt; DestDir: {app}; Flags: ignoreversion; Components: Docs
+Source: Exult\sidefaultkeys.txt; DestDir: {app}; Flags: ignoreversion; Components: Docs
+Source: Exult\images\*.gif; DestDir: {app}\images; Flags: ignoreversion nocompression; Components: Docs
+Source: Exult\images\*.svg; DestDir: {app}\images; Flags: ignoreversion nocompression; Components: Docs
+Source: Exult\images\docs*.png; DestDir: {app}\images; Flags: ignoreversion nocompression; Components: Docs
+Source: Exult\Data\exult.flx; DestDir: {app}\data; Flags: ignoreversion; Components: Exult
+Source: Exult\Data\exult_bg.flx; DestDir: {app}\data; Flags: ignoreversion; Components: Exult
+Source: Exult\Data\exult_si.flx; DestDir: {app}\data; Flags: ignoreversion; Components: Exult
 
 
 
@@ -147,20 +156,26 @@ begin
 // Try 64 bit exconfigs first
   if Is64BitInstallMode() then begin
 
+#if WANT_ARM64
     if (sExConfigPath = '') and IsARM64 then begin
       ExtactAndTextExconfig('exconfig-aarch64.exe')
     end;  
+#endif
+#if WANT_x64
     if (sExConfigPath = '') and IsX64Compatible then begin    
       ExtactAndTextExconfig('exconfig-x86_64.exe')
     end;
+#endif
     
   end;
 
   // Didn't find a usable 64 bit exconfig so fallback to 32 bit i686
+#if WANT_i686
   if (sExConfigPath = '') then begin
     ExtactAndTextExconfig('exconfig-i686.exe');
   end;
-  // Still don't have exconfig so try one one with no specified arch
+#endif
+  // Still don't have exconfig so try one with no specified arch
   if (sExConfigPath = '') then begin
     ExtactAndTextExconfig('exconfig.exe');
   end;

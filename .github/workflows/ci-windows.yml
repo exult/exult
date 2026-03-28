@@ -140,15 +140,7 @@ jobs:
             popd
           done
           cd disttest
-          mkdir Exult-i686
-          cp -r Exult-x86_64/* Exult-i686
-          mkdir studio-i686
-          cp -r studio-x86_64/* studio-i686
-          mkdir tools-i686
-          cp -r tools-x86_64/* tools-i686
-          mkdir GimpPlugin-i686
-          cp -r GimpPlugin-x86_64/* GimpPlugin-i686
-          "/c/Program Files (x86)/Inno Setup 6/ISCC.exe" exult_installer.iss
-          "/c/Program Files (x86)/Inno Setup 6/ISCC.exe" exult_studio_installer.iss
-          "/c/Program Files (x86)/Inno Setup 6/ISCC.exe" exult_tools_installer.iss
-          "/c/Program Files (x86)/Inno Setup 6/ISCC.exe" exult_shpplugin_installer.iss
+                    "/c/Program Files (x86)/Inno Setup 6/ISCC.exe" -DMINGW_SYS=${{ matrix.sys }} exult_installer.iss
+          "/c/Program Files (x86)/Inno Setup 6/ISCC.exe" -DMINGW_SYS=${{ matrix.sys }} exult_studio_installer.iss
+          "/c/Program Files (x86)/Inno Setup 6/ISCC.exe" -DMINGW_SYS=${{ matrix.sys }} exult_tools_installer.iss
+          "/c/Program Files (x86)/Inno Setup 6/ISCC.exe" -DMINGW_SYS=${{ matrix.sys }} exult_shpplugin_installer.iss
