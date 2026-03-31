@@ -184,7 +184,7 @@ class Combo_chooser : public Object_browser, public Shape_draw {
 	int  voffset;
 	int  per_row;
 	void show(int x, int y, int w, int h) override;
-	void select(int new_sel);    // Show new selection.
+	void select(int new_sel) override;    // Show new selection.
 
 	void load() override {
 		load_internal();

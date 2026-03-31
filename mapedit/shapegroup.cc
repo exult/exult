@@ -1044,7 +1044,7 @@ C_EXPORT gboolean on_group_window_delete_event(GtkWidget* widget, GdkEvent* even
 C_EXPORT void on_group_up_clicked(GtkToggleButton* button, gpointer user_data) {
 	ignore_unused_variable_warning(user_data, button);
 	auto* chooser
-			= static_cast<Shape_chooser*>(g_object_get_data(G_OBJECT(gtk_widget_get_toplevel(GTK_WIDGET(button))), "browser"));
+			= static_cast<Object_browser*>(g_object_get_data(G_OBJECT(gtk_widget_get_toplevel(GTK_WIDGET(button))), "browser"));
 	Shape_group* grp = chooser->get_group();
 	const int    i   = chooser->get_selected();
 	if (grp && i > 0) {    // Moving item up.
@@ -1058,7 +1058,7 @@ C_EXPORT void on_group_up_clicked(GtkToggleButton* button, gpointer user_data) {
 C_EXPORT void on_group_down_clicked(GtkToggleButton* button, gpointer user_data) {
 	ignore_unused_variable_warning(user_data, button);
 	auto* chooser
-			= static_cast<Shape_chooser*>(g_object_get_data(G_OBJECT(gtk_widget_get_toplevel(GTK_WIDGET(button))), "browser"));
+			= static_cast<Object_browser*>(g_object_get_data(G_OBJECT(gtk_widget_get_toplevel(GTK_WIDGET(button))), "browser"));
 	Shape_group* grp = chooser->get_group();
 	const int    i   = chooser->get_selected();
 	if (grp && i >= 0 && i < grp->size() - 1) {    // Moving down.

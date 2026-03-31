@@ -73,8 +73,8 @@ class Chunk_chooser : public Object_browser, public Shape_draw {
 	int  per_row;
 	void show(int x, int y, int w, int h) override;
 	void tell_server();
-	void select(int new_sel);    // Show new selection.
-	void render() override;      // Draw list.
+	void select(int new_sel) override;    // Show new selection.
+	void render() override;               // Draw list.
 	void setup_info(bool savepos = true) override;
 
 	void set_background_color(guint32 c) override {

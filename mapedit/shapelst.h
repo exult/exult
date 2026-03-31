@@ -137,7 +137,7 @@ class Shape_chooser : public Object_browser, public Shape_draw {
 	void goto_index(unsigned index);    // Get desired index in view.
 
 public:
-	void select(int new_sel);    // Show new selection.
+	void select(int new_sel) override;    // Show new selection.
 
 	int get_selected_id() override {
 		return selected < 0 ? -1 : info[selected].shapenum;
