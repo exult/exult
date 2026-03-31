@@ -72,8 +72,23 @@ void Dynamic_button::paint() {
 	// Save/restore frame so the resting frame (default_frame) stays current
 	// outside of painting.  This prevents on_widget() from checking
 	// hit-tests against the clicked_frame whose shape origin may differ.
+	// Compensate for origin differences between default and paint frames.
+	// If the clicked frame has a different xleft/yabove than the default
+	// frame, adjust the paint position so both frames render at the same
+	// screen location.
 	const int prev_frame = get_framenum();
-	set_frame(paint_frame);
+	if (paint_frame != default_frame) {
+		set_frame(default_frame);
+		Shape_frame* f0 = get_shape();
+		set_frame(paint_frame);
+		Shape_frame* f1 = get_shape();
+		if (f0 && f1) {
+			sx += f1->get_xleft() - f0->get_xleft();
+			sy += f1->get_yabove() - f0->get_yabove();
+		}
+	} else {
+		set_frame(paint_frame);
+	}
 	paint_shape(sx, sy);
 	set_frame(prev_frame);
 }

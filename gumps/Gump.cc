@@ -490,12 +490,22 @@ void Gump::close() {
 }
 
 /*
- *  Does the gump have this spot
+ *  Does the gump have this spot?  Check the background shape first,
+ *  then fall back to checking child widgets (buttons, sliders, etc.)
+ *  which may extend beyond the background art.
  */
 bool Gump::has_point(int sx, int sy) const {
 	Shape_frame* s = get_shape();
-
-	return s && s->has_point(sx - x, sy - y);
+	if (s && s->has_point(sx - x, sy - y)) {
+		return true;
+	}
+	// Check if any child widget covers this point.
+	for (const auto* w : elems) {
+		if (w->on_widget(sx, sy)) {
+			return true;
+		}
+	}
+	return false;
 }
 
 /*

@@ -359,6 +359,12 @@ void Gump_manager::add_gump(
 	// Paint new one last.
 	add_gump(new_gump);
 
+	// Center dynamic gumps — the cascading position and saved-position
+	// restore can place these larger gumps offscreen.
+	if (dynamic_cast<Dynamic_container_gump*>(new_gump)) {
+		new_gump->set_pos();
+	}
+
 	// For Dynamic_container_gumps, fire the gump's shape usecode with
 	// double_click so that on-open initialisation functions can run.
 	if (dynamic_cast<Dynamic_container_gump*>(new_gump)) {

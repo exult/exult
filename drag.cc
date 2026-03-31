@@ -325,8 +325,6 @@ bool Dragging_info::drop(
 	if (button) {
 		button->unpush(Gump::MouseButton::Left);
 		const bool release_hit = button->on_button(x, y);
-		std::cerr << "[Drag::drop] button shape=" << button->get_shapenum() << " release at (" << x << "," << y << ")"
-				  << " on_button=" << (release_hit ? "HIT" : "MISS") << std::endl;
 		if (release_hit) {
 			// Clicked on button.
 			button->activate(Gump::MouseButton::Left);
