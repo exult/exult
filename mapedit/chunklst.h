@@ -53,11 +53,10 @@ class Chunk_info {
  *  This class manages the list of chunks.
  */
 class Chunk_chooser : public Object_browser, public Shape_draw {
-	std::istream& chunkfile;    // Where chunks are read from (each is
-	//   256 shape ID's (2 or 3 bytes).
-	GtkWidget* sbar;          // Status bar.
-	guint      sbar_sel;      // Status bar context for selection.
-	int        num_chunks;    // Total # of chunks.
+	std::istream& chunkfile;     // Where chunks are read from (each is 256 shape ID's (2 or 3 bytes).
+	GtkWidget*    sbar;          // Status bar.
+	guint         sbar_sel;      // Status bar context for selection.
+	int           num_chunks;    // Total # of chunks.
 	// List of chunks we've read in.
 	std::vector<unsigned char*> chunklist;
 	int                         chunksz;                 // # bytes/chunk.
@@ -67,6 +66,7 @@ class Chunk_chooser : public Object_browser, public Shape_draw {
 	int                         locate_cx, locate_cy;    // Last chunk found by 'locate'.
 	bool                        drop_enabled;            // So we only do it once.
 	int                         to_del;                  // Terrain # to delete, or -1.
+	int                         index0;                  // Index of top-leftmost in displayed list.
 	void (*sel_changed)();                               // Called when selection changes.
 	// Blit onto screen.
 	int  voffset;
