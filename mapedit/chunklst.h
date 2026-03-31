@@ -38,7 +38,7 @@ class Shape_group;
 /*
  *  Store information about an individual chunk shown in the list.
  */
-class Chunk_info {
+class Chunk_entry {
 	friend class Chunk_chooser;
 	int      num;
 	TileRect box;    // Box where drawn.
@@ -47,6 +47,16 @@ class Chunk_info {
 		num = n;
 		box = TileRect(rx, ry, rw, rh);
 	}
+};
+
+/*
+ *  One row.
+ */
+class Chunk_row {
+	friend class Chunk_chooser;
+	short    height = 0;    // In pixels.
+	long     y      = 0;    // Absolute y-coord. in pixels.
+	unsigned index0 = 0;    // Index of 1st Npc_entry in row.
 };
 
 /*
@@ -59,23 +69,25 @@ class Chunk_chooser : public Object_browser, public Shape_draw {
 	int           num_chunks;    // Total # of chunks.
 	// List of chunks we've read in.
 	std::vector<unsigned char*> chunklist;
-	int                         chunksz;                 // # bytes/chunk.
-	int                         headersz;                // # bytes in header.
-	Chunk_info*                 info;                    // An entry for each chunk drawn.
-	int                         info_cnt;                // # entries in info.
+	int                         chunksz;     // # bytes/chunk.
+	int                         headersz;    // # bytes in header.
+	std::vector<Chunk_entry>    info;        // Pos. of each shape/frame.
+	std::vector<Chunk_row>      rows;
+	unsigned                    row0;                    // Row # at top of window.
+	int                         row0_voffset;            // Vert. pos. (in pixels) of top row.
+	long                        total_height;            // In pixels, for all rows.
 	int                         locate_cx, locate_cy;    // Last chunk found by 'locate'.
 	bool                        drop_enabled;            // So we only do it once.
 	int                         to_del;                  // Terrain # to delete, or -1.
-	int                         index0;                  // Index of top-leftmost in displayed list.
 	void (*sel_changed)();                               // Called when selection changes.
 	// Blit onto screen.
 	int  voffset;
-	int  per_row;
 	void show(int x, int y, int w, int h) override;
 	void tell_server();
 	void select(int new_sel) override;    // Show new selection.
 	void render() override;               // Draw list.
 	void setup_info(bool savepos = true) override;
+	void setup_shapes_info();
 
 	void set_background_color(guint32 c) override {
 		Shape_draw::set_background_color(c);
@@ -89,11 +101,12 @@ class Chunk_chooser : public Object_browser, public Shape_draw {
 	void           update_num_chunks(int new_num_chunks);
 	void           set_chunk(const unsigned char* data, int datalen);
 	void           render_chunk(int chunknum, Image_buffer8* rwin, int xoff, int yoff);
-	void           scroll(int newpixel);    // Scroll.
-	void           scroll(bool upwards);
-	void           enable_controls();    // Enable/disable controls after sel.
-	//   has changed.
-	GtkWidget* create_popup() override;    // Popup menu.
+	void           scroll_row_vertical(unsigned newrow);
+	void           scroll_vertical(int newoffset);    // Scroll.
+	void           setup_vscrollbar();                // Set new scroll amounts.
+	void           goto_index(unsigned index);        // Get desired index in view.
+	void           enable_controls();                 // Enable/disable controls after selection has changed.
+	GtkWidget*     create_popup() override;           // Popup menu.
 public:
 	Chunk_chooser(Vga_file* i, std::istream& cfile, unsigned char* palbuf, int w, int h, Shape_group* g = nullptr);
 	~Chunk_chooser() override;
@@ -110,13 +123,17 @@ public:
 		sel_changed = fun;
 	}
 
+	unsigned get_num_cols(unsigned rownum) {
+		return ((rownum < rows.size() - 1) ? rows[rownum + 1].index0 : info.size()) - rows[rownum].index0;
+	}
+
 	int get_count();    // Get # chunks we can display.
 	// Configure when created/resized.
-	static gint configure(GtkWidget* widget, GdkEventConfigure* event, gpointer data);
+	gint configure(GdkEventConfigure* event);
 	// Blit to screen.
 	static gint expose(GtkWidget* widget, cairo_t* cairo, gpointer data);
 	// Handle mouse press.
-	static gint mouse_press(GtkWidget* widget, GdkEventButton* event, gpointer data);
+	gint mouse_press(GtkWidget* widget, GdkEventButton* event);
 	// Give dragged chunk.
 	static void drag_data_get(
 			GtkWidget* widget, GdkDragContext* context, GtkSelectionData* seldata, guint info, guint time, gpointer data);
@@ -127,7 +144,7 @@ public:
 			gpointer udata);
 	void enable_drop();
 	// Handle scrollbar.
-	static void scrolled(GtkAdjustment* adj, gpointer data);
+	static void vscrolled(GtkAdjustment* adj, gpointer data);
 	void        locate(int dir);    // Locate terrain on game map.
 	void        locate(bool upwards) override;
 	void        locate_response(const unsigned char* data, int datalen);
