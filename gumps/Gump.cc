@@ -22,6 +22,10 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "Gump.h"
 
+#include "Dynamic_button.h"
+#include "Dynamic_shape_widget.h"
+#include "Dynamic_slider.h"
+#include "Dynamic_text_widget.h"
 #include "Gump_button.h"
 #include "Gump_manager.h"
 #include "U7obj.h"
@@ -150,6 +154,27 @@ void Gump::set_object_area(TileRect area, int checkx, int checky, bool set_check
 		})) {
 		elems.push_back(new Checkmark_button(this, checkx, checky));
 	}
+
+	// Create dynamic elements from gump_info.txt configuration.
+	// Only fires for gumps that have dynamic element definitions — zero impact
+	// on existing gumps.
+	if (get_shapenum() >= 0 && get_shapefile() == SF_GUMPS_VGA) {
+		const Gump_info* info = Gump_info::get_gump_info(get_shapenum());
+		if (info) {
+			for (const auto& def : info->dynamic_buttons) {
+				elems.push_back(new Dynamic_button(this, def));
+			}
+			for (const auto& def : info->dynamic_texts) {
+				elems.push_back(new Dynamic_text_widget(this, def));
+			}
+			for (const auto& def : info->dynamic_shapes) {
+				elems.push_back(new Dynamic_shape_widget(this, def));
+			}
+			for (const auto& def : info->dynamic_sliders) {
+				elems.push_back(new Dynamic_slider(this, def));
+			}
+		}
+	}
 }
 
 /*
@@ -248,6 +273,20 @@ Gump_button* Gump::on_button(
 	for (auto* w : elems) {
 		if (w->on_button(mx, my)) {
 			return w->as_button();
+		}
+	}
+	return nullptr;
+}
+
+/*
+ *  Forward a mouse-down event to child widgets (e.g. slider thumb/track).
+ *  Returns the widget that handled the event, or nullptr.
+ */
+
+Gump_widget* Gump::forward_mouse_down(int mx, int my, MouseButton button) {
+	for (auto* w : elems) {
+		if (w->mouse_down(mx, my, button)) {
+			return w;
 		}
 	}
 	return nullptr;
