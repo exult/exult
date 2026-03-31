@@ -4134,6 +4134,7 @@ void ExultStudio::on_zoom_bilinear(GtkToggleButton* btn, gpointer user_data) {
 		// No need to setup_info, the sizes of the shapes do not change.
 		studio->browser->render();
 	}
+	studio->update_group_windows(nullptr);
 }
 
 void ExultStudio::on_zoom_up(GtkButton* btn, gpointer user_data) {
@@ -4155,6 +4156,7 @@ void ExultStudio::on_zoom_up(GtkButton* btn, gpointer user_data) {
 		studio->browser->setup_info(true);
 		studio->browser->render();
 	}
+	studio->update_group_windows(nullptr);
 }
 
 void ExultStudio::on_zoom_down(GtkButton* btn, gpointer user_data) {
@@ -4176,6 +4178,7 @@ void ExultStudio::on_zoom_down(GtkButton* btn, gpointer user_data) {
 		studio->browser->setup_info(true);
 		studio->browser->render();
 	}
+	studio->update_group_windows(nullptr);
 }
 
 gboolean ExultStudio::on_app_key_press(GtkEntry* entry, GdkEventKey* event, gpointer user_data) {
