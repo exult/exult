@@ -695,7 +695,7 @@ Chunk_chooser::Chunk_chooser(
 		)
 		: Object_browser(g), Shape_draw(i, palbuf, gtk_drawing_area_new()), chunkfile(cfile),
 		  chunksz(c_tiles_per_chunk * c_tiles_per_chunk * 2), headersz(0), info(nullptr), info_cnt(0), locate_cx(-1), locate_cy(-1),
-		  drop_enabled(false), to_del(-1), sel_changed(nullptr), voffset(0), per_row(1) {
+		  drop_enabled(false), to_del(-1), index0(0), sel_changed(nullptr), voffset(0), per_row(1) {
 	static char v2hdr[] = {'\xff', '\xff', '\xff', '\xff', 'e', 'x', 'l', 't', 0, 0};
 	char        v2buf[V2_CHUNK_HDR_SIZE];    // Check for V2 chunks.
 	chunkfile.seekg(0);
