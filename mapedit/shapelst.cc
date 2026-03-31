@@ -152,8 +152,6 @@ void Shape_chooser::render() {
 	// Clear window first.
 	iwin->fill8(255);    // Set to background_color.
 	int curr_y = -row0_voffset;
-	// int total_cnt = get_count();
-	//    filter (group).
 	for (unsigned rownum = row0; curr_y < winh && rownum < rows.size(); ++rownum) {
 		const Shape_row& row  = rows[rownum];
 		unsigned         cols = get_num_cols(rownum);
@@ -228,12 +226,9 @@ void Shape_chooser::setup_info(bool savepos    // Try to keep current position.
 	rows.resize(0);
 	row0 = row0_voffset = 0;
 	last_shape          = 0;
-	/* +++++NOTE:  index0 is always 0 for the shape browse.  It should
-		probably be removed from the base Obj_browser class */
-	index0       = 0;
-	voffset      = 0;
-	hoffset      = 0;
-	total_height = 0;
+	voffset             = 0;
+	hoffset             = 0;
+	total_height        = 0;
 	if (frames_mode) {
 		setup_frames_info();
 	} else {
@@ -267,7 +262,6 @@ void Shape_chooser::setup_shapes_info() {
 	int        curr_y    = 0;
 	int        row_h     = 0;
 	const int  total_cnt = get_count();
-	//   filter (group).
 	rows.resize(1);    // Start 1st row.
 	rows[0].index0 = 0;
 	rows[0].y      = 0;
@@ -314,7 +308,7 @@ void Shape_chooser::setup_frames_info() {
 	int            maxw      = 0;
 	const unsigned total_cnt = get_count();
 	//   filter (group).
-	for (unsigned index = index0; index < total_cnt; index++) {
+	for (unsigned index = 0; index < total_cnt; index++) {
 		const int shapenum = group ? (*group)[index] : index;
 		// Get all frames.
 		Shape*    shape   = ifile->extract_shape(shapenum);
@@ -520,7 +514,7 @@ gint Shape_chooser::drag_motion(
 }
 
 /*
- *  Handle a mouse button-press event.
+ *  Handle a mouse button press event.
  */
 gint Shape_chooser::mouse_press(
 		GtkWidget*      widget,    // The view window.
@@ -579,6 +573,7 @@ gint Shape_chooser::mouse_press(
 /*
  *  Handle mouse button press/release events.
  */
+
 static gint Mouse_press(
 		GtkWidget*      widget,    // The view window.
 		GdkEventButton* event,
