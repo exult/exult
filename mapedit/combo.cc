@@ -47,8 +47,7 @@ using std::unique_ptr;
 
 class Game_object;
 
-const int border = 2;    // Border at bottom, sides of each
-//   combo in browser.
+const int border   = 2;     // Border at bottom, sides of each combo in browser.
 const int maxtiles = 96;    // Max. width/height in tiles.
 
 /*
@@ -773,7 +772,8 @@ void Combo_chooser::show(
 		// Draw yellow box.
 		cairo_set_line_width(drawgc, zoom_scale / 2.0);
 		cairo_set_source_rgb(drawgc, ((drawfg >> 16) & 255) / 255.0, ((drawfg >> 8) & 255) / 255.0, (drawfg & 255) / 255.0);
-		cairo_rectangle(drawgc, (b.x * zoom_scale) / 2, (b.y * zoom_scale) / 2, (b.w * zoom_scale) / 2, (b.h * zoom_scale) / 2);
+		cairo_rectangle(
+				drawgc, (b.x * zoom_scale) / 2, ((b.y - voffset) * zoom_scale) / 2, (b.w * zoom_scale) / 2, (b.h * zoom_scale) / 2);
 		cairo_stroke(drawgc);
 	}
 }
@@ -784,7 +784,7 @@ void Combo_chooser::show(
  */
 
 void Combo_chooser::select(int new_sel) {
-	if (new_sel < 0 || new_sel >= info_cnt) {
+	if (new_sel < 0 || new_sel >= static_cast<int>(info.size())) {
 		return;    // Bad value.
 	}
 	selected = new_sel;
@@ -818,9 +818,9 @@ void Combo_chooser::unselect(bool need_render    // 1 to render and show.
 		}
 	}
 	enable_controls();    // Enable/disable controls.
-	if (info_cnt > 0) {
+	if (info.size() > 0) {
 		char buf[150];    // Show new selection.
-		g_snprintf(buf, sizeof(buf), "Combos %d to %d", info[0].num, info[info_cnt - 1].num);
+		g_snprintf(buf, sizeof(buf), "Combos %d to %d", info[0].num, info[info.size() - 1].num);
 		gtk_statusbar_push(GTK_STATUSBAR(sbar), sbar_sel, buf);
 	} else {
 		gtk_statusbar_push(GTK_STATUSBAR(sbar), sbar_sel, "No combos");
@@ -859,56 +859,28 @@ void Combo_chooser::load_internal() {
  */
 
 void Combo_chooser::render() {
-	// Look for selected frame.
-	int selcombo     = -1;
-	int new_selected = -1;
-	if (selected >= 0) {    // Save selection info.
-		selcombo = info[selected].num;
-	}
-	// Remove "selected" message.
-	// gtk_statusbar_pop(GTK_STATUSBAR(sbar), sbar_sel);
-	delete[] info;    // Delete old info. list.
 	// Get drawing area dimensions.
 	GtkAllocation alloc = {0, 0, 0, 0};
 	gtk_widget_get_allocation(draw, &alloc);
 	const gint winw = ZoomDown(alloc.width);
 	const gint winh = ZoomDown(alloc.height);
-	// Provide more than enough room.
-	info     = new Combo_info[256];
-	info_cnt = 0;    // Count them.
 	// Clear window first.
 	iwin->fill8(255);    // Background color.
-	int index = index0;
-	// We'll always show 128x128.
-	const int combow    = 128;
-	const int comboh    = 128;
-	const int total_cnt = get_count();
-	int       y         = border - voffset;
-	while (index < total_cnt && y < winh) {
-		int       x     = border;
-		const int cliph = y + comboh <= winh ? comboh : (winh - y);
-		while (index < total_cnt && (x + combow + border <= winw || x == border)) {
-			const int clipw = x + combow <= winw ? combow : (winw - x);
-			iwin->set_clip(x, y, clipw, cliph);
-			const int combonum = group ? (*group)[index] : index;
-			combos[combonum]->draw(this, -1, x, y);
+	const int combow = 128;
+	const int comboh = 128;
+	int       curr_y = -row0_voffset;
+	for (unsigned rownum = row0; curr_y < winh && rownum < rows.size(); ++rownum) {
+		const Combo_row& row  = rows[rownum];
+		unsigned         cols = get_num_cols(rownum);
+		for (unsigned index = row.index0; cols; --cols, ++index) {
+			const int combonum = info[index].num;
+			const int sx       = info[index].box.x;
+			const int sy       = info[index].box.y - voffset;
+			iwin->set_clip(std::max(sx, 0), std::max(sy, 0), std::min(sx + combow, winw), std::min(sy + comboh, winh));
+			combos[combonum]->draw(this, -1, sx, sy);
 			iwin->clear_clip();
-			// Store info. about where drawn.
-			info[info_cnt].set(combonum, x, y, combow, comboh);
-			if (combonum == selcombo) {
-				// Found the selected combo.
-				new_selected = info_cnt;
-			}
-			info_cnt++;
-			index++;    // Next combo.
-			x += combow + border;
 		}
-		y += comboh + border;
-	}
-	if (new_selected == -1) {
-		unselect(false);
-	} else {
-		select(new_selected);
+		curr_y += rows[rownum].height;
 	}
 	gtk_widget_queue_draw(draw);
 }
@@ -917,33 +889,71 @@ void Combo_chooser::render() {
  *  Scroll to a new combo.
  */
 
-void Combo_chooser::scroll(int newpixel    // Abs. index of leftmost to show.
+void Combo_chooser::scroll_row_vertical(unsigned newrow    // Abs. index of row to show.
 ) {
-	const int total     = combos.size();
-	const int newindex  = (newpixel / (128 + border)) * per_row;
-	const int newoffset = newpixel % (128 + border);
-	voffset             = newindex >= 0 ? newoffset : 0;
-	if (index0 < newindex) {    // Going forwards?
-		index0 = newindex < total ? newindex : total;
-	} else if (index0 > newindex) {    // Backwards?
-		index0 = newindex >= 0 ? newindex : 0;
+	if (newrow >= rows.size()) {
+		return;
 	}
+	row0         = newrow;
+	row0_voffset = 0;
 	render();
 }
 
 /*
- *  Scroll up/down by one row.
+ *  Scroll to new pixel offset.
  */
 
-void Combo_chooser::scroll(bool upwards) {
-	GtkAdjustment* adj   = gtk_range_get_adjustment(GTK_RANGE(vscroll));
-	gdouble        delta = 128 + border;
-	if (upwards) {
-		delta = -delta;
+void Combo_chooser::scroll_vertical(int newoffset) {
+	int delta = newoffset - voffset;
+	while (delta > 0 && row0 < rows.size()) {
+		// Going down.
+		const int rowh = rows[row0].height - row0_voffset;
+		if (delta < rowh) {
+			// Part of current row.
+			voffset += delta;
+			row0_voffset += delta;
+			delta = 0;
+		} else if (row0 == rows.size() - 1) {
+			// Scroll in bottomest row
+			if (delta > rowh) {
+				delta = rowh;
+			}
+			voffset += delta;
+			row0_voffset += delta;
+			delta = 0;
+		} else {
+			// Go down to next row.
+			voffset += rowh;
+			delta -= rowh;
+			++row0;
+			row0_voffset = 0;
+		}
 	}
-	gtk_adjustment_set_value(adj, delta + gtk_adjustment_get_value(adj));
-	g_signal_emit_by_name(G_OBJECT(adj), "changed");
-	scroll(static_cast<gint>(gtk_adjustment_get_value(adj)));
+	while (delta < 0) {
+		if (-delta <= row0_voffset) {
+			voffset += delta;
+			row0_voffset += delta;
+			delta = 0;
+		} else if (row0_voffset) {
+			voffset -= row0_voffset;
+			delta += row0_voffset;
+			row0_voffset = 0;
+		} else {
+			if (row0 == 0) {
+				break;
+			}
+			--row0;
+			row0_voffset = 0;
+			voffset -= rows[row0].height;
+			delta += rows[row0].height;
+			if (delta > 0) {
+				row0_voffset = delta;
+				voffset += delta;
+				delta = 0;
+			}
+		}
+	}
+	render();
 }
 
 /*
@@ -955,7 +965,7 @@ void Combo_chooser::drag_data_get(
 		GdkDragContext*   context,
 		GtkSelectionData* seldata,    // Fill this in.
 		guint info, guint time,
-		gpointer data    // ->Shape_chooser.
+		gpointer data    // ->Combo_chooser.
 ) {
 	ignore_unused_variable_warning(widget, context, time);
 	cout << "In DRAG_DATA_GET of Combo for " << info << " and '" << gdk_atom_name(gtk_selection_data_get_target(seldata)) << "'"
@@ -1039,7 +1049,7 @@ gint Combo_chooser::drag_begin(
  *  Handle a scrollbar event.
  */
 
-void Combo_chooser::scrolled(
+void Combo_chooser::vscrolled(
 		GtkAdjustment* adj,    // The adjustment.
 		gpointer       data    // ->Combo_chooser.
 ) {
@@ -1050,7 +1060,7 @@ void Combo_chooser::scrolled(
 		 << gtk_adjustment_get_page_increment(adj) << ", " << gtk_adjustment_get_page_size(adj) << " )" << endl;
 #endif
 	const gint newindex = static_cast<gint>(gtk_adjustment_get_value(adj));
-	chooser->scroll(newindex);
+	chooser->scroll_vertical(newindex);
 }
 
 /*
@@ -1088,7 +1098,9 @@ void Combo_chooser::enable_controls() {
 	}
 }
 
+static gint Mouse_press(GtkWidget* widget, GdkEventButton* event, gpointer data);
 static gint Mouse_release(GtkWidget* widget, GdkEventButton* event, gpointer data);
+static gint Configure_chooser(GtkWidget* widget, GdkEventConfigure* event, gpointer data);
 
 /*
  *  Create the list.
@@ -1101,8 +1113,8 @@ Combo_chooser::Combo_chooser(
 		int w, int h,              // Dimensions.
 		Shape_group* g             // Filter, or null.
 		)
-		: Object_browser(g, flinfo), Shape_draw(i, palbuf, gtk_drawing_area_new()), flex_info(flinfo), index0(0), info(nullptr),
-		  info_cnt(0), sel_changed(nullptr), voffset(0), per_row(1) {
+		: Object_browser(g, flinfo), Shape_draw(i, palbuf, gtk_drawing_area_new()), flex_info(flinfo), info(0), rows(0), row0(0),
+		  row0_voffset(0), total_height(0), sel_changed(nullptr), voffset(0) {
 	load_internal();    // Init. from file data.
 
 	// Put things in a vert. box.
@@ -1129,14 +1141,14 @@ Combo_chooser::Combo_chooser(
 			draw,
 			GDK_EXPOSURE_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK | GDK_BUTTON1_MOTION_MASK | GDK_KEY_PRESS_MASK);
 	// Set "configure" handler.
-	g_signal_connect(G_OBJECT(draw), "configure-event", G_CALLBACK(configure), this);
+	g_signal_connect(G_OBJECT(draw), "configure-event", G_CALLBACK(Configure_chooser), this);
 	// Set "expose-event" - "draw" handler.
 	g_signal_connect(G_OBJECT(draw), "draw", G_CALLBACK(expose), this);
 	// Keystroke.
 	g_signal_connect(G_OBJECT(draw), "key-press-event", G_CALLBACK(on_combo_key_press), this);
 	gtk_widget_set_can_focus(GTK_WIDGET(draw), true);
 	// Set mouse click handler.
-	g_signal_connect(G_OBJECT(draw), "button-press-event", G_CALLBACK(mouse_press), this);
+	g_signal_connect(G_OBJECT(draw), "button-press-event", G_CALLBACK(Mouse_press), this);
 	g_signal_connect(G_OBJECT(draw), "button-release-event", G_CALLBACK(Mouse_release), this);
 	// Mouse motion.
 	g_signal_connect(G_OBJECT(draw), "drag-begin", G_CALLBACK(drag_begin), this);
@@ -1154,7 +1166,7 @@ Combo_chooser::Combo_chooser(
 	// (Deprecated)                             GTK_UPDATE_DELAYED);
 	gtk_box_pack_start(GTK_BOX(hbox), vscroll, false, true, 0);
 	// Set scrollbar handler.
-	g_signal_connect(G_OBJECT(combo_adj), "value-changed", G_CALLBACK(scrolled), this);
+	g_signal_connect(G_OBJECT(combo_adj), "value-changed", G_CALLBACK(vscrolled), this);
 	gtk_widget_set_visible(vscroll, true);
 	// Scroll events.
 	enable_draw_vscroll(draw);
@@ -1180,7 +1192,6 @@ Combo_chooser::Combo_chooser(
 
 Combo_chooser::~Combo_chooser() {
 	gtk_widget_destroy(get_widget());
-	delete[] info;
 	int       i;
 	const int cnt = combos.size();
 	for (i = 0; i < cnt; i++) {    // Delete all the combos.
@@ -1198,6 +1209,10 @@ int Combo_chooser::add(
 		Combo* newcombo,    // We'll own this.
 		int    index        // Index to replace, or -1 to add new.
 ) {
+	GtkAllocation alloc = {0, 0, 0, 0};
+	gtk_widget_get_allocation(draw, &alloc);
+	const int w       = ZoomDown(alloc.width);
+	const int per_row = std::max((w - border) / (128 + border), 1);
 	if (index == -1) {
 		// New.
 		combos.push_back(newcombo);
@@ -1209,7 +1224,7 @@ int Combo_chooser::add(
 	}
 	GtkAdjustment* adj = gtk_range_get_adjustment(GTK_RANGE(vscroll));
 	gtk_adjustment_set_upper(adj, ((128 + border) * ((combos.size() + per_row - 1) / per_row)));
-	g_signal_emit_by_name(G_OBJECT(adj), "changed");
+	setup_info(true);
 	render();
 	return index;    // Return index.
 }
@@ -1219,6 +1234,10 @@ int Combo_chooser::add(
  */
 
 void Combo_chooser::remove() {
+	GtkAllocation alloc = {0, 0, 0, 0};
+	gtk_widget_get_allocation(draw, &alloc);
+	const int w       = ZoomDown(alloc.width);
+	const int per_row = std::max((w - border) / (128 + border), 1);
 	if (selected < 0) {
 		return;
 	}
@@ -1239,7 +1258,7 @@ void Combo_chooser::remove() {
 	flex_info->remove(tnum);    // Update flex-file list.
 	GtkAdjustment* adj = gtk_range_get_adjustment(GTK_RANGE(vscroll));
 	gtk_adjustment_set_upper(adj, ((128 + border) * ((combos.size() + per_row - 1) / per_row)));
-	g_signal_emit_by_name(G_OBJECT(adj), "changed");
+	setup_info(true);
 	render();
 }
 
@@ -1273,42 +1292,143 @@ void Combo_chooser::edit() {
  *  Configure the viewing window.
  */
 
-gint Combo_chooser::configure(
-		GtkWidget*         widget,    // The draw area.
+static gint Configure_chooser(
+		GtkWidget*         widget,    // The drawing area.
 		GdkEventConfigure* event,
 		gpointer           data    // ->Combo_chooser
 ) {
-	ignore_unused_variable_warning(widget, event);
+	ignore_unused_variable_warning(widget);
 	auto* chooser = static_cast<Combo_chooser*>(data);
-	chooser->Shape_draw::configure();
-	chooser->render();
-	chooser->setup_info(true);
+	return chooser->configure(event);
+}
+
+gint Combo_chooser::configure(GdkEventConfigure* event) {
+	Shape_draw::configure();
+	// Did the size change?
+	if (event->width != config_width || event->height != config_height) {
+		config_width  = event->width;
+		config_height = event->height;
+		setup_info(true);
+		render();
+	} else {
+		render();    // Same size?  Just render it.
+	}
 	return true;
 }
 
+/*
+ *  Find where everything goes.
+ */
+
 void Combo_chooser::setup_info(bool savepos    // Try to keep current position.
 ) {
-	// Set new scroll amounts.
+	const unsigned oldind = (selected >= 0 ? selected : rows.empty() ? 0 : rows[row0].index0);
+	info.resize(0);
+	rows.resize(0);
+	row0 = row0_voffset = 0;
+	voffset             = 0;
+	total_height        = 0;
+	{
+		setup_shapes_info();
+	}
+	setup_vscrollbar();
+	if (savepos) {
+		goto_index(oldind);
+	}
+}
+
+/*
+ *  Setup info when not in 'frames' mode.
+ */
+
+void Combo_chooser::setup_shapes_info() {
+	// Remove "selected" message.
+	// gtk_statusbar_pop(GTK_STATUSBAR(sbar), sbar_sel);
+	// Get drawing area dimensions.
 	GtkAllocation alloc = {0, 0, 0, 0};
 	gtk_widget_get_allocation(draw, &alloc);
-	const int w           = ZoomDown(alloc.width);
-	const int h           = ZoomDown(alloc.height);
-	const int per_row_old = per_row;
-	per_row               = std::max((w - border) / (128 + border), 1);
-	GtkAdjustment* adj    = gtk_range_get_adjustment(GTK_RANGE(vscroll));
-	gtk_adjustment_set_upper(adj, ((128 + border) * ((combos.size() + per_row - 1) / per_row)));
-	gtk_adjustment_set_step_increment(adj, ZoomDown(16));
-	gtk_adjustment_set_page_increment(adj, h - border);
-	gtk_adjustment_set_page_size(adj, h - border);
-	if (savepos && selected >= 0) {
-		gtk_adjustment_set_value(adj, ((128 + border) * (info[selected].num / per_row)));
-	} else if (savepos) {
-		gtk_adjustment_set_value(adj, (gtk_adjustment_get_value(adj) * per_row_old / per_row));
+	const gint winw      = ZoomDown(alloc.width);
+	int        x         = 0;
+	int        curr_y    = 0;
+	int        row_h     = 0;
+	const int  total_cnt = get_count();
+	rows.resize(1);    // Start 1st row.
+	rows[0].index0 = 0;
+	rows[0].y      = 0;
+	for (int index = 0; index < total_cnt; index++) {
+		const int sh       = 128;
+		const int sw       = 128;
+		const int combonum = group ? (*group)[index] : index;
+		// Check if we've exceeded max width
+		if (x + sw > winw && x) {    // But don't leave row empty.
+			// Next line.
+			rows.back().height = row_h + border;
+			curr_y += row_h + border;
+			row_h = 0;
+			x     = 0;
+			rows.emplace_back();
+			rows.back().index0 = info.size();
+			rows.back().y      = curr_y;
+		}
+		if (sh > row_h) {
+			row_h = sh;
+		}
+		const int sy = curr_y + border;    // Get top y-coord.
+		// Store info. about where drawn.
+		info.emplace_back();
+		info.back().set(combonum, x, sy, sw, sh);
+		x += sw + border;
 	}
-	if (gtk_adjustment_get_value(adj) > (gtk_adjustment_get_upper(adj) - gtk_adjustment_get_page_size(adj))) {
-		gtk_adjustment_set_value(adj, (gtk_adjustment_get_upper(adj) - gtk_adjustment_get_page_size(adj)));
+	rows.back().height = row_h + border;
+	total_height       = curr_y + rows.back().height + border;
+}
+
+/*
+ *  Adjust vertical scroll amounts after laying out shapes.
+ */
+
+void Combo_chooser::setup_vscrollbar() {
+	GtkAdjustment* adj = gtk_range_get_adjustment(GTK_RANGE(vscroll));
+	gtk_adjustment_set_value(adj, 0);
+	gtk_adjustment_set_lower(adj, 0);
+	gtk_adjustment_set_upper(adj, total_height);
+	gtk_adjustment_set_step_increment(adj, ZoomDown(16));    // +++++FOR NOW.
+	gtk_adjustment_set_page_increment(adj, ZoomDown(config_height));
+	gtk_adjustment_set_page_size(adj, ZoomDown(config_height));
+}
+
+/*
+ *  Scroll so a desired index is in view.
+ */
+
+void Combo_chooser::goto_index(unsigned index    // Desired index in 'info'.
+) {
+	if (index >= info.size()) {
+		return;    // Illegal index or empty chooser.
 	}
-	g_signal_emit_by_name(G_OBJECT(adj), "changed");
+	const Combo_entry& inf  = info[index];    // Already in view?
+	const unsigned     midx = inf.box.x + inf.box.w / 2;
+	const unsigned     midy = inf.box.y + inf.box.h / 2;
+	const TileRect     winrect(0, voffset, ZoomDown(config_width), ZoomDown(config_height));
+	if (winrect.has_point(midx, midy)) {
+		return;
+	}
+	unsigned start = 0;
+	unsigned count = rows.size();
+	while (count > 1) {    // Binary search.
+		const unsigned mid = start + count / 2;
+		if (index < rows[mid].index0) {
+			count = mid - start;
+		} else {
+			count = (start + count) - mid;
+			start = mid;
+		}
+	}
+	if (start < rows.size()) {
+		// Get to right spot again!
+		GtkAdjustment* adj = gtk_range_get_adjustment(GTK_RANGE(vscroll));
+		gtk_adjustment_set_value(adj, rows[start].y);
+	}
 }
 
 /*
@@ -1333,7 +1453,7 @@ gint Combo_chooser::expose(
 gint Combo_chooser::drag_motion(
 		GtkWidget*      widget,    // The view window.
 		GdkEventMotion* event,
-		gpointer        data    // ->Shape_chooser.
+		gpointer        data    // ->Combo_chooser.
 ) {
 	ignore_unused_variable_warning(widget);
 	auto* chooser = static_cast<Combo_chooser*>(data);
@@ -1349,48 +1469,53 @@ gint Combo_chooser::drag_motion(
 
 gint Combo_chooser::mouse_press(
 		GtkWidget*      widget,    // The view window.
-		GdkEventButton* event,
-		gpointer        data    // ->Combo_chooser.
-) {
+		GdkEventButton* event) {
 	gtk_widget_grab_focus(widget);    // Enables keystrokes.
-	auto* chooser = static_cast<Combo_chooser*>(data);
 
 #ifdef DEBUG
 	cout << "Combos : Clicked to " << (event->x) << " * " << (event->y) << " by " << (event->button) << endl;
 #endif
 	if (event->button == 4) {
-		chooser->scroll(true);
+		if (row0 > 0) {
+			scroll_row_vertical(row0 - 1);
+		}
 		return true;
 	} else if (event->button == 5) {
-		chooser->scroll(false);
+		scroll_row_vertical(row0 + 1);
 		return true;
 	}
-
-	const int old_selected = chooser->selected;
-	int       i;    // Search through entries.
-	for (i = 0; i < chooser->info_cnt; i++) {
-		if (chooser->info[i].box.has_point(ZoomDown(static_cast<int>(event->x)), ZoomDown(static_cast<int>(event->y)))) {
+	const int      old_selected = selected;
+	int            new_selected = -1;
+	unsigned       i;    // Search through entries.
+	const unsigned infosz = info.size();
+	const int      absx   = ZoomDown(static_cast<int>(event->x));
+	const int      absy   = ZoomDown(static_cast<int>(event->y)) + voffset;
+	for (i = rows[row0].index0; i < infosz; i++) {
+		if (info[i].box.distance(absx, absy) <= 2) {
 			// Found the box?
 			// Indicate we can drag.
-			chooser->selected = i;
-			chooser->render();
-			// Tell client.
-			if (chooser->sel_changed) {
-				(*chooser->sel_changed)();
-			}
+			new_selected = i;
 			break;
+		} else if (info[i].box.y - voffset >= ZoomDown(config_height)) {
+			break;    // Past bottom of screen.
 		}
 	}
-	if (i == chooser->info_cnt && event->button == 1) {
-		chooser->unselect(true);    // Nothing under mouse.
-	} else if (chooser->selected == old_selected && old_selected >= 0) {
+	if (new_selected >= 0) {
+		select(new_selected);
+		render();
+		if (sel_changed) {    // Tell client.
+			(*sel_changed)();
+		}
+	}
+	if (i == info.size() && event->button == 1) {
+		unselect(true);    // Nothing under mouse.
+	} else if (selected == old_selected && old_selected >= 0) {
 		// Same square.  Check for dbl-click.
 		if (reinterpret_cast<GdkEvent*>(event)->type == GDK_2BUTTON_PRESS) {
-			chooser->edit();
+			edit();
 		}
-	}
-	if (event->button == 3) {
-		gtk_menu_popup_at_pointer(GTK_MENU(chooser->create_popup()), reinterpret_cast<GdkEvent*>(event));
+	} else if (event->button == 3) {
+		gtk_menu_popup_at_pointer(GTK_MENU(create_popup()), reinterpret_cast<GdkEvent*>(event));
 	}
 	return true;
 }
@@ -1398,10 +1523,20 @@ gint Combo_chooser::mouse_press(
 /*
  *  Handle a mouse button-release event in the combo chooser.
  */
+
+static gint Mouse_press(
+		GtkWidget*      widget,    // The view window.
+		GdkEventButton* event,
+		gpointer        data    // ->Combo_chooser.
+) {
+	auto* chooser = static_cast<Combo_chooser*>(data);
+	return chooser->mouse_press(widget, event);
+}
+
 static gint Mouse_release(
 		GtkWidget*      widget,    // The view window.
 		GdkEventButton* event,
-		gpointer        data    // ->Shape_chooser.
+		gpointer        data    // ->Combo_chooser.
 ) {
 	ignore_unused_variable_warning(widget, event);
 	auto* chooser = static_cast<Combo_chooser*>(data);
@@ -1439,6 +1574,7 @@ void Combo_chooser::move(bool upwards) {
 	}
 	flex_info->set_modified();
 	flex_info->swap(tnum);    // Update flex-file list.
+	setup_info(true);
 	render();
 }
 
@@ -1469,14 +1605,14 @@ void Combo_chooser::search(
 	if (i == stop) {
 		return;    // Not found.
 	}
-	while (i < index0) {    // Above current view?
-		scroll(true);
+	while (i < static_cast<int>(rows[row0].index0)) {    // Above current view?
+		scroll_row_vertical(row0 - 1);
 	}
-	while (i >= index0 + info_cnt) {    // Below?
-		scroll(false);
+	while (row0 < rows.size() - 1 && i >= static_cast<int>(rows[row0 + 1].index0)) {    // Below?
+		scroll_row_vertical(row0 + 1);
 	}
-	const int newsel = i - index0;    // New selection.
-	if (newsel >= 0 && newsel < info_cnt) {
+	const int newsel = i;    // New selection.
+	if (newsel >= 0 && newsel < static_cast<int>(info.size())) {
 		select(newsel);
 	}
 	render();
