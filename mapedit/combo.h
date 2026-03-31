@@ -156,7 +156,7 @@ public:
 /*
  *  Store information about an individual combo shown in the list.
  */
-class Combo_info {
+class Combo_entry {
 	friend class Combo_chooser;
 	int      num;
 	TileRect box;    // Box where drawn.
@@ -168,21 +168,31 @@ class Combo_info {
 };
 
 /*
+ *  One row.
+ */
+class Combo_row {
+	friend class Combo_chooser;
+	short    height = 0;    // In pixels.
+	long     y      = 0;    // Absolute y-coord. in pixels.
+	unsigned index0 = 0;    // Index of 1st Npc_entry in row.
+};
+
+/*
  *  This class manages the list of combos.
  */
 class Combo_chooser : public Object_browser, public Shape_draw {
-	Flex_file_info*     flex_info;    // Where file data is stored.
-	std::vector<Combo*> combos;       // List of all combination-objects.
-	GtkWidget*          sbar;         // Status bar.
-	guint               sbar_sel;     // Status bar context for selection.
-	int                 index0;       // Index (combo) # of leftmost in
-	//   displayed list.
-	Combo_info* info;         // An entry for each combo drawn.
-	int         info_cnt;     // # entries in info.
-	void (*sel_changed)();    // Called when selection changes.
+	Flex_file_info*          flex_info;    // Where file data is stored.
+	std::vector<Combo*>      combos;       // List of all combination-objects.
+	GtkWidget*               sbar;         // Status bar.
+	guint                    sbar_sel;     // Status bar context for selection.
+	std::vector<Combo_entry> info;         // Pos. of each shape/frame.
+	std::vector<Combo_row>   rows;
+	unsigned                 row0;            // Row # at top of window.
+	int                      row0_voffset;    // Vert. pos. (in pixels) of top row.
+	long                     total_height;    // In pixels, for all rows.
+	void (*sel_changed)();                    // Called when selection changes.
 	// Blit onto screen.
 	int  voffset;
-	int  per_row;
 	void show(int x, int y, int w, int h) override;
 	void select(int new_sel) override;    // Show new selection.
 
@@ -192,6 +202,7 @@ class Combo_chooser : public Object_browser, public Shape_draw {
 
 	void load_internal();    // Load from file data.
 	void setup_info(bool savepos = true) override;
+	void setup_shapes_info();
 	void render() override;    // Draw list.
 
 	void set_background_color(guint32 c) override {
@@ -202,10 +213,12 @@ class Combo_chooser : public Object_browser, public Shape_draw {
 		return selected < 0 ? -1 : info[selected].num;
 	}
 
-	void scroll(int newpixel);    // Scroll.
-	void scroll(bool upwards);
-	void enable_controls();    // Enable/disable controls after sel.
-							   //   has changed.
+	void scroll_row_vertical(unsigned newrow);
+	void scroll_vertical(int newoffset);    // Scroll.
+	void setup_vscrollbar();                // Set new scroll amounts.
+	void goto_index(unsigned index);        // Get desired index in view.
+	void enable_controls();                 // Enable/disable controls after selection has changed.
+
 public:
 	Combo_chooser(Vga_file* i, Flex_file_info* flinfo, unsigned char* palbuf, int w, int h, Shape_group* g = nullptr);
 	~Combo_chooser() override;
@@ -220,22 +233,26 @@ public:
 		sel_changed = fun;
 	}
 
+	unsigned get_num_cols(unsigned rownum) {
+		return ((rownum < rows.size() - 1) ? rows[rownum + 1].index0 : info.size()) - rows[rownum].index0;
+	}
+
 	int  get_count();                        // Get # to show.
 	int  add(Combo* newcombo, int index);    // Add new combo.
 	void remove();                           // Remove selected.
 	void edit();                             // Edit selected.
 	// Configure when created/resized.
-	static gint configure(GtkWidget* widget, GdkEventConfigure* event, gpointer data);
+	gint configure(GdkEventConfigure* event);
 	// Blit to screen.
 	static gint expose(GtkWidget* widget, cairo_t* cairo, gpointer data);
 	// Handle mouse press.
-	static gint mouse_press(GtkWidget* widget, GdkEventButton* event, gpointer data);
+	gint mouse_press(GtkWidget* widget, GdkEventButton* event);
 	// Give dragged combo.
 	static void drag_data_get(
 			GtkWidget* widget, GdkDragContext* context, GtkSelectionData* seldata, guint info, guint time, gpointer data);
 	static gint drag_begin(GtkWidget* widget, GdkDragContext* context, gpointer data);
 	// Handle scrollbar.
-	static void scrolled(GtkAdjustment* adj, gpointer data);
+	static void vscrolled(GtkAdjustment* adj, gpointer data);
 	void        move(bool upwards) override;    // Move current selected combo.
 	void        search(const char* srch, int dir) override;
 	static gint drag_motion(GtkWidget* widget, GdkEventMotion* event, gpointer data);
