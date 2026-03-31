@@ -53,7 +53,7 @@ class Palette_edit : public Object_browser {
 	GtkWidget *                insert_btn, *remove_btn, *up_btn, *down_btn;
 	// Blit onto screen.
 	void show(int x, int y, int w, int h) override;
-	void select(int new_sel);    // Show new selection.
+	void select(int new_sel) override;    // Show new selection.
 
 	void load() override {
 		load_internal();

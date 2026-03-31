@@ -32,11 +32,8 @@ private:
 	GtkWidget* widget;
 
 protected:
-	int selected = -1;    // Index of user-selected entry,
-	//   counting from the top-left entry
-	//   currently rendered.
-	int index0 = 0;    // Index of top-leftmost in
-	//   displayed list.
+	int                 selected     = -1;    // Index of user-selected entry, counting from the top-left entry currently rendered.
+	int                 index0       = 0;     // Index of top-leftmost in displayed list.
 	GtkWidget*          vscroll      = nullptr;                   // Vertical scrollbar.
 	GtkWidget*          hscroll      = nullptr;                   // Horizontal scrollbar.
 	GtkEventController* vscroll_ctlr = nullptr;                   // Vertical scroll in browser.
@@ -66,6 +63,10 @@ public:
 
 	int get_selected() {    // Return index of sel'd item, or -1.
 		return selected < 0 ? -1 : index0 + selected;
+	}
+
+	virtual void select(int new_select) {
+		selected = new_select;
 	}
 
 	void reset_selected() {

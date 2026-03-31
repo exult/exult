@@ -89,8 +89,8 @@ class Npc_chooser : public Object_browser, public Shape_draw {
 	void (*sel_changed)();                  // Called when selection changes.
 	// Blit onto screen.
 	void show(int x, int y, int w, int h) override;
-	void select(int new_sel);    // Show new selection.
-	void render() override;      // Draw list.
+	void select(int new_sel) override;    // Show new selection.
+	void render() override;               // Draw list.
 
 	void set_background_color(guint32 c) override {
 		Shape_draw::set_background_color(c);
