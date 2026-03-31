@@ -22,6 +22,9 @@
 
 #include "Audio.h"
 #include "Book_gump.h"
+#include "Dynamic_shape_widget.h"
+#include "Dynamic_slider.h"
+#include "Dynamic_text_widget.h"
 #include "Face_stats.h"
 #include "Gump.h"
 #include "Gump_manager.h"
@@ -1974,9 +1977,10 @@ USECODE_INTRINSIC(sprite_effect) {
 	// Validate sprite number is in valid range before creating effect
 	Shape_manager* sman = Shape_manager::get_instance();
 	if (sprite_num >= 0 && sprite_num < sman->get_file(SF_SPRITES_VGA).get_num_shapes()) {
-		gwin->get_effects()->add_effect(std::make_unique<Sprites_effect>(
-				sprite_num, Tile_coord(parms[1].get_int_value(), parms[2].get_int_value(), 0), parms[3].get_int_value(),
-				parms[4].get_int_value(), 0, parms[5].get_int_value(), parms[6].get_int_value()));
+		gwin->get_effects()->add_effect(
+				std::make_unique<Sprites_effect>(
+						sprite_num, Tile_coord(parms[1].get_int_value(), parms[2].get_int_value(), 0), parms[3].get_int_value(),
+						parms[4].get_int_value(), 0, parms[5].get_int_value(), parms[6].get_int_value()));
 	}
 	return no_ret;
 }
@@ -1991,9 +1995,10 @@ USECODE_INTRINSIC(obj_sprite_effect) {
 		// Validate sprite number is in valid range before creating effect
 		Shape_manager* sman = Shape_manager::get_instance();
 		if (sprite_num >= 0 && sprite_num < sman->get_file(SF_SPRITES_VGA).get_num_shapes()) {
-			gwin->get_effects()->add_effect(std::make_unique<Sprites_effect>(
-					sprite_num, obj, -parms[2].get_int_value(), -parms[3].get_int_value(), parms[4].get_int_value(),
-					parms[5].get_int_value(), parms[6].get_int_value(), parms[7].get_int_value()));
+			gwin->get_effects()->add_effect(
+					std::make_unique<Sprites_effect>(
+							sprite_num, obj, -parms[2].get_int_value(), -parms[3].get_int_value(), parms[4].get_int_value(),
+							parms[5].get_int_value(), parms[6].get_int_value(), parms[7].get_int_value()));
 		}
 	}
 	return no_ret;
@@ -4182,4 +4187,187 @@ USECODE_INTRINSIC(set_item_gump_position) {
 	gwin->set_all_dirty();
 
 	return Usecode_value(1);
+}
+
+USECODE_INTRINSIC(set_gump_text) {
+	ignore_unused_variable_warning(num_parms);
+	// set_gump_text(item, field_id, text) - Sets the text of a dynamic text
+	// field on the gump displaying the given item's container.
+	// Returns 1 on success, 0 on failure.
+
+	Game_object* item = get_item(parms[0]);
+	if (!item) {
+		return Usecode_value(0);
+	}
+
+	const int   fid = parms[1].get_int_value();
+	const char* txt = parms[2].get_str_value();
+	if (!txt) {
+		return Usecode_value(0);
+	}
+
+	// Find the gump displaying this item (or its container).
+	Gump* gump = gumpman->find_gump(item);
+	if (!gump) {
+		Game_object* owner = item->get_owner();
+		if (owner) {
+			gump = gumpman->find_gump(owner);
+		}
+	}
+	if (!gump) {
+		return Usecode_value(0);
+	}
+
+	// Search elems for matching Dynamic_text_widget
+	bool found = false;
+	for (auto* elem : gump->get_elems()) {
+		auto* tw = dynamic_cast<Dynamic_text_widget*>(elem);
+		if (tw && tw->get_field_id() == fid) {
+			tw->set_text(txt);
+			found = true;
+			break;
+		}
+	}
+
+	if (found) {
+		gwin->set_all_dirty();
+		return Usecode_value(1);
+	}
+	return Usecode_value(0);
+}
+
+USECODE_INTRINSIC(set_gump_shape) {
+	ignore_unused_variable_warning(num_parms);
+	// set_gump_shape(item, field_id, shape, frame) - Sets the displayed
+	// shape/frame of a dynamic shape field on the item's gump.
+	// Returns 1 on success, 0 on failure.
+
+	Game_object* item = get_item(parms[0]);
+	if (!item) {
+		return Usecode_value(0);
+	}
+
+	const int fid   = parms[1].get_int_value();
+	const int shnum = parms[2].get_int_value();
+	const int frnum = parms[3].get_int_value();
+
+	// Find the gump displaying this item (or its container).
+	Gump* gump = gumpman->find_gump(item);
+	if (!gump) {
+		Game_object* owner = item->get_owner();
+		if (owner) {
+			gump = gumpman->find_gump(owner);
+		}
+	}
+	if (!gump) {
+		return Usecode_value(0);
+	}
+
+	// Search elems for matching Dynamic_shape_widget
+	for (auto* elem : gump->get_elems()) {
+		auto* sw = dynamic_cast<Dynamic_shape_widget*>(elem);
+		if (sw && sw->get_field_id() == fid) {
+			sw->set_shape(shnum, frnum);
+			gwin->set_all_dirty();
+			return Usecode_value(1);
+		}
+	}
+	return Usecode_value(0);
+}
+
+USECODE_INTRINSIC(set_slider_value) {
+	// set_slider_value(item, field_id, value)
+	// Sets the current value of a dynamic slider widget on the item's gump.
+	// Returns 1 on success, 0 on failure.
+	Game_object* item = get_item(parms[0]);
+	if (!item) {
+		return Usecode_value(0);
+	}
+	const int fid = parms[1].get_int_value();
+	const int val = parms[2].get_int_value();
+
+	Gump* gump = gumpman->find_gump(item);
+	if (!gump) {
+		Game_object* owner = item->get_owner();
+		if (owner) {
+			gump = gumpman->find_gump(owner);
+		}
+	}
+	if (!gump) {
+		return Usecode_value(0);
+	}
+
+	for (auto* elem : gump->get_elems()) {
+		auto* sl = dynamic_cast<Dynamic_slider*>(elem);
+		if (sl && sl->get_field_id() == fid) {
+			sl->setselection(val);
+			gwin->set_all_dirty();
+			return Usecode_value(1);
+		}
+	}
+	return Usecode_value(0);
+}
+
+USECODE_INTRINSIC(get_slider_value) {
+	// get_slider_value(item, field_id)
+	// Returns the current value of a dynamic slider widget, or 0 on failure.
+	Game_object* item = get_item(parms[0]);
+	if (!item) {
+		return Usecode_value(0);
+	}
+	const int fid = parms[1].get_int_value();
+
+	Gump* gump = gumpman->find_gump(item);
+	if (!gump) {
+		Game_object* owner = item->get_owner();
+		if (owner) {
+			gump = gumpman->find_gump(owner);
+		}
+	}
+	if (!gump) {
+		return Usecode_value(0);
+	}
+
+	for (auto* elem : gump->get_elems()) {
+		auto* sl = dynamic_cast<Dynamic_slider*>(elem);
+		if (sl && sl->get_field_id() == fid) {
+			return Usecode_value(sl->getselection());
+		}
+	}
+	return Usecode_value(0);
+}
+
+USECODE_INTRINSIC(set_gump_text_font) {
+	ignore_unused_variable_warning(num_parms);
+	// set_gump_text_font(item, field_id, font_num) - Changes the font of a
+	// dynamic text field at runtime.  Returns 1 on success, 0 on failure.
+
+	Game_object* item = get_item(parms[0]);
+	if (!item) {
+		return Usecode_value(0);
+	}
+
+	const int fid  = parms[1].get_int_value();
+	const int fnum = parms[2].get_int_value();
+
+	Gump* gump = gumpman->find_gump(item);
+	if (!gump) {
+		Game_object* owner = item->get_owner();
+		if (owner) {
+			gump = gumpman->find_gump(owner);
+		}
+	}
+	if (!gump) {
+		return Usecode_value(0);
+	}
+
+	for (auto* elem : gump->get_elems()) {
+		auto* tw = dynamic_cast<Dynamic_text_widget*>(elem);
+		if (tw && tw->get_field_id() == fid) {
+			tw->set_font(fnum);
+			gwin->set_all_dirty();
+			return Usecode_value(1);
+		}
+	}
+	return Usecode_value(0);
 }

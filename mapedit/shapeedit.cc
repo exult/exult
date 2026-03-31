@@ -349,7 +349,8 @@ static void Setup_equip(
  *  Set the fields to a given record.
  */
 
-void ExultStudio::init_equip_window(int recnum    // Record # to start with (1-based).
+void ExultStudio::init_equip_window(
+		int recnum    // Record # to start with (1-based).
 ) {
 	// Fill in the record.
 	Equip_record& rec = Monster_info::get_equip(recnum - 1);
@@ -391,7 +392,8 @@ void ExultStudio::save_equip_window() {
  *  Open the equip-editing window.
  */
 
-void ExultStudio::open_equip_window(int recnum    // Record # to start with (1-based).
+void ExultStudio::open_equip_window(
+		int recnum    // Record # to start with (1-based).
 ) {
 	const int ecnt = Monster_info::get_equip_cnt();
 	if (recnum <= 0 || recnum > ecnt) {
@@ -2445,7 +2447,8 @@ C_EXPORT void on_shinfo_weapon_usecode_browse_clicked(GtkButton* btn, gpointer u
  *  Set frame-dependent fields in the shape-editing notebook.
  */
 
-void ExultStudio::set_shape_notebook_frame(int frnum    // Frame # to set.
+void ExultStudio::set_shape_notebook_frame(
+		int frnum    // Frame # to set.
 ) {
 	auto*     file_info = static_cast<Shape_file_info*>(g_object_get_data(G_OBJECT(shapewin), "file_info"));
 	const int shnum     = get_num_entry("shinfo_shape");
@@ -3758,8 +3761,9 @@ void ExultStudio::save_shape_notebook(
 				const int menu   = get_optmenu("shinfo_animation_freezefirst");
 				const int chance = menu == 0 ? 100
 											 : (menu == 1 ? 0
-														  : get_spin("shinfo_animation_"
-																	 "freezechance"));
+														  : get_spin(
+																	"shinfo_animation_"
+																	"freezechance"));
 				aniinf->set_freeze_first_chance(chance);
 				int rec;
 				if (get_toggle("shinfo_animation_rectype")) {

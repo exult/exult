@@ -17,17 +17,17 @@
  */
 
 #ifndef SHAPEID_H
-#define SHAPEID_H 1
+#	define SHAPEID_H 1
 
-#include "endianio.h"
-#include "exult_constants.h"
-#include "fontvga.h"
-#include "shapevga.h"
-#include "singles.h"
+#	include "endianio.h"
+#	include "exult_constants.h"
+#	include "fontvga.h"
+#	include "shapevga.h"
+#	include "singles.h"
 
-#include <memory>
-#include <optional>
-#include <vector>
+#	include <memory>
+#	include <optional>
+#	include <vector>
 
 class Shape_frame;
 class Shape_info;

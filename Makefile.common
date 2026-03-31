@@ -149,6 +149,10 @@ GUMPS_OBJS:= \
 	gumps/GameEngineOptions_gump.o \
 	gumps/CombatStats_gump.o \
 	gumps/Dynamic_container_gump.o \
+	gumps/Dynamic_button.o \
+	gumps/Dynamic_text_widget.o \
+	gumps/Dynamic_shape_widget.o \
+	gumps/Dynamic_slider.o \
 	gumps/Enabled_button.o \
 	gumps/Face_button.o \
 	gumps/Face_stats.o \

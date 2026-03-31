@@ -126,6 +126,18 @@ Gump* Gump_manager::find_gump(const Game_object* obj) {
 	// Get container object is in.
 	const Game_object* owner = obj->get_owner();
 	if (!owner) {
+		// obj has no owner — check if obj itself is a container whose
+		// gump is open (e.g. usecode intrinsics called with the
+		// container object directly, as in Dynamic_container_gump).
+		for (Gump_list* gmp = open_gumps; gmp; gmp = gmp->next) {
+			if (gmp->gump->get_container() == obj) {
+				return gmp->gump;
+			}
+		}
+		Gump* dragged = gwin->get_dragging_gump();
+		if (dragged && dragged->get_container() == obj) {
+			return dragged;
+		}
 		return nullptr;
 	}
 	// Look for container's gump.
@@ -347,6 +359,14 @@ void Gump_manager::add_gump(
 
 	// Paint new one last.
 	add_gump(new_gump);
+
+	// For Dynamic_container_gumps, fire the gump's shape usecode with
+	// double_click so that on-open initialisation functions can run.
+	if (dynamic_cast<Dynamic_container_gump*>(new_gump)) {
+		auto*     ucm = gwin->get_usecode();
+		const int fn  = ucm->get_shape_fun(shapenum);
+		ucm->call_usecode(fn, obj, Usecode_machine::double_click);
+	}
 	if (touchui != nullptr && !gumps_dont_pause_game()) {
 		touchui->hideGameControls();
 	}
@@ -404,7 +424,8 @@ void Gump_manager::close_all_gumps(bool pers) {
  *  Set the keyboard focus to a given gump.
  */
 
-void Gump_manager::set_kbd_focus(Gump* gump    // May be nullptr.
+void Gump_manager::set_kbd_focus(
+		Gump* gump    // May be nullptr.
 ) {
 	if (gump && gump->can_handle_kbd()) {
 		kbd_focus = gump;

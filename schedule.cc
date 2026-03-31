@@ -585,7 +585,8 @@ bool Schedule_with_objects::drop_item(Game_object* to_drop, Game_object* table) 
  *  Run usecode function.
  */
 
-void Scripted_schedule::run(int id    // A Usecode function #.
+void Scripted_schedule::run(
+		int id    // A Usecode function #.
 ) {
 	if (id) {
 		ucmachine->call_method(inst, id, npc);
@@ -756,7 +757,8 @@ void Street_maintenance_schedule::ending(int newtype) {
  *  Get actual schedule (for Usecode intrinsic).
  */
 
-int Street_maintenance_schedule::get_actual_type(Actor* /* npc */
+int Street_maintenance_schedule::get_actual_type(
+		Actor* /* npc */
 ) const {
 	return prev_type;
 }
@@ -1590,7 +1592,8 @@ void Patrol_schedule::now_what() {
  *  End of patrol
  */
 
-void Patrol_schedule::ending(int new_type    // New schedule.
+void Patrol_schedule::ending(
+		int new_type    // New schedule.
 ) {
 	ignore_unused_variable_warning(new_type);
 	const Game_object_shared hammer_obj = hammer.lock();
@@ -2515,7 +2518,8 @@ void Sleep_schedule::im_dormant() {
  *  Wakeup time.
  */
 
-void Sleep_schedule::ending(int new_type    // New schedule.
+void Sleep_schedule::ending(
+		int new_type    // New schedule.
 ) {
 	// Needed for Skara Brae.
 	if (new_type == static_cast<int>(wait) ||
@@ -3049,7 +3053,8 @@ void Desk_schedule::im_dormant() {
  *	Done.
  */
 
-void Desk_schedule::ending(int new_type    // New schedule.
+void Desk_schedule::ending(
+		int new_type    // New schedule.
 ) {
 	ignore_unused_variable_warning(new_type);
 	cleanup();
@@ -3529,7 +3534,8 @@ bool Waiter_schedule::walk_to_work_spot(bool counter) {
  *  Output: false if failed.
  */
 
-bool Waiter_schedule::walk_to_customer(int min_delay    // Min. delay in msecs.
+bool Waiter_schedule::walk_to_customer(
+		int min_delay    // Min. delay in msecs.
 ) {
 	if (customer) {
 		if (customer->get_schedule_type() != Schedule::eat_at_inn) {
@@ -4032,7 +4038,8 @@ void Waiter_schedule::now_what() {
  *  Waiter schedule is done.
  */
 
-void Waiter_schedule::ending(int new_type    // New schedule.
+void Waiter_schedule::ending(
+		int new_type    // New schedule.
 ) {
 	ignore_unused_variable_warning(new_type);
 	// Remove what he/she is carrying.
@@ -4410,7 +4417,8 @@ void Sew_schedule::now_what() {
  *  Sewing schedule is done.
  */
 
-void Sew_schedule::ending(int new_type    // New schedule.
+void Sew_schedule::ending(
+		int new_type    // New schedule.
 ) {
 	ignore_unused_variable_warning(new_type);
 	// Remove shears.
@@ -5621,7 +5629,8 @@ void Forge_schedule::now_what() {
  *  Forge schedule is done.
  */
 
-void Forge_schedule::ending(int new_type    // New schedule.
+void Forge_schedule::ending(
+		int new_type    // New schedule.
 ) {
 	ignore_unused_variable_warning(new_type);
 	// Remove any tools.
@@ -6046,7 +6055,8 @@ void Walk_to_schedule::im_dormant() {
  *  Get actual schedule (for Usecode intrinsic).
  */
 
-int Walk_to_schedule::get_actual_type(Actor* /* npc */
+int Walk_to_schedule::get_actual_type(
+		Actor* /* npc */
 ) const {
 	return new_schedule;
 }
@@ -6063,7 +6073,8 @@ void Schedule_change::clear() {
  *  Set a schedule from a U7 'schedule.dat' entry.
  */
 
-void Schedule_change::set4(const unsigned char* entry    // 4 bytes read from schedule.dat.
+void Schedule_change::set4(
+		const unsigned char* entry    // 4 bytes read from schedule.dat.
 ) {
 	time                       = entry[0] & 7;
 	type                       = entry[0] >> 3;
@@ -6080,7 +6091,8 @@ void Schedule_change::set4(const unsigned char* entry    // 4 bytes read from sc
  *  Set a schedule from an Exult 'schedule.dat' entry (vers. -1).
  */
 
-void Schedule_change::set8(const unsigned char* entry    // 8 bytes read from schedule.dat.
+void Schedule_change::set8(
+		const unsigned char* entry    // 8 bytes read from schedule.dat.
 ) {
 	pos.tx = little_endian::Read2(entry);
 	pos.ty = little_endian::Read2(entry);
@@ -6094,7 +6106,8 @@ void Schedule_change::set8(const unsigned char* entry    // 8 bytes read from sc
  *  Write out schedule for Exult's 'schedule.dat'.
  */
 
-void Schedule_change::write8(unsigned char* entry    // 8 bytes to write to schedule.dat.
+void Schedule_change::write8(
+		unsigned char* entry    // 8 bytes to write to schedule.dat.
 ) const {
 	little_endian::Write2(entry, pos.tx);
 	little_endian::Write2(entry, pos.ty);         // 4

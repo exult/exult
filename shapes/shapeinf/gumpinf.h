@@ -126,6 +126,68 @@ struct Snap_zone {
 	Snap_zone() : zone_x(0), zone_y(0), zone_w(0), zone_h(0), snap_x(0), snap_y(0), priority(0) {}
 };
 
+struct Dynamic_button_def {
+	int button_shape;       // Shape in gumps.vga for button graphic
+	int pos_x;              // Position X relative to gump origin
+	int pos_y;              // Position Y relative to gump origin
+	int default_frame;      // Frame displayed when idle
+	int clicked_frame;      // Frame displayed when pushed
+	int sound_fx;           // SFX index on click (-1 = none)
+	int usecode_fn;         // Usecode function to call (-1 = none)
+	int action_type;        // 0=none, 1=close, 2=toggle
+	int visibility_flag;    // Global flag controlling visibility (-1 = always)
+	int usecode_param;      // Legacy field, read but unused (event is always
+							// double_click)
+
+	Dynamic_button_def()
+			: button_shape(0), pos_x(0), pos_y(0), default_frame(0), clicked_frame(1), sound_fx(-1), usecode_fn(-1), action_type(0),
+			  visibility_flag(-1), usecode_param(-1) {}
+};
+
+struct Dynamic_text_def {
+	int field_id;    // Unique ID for usecode to address this field
+	int pos_x;       // Position X relative to gump origin
+	int pos_y;       // Position Y relative to gump origin
+	int font_num;    // Font number from fonts.vga
+	int halign;      // Horizontal: 0=left (pos_x is left edge),
+					 //   1=right (pos_x is right edge), 2=center
+	int valign;      // Vertical: 0=top, 1=bottom (pos_y is bottom
+					 //   edge), 2=center
+
+	Dynamic_text_def() : field_id(0), pos_x(0), pos_y(0), font_num(0), halign(0), valign(0) {}
+};
+
+struct Dynamic_shape_def {
+	int field_id;     // Unique ID for usecode to address this field
+	int pos_x;        // Position X relative to gump origin
+	int pos_y;        // Position Y relative to gump origin
+	int shape_num;    // Initial shape number (0 = none until set)
+	int frame_num;    // Initial frame number
+	int shapefile;    // 0 = SF_SHAPES_VGA, 1 = SF_GUMPS_VGA
+
+	Dynamic_shape_def() : field_id(0), pos_x(0), pos_y(0), shape_num(0), frame_num(0), shapefile(0) {}
+};
+
+struct Dynamic_slider_def {
+	int field_id;       // Unique ID for usecode to address this slider
+	int pos_x;          // Position X relative to gump origin
+	int pos_y;          // Position Y relative to gump origin
+	int dec_shape;      // gumps.vga shape for decrement arrow
+	int inc_shape;      // gumps.vga shape for increment arrow
+	int thumb_shape;    // gumps.vga shape for draggable thumb
+	int min_val;        // Minimum slider value (inclusive)
+	int max_val;        // Maximum slider value (inclusive)
+	int step;           // Step size per click/key
+	int default_val;    // Initial value
+	int extent;         // Sliding region size in pixels
+	int usecode_fn;     // Usecode function on change (-1 = none)
+	int orientation;    // 0 = vertical, 1 = horizontal
+
+	Dynamic_slider_def()
+			: field_id(0), pos_x(0), pos_y(0), dec_shape(0), inc_shape(0), thumb_shape(0), min_val(0), max_val(0), step(1),
+			  default_val(0), extent(60), usecode_fn(-1), orientation(0) {}
+};
+
 class Gump_info {
 	static std::map<int, Gump_info>                gump_info_map;
 	static std::map<int, Shortcutbar_icon_info>    shortcutbar_icon_map;
@@ -138,11 +200,21 @@ class Gump_info {
 	bool checkmark_from_patch;
 	bool special_from_patch;
 	bool snapzones_from_patch;
+	bool dynbuttons_from_patch;
+	bool dyntexts_from_patch;
+	bool dynshapes_from_patch;
+	bool dynsliders_from_patch;
+	bool gumpname_from_patch;
 
 	bool container_modified;
 	bool checkmark_modified;
 	bool special_modified;
 	bool snapzones_modified;
+	bool dynbuttons_modified;
+	bool dyntexts_modified;
+	bool dynshapes_modified;
+	bool dynsliders_modified;
+	bool gumpname_modified;
 
 public:
 	int  container_x;
@@ -158,7 +230,12 @@ public:
 	bool is_checkmark;
 	bool is_special;
 
-	std::vector<Snap_zone> snap_zones;    // Snap zones for ritual placement
+	std::vector<Snap_zone>          snap_zones;         // Snap zones for ritual placement
+	std::vector<Dynamic_button_def> dynamic_buttons;    // Data-driven buttons
+	std::vector<Dynamic_text_def>   dynamic_texts;      // Data-driven text fields
+	std::vector<Dynamic_shape_def>  dynamic_shapes;     // Data-driven shape displays
+	std::vector<Dynamic_slider_def> dynamic_sliders;    // Data-driven sliders
+	std::string                     gump_name;          // Custom click-name shown by show_items
 
 	Gump_info();
 
@@ -179,6 +256,26 @@ public:
 		return snapzones_from_patch || snapzones_modified;
 	}
 
+	bool is_dynbuttons_dirty() const {
+		return dynbuttons_from_patch || dynbuttons_modified;
+	}
+
+	bool is_dyntexts_dirty() const {
+		return dyntexts_from_patch || dyntexts_modified;
+	}
+
+	bool is_dynshapes_dirty() const {
+		return dynshapes_from_patch || dynshapes_modified;
+	}
+
+	bool is_dynsliders_dirty() const {
+		return dynsliders_from_patch || dynsliders_modified;
+	}
+
+	bool is_gumpname_dirty() const {
+		return gumpname_from_patch || gumpname_modified;
+	}
+
 	// Setters for patch flags
 	void set_container_from_patch(bool tf) {
 		container_from_patch = tf;
@@ -194,6 +291,63 @@ public:
 
 	void set_snapzones_from_patch(bool tf) {
 		snapzones_from_patch = tf;
+	}
+
+	void set_dynbuttons_from_patch(bool tf) {
+		dynbuttons_from_patch = tf;
+	}
+
+	void set_dyntexts_from_patch(bool tf) {
+		dyntexts_from_patch = tf;
+	}
+
+	void set_dynshapes_from_patch(bool tf) {
+		dynshapes_from_patch = tf;
+	}
+
+	void set_dynsliders_from_patch(bool tf) {
+		dynsliders_from_patch = tf;
+	}
+
+	// Clear vector on first patch entry to prevent duplication.
+	// Patch entries fully replace any base entries for the same gump.
+	void begin_patch_snapzones() {
+		if (!snapzones_from_patch) {
+			snap_zones.clear();
+			snapzones_from_patch = true;
+		}
+	}
+
+	void begin_patch_dynbuttons() {
+		if (!dynbuttons_from_patch) {
+			dynamic_buttons.clear();
+			dynbuttons_from_patch = true;
+		}
+	}
+
+	void begin_patch_dyntexts() {
+		if (!dyntexts_from_patch) {
+			dynamic_texts.clear();
+			dyntexts_from_patch = true;
+		}
+	}
+
+	void begin_patch_dynshapes() {
+		if (!dynshapes_from_patch) {
+			dynamic_shapes.clear();
+			dynshapes_from_patch = true;
+		}
+	}
+
+	void begin_patch_dynsliders() {
+		if (!dynsliders_from_patch) {
+			dynamic_sliders.clear();
+			dynsliders_from_patch = true;
+		}
+	}
+
+	void set_gumpname_from_patch(bool tf) {
+		gumpname_from_patch = tf;
 	}
 
 	// Setters for modified flags
@@ -225,9 +379,66 @@ public:
 		}
 	}
 
+	void set_dynbuttons_modified(bool v) {
+		dynbuttons_modified = v;
+		if (v) {
+			any_modified = true;
+		}
+	}
+
+	void set_dyntexts_modified(bool v) {
+		dyntexts_modified = v;
+		if (v) {
+			any_modified = true;
+		}
+	}
+
+	void set_dynshapes_modified(bool v) {
+		dynshapes_modified = v;
+		if (v) {
+			any_modified = true;
+		}
+	}
+
+	void set_dynsliders_modified(bool v) {
+		dynsliders_modified = v;
+		if (v) {
+			any_modified = true;
+		}
+	}
+
+	void set_gumpname_modified(bool v) {
+		gumpname_modified = v;
+		if (v) {
+			any_modified = true;
+		}
+	}
+
 	// Check if snap zones are configured for this gump
 	bool has_snap_zones() const {
 		return !snap_zones.empty();
+	}
+
+	// Check if dynamic buttons are configured for this gump
+	bool has_dynamic_buttons() const {
+		return !dynamic_buttons.empty();
+	}
+
+	// Check if dynamic text fields are configured for this gump
+	bool has_dynamic_texts() const {
+		return !dynamic_texts.empty();
+	}
+
+	bool has_dynamic_shapes() const {
+		return !dynamic_shapes.empty();
+	}
+
+	bool has_dynamic_sliders() const {
+		return !dynamic_sliders.empty();
+	}
+
+	bool has_gump_name() const {
+		return !gump_name.empty();
 	}
 
 	static bool was_any_modified() {

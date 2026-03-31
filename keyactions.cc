@@ -83,7 +83,8 @@ namespace {
  *  Get the i'th party member, with the 0'th being the Avatar.
  */
 
-static Actor* Get_party_member(int num    // 0=avatar.
+static Actor* Get_party_member(
+		int num    // 0=avatar.
 ) {
 	int npc_num = 0;    // Default to Avatar
 	if (num > 0) {

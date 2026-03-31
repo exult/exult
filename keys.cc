@@ -311,13 +311,16 @@ bool KeyBinder::DoAction(const ActionType& a, bool press) const {
 			Scroll_gump* scroll;
 			scroll = new Scroll_gump();
 
-			scroll->add_text("Map editor functionality is disabled in this "
-							 "version of Exult.\n");
-			scroll->add_text("If you want or need this functionality, you "
-							 "should install a snapshot, as they have support "
-							 "for Exult Studio.\n");
-			scroll->add_text("If no snapshots are available for your platform, "
-							 "you will have to compile it on your own.\n");
+			scroll->add_text(
+					"Map editor functionality is disabled in this "
+					"version of Exult.\n");
+			scroll->add_text(
+					"If you want or need this functionality, you "
+					"should install a snapshot, as they have support "
+					"for Exult Studio.\n");
+			scroll->add_text(
+					"If no snapshots are available for your platform, "
+					"you will have to compile it on your own.\n");
 
 			scroll->paint();
 			do {

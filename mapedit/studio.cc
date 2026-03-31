@@ -1186,7 +1186,8 @@ void on_choose_new_game_dir(
 	(static_cast<ExultStudio*>(udata))->create_new_game(dir);
 }
 
-void ExultStudio::create_new_game(const char* dir    // Directory for new game.
+void ExultStudio::create_new_game(
+		const char* dir    // Directory for new game.
 ) {
 	// Take basename as game name.
 	const char* eptr = dir + strlen(dir) - 1;
@@ -2274,7 +2275,8 @@ void ExultStudio::write_minimap() {
  *  Write out shape info. and text.
  */
 
-void ExultStudio::write_shape_info(bool force    // If set, always write.
+void ExultStudio::write_shape_info(
+		bool force    // If set, always write.
 ) {
 	if ((force || shape_info_modified) && vgafile) {
 		auto* svga = static_cast<Shapes_vga_file*>(vgafile->get_ifile());
@@ -2323,7 +2325,8 @@ void ExultStudio::reload_usecode() {
  *  Tell Exult to start/stop playing.
  */
 
-void ExultStudio::set_play(gboolean play    // True to play, false to edit.
+void ExultStudio::set_play(
+		gboolean play    // True to play, false to edit.
 ) {
 	unsigned char  data[Exult_server::maxlength];
 	unsigned char* ptr = &data[0];
@@ -2335,7 +2338,8 @@ void ExultStudio::set_play(gboolean play    // True to play, false to edit.
  *  Tell Exult to show or not show the tile grid.
  */
 
-void ExultStudio::set_tile_grid(gboolean grid    // True to show.
+void ExultStudio::set_tile_grid(
+		gboolean grid    // True to show.
 ) {
 	unsigned char  data[Exult_server::maxlength];
 	unsigned char* ptr = &data[0];
@@ -2403,7 +2407,8 @@ void ExultStudio::set_hide_lift(int lift) {
  *  Tell Exult to enter/leave 'terrain-edit' mode.
  */
 
-void ExultStudio::set_edit_terrain(gboolean terrain    // True/false
+void ExultStudio::set_edit_terrain(
+		gboolean terrain    // True/false
 ) {
 	unsigned char  data[Exult_server::maxlength];
 	unsigned char* ptr = &data[0];
@@ -2438,7 +2443,8 @@ void ExultStudio::set_edit_terrain(gboolean terrain    // True/false
 	gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(mitem), true);
 }
 
-void ExultStudio::set_edit_mode(int md    // 0-2 (drag, paint, pick.
+void ExultStudio::set_edit_mode(
+		int md    // 0-2 (drag, paint, pick.
 ) {
 	unsigned char  data[Exult_server::maxlength];
 	unsigned char* ptr = &data[0];
@@ -2493,7 +2499,8 @@ void ExultStudio::show_unused_shapes(
  *  Output: ->file info (may already have existed), or 0 if error.
  */
 
-Shape_file_info* ExultStudio::open_shape_file(const char* basename    // Base name of file to open.
+Shape_file_info* ExultStudio::open_shape_file(
+		const char* basename    // Base name of file to open.
 ) {
 	Shape_file_info* info = files->create(basename);
 	if (!info) {
@@ -2506,7 +2513,8 @@ Shape_file_info* ExultStudio::open_shape_file(const char* basename    // Base na
  *  Prompt for a new shape file name.
  */
 
-void ExultStudio::new_shape_file(bool single    // Not a FLEX file.
+void ExultStudio::new_shape_file(
+		bool single    // Not a FLEX file.
 ) {
 	Create_file_selection(
 			single ? "Write new .shp file" : "Write new .vga file", "<PATCH>", single ? "Shape files" : "VGA files",
@@ -2569,7 +2577,8 @@ void ExultStudio::set_toggle(const char* name, bool val, bool sensitive) {
  *  Get an 8-bit set of flags from a group of toggles.
  */
 
-unsigned int ExultStudio::get_bit_toggles(tcb::span<const char* const> names    // Names for bit 0, 1, 2,...
+unsigned int ExultStudio::get_bit_toggles(
+		tcb::span<const char* const> names    // Names for bit 0, 1, 2,...
 ) {
 	unsigned int bits = 0;
 	for (size_t i = 0; i < names.size(); i++) {
@@ -3144,7 +3153,8 @@ void ExultStudio::run() {
  *  This is called every few seconds to try to reconnect to Exult.
  */
 
-static gint Reconnect(gpointer data    // ->ExultStudio.
+static gint Reconnect(
+		gpointer data    // ->ExultStudio.
 ) {
 	auto* studio = static_cast<ExultStudio*>(data);
 	if (studio->connect_to_server()) {
@@ -3190,7 +3200,8 @@ static gboolean Read_from_server(
 	return true;
 }
 #else
-static gint Read_from_server(gpointer data    // ->ExultStudio.
+static gint Read_from_server(
+		gpointer data    // ->ExultStudio.
 ) {
 	auto* studio = static_cast<ExultStudio*>(data);
 	studio->read_from_server();

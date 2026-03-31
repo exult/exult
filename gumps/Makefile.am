@@ -71,6 +71,14 @@ libgumps_la_SOURCES = \
 	CombatStats_gump.h	\
 	Dynamic_container_gump.cc	\
 	Dynamic_container_gump.h	\
+	Dynamic_button.cc	\
+	Dynamic_button.h	\
+	Dynamic_text_widget.cc	\
+	Dynamic_text_widget.h	\
+	Dynamic_shape_widget.cc	\
+	Dynamic_shape_widget.h	\
+	Dynamic_slider.cc	\
+	Dynamic_slider.h	\
 	gump_types.h	\
 	Face_button.cc	\
 	Face_button.h	\

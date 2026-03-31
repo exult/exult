@@ -1,10 +1,15 @@
 #	Gumps information for Serpent Isle.
-#	Sections: container_area, checkmark_pos, special, snap_zones
+#	Sections: container_area, checkmark_pos, special, snap_zones,
+#	          dynamic_buttons, dynamic_texts, dynamic_shapes, dynamic_sliders
 #
 #	container_area: Defines the object placement area within gumps
 #	checkmark_pos: Position of the close button for each gump
 #	special: Gumps that cannot be containers or lack close buttons
 #	snap_zones: Optional guided placement zones for dynamic containers
+#	dynamic_buttons: Data-driven buttons on container gumps
+#	dynamic_texts: Data-driven text fields, set by usecode
+#	dynamic_shapes: Data-driven shape displays, set by usecode
+#	dynamic_sliders: Data-driven slider controls, set/read by usecode
 #
 
 %%section version
@@ -216,6 +221,37 @@
 # :111/north_candle/20/0/20/20/30/10/3/candle
 # :111/south_candle/55/110/20/20/65/120/3/candle
 # :111/center_focus/55/55/20/20/65/65/4/focus
+#
+%%endsection
+
+%%section dynamic_buttons
+# Format: :gump_shape/button_shape/pos_x/pos_y/default_frame/clicked_frame/sound_fx/usecode_fn/action_type/visibility_flag/usecode_param
+#
+# See bg/gump_info.txt for detailed field documentation.
+#
+%%endsection
+
+%%section dynamic_texts
+# Format: :gump_shape/field_id/pos_x/pos_y/font_num
+#
+# See bg/gump_info.txt for detailed field documentation.
+# SI intrinsic slot: 0xe0
+#
+%%endsection
+
+%%section dynamic_shapes
+# Format: :gump_shape/field_id/pos_x/pos_y/shape_num/frame_num/shapefile
+#
+# See bg/gump_info.txt for detailed field documentation.
+# SI intrinsic slot: 0xe1
+#
+%%endsection
+
+%%section dynamic_sliders
+# Format: :gump_shape/field_id/pos_x/pos_y/dec_shape/inc_shape/thumb_shape/min_val/max_val/step/default_val/extent/usecode_fn/orientation
+#
+# See bg/gump_info.txt for detailed field documentation.
+# SI intrinsic slots: set=0xe2, get=0xe3
 #
 %%endsection
 

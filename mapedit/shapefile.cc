@@ -540,7 +540,8 @@ static bool Create_file(
  *  Output: ->file info, or 0 if error.
  */
 
-Shape_file_info* Shape_file_set::create(const char* basename    // Like 'shapes.vga'.
+Shape_file_info* Shape_file_set::create(
+		const char* basename    // Like 'shapes.vga'.
 ) {
 	// Already have it open?
 	for (auto* file : files) {

@@ -462,14 +462,14 @@ public:
 	// Shapes:
 	GdkPixbuf* shape_image(    // The GdkPixbuf should be g_object_unrefed.
 			Vga_file* shpfile, int shnum, int frnum, bool transparent);
-	void       init_equip_window(int recnum);
-	void       save_equip_window();
-	void       open_equip_window(int recnum);
-	void       close_equip_window();
-	void       new_equip_record();
-	void       set_shape_notebook_frame(int frnum);
-	void       init_shape_notebook(const Shape_info& info, GtkWidget* book, int shnum, int frnum);
-	void       save_shape_notebook(Shape_info& info, int shnum, int frnum);
+	void init_equip_window(int recnum);
+	void save_equip_window();
+	void open_equip_window(int recnum);
+	void close_equip_window();
+	void new_equip_record();
+	void set_shape_notebook_frame(int frnum);
+	void init_shape_notebook(const Shape_info& info, GtkWidget* book, int shnum, int frnum);
+	void save_shape_notebook(Shape_info& info, int shnum, int frnum);
 
 	bool is_frame_field_signal_suppressed() const {
 		return suppress_frame_field_signal;
