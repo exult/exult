@@ -180,7 +180,8 @@ jobs:
         uses: actions/checkout@v4
       - name: Build Exult
         run: |
-          make -j 2 -f Makefile.mingw SNAPSHOT=1 DISTPATH=distdir DEBUG_LEVEL=-g1 dist
+          make -j 2 -f Makefile.mingw SNAPSHOT=1 DISTPATH=distdir DEBUG_LEVEL=-g1 dist 
+          make -j 2 -f Makefile.mingw SNAPSHOT=1 DISTPATH=distdir DEBUG_LEVEL=-g1 disttest 
           mkdir -p dist/unstripped/${{matrix.sys}}
           cp Exult.exe dist/unstripped/${{matrix.sys}}
 

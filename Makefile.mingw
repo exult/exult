@@ -55,9 +55,7 @@ else ifeq ($(MSYSTEM),UCRT64)
 	CC:=gcc
 	CXX:=g++
 else ifeq ($(MSYSTEM),CLANGARM64)
-# march=native should not be used when building official releases
-# so if we start making official ARM build this needs to be changed
-	ARCHTYPE:=-march=native
+	ARCHTYPE:=-march=armv8-a
 	ARCHFLAGS:=-m64
 	CC:=clang
 	CXX:=clang++
@@ -819,6 +817,12 @@ allclean: clean toolsclean studioclean modsclean pluginclean aseprite-pluginclea
 	rm -f Exult\ Source\ Code.url
 
 allinstall: install toolsinstall studioinstall
+
+# a simple test to test if dist files were compiled properly
+disttest: U7PATH:=$(DISTPATH)/Exult/$(MSYSTEM_CARCH)
+disttest: 
+	$(U7PATH)/$(EXEC) --version
+	$(DISTPATH)/exconfig-$(MSYSTEM_CARCH).exe test -v -p
 
 run:
 	start $(EXEC)
