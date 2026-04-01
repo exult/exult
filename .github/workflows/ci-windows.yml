@@ -137,8 +137,8 @@ jobs:
         uses: actions/checkout@v4
       - name: Build
         run: |
-          make -j 2 -f Makefile.mingw DEBUG=1 USECODE_DEBUGGER=1 DISTPATH=dist Exult.exe mods exult_studio.exe tools u7shp.exe exult_shp.exe exconfig.exe dist studiodist toolsdist plugindist aseprite-plugindist
-          make -j 2 -f Makefile.mingw DEBUG=1 USECODE_DEBUGGER=1 DISTPATH=dist disttest
+          make -j 5 -f Makefile.mingw DEBUG=1 USECODE_DEBUGGER=1 DISTPATH=dist Exult.exe mods exult_studio.exe tools u7shp.exe exult_shp.exe exconfig.exe dist studiodist toolsdist plugindist aseprite-plugindist
+          make -j 5 -f Makefile.mingw DEBUG=1 USECODE_DEBUGGER=1 DISTPATH=disttest
           cd dist
           "/c/Program Files (x86)/Inno Setup 6/ISCC.exe" -DMINGW_SYS=${{ matrix.sys }} exult_installer.iss
           "/c/Program Files (x86)/Inno Setup 6/ISCC.exe" -DMINGW_SYS=${{ matrix.sys }} exult_studio_installer.iss
