@@ -31,7 +31,7 @@ AppUpdatesURL=https://exult.info/
 ; Setup exe version number:
 VersionInfoVersion=1.13.1
 DisableDirPage=yes
-DefaultDirName="{userappdata}\gimp\3.0\plug-ins\u7shp"
+DefaultDirName="{userappdata}\gimp\3.{code:GetGimpMinorVer}\plug-ins\u7shp"
 DisableProgramGroupPage=yes
 DefaultGroupName=Exult GIMP Plugin
 OutputBaseFilename=Gimp30Plugin
@@ -57,10 +57,10 @@ ArchitecturesAllowed={#archs}
 ; => The dependent DLLs of the Gimp plugin are provided by Gimp
 
 #if WANT_x64
-Source: "GimpPlugin-x86_64\u7shp.exe"; DestDir: "{userappdata}\gimp\3.0\plug-ins\u7shp"; Flags: ignoreversion; Check: IsGIMPx64
+Source: "GimpPlugin-x86_64\u7shp.exe"; DestDir: "{userappdata}\gimp\3.{code:GetGimpMinorVer}\plug-ins\u7shp"; Flags: ignoreversion; Check: IsGIMPx64
 #endif
 #if WANT_ARM64
-Source: "GimpPlugin-aarch64\u7shp.exe"; DestDir: "{userappdata}\gimp\3.0\plug-ins\u7shp"; Flags: ignoreversion; Check: IsGIMPARM64
+Source: "GimpPlugin-aarch64\u7shp.exe"; DestDir: "{userappdata}\gimp\3.{code:GetGimpMinorVer}\plug-ins\u7shp"; Flags: ignoreversion; Check: IsGIMPARM64
 #endif
 
 [Code]
@@ -70,15 +70,18 @@ const
 	PathValue = 'Inno Setup: App Path';
 	VerValue = 'DisplayName';
 	CompValue = 'Inno Setup: Selected Components';
+	minorVer = 'MinorVersion';
 
 var
 	GimpPath: String;
 	GimpVer: String;
+	GimpMinorVer: String;
 	GimpArch: (GimpUnknown,gimpx64,gimpARM64);
 
 procedure GetGimpInfo(const pRootKey: Integer; const pRegPath: String);
 var p: Integer;
 var comps: string;
+var minorVerInt: Cardinal;
 begin
 	If not RegQueryStringValue(pRootKey, pRegPath, PathValue, GimpPath) then //find Gimp install dir
 	begin
@@ -92,11 +95,16 @@ begin
 	if Pos('gimpx64',comps) <> 0 then begin
 		GimpArch := gimpx64;
 	end else
-	if Pos('gimpARM64',comps) <> 0 then begin
+	if Pos('gimparm64',comps) <> 0 then begin
 		GimpArch := gimpARM64;
     end;
 
 
+
+	if RegQueryDWordValue(pRootKey, pRegPath, minorVer, minorVerInt) then
+		GimpMinorVer := IntToStr(minorVerInt)
+	else
+		GimpMinorVer := '0';
 
 	If not RegQueryStringValue(pRootKey, pRegPath, VerValue, GimpVer) then //find Gimp version
 	begin
@@ -126,7 +134,7 @@ begin
 	if RegValueExists(HKCU, RegPathNew, PathValue) then 
 	begin
 		GetGimpInfo(HKCU, RegPathNew);
-	end else
+	end;
 
 	if	GimpArch=GimpUnknown
 	then
@@ -135,6 +143,11 @@ begin
 	result:= False;
 	end;
 
+end;
+
+function GetGimpMinorVer(Param: String): String;
+begin
+	Result := GimpMinorVer;
 end;
 
 function IsGIMPx64(): boolean;
