@@ -111,6 +111,9 @@ Gump* Gump_manager::find_gump(
 	Gump*      found = nullptr;    // We want last found in chain.
 	for (gmp = open_gumps; gmp; gmp = gmp->next) {
 		Gump* gump = gmp->gump;
+		if (!gump) {
+			continue;
+		}
 		if (gump->has_point(x, y) && (pers || !gump->is_persistent())) {
 			found = gump;
 		}

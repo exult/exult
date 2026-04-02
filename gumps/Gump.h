@@ -146,7 +146,9 @@ protected:
 	}
 
 	void add_elem(Gump_widget* w) {
-		elems.push_back(w);
+		if (w) {
+			elems.push_back(w);
+		}
 	}
 
 public:

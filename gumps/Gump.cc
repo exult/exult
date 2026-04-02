@@ -82,7 +82,12 @@ Gump::Gump(Container_game_object* cont, int initx, int inity, Gump* from)
 		  object_area(from->object_area), handles_kbd(false) {
 	// Clone widgets.
 	for (auto* elem : from->elems) {
-		add_elem(elem->clone(this));
+		if (elem) {
+			auto* cloned = elem->clone(this);
+			if (cloned) {
+				add_elem(cloned);
+			}
+		}
 	}
 }
 
@@ -271,7 +276,7 @@ Gump_button* Gump::on_button(
 		int mx, int my    // Point in window.
 ) {
 	for (auto* w : elems) {
-		if (w->on_button(mx, my)) {
+		if (w && w->on_button(mx, my)) {
 			return w->as_button();
 		}
 	}
@@ -285,7 +290,7 @@ Gump_button* Gump::on_button(
 
 Gump_widget* Gump::forward_mouse_down(int mx, int my, MouseButton button) {
 	for (auto* w : elems) {
-		if (w->mouse_down(mx, my, button)) {
+		if (w && w->mouse_down(mx, my, button)) {
 			return w;
 		}
 	}
@@ -371,7 +376,9 @@ void Gump::remove(Game_object* obj) {
 
 void Gump::paint_elems() {
 	for (auto* elem : elems) {
-		elem->paint();
+		if (elem) {
+			elem->paint();
+		}
 	}
 }
 
@@ -501,7 +508,7 @@ bool Gump::has_point(int sx, int sy) const {
 	}
 	// Check if any child widget covers this point.
 	for (const auto* w : elems) {
-		if (w->on_widget(sx, sy)) {
+		if (w && w->on_widget(sx, sy)) {
 			return true;
 		}
 	}

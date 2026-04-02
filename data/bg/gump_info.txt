@@ -65,9 +65,6 @@
 # body
 :53/36/46/84/40
 
-# shop gump
-:119/3/3/27/128
-
 %%endsection
 
 %%section checkmark_pos
@@ -150,9 +147,6 @@
 
 # Tseramed
 :68/22/124/2
-
-# shop gump (off-screen checkmark — no close button)
-:119/850/850/2
 
 %%endsection
 
@@ -239,25 +233,6 @@
 # visibility_flag = Global flag controlling visibility (-1 = always visible)
 # usecode_param   = Event parameter passed to usecode (-1 = default double_click)
 #
-# --- Shop gump (shape 119) ---
-# Regular buttons — usecode_param=-1, event is always double_click (1)
-:119/113/23/157/0/1/-1/1201/1/-1/-1
-:119/115/84/157/0/1/-1/1203/1/-1/-1
-:119/114/23/172/0/1/-1/1202/0/-1/-1
-:119/116/85/172/0/1/-1/1204/1/-1/-1
-# +/- quantity buttons — shape 117=up, 118=down, origin(8,7)
-# Each row gets a unique usecode_fn. Inc: 1206-1210, Dec: 1211-1215.
-:119/117/169/15/0/1/-1/1206/0/-1/-1
-:119/118/169/23/0/1/-1/1211/0/-1/-1
-:119/117/169/34/0/1/-1/1207/0/-1/-1
-:119/118/169/42/0/1/-1/1212/0/-1/-1
-:119/117/169/53/0/1/-1/1208/0/-1/-1
-:119/118/169/61/0/1/-1/1213/0/-1/-1
-:119/117/169/72/0/1/-1/1209/0/-1/-1
-:119/118/169/80/0/1/-1/1214/0/-1/-1
-:119/117/169/91/0/1/-1/1210/0/-1/-1
-:119/118/169/99/0/1/-1/1215/0/-1/-1
-#
 %%endsection
 
 %%section dynamic_texts
@@ -269,34 +244,6 @@
 #
 # Text is set at runtime via UI_set_gump_text(item, field_id, "text")
 # BG intrinsic slot: 0xdf
-#
-# --- Shop gump (shape 119) ---
-:119/1/32/4/4
-:119/2/32/30/4
-:119/3/32/56/4
-:119/4/32/82/4
-:119/5/32/108/4
-:119/6/32/17/4
-:119/7/32/43/4
-:119/8/32/69/4
-:119/9/32/95/4
-:119/10/32/121/4
-:119/11/4/134/4
-:119/30/176/129/4
-:119/31/176/146/4
-:119/32/176/163/4
-:119/33/176/180/4
-# Quantity counters — right-aligned (halign=1) at X=167
-:119/40/167/4/4/1/0
-:119/41/167/30/4/1/0
-:119/42/167/56/4/1/0
-:119/43/167/82/4/1/0
-:119/44/167/108/4/1/0
-:119/45/167/17/4/1/0
-:119/46/167/43/4/1/0
-:119/47/167/69/4/1/0
-:119/48/167/95/4/1/0
-:119/49/167/121/4/1/0
 #
 %%endsection
 
@@ -311,17 +258,6 @@
 #
 # Shape is set at runtime via UI_set_gump_shape(item, field_id, shape, frame)
 # BG intrinsic slot: 0xe0
-#
-# --- Shop gump (shape 119) ---
-:119/20/16/15/605/0/0
-:119/21/16/41/552/0/0
-:119/22/16/67/606/0/0
-:119/23/16/93/591/24/0
-:119/24/16/119/692/0/0
-:119/40/228/129/951/7/0
-:119/41/228/146/948/7/0
-:119/42/228/163/952/7/0
-:119/43/228/180/644/7/0
 #
 %%endsection
 
@@ -344,9 +280,6 @@
 # Value is set/read at runtime via:
 #   UI_set_slider_value(item, field_id, value)  -- BG slot: 0xe1
 #   UI_get_slider_value(item, field_id)          -- BG slot: 0xe2
-#
-# --- Shop gump (shape 119) ---
-:119/50/148/4/117/118/120/0/4/1/0/124/1205/0
 #
 %%endsection
 
