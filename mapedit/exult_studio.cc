@@ -28,7 +28,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 int main(int argc, char** argv) {
 #ifdef MACOSX
-	// setting up environment for Exult Studio in an app bundle
+	// Setting up environment for Exult Studio in an app bundle
 	setup_app_bundle_resource();
 	if (is_system_path_defined("<APP_BUNDLE_RES>")) {
 		std::string bundle_res = get_system_path("<APP_BUNDLE_RES>");

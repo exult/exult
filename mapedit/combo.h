@@ -57,13 +57,12 @@ public:
  *  A combination of objects.
  */
 class Combo {
-	Shapes_vga_file*           shapes_file;    // Where shapes come from.
-	std::vector<Combo_member*> members;        // Members of this combination.
-	short                      hot_index;      // Index of obj. whose 'hot spot' we'll
-	//   use.
-	short       starttx, startty;    // Offset represented by top-left.
-	std::string name;                // Name given by user.
-	TileRect    tilefoot;            // Footprint in tiles.
+	Shapes_vga_file*           shapes_file;         // Where shapes come from.
+	std::vector<Combo_member*> members;             // Members of this combination.
+	short                      hot_index;           // Index of obj. whose 'hot spot' we'll use.
+	short                      starttx, startty;    // Offset represented by top-left.
+	std::string                name;                // Name given by user.
+	TileRect                   tilefoot;            // Footprint in tiles.
 	// Get footprint of given member.
 	TileRect get_member_footprint(int i);
 
@@ -98,8 +97,7 @@ class Combo_editor : public Shape_draw {
 	int        selected;            // Index of selected item in combo.
 	bool       setting_controls;    // To avoid callbacks when setting.
 	bool       dirty;               // Has combo been modified?
-	int        file_index;          // Entry # in 'combos.flx', or -1 if
-	//   new.
+	int        file_index;          // Entry # in 'combos.flx', or -1 if new.
 	// Set to edit existing combo.
 	void set_combo(Combo* newcombo, int findex);
 

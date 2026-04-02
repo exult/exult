@@ -121,8 +121,7 @@ protected:
 	GtkWidget* create_popup_internal(bool files);    // Popup menu.
 
 public:
-	enum {    // Create controls at bottom.
-		// OR together what you want.
+	enum {    // Create controls at bottom: OR together what you want.
 		find_controls   = 1,
 		locate_controls = 2,
 		locate_quality  = 4,

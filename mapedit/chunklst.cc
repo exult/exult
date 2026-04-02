@@ -836,7 +836,7 @@ Chunk_chooser::Chunk_chooser(
 	num_chunks = (static_cast<int>(chunkfile.tellg()) - headersz) / chunksz;
 	chunklist.resize(num_chunks);    // Init. list of ->'s to chunks.
 
-	// Put things in a vert. box.
+	// Put things in a vertical box.
 	GtkWidget* vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
 	gtk_box_set_homogeneous(GTK_BOX(vbox), false);
 	set_widget(vbox);    // This is our "widget"

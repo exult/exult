@@ -180,8 +180,7 @@ C_EXPORT void on_teleport_coord_toggled(GtkToggleButton* btn, gpointer user_data
 		Update_teleport_locate_button(studio, tx, ty);
 	} else {
 		// Egg number mode - check if egg number is valid.
-		Update_teleport_locate_button(studio, 0, 0);    // Will check egg_num
-														// internally.
+		Update_teleport_locate_button(studio, 0, 0);    // Will check egg_num internally.
 	}
 }
 
@@ -255,8 +254,7 @@ void ExultStudio::open_egg_window(
 
 void ExultStudio::close_egg_window() {
 	if (eggwin) {
-		// Tell the game engine to clear the editing state
-		// so the green egg area overlay stops painting.
+		// Tell the game engine to clear the editing state so the green egg area overlay stops painting.
 		if (g_object_get_data(G_OBJECT(eggwin), "user_data") != nullptr) {
 			Send_data(get_server_socket(), Exult_server::cancel);
 		}
@@ -271,8 +269,7 @@ void ExultStudio::close_egg_window() {
  */
 
 int ExultStudio::init_egg_window(unsigned char* data, int datalen) {
-	// Check if window is already visible and dirty (opening another egg while
-	// editor is dirty)
+	// Check if window is already visible and dirty (opening another egg while editor is dirty)
 	if (eggwin && gtk_widget_get_visible(eggwin) && egg_window_dirty) {
 		if (!prompt_for_discard(egg_window_dirty, "Egg", GTK_WINDOW(eggwin))) {
 			return 0;    // User chose not to discard changes
@@ -944,8 +941,7 @@ C_EXPORT void on_intermap_locate(GtkButton* btn, gpointer user_data) {
 	const int tz     = studio->get_num_entry("intermap_z");
 	const int mapnum = studio->get_spin("intermap_mapnum");
 
-	// Don't overwrite egg_mapnum here - it should remain the egg's original
-	// map, not the destination map.
+	// Don't overwrite egg_mapnum here - it should remain the egg's original map, not the destination map.
 
 	// Send locate_intermap command with coordinates and map number.
 	unsigned char  data[Exult_server::maxlength];

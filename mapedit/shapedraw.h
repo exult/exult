@@ -109,20 +109,17 @@ class Shape_gump_single;
 
 class Shape_single : public Shape_draw {
 protected:
-	GtkWidget* shape;             // The ShapeID   holding GtkWidget :
-								  //     GtkSpinButton / GtkEntry,
-								  //     or GtkFrame ( NPCEditor NPC Face ).
+	GtkWidget* shape;             // The ShapeID   holding GtkWidget: GtkSpinButton / GtkEntry, or GtkFrame ( NPCEditor NPC Face ).
 	GtkWidget* shapename;         // The ShapeName holding GtkLabel.
 	bool (*shapevalid)(int s);    // The ShapeID   validating lambda.
-	GtkWidget* frame;             // The FrameID   holding GtkWidget :
-								  //     GtkSpinButton / GtkEntry.
-	int    vganum;                // For a Drag and Drop enabled Shape_single :
-	bool   hide;                  // Whether the Shape should be hidden.
-	gulong shape_connect;         // The Shape Widget g_signal_connect changed ID
-	gulong frame_connect;         // The Frame Widget g_signal_connect changed ID
-	gulong draw_connect;          // The Draw  Widget g_signal_connect draw ID
-	gulong drop_connect;          // The Draw  Widget g_signal_connect drop ID
-	gulong hide_connect;          // The Hide  Widget g_signal_connect changed ID
+	GtkWidget* frame;             // The FrameID   holding GtkWidget: GtkSpinButton / GtkEntry.
+	int        vganum;            // For a Drag and Drop enabled Shape_single :
+	bool       hide;              // Whether the Shape should be hidden.
+	gulong     shape_connect;     // The Shape Widget g_signal_connect changed ID
+	gulong     frame_connect;     // The Frame Widget g_signal_connect changed ID
+	gulong     draw_connect;      // The Draw  Widget g_signal_connect draw ID
+	gulong     drop_connect;      // The Draw  Widget g_signal_connect drop ID
+	gulong     hide_connect;      // The Hide  Widget g_signal_connect changed ID
 
 public:
 	Shape_single(
