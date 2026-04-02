@@ -1,3 +1,5 @@
+
+
 [Setup]
 AppName=Exult
 AppVerName=Exult 1.13.1git Snapshot
@@ -18,7 +20,9 @@ InternalCompressLevel=max
 OutputDir=.
 DisableWelcomePage=no
 WizardStyle=modern
-ArchitecturesInstallIn64BitMode=x64compatible
+#include "archs_include.iss"
+ArchitecturesInstallIn64BitMode={#archs64}
+ArchitecturesAllowed={#archs}
 
 [Dirs]
 Name: "{app}\data"
@@ -47,39 +51,44 @@ Name: "downloads\3rdpartymods\glimmerscape"; Description: "Glimmerscape by Donfr
 
 [Files]
 ; donotcopy files should be first
-; Always the 32-bit version of exconfig
-Source: exconfig-i686.dll; Flags: dontcopy
+; Include all versions of exconfig in the dist dir
+Source: exconfig*.exe; Flags: dontcopy
 ; Mod zip files
-Source: mods\sifixes.zip; Flags: dontcopy
-Source: mods\bgkeyring.zip; Flags: dontcopy
-Source: mods\islefaq.zip; Flags: dontcopy
-; NOTE: Don't use "Flags: ignoreversion" on any shared system files
-; 32-bit files
-Source: Exult-i686\Exult.exe; DestDir: {app}; Flags: ignoreversion; Components: Exult; Check: not Is64BitInstallMode
-Source: Exult-i686\*.dll; DestDir: {app};  Flags: ignoreversion; Components: Exult; Check: not Is64BitInstallMode
-; 64-bit files
-Source: Exult-x86_64\Exult.exe; DestDir: {app}; Flags: ignoreversion; Components: Exult; Check: Is64BitInstallMode
-Source: Exult-x86_64\*.dll; DestDir: {app};  Flags: ignoreversion; Components: Exult; Check: Is64BitInstallMode
+Source: Exult\mods\sifixes.zip; Flags: dontcopy
+Source: Exult\mods\bgkeyring.zip; Flags: dontcopy
+Source: Exult\mods\islefaq.zip; Flags: dontcopy
+#if WANT_i686
+Source: Exult\i686\Exult.exe; DestDir: {app}; Flags: ignoreversion; Components: Exult; Check: not Is64BitInstallMode
+Source: Exult\i686\*.dll; DestDir: {app};  Flags: ignoreversion; Components: Exult; Check: not Is64BitInstallMode
+#endif
+#if WANT_x64
+Source: Exult\x86_64\Exult.exe; DestDir: {app}; Flags: ignoreversion; Components: Exult; Check: Is64BitInstallMode and {#x64Check}
+Source: Exult\x86_64\*.dll; DestDir: {app};  Flags: ignoreversion; Components: Exult; Check: Is64BitInstallMode and {#x64Check}
+#endif
+#if WANT_ARM64
+Source: Exult\aarch64\Exult.exe; DestDir: {app}; Flags: ignoreversion; Components: Exult; Check: IsArm64
+Source: Exult\aarch64\*.dll; DestDir: {app};  Flags: ignoreversion; Components: Exult; Check: IsArm64
+#endif
 ; Architecture-neutral files
-Source: Exult-i686\COPYING.txt; DestDir: {app}; Flags: ignoreversion; Components: GPL
-Source: Exult-i686\Exult Source Code.url; DestDir: {app}; Flags: ignoreversion; Components: GPL
-Source: Exult-i686\README-SDL.txt; DestDir: {app}; Flags: ignoreversion; Components: Exult
-Source: Exult-i686\AUTHORS.txt; DestDir: {app}; Flags: ignoreversion; Components: Docs
-Source: Exult-i686\bgdefaultkeys.txt; DestDir: {app}; Flags: ignoreversion; Components: Docs
-Source: Exult-i686\ChangeLog.txt; DestDir: {app}; Flags: ignoreversion; Components: Docs
-Source: Exult-i686\faq.html; DestDir: {app}; Flags: ignoreversion; Components: Docs
-Source: Exult-i686\FAQ.txt; DestDir: {app}; Flags: ignoreversion; Components: Docs
-Source: Exult-i686\NEWS.txt; DestDir: {app}; Flags: ignoreversion; Components: Docs
-Source: Exult-i686\ReadMe.html; DestDir: {app}; Flags: ignoreversion isreadme; Components: Docs
-Source: Exult-i686\README.txt; DestDir: {app}; Flags: ignoreversion; Components: Docs
-Source: Exult-i686\README.windows.txt; DestDir: {app}; Flags: ignoreversion; Components: Docs
-Source: Exult-i686\sidefaultkeys.txt; DestDir: {app}; Flags: ignoreversion; Components: Docs
-Source: Exult-i686\images\*.gif; DestDir: {app}\images; Flags: ignoreversion nocompression; Components: Docs
-Source: Exult-i686\images\*.svg; DestDir: {app}\images; Flags: ignoreversion nocompression; Components: Docs
-Source: Exult-i686\images\docs*.png; DestDir: {app}\images; Flags: ignoreversion nocompression; Components: Docs
-Source: Exult-i686\Data\exult.flx; DestDir: {app}\data; Flags: ignoreversion; Components: Exult
-Source: Exult-i686\Data\exult_bg.flx; DestDir: {app}\data; Flags: ignoreversion; Components: Exult
-Source: Exult-i686\Data\exult_si.flx; DestDir: {app}\data; Flags: ignoreversion; Components: Exult
+Source: Exult\COPYING.txt; DestDir: {app}; Flags: ignoreversion; Components: GPL
+Source: Exult\Exult Source Code.url; DestDir: {app}; Flags: ignoreversion; Components: GPL
+Source: Exult\README-SDL.txt; DestDir: {app}; Flags: ignoreversion; Components: Exult
+Source: Exult\AUTHORS.txt; DestDir: {app}; Flags: ignoreversion; Components: Docs
+Source: Exult\bgdefaultkeys.txt; DestDir: {app}; Flags: ignoreversion; Components: Docs
+Source: Exult\ChangeLog.txt; DestDir: {app}; Flags: ignoreversion; Components: Docs
+Source: Exult\faq.html; DestDir: {app}; Flags: ignoreversion; Components: Docs
+Source: Exult\FAQ.txt; DestDir: {app}; Flags: ignoreversion; Components: Docs
+Source: Exult\NEWS.txt; DestDir: {app}; Flags: ignoreversion; Components: Docs
+Source: Exult\ReadMe.html; DestDir: {app}; Flags: ignoreversion isreadme; Components: Docs
+Source: Exult\README.txt; DestDir: {app}; Flags: ignoreversion; Components: Docs
+Source: Exult\README.windows.txt; DestDir: {app}; Flags: ignoreversion; Components: Docs
+Source: Exult\sidefaultkeys.txt; DestDir: {app}; Flags: ignoreversion; Components: Docs
+Source: Exult\images\*.gif; DestDir: {app}\images; Flags: ignoreversion nocompression; Components: Docs
+Source: Exult\images\*.svg; DestDir: {app}\images; Flags: ignoreversion nocompression; Components: Docs
+Source: Exult\images\docs*.png; DestDir: {app}\images; Flags: ignoreversion nocompression; Components: Docs
+Source: Exult\Data\exult.flx; DestDir: {app}\data; Flags: ignoreversion; Components: Exult
+Source: Exult\Data\exult_bg.flx; DestDir: {app}\data; Flags: ignoreversion; Components: Exult
+Source: Exult\Data\exult_si.flx; DestDir: {app}\data; Flags: ignoreversion; Components: Exult
 
 
 
@@ -116,22 +125,168 @@ var
   iSIVerified: Integer;
   iExultSupportsInstall: Integer;
   sNewLine: String;
+  sExConfigPath:String;
+
+function ExtactAndTextExconfig(sExConfigExe: String):Boolean;
+var
+  Success: Boolean;
+  ResultCode: Integer;
+  Output: TExecOutput;
+begin
+    try
+      ExtractTemporaryFile(sExConfigExe);
+    sExConfigExe :=ExpandConstant('{tmp}\'+sExConfigExe);
+      Success := ExecAndCaptureOutput(sExConfigExe, 'test "'+sExConfigExe+'"', '', SW_SHOWNORMAL, ewWaitUntilTerminated, ResultCode, Output);
+    except
+      Success := False;
+      Log(GetExceptionMessage);
+    end;
+
+    if Success and (ResultCode = 0) and (Length(Output.StdOut)=1) and (Output.StdOut[Low(Output.StdOut)] = sExConfigExe)then begin
+    sExConfigPath:=sExConfigExe;
+    Result := true;
+    end else begin
+     Result := False;
+     sExConfigPath := '';
+    end;
+end;
+
+procedure ExtractExConfig();
+begin
+// Try 64 bit exconfigs first
+  if Is64BitInstallMode() then begin
+
+#if WANT_ARM64
+    if (sExConfigPath = '') and IsARM64 then begin
+      ExtactAndTextExconfig('exconfig-aarch64.exe')
+    end;  
+#endif
+#if WANT_x64
+    if (sExConfigPath = '') and IsX64Compatible then begin    
+      ExtactAndTextExconfig('exconfig-x86_64.exe')
+    end;
+#endif
+    
+  end;
+
+  // Didn't find a usable 64 bit exconfig so fallback to 32 bit i686
+#if WANT_i686
+  if (sExConfigPath = '') then begin
+    ExtactAndTextExconfig('exconfig-i686.exe');
+  end;
+#endif
+  // Still don't have exconfig so try one with no specified arch
+  if (sExConfigPath = '') then begin
+    ExtactAndTextExconfig('exconfig.exe');
+  end;
+
+  // No exconfig is a fatal error
+  if (sExConfigPath = '') then begin
+    MsgBox('Failed to extract exconfig for this system. Aborting', mbCriticalError, MB_OK);
+    Abort();
+  end;
+  
+end;
 
 // Get Paths from Exult.cfg
-procedure GetExultGamePaths(sExultDir, sBGPath, sSIPath: AnsiString; iMaxPath: Integer);
-external 'GetExultGamePaths@files:exconfig-i686.dll cdecl';
+procedure GetExultGamePaths(sExultDir: String; var sBGPath: String; var sSIPath: String);
+var
+  Success: Boolean;
+  ResultCode: Integer;
+  Output: TExecOutput;
+begin
+  ExtractExConfig();
+    try
+      // Get the system configuration
+      Success := ExecAndCaptureOutput(sExConfigPath, 'GetExultGamePaths "'+sExultDir+'"', '', SW_SHOWNORMAL, ewWaitUntilTerminated, ResultCode, Output);
+    except
+      Success := False;
+      Log(GetExceptionMessage);
+    end;
+
+    if Success and (ResultCode = 0) then begin
+      sBGPath := Output.StdOut[Low(Output.StdOut)];
+      sSIPath := Output.StdOut[High(Output.StdOut)];
+    end else begin
+      Log('GetExultGamePaths failed : '+  IntToStr(ResultCode));
+      sBGPath := '';
+      sSIPath := '';
+    end;
+end;
 
 // Write Paths into Exult.cfg
-procedure SetExultGamePaths(sExultDir, sBGPath, sSIPath: AnsiString);
-external 'SetExultGamePaths@files:exconfig-i686.dll cdecl';
+procedure SetExultGamePaths(sExultDir, sBGPath, sSIPath: String);
+var
+  Success: Boolean;
+  ResultCode: Integer;
+  Output: TExecOutput;
+begin
+  ExtractExConfig();
+    try
+      // Get the system configuration
+      Success := ExecAndCaptureOutput(sExConfigPath, 'SetExultGamePaths "'+sExultDir+'" "'+sBGPath+'" "'+sSIPath+'"', '', SW_SHOWNORMAL, ewWaitUntilTerminated, ResultCode, Output);
+    except
+      Success := False;
+      Log(GetExceptionMessage);
+    end;
+
+    if Success and (ResultCode = 0) then begin
+
+    end else begin
+      Log('SetExultGamePaths failed: '+  IntToStr(ResultCode));
+
+    end;
+end;
 
 // Verify BG Dir
-function VerifyBGDirectory(sPath: AnsiString) : Integer;
-external 'VerifyBGDirectory@files:exconfig-i686.dll cdecl';
+function VerifyBGDirectory(sPath: String) : Integer;
+var
+  Success: Boolean;
+  ResultCode: Integer;
+  Output: TExecOutput;
+begin
+  ExtractExConfig();
+    try
+      // Get the system configuration
+      Success := ExecAndCaptureOutput(sExConfigPath, 'VerifyBGDirectory "'+sPath+'"', '', SW_SHOWNORMAL, ewWaitUntilTerminated, ResultCode, Output);
+    except
+      Success := False;
+      Log(GetExceptionMessage);
+    end;
+
+    if Success and (ResultCode >= 0) then begin
+     Result := ResultCode;
+
+    end else begin
+      Log('VerifyBGDirectory Failed: ' +  IntToStr(ResultCode));
+
+    end;
+end;
 
 // Verify SI Dir
 function VerifySIDirectory(sPath: AnsiString) : Integer;
-external 'VerifySIDirectory@files:exconfig-i686.dll cdecl';
+var
+  Success: Boolean;
+  ResultCode: Integer;
+  Output: TExecOutput;
+begin
+  ExtractExConfig();
+    try
+      // Get the system configuration
+      Success := ExecAndCaptureOutput(sExConfigPath, 'VerifySIDirectory "'+sPath+'"', '', SW_SHOWNORMAL, ewWaitUntilTerminated, ResultCode, Output);
+    except
+      Success := False;
+      Log(GetExceptionMessage);
+    end;
+
+    if Success and (ResultCode >= 0) then begin
+     Result := ResultCode;
+
+    end else begin
+      Log('VerifySIDirectory failed: '+  IntToStr(ResultCode));
+
+    end;
+end;
 
 // Get the Previous Exult Installation Dir
 // This is done in a manner that is compatible with the old InstallShield setup
@@ -285,7 +440,6 @@ var
   Success: Boolean;
   ResultCode: Integer;
   Output: TExecOutput;
-  stdout:String;
   stderr:String;
   I: integer;
 begin
@@ -328,7 +482,6 @@ var
   Success: Boolean;
   ResultCode: Integer;
   Output: TExecOutput;
-  stdout:String;
   stderr:String;
   I: integer;
 begin
@@ -366,6 +519,11 @@ end;
 //
 procedure InitializeWizard;
 begin
+
+  sExConfigPath :='';
+  // Extract exconfig.exe - will Abort on failure
+  ExtractExConfig();
+
   iExultSupportsInstall := 0
   sNewLine := Chr(10);
   DataDirPage := CreateCustomPage(wpSelectTasks,
@@ -418,6 +576,7 @@ begin
   bSetPaths := False;
 
   DownloadPage := CreateDownloadPage(SetupMessage(msgWizardPreparing), SetupMessage(msgPreparingDesc), @OnDownloadProgress);
+
 end;
 
 //
@@ -425,14 +584,12 @@ end;
 //
 procedure CurPageChanged(CurPageID: Integer);
 var
-  sBGPath: AnsiString;
-  sSIPath: AnsiString;
+  sBGPath: String;
+  sSIPath: String;
 begin
   if CurPageID = DataDirPage.ID then begin
     if bSetPaths = False then begin
-      setlength(sBGPath, 1024);
-      setlength(sSIPath, 1024);
-      GetExultGamePaths(ExpandConstant('{app}'), sBGPath, sSIPath, 1023 );
+      GetExultGamePaths(ExpandConstant('{app}'), sBGPath, sSIPath );
       BGEdit.Text := sBGPath;
       SIEdit.Text := sSIPath;
     end
@@ -517,8 +674,8 @@ end;
 //
 function ShouldSkipPage(PageID: Integer): Boolean;
 var
-  sBGPath: AnsiString;
-  sSIPath: AnsiString;
+  sBGPath: String;
+  sSIPath: String;
 begin
   if PageID = DataDirPage.ID then begin
     Result := (WizardIsComponentSelected('Paths') = False);
@@ -527,7 +684,7 @@ begin
       if bSetPaths = False then begin
         setlength(sBGPath, 1024);
         setlength(sSIPath, 1024);
-        GetExultGamePaths(ExpandConstant('{app}'), sBGPath, sSIPath, 1023 );
+        GetExultGamePaths(ExpandConstant('{app}'), sBGPath, sSIPath );
         BGEdit.Text := sBGPath;
         SIEdit.Text := sSIPath;
         BGPath := sBGPath;

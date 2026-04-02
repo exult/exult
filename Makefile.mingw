@@ -55,9 +55,7 @@ else ifeq ($(MSYSTEM),UCRT64)
 	CC:=gcc
 	CXX:=g++
 else ifeq ($(MSYSTEM),CLANGARM64)
-# march=native should not be used when building official releases
-# so if we start making official ARM build this needs to be changed
-	ARCHTYPE:=-march=native
+	ARCHTYPE:=-march=armv8-a
 	ARCHFLAGS:=-m64
 	CC:=clang
 	CXX:=clang++
@@ -562,8 +560,8 @@ exultico.o: win32/exultico.rc win32/exult.ico win32/exult.exe.manifest
 exconfig_rc.o: win32/exconfig.rc
 	windres --include-dir win32 win32/exconfig.rc exconfig_rc.o
 
-exconfig.dll: $(FILE_OBJS) $(CONF_OBJS) exconfig_rc.o win32/exconfig.o
-	$(CXX) $(LDFLAGS) -shared -o $@ $^ -static -lstdc++ -Wl,--dynamicbase
+exconfig.exe: $(FILE_OBJS) $(CONF_OBJS) exconfig_rc.o win32/exconfig.o
+	$(CXX) $(LDFLAGS) -o $@ $^ -static -lstdc++
 
 exult_studio$(EXEEXT): $(BG_PAPERDOLL) $(FLEXES) $(ES_OBJS)
 	$(CXX) $(LDFLAGS) -o $@ $(ES_OBJS) $(ES_LIBS)
@@ -634,33 +632,34 @@ modsclean:
 	done
 
 
-dist:   U7PATH:=$(DISTPATH)/Exult-$(MSYSTEM_CARCH)
-dist:   $(EXEC) exconfig.dll install Exult\ Source\ Code.url mods
-	mkdir -p $(DISTPATH)
-	cp AUTHORS $(U7PATH)/AUTHORS.txt
-	cp ChangeLog $(U7PATH)/ChangeLog.txt
-	cp COPYING $(U7PATH)/COPYING.txt
-	cp FAQ $(U7PATH)/FAQ.txt
-	cp docs/faq.html $(U7PATH)
-	mkdir -p $(U7PATH)/images
-	cp docs/images/*.gif $(U7PATH)/images
-	cp docs/images/*.svg $(U7PATH)/images
-	cp docs/images/docs*.png $(U7PATH)/images
-	cp NEWS $(U7PATH)/NEWS.txt
-	cp README $(U7PATH)/README.txt
-	cp docs/ReadMe.html $(U7PATH)
-	cp README.windows $(U7PATH)/README.windows.txt
-	cp win32/README-SDL.txt $(U7PATH)/README-SDL.txt
-	cp data/bg/defaultkeys.txt $(U7PATH)/bgdefaultkeys.txt
-	cp data/si/defaultkeys.txt $(U7PATH)/sidefaultkeys.txt
-	u2d $(U7PATH)/*.txt
-	strip exconfig.dll -o $(DISTPATH)/exconfig-$(MSYSTEM_CARCH).dll
-	cp win32/exult_installer.iss $(DISTPATH)
-	mkdir -p $(DISTPATH)/mods
+dist:   U7PATH:=$(DISTPATH)/Exult/$(MSYSTEM_CARCH)
+dist:   $(EXEC) exconfig.exe install Exult\ Source\ Code.url mods
+	cp AUTHORS $(DISTPATH)/Exult/AUTHORS.txt
+	cp ChangeLog $(DISTPATH)/Exult/ChangeLog.txt
+	cp COPYING $(DISTPATH)/Exult/COPYING.txt
+	cp FAQ $(DISTPATH)/Exult/FAQ.txt
+	cp docs/faq.html $(DISTPATH)/Exult
+	mkdir -p $(DISTPATH)/Exult/images
+	cp docs/images/*.gif $(DISTPATH)/Exult/images
+	cp docs/images/*.svg $(DISTPATH)/Exult/images
+	cp docs/images/docs*.png $(DISTPATH)/Exult/images
+	cp NEWS $(DISTPATH)/Exult/NEWS.txt
+	cp README $(DISTPATH)/Exult/README.txt
+	cp docs/ReadMe.html $(DISTPATH)/Exult
+	cp README.windows $(DISTPATH)/Exult/README.windows.txt
+	cp win32/README-SDL.txt $(DISTPATH)/Exult/README-SDL.txt
+	cp data/bg/defaultkeys.txt $(DISTPATH)/Exult/bgdefaultkeys.txt
+	cp data/si/defaultkeys.txt $(DISTPATH)/Exult/sidefaultkeys.txt
+	u2d $(DISTPATH)/Exult/*.txt
+	strip exconfig.exe -o $(DISTPATH)/exconfig-$(MSYSTEM_CARCH).exe
+	cp win32/*.iss $(DISTPATH)
+	mkdir -p $(DISTPATH)/Exult/mods
 	for mod in $(MODS); do \
-	cp $${mod}.zip $(DISTPATH)/mods; \
+	cp $${mod}.zip $(DISTPATH)/Exult/mods; \
 	done
-	cp Exult\ Source\ Code.url $(U7PATH)
+	cp Exult\ Source\ Code.url $(DISTPATH)/Exult
+	rm -r -f $(DISTPATH)/Exult/data
+	mv $(U7PATH)/data $(DISTPATH)/Exult/data
 
 git_revision :=$(shell git rev-parse HEAD)
 git_tag :=$(shell git tag -l --points-at HEAD)
@@ -692,37 +691,39 @@ toolsinstall: tools
 	cp data/u7siintrinsics.data $(U7PATH)/data
 	cp data/u7sibetaintrinsics.data $(U7PATH)/data
 
-toolsdist: U7PATH:=$(DISTPATH)/Tools-$(MSYSTEM_CARCH)
+toolsdist: U7PATH:=$(DISTPATH)/Tools/$(MSYSTEM_CARCH)
 toolsdist: tools toolsinstall Exult\ Source\ Code.url
-	mkdir -p $(DISTPATH)
-	cp tools/expack.txt $(U7PATH)/tools
-	cp tools/intrins1.txt $(U7PATH)/tools
-	cp tools/intrins2.txt $(U7PATH)/tools
-	cp tools/ipack.txt $(U7PATH)/tools
-	cp tools/shp2pcx.txt $(U7PATH)/tools
-	cp tools/splitshp.txt $(U7PATH)/tools
-	cp tools/textpack.txt $(U7PATH)/tools
-	cp tools/u7bgflag.txt $(U7PATH)/tools
-	cp tools/u7siflag.txt $(U7PATH)/tools
-	cp tools/ucformat.txt $(U7PATH)/tools
-	cp docs/ucc.txt $(U7PATH)/tools
-	cp tools/mockup/README $(U7PATH)/tools/mockup.txt
-	cp tools/mockup/mappings.txt $(U7PATH)/tools
-	cp tools/mockup/mappings_alternative.txt $(U7PATH)/tools
-	cp tools/mockup/map.png $(U7PATH)/tools
-	cp tools/smooth/README $(U7PATH)/tools/smooth.txt
-	cp tools/smooth/smooth.conf $(U7PATH)/tools
-	cp tools/smooth/rough.bmp $(U7PATH)/tools
-	cp tools/smooth/smoothed.bmp $(U7PATH)/tools
-	cp tools/ucxt/Docs/README $(U7PATH)/ucxt.txt
-	cp tools/ucxt/Docs/ucxtread.txt $(U7PATH)
-	cp AUTHORS $(U7PATH)/AUTHORS.txt
-	cp Exult\ Source\ Code.url $(U7PATH)
-	cp COPYING $(U7PATH)/COPYING.txt
-	cp win32/README-SDL.txt $(U7PATH)/tools/README-SDL.txt
-	u2d $(U7PATH)/*.txt
-	u2d $(U7PATH)/tools/*.txt
-	cp win32/exult_tools_installer.iss $(DISTPATH)
+	mv $(U7PATH)/tools/* $(U7PATH)
+	mkdir -p $(DISTPATH)/Tools
+	cp tools/expack.txt $(DISTPATH)/Tools
+	cp tools/intrins1.txt $(DISTPATH)/Tools
+	cp tools/intrins2.txt $(DISTPATH)/Tools
+	cp tools/ipack.txt $(DISTPATH)/Tools
+	cp tools/shp2pcx.txt $(DISTPATH)/Tools
+	cp tools/splitshp.txt $(DISTPATH)/Tools
+	cp tools/textpack.txt $(DISTPATH)/Tools
+	cp tools/u7bgflag.txt $(DISTPATH)/Tools
+	cp tools/u7siflag.txt $(DISTPATH)/Tools
+	cp tools/ucformat.txt $(DISTPATH)/Tools
+	cp docs/ucc.txt $(DISTPATH)/Tools
+	cp tools/mockup/README $(DISTPATH)/Tools/mockup.txt
+	cp tools/mockup/mappings.txt $(DISTPATH)/Tools
+	cp tools/mockup/mappings_alternative.txt $(DISTPATH)/Tools
+	cp tools/mockup/map.png $(DISTPATH)/Tools
+	cp tools/smooth/README $(DISTPATH)/Tools/smooth.txt
+	cp tools/smooth/smooth.conf $(DISTPATH)/Tools
+	cp tools/smooth/rough.bmp $(DISTPATH)/Tools
+	cp tools/smooth/smoothed.bmp $(DISTPATH)/Tools
+	cp tools/ucxt/Docs/README $(DISTPATH)/Tools/ucxt.txt
+	cp tools/ucxt/Docs/ucxtread.txt $(DISTPATH)/Tools
+	cp AUTHORS $(DISTPATH)/Tools/AUTHORS.txt
+	cp Exult\ Source\ Code.url $(DISTPATH)/Tools
+	cp COPYING $(DISTPATH)/Tools/COPYING.txt
+	cp win32/README-SDL.txt $(DISTPATH)/Tools/README-SDL.txt
+	u2d $(DISTPATH)/Tools/*.txt
+	cp win32/*.iss $(DISTPATH)
+	rm -r -f $(DISTPATH)/Tools/data
+	mv $(U7PATH)/data $(DISTPATH)/Tools/data
 
 studioclean:
 	rm -f $(ES_OBJS) $(ES_OBJS:%.o=%.d) exult_studio$(EXEEXT)
@@ -755,20 +756,25 @@ studioinstall: exult_studio$(EXEEXT)
 	mkdir -p $(U7PATH)/share/gtk-3.0
 	echo "[Settings]" > $(U7PATH)/share/gtk-3.0/settings.ini
 
-studiodist: U7PATH:=$(DISTPATH)/Studio-$(MSYSTEM_CARCH)
+studiodist: U7PATH:=$(DISTPATH)/Studio/$(MSYSTEM_CARCH)
 studiodist: exult_studio$(EXEEXT) studioinstall  Exult\ Source\ Code.url
-	mkdir -p $(DISTPATH)
-	cp docs/exult_studio.html $(U7PATH)
-	cp docs/exult_studio.txt $(U7PATH)
-	mkdir -p $(U7PATH)/images
-	cp docs/images/*.gif $(U7PATH)/images
-	cp docs/images/*.svg $(U7PATH)/images
-	cp docs/images/studio*.png $(U7PATH)/images
-	cp AUTHORS $(U7PATH)/AUTHORS.txt
-	cp COPYING $(U7PATH)/COPYING.txt
-	cp Exult\ Source\ Code.url $(U7PATH)
-	u2d $(U7PATH)/*.txt
-	cp win32/exult_studio_installer.iss $(DISTPATH)
+	mkdir -p $(DISTPATH)/Studio
+	cp docs/exult_studio.html $(DISTPATH)/Studio
+	cp docs/exult_studio.txt $(DISTPATH)/Studio
+	mkdir -p $(DISTPATH)/Studio/images
+	cp docs/images/*.gif $(DISTPATH)/Studio/images
+	cp docs/images/*.svg $(DISTPATH)/Studio/images
+	cp docs/images/studio*.png $(DISTPATH)/Studio/images
+	cp AUTHORS $(DISTPATH)/Studio/AUTHORS.txt
+	cp COPYING $(DISTPATH)/Studio/COPYING.txt
+	cp Exult\ Source\ Code.url $(DISTPATH)/Studio
+	u2d $(DISTPATH)/Studio/*.txt
+	cp win32/*.iss $(DISTPATH)
+	rm -r -f $(DISTPATH)/Studio/share
+	mv $(U7PATH)/share $(DISTPATH)/Studio/share
+	rm -r -f $(DISTPATH)/Studio/data
+	mv $(U7PATH)/data $(DISTPATH)/Studio/data
+
 
 pluginclean:
 	rm -f u7shp$(EXEEXT) tools/gimp_plugin/u7shp.o tools/gimp_plugin/u7shp.d
@@ -789,7 +795,7 @@ plugindist: plugin plugininstall
 	mkdir -p $(DISTPATH)
 	cp tools/gimp_plugin/gimpwin32.txt $(GIMPPATH)
 	u2d $(GIMPPATH)/*.txt
-	cp win32/exult_shpplugin_installer.iss $(DISTPATH)
+	cp win32/*.iss $(DISTPATH)
 
 aseprite-pluginclean:
 	rm -f exult_shp$(EXEEXT) tools/aseprite_plugin/exult_shp.o tools/aseprite_plugin/exult_shp.d
@@ -807,10 +813,16 @@ aseprite-plugindist: aseprite-plugin
 	$(call copy_dlls_for_exe, $(ASEPRITEPATH)/exult_shp$(EXEEXT), $(ASEPRITEPATH))
 
 allclean: clean toolsclean studioclean modsclean pluginclean aseprite-pluginclean
-	rm -f exconfig.dll exconfig_rc.o win32/exconfig.o
+	rm -f exconfig.exe exconfig_rc.o win32/exconfig.o
 	rm -f Exult\ Source\ Code.url
 
 allinstall: install toolsinstall studioinstall
+
+# a simple test to test if dist files were compiled properly
+disttest: U7PATH:=$(DISTPATH)/Exult/$(MSYSTEM_CARCH)
+disttest: 
+	$(U7PATH)/$(EXEC) --version
+	$(DISTPATH)/exconfig-$(MSYSTEM_CARCH).exe test -v -p
 
 run:
 	start $(EXEC)

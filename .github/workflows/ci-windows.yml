@@ -104,24 +104,28 @@ jobs:
           avatarUrl: https://avatars.githubusercontent.com/u/15114538?s=200&v=4
           text: '**[The Windows build failed:](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})**'
   ci-windows:
-    runs-on: windows-2022
+    runs-on: ${{ matrix.runner }}
     strategy:
       fail-fast: false
       matrix:
-        sys: [UCRT64, clang64]
+        sys: [UCRT64, clang64,clangarm64]
         include:
-          #- { sys: mingw64, env: mingw-w64-x86_64 }
-          - { sys: UCRT64, env: mingw-w64-ucrt-x86_64 }
-          - { sys: clang64, env: mingw-w64-clang-x86_64 }
+          #- { sys: mingw64, env: mingw-w64-x86_64, runner:windows-2022 }
+          - { sys: UCRT64, env: mingw-w64-ucrt-x86_64, runner: windows-2022}
+          - { sys: clang64, env: mingw-w64-clang-x86_64, runner: windows-2022}
+          - { sys: clangarm64, env: mingw-w64-clang-aarch64, runner: windows-11-arm }
     defaults:
-      run:
-        shell: msys2 {0}
+      run: 
+        shell: msys2 {0}    
+    env:  
+      msystem: ${{ matrix.sys }}
     steps:
       - name: Install dependencies
         uses: msys2/setup-msys2@v2
         with:
           msystem: ${{ matrix.sys }}
           update: true
+          release: true
           install: |
             base-devel git zip
             ${{ matrix.env }}-toolchain ${{ matrix.env }}-binutils ${{ matrix.env }}-ntldd ${{ matrix.env }}-sdl3
@@ -133,23 +137,10 @@ jobs:
         uses: actions/checkout@v4
       - name: Build
         run: |
-          make -j 2 -f Makefile.mingw DEBUG=1 USECODE_DEBUGGER=1 DISTPATH=disttest Exult.exe exult_studio.exe tools u7shp.exe exult_shp.exe exconfig.dll dist studiodist toolsdist plugindist aseprite-plugindist
-          for ff in $(find content -name 'Makefile.mingw' -exec dirname {} \;); do
-            pushd "${ff}"
-            make -j 2 -f Makefile.mingw
-            popd
-          done
-          cd disttest
-          mv exconfig-x86_64.dll exconfig-i686.dll
-          mkdir Exult-i686
-          cp -r Exult-x86_64/* Exult-i686
-          mkdir studio-i686
-          cp -r studio-x86_64/* studio-i686
-          mkdir tools-i686
-          cp -r tools-x86_64/* tools-i686
-          mkdir GimpPlugin-i686
-          cp -r GimpPlugin-x86_64/* GimpPlugin-i686
-          "/c/Program Files (x86)/Inno Setup 6/ISCC.exe" exult_installer.iss
-          "/c/Program Files (x86)/Inno Setup 6/ISCC.exe" exult_studio_installer.iss
-          "/c/Program Files (x86)/Inno Setup 6/ISCC.exe" exult_tools_installer.iss
-          "/c/Program Files (x86)/Inno Setup 6/ISCC.exe" exult_shpplugin_installer.iss
+          make -j 5 -f Makefile.mingw DEBUG=1 USECODE_DEBUGGER=1 DISTPATH=dist Exult.exe mods exult_studio.exe tools u7shp.exe exult_shp.exe exconfig.exe dist studiodist toolsdist plugindist aseprite-plugindist
+          make -j 5 -f Makefile.mingw DEBUG=1 USECODE_DEBUGGER=1 DISTPATH=disttest
+          cd dist
+          "/c/Program Files (x86)/Inno Setup 6/ISCC.exe" -DMINGW_SYS=${{ matrix.sys }} exult_installer.iss
+          "/c/Program Files (x86)/Inno Setup 6/ISCC.exe" -DMINGW_SYS=${{ matrix.sys }} exult_studio_installer.iss
+          "/c/Program Files (x86)/Inno Setup 6/ISCC.exe" -DMINGW_SYS=${{ matrix.sys }} exult_tools_installer.iss
+          "/c/Program Files (x86)/Inno Setup 6/ISCC.exe" -DMINGW_SYS=${{ matrix.sys }} exult_shpplugin_installer.iss
