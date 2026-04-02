@@ -376,8 +376,7 @@ bool Get_flag_cbox(
 	cbox = GTK_CHECK_BUTTON(list->data);
 	assert(cbox != nullptr);
 	const char* name = gtk_buildable_get_name(GTK_BUILDABLE(cbox));
-	// Names: npc_flag_xx_nn, where
-	//   xx = si, of, tf.
+	// Names: npc_flag_xx_nn, where xx = si, of, tf.
 	if (strncmp(name, "npc_flag_", 9) != 0) {
 		return false;
 	}
@@ -572,8 +571,7 @@ int ExultStudio::init_npc_window(unsigned char* data, int datalen) {
 	// Connect signals to track changes (only happens once)
 	static bool signals_connected = false;
 	if (!signals_connected) {
-		// Exclude widgets that shouldn't mark dirty: frame nav, show gump,
-		// locate, presets
+		// Exclude widgets that shouldn't mark dirty: frame nav, show gump, locate, presets
 		static const char* const excluded[]
 				= {"npc_frame", "npc_frame_inc", "npc_frame_dec", "npc_show_gump", "npc_locate", "npc_presets_box"};
 		connect_widget_signals(npcwin, G_CALLBACK(on_npc_changed), nullptr, excluded, sizeof(excluded) / sizeof(excluded[0]));

@@ -983,8 +983,7 @@ C_EXPORT gboolean on_shinfo_gumpobj_class_changed(GtkWidget* widget, gpointer da
 	// Pending a de-hardcoding of checkmark shapes:
 	// Checkmark shape always inactive.
 	studio->set_sensitive("shinfo_gumpobj_checkmark_shape", false);
-	// If changing to container or checkmarkgump and checkmark shape is 0,
-	// set it to 2 (the default checkmark shape)
+	// If changing to container or checkmarkgump and checkmark shape is 0, set it to 2 (the default checkmark shape)
 	if (is_container || is_checkmarkgump) {
 		const int current_checkmark_shape = studio->get_spin("shinfo_gumpobj_checkmark_shape");
 		if (current_checkmark_shape == 0) {
@@ -2336,14 +2335,12 @@ C_EXPORT void on_shinfo_ammo_pow7_toggled(GtkToggleButton* btn, gpointer user_da
 	studio->set_sensitive("shinfo_ammo_usecode_check", no_damage);
 
 	if (no_damage) {
-		// If no damage is enabled, enable entry and browse based on the toggle
-		// state
+		// If no damage is enabled, enable entry and browse based on the toggle state
 		const bool has_usecode = studio->get_toggle("shinfo_ammo_usecode_check");
 		studio->set_sensitive("shinfo_ammo_usecode", has_usecode);
 		studio->set_sensitive("shinfo_ammo_usecode_browse", has_usecode);
 	} else {
-		// If damage is enabled, just disable entry and browse (don't uncheck
-		// the toggle)
+		// If damage is enabled, just disable entry and browse (don't uncheck the toggle)
 		studio->set_sensitive("shinfo_ammo_usecode", false);
 		studio->set_sensitive("shinfo_ammo_usecode_browse", false);
 	}
@@ -2397,14 +2394,12 @@ C_EXPORT void on_shinfo_weapon_pow7_toggled(GtkToggleButton* btn, gpointer user_
 	studio->set_sensitive("shinfo_weapon_usecode_check", no_damage);
 
 	if (no_damage) {
-		// If no damage is enabled, enable entry and browse based on the toggle
-		// state
+		// If no damage is enabled, enable entry and browse based on the toggle state
 		const bool has_usecode = studio->get_toggle("shinfo_weapon_usecode_check");
 		studio->set_sensitive("shinfo_weapon_usecode", has_usecode);
 		studio->set_sensitive("shinfo_weapon_usecode_browse", has_usecode);
 	} else {
-		// If damage is enabled, just disable entry and browse (don't uncheck
-		// the toggle)
+		// If damage is enabled, just disable entry and browse (don't uncheck the toggle)
 		studio->set_sensitive("shinfo_weapon_usecode", false);
 		studio->set_sensitive("shinfo_weapon_usecode_browse", false);
 	}
@@ -3914,8 +3909,7 @@ void ExultStudio::open_shape_window(
 	current_shape_frame = -1;
 	shape_window_dirty  = false;
 
-	// Reset audio track spin buttons to prevent values from persisting
-	// across different shapes.
+	// Reset audio track spin buttons to prevent values from persisting across different shapes.
 	set_spin("shinfo_sfx_first", -1);
 	set_spin("shinfo_weapon_sfx", -1);
 	set_spin("shinfo_weapon_hitsfx", -1);
@@ -4565,8 +4559,7 @@ void ExultStudio::open_shape_window(
 			set_spin("shinfo_gumpobj_checkmark_shape", 0);
 			set_sensitive("shinfo_gumpobj_checkmark_content", gump_class == 1 || gump_class == 2);
 		}
-		// Checkmark_shape inactive for now as
-		// setting the checkmark shape is not yet de-hardcoded
+		// Checkmark_shape inactive for now as setting the checkmark shape is not yet de-hardcoded
 		set_sensitive("shinfo_gumpobj_checkmark_shape", false);
 
 		const bool is_checkmark = gumpinf && gumpinf->is_checkmark;
@@ -4577,8 +4570,7 @@ void ExultStudio::open_shape_window(
 		gtk_widget_set_visible(gump_notebook, false);
 	}
 
-	// Reset the main shape drawing to a smaller size each time shape_window is
-	// opened.
+	// Reset the main shape drawing to a smaller size each time shape_window is opened.
 	GtkWidget* draw_area = get_widget("shinfo_draw");
 	if (draw_area) {
 		gtk_widget_set_size_request(draw_area, 150, 150);
@@ -4590,11 +4582,11 @@ void ExultStudio::open_shape_window(
 	// Set current frame tracker
 	current_shape_frame = frnum;
 
-	// Connect dirty-marking signals AFTER all initialization is complete
-	// This ensures opening the editor doesn't mark it dirty
+	// Connect dirty-marking signals AFTER all initialization is complete:
+	// This ensures opening the editor doesn't mark it dirty.
 	connect_shape_dirty_signals(shapewin);
 
-	// Initialization complete - allow dirty marking now
+	// Initialization complete - allow dirty marking now.
 	shape_window_initializing = false;
 
 	gtk_widget_set_visible(shapewin, true);

@@ -37,10 +37,8 @@ class ODataSource;
 class Shape_group : std::vector<int> {    // Not public on purpose.
 	std::string       name;               // What this group is called.
 	Shape_group_file* file;               // Where this comes from.
-	int               builtin;            // -1 if not builtin, 0-14 if
-										  //  a Shape_info::Shape_class, 100-103
-										  //  if Special_builtin.
-	bool modified;
+	int               builtin;            // -1 if not builtin, 0-14 if a Shape_info::Shape_class, 100-103 if Special_builtin.
+	bool              modified;
 
 public:
 	friend class Shape_group_file;
@@ -116,9 +114,8 @@ public:
 class Shape_group_file {
 	std::string               name;        // Base filename.
 	std::vector<Shape_group*> groups;      // List of groups from the file.
-	std::vector<Shape_group*> builtins;    // Builtin groups, created
-	//  on demand.
-	bool modified;    // Changed since last save.
+	std::vector<Shape_group*> builtins;    // Builtin groups, created on demand.
+	bool                      modified;    // Changed since last save.
 public:
 	friend class Shape_group;
 	Shape_group_file(const char* nm);

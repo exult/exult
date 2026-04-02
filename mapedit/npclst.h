@@ -80,17 +80,16 @@ class Npc_chooser : public Object_browser, public Shape_draw {
 	long                   total_height;    // In pixels, for all rows.
 	int                    last_npc;        // Last shape visible in window.
 	bool                   frames_mode;     // Show all frames horizontally.
-	int                    hoffset;         // Horizontal offset in pixels (when in
-											//   frames_mode).
-	int  voffset;                           // Vertical offset in pixels.
-	int  status_id;                         // Statusbar msg. ID.
-	int  red;                               // Index of color red in palbuf.
-	bool drop_enabled;                      // So we only do it once.
+	int                    hoffset;         // Horizontal offset in pixels (when in frames_mode).
+	int                    voffset;         // Vertical offset in pixels.
+	int                    status_id;       // Statusbar msg. ID.
+	int                    red;             // Index of color red in palbuf.
+	bool                   drop_enabled;    // So we only do it once.
 	void (*sel_changed)();                  // Called when selection changes.
 	// Blit onto screen.
 	void show(int x, int y, int w, int h) override;
-	void select(int new_sel);    // Show new selection.
-	void render() override;      // Draw list.
+	void select(int new_sel) override;    // Show new selection.
+	void render() override;               // Draw list.
 
 	void set_background_color(guint32 c) override {
 		Shape_draw::set_background_color(c);

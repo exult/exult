@@ -61,8 +61,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #ifdef _WIN32
 #	include "servewin32.h"
 #else
-// #	include <fcntl.h> The call to fcntl is for !_WIN32 and has been
-// commented out
 #	include <sys/stat.h>
 #	include <sys/socket.h>
 #	include <sys/un.h>
@@ -641,8 +639,7 @@ ExultStudio::ExultStudio(int argc, char** argv)
 			} else if (shape_scale > 32) {
 				shape_scale = 32;
 			} else {
-				// The expected values are 2,3, 4,6, 8,12, 16,24, 32 :
-				//   the bounds 2 and 32 are checked above.
+				// The expected values are 2, 3, 4, 6, 8, 12, 16, 24, 32 : the bounds 2 and 32 are checked above.
 				//   Loop : divide by 2, until reaching 2 or 3.
 				int shape_pow2 = 1;
 				while (shape_scale > 4) {
@@ -783,8 +780,7 @@ ExultStudio::ExultStudio(int argc, char** argv)
 	} else {
 		config->read_config_file(USER_CONFIGURATION_FILE);
 	}
-	// Get Shape scaling from config if not set by command line, report if above
-	// 100%
+	// Get Shape scaling from config if not set by command line, report if above 100%.
 	if (shape_scale == 0) {
 		config->value("config/estudio/shape_scale", shape_scale, 2);
 		config->value("config/estudio/shape_bilinear", shape_bilinear, false);
@@ -955,8 +951,7 @@ ExultStudio::ExultStudio(int argc, char** argv)
 	config->value("config/estudio/edit_filetype", ftype, ".PNG");
 	edit_filetype = g_strdup(ftype.c_str());
 	config->set("config/estudio/edit_filetype", ftype, true);
-	// Init. 'Mode' menu, since Glade
-	//   doesn't seem to do it right.
+	// Init. 'Mode' menu, since Glade doesn't seem to do it right.
 	GSList* group = nullptr;
 	for (size_t i = 0; i < mode_names.size(); i++) {
 		GtkWidget* item = get_widget(mode_names[i]);
@@ -1218,8 +1213,7 @@ void ExultStudio::create_new_game(const char* dir    // Directory for new game.
 			return;
 		}
 	}
-	U7mkdir(dir, 0755);    // Create "game", "game/static",
-	//   "game/patch".
+	U7mkdir(dir, 0755);    // Create "game", "game/static", "game/patch".
 	U7mkdir(static_path.c_str(), 0755);
 	const string patch_path = dirstr + "/patch";
 	U7mkdir(patch_path.c_str(), 0755);
@@ -1254,8 +1248,7 @@ void ExultStudio::create_new_game(const char* dir    // Directory for new game.
 		}
 		closedir(dirrd);
 	}
-	// Create empty required text data files, so that the Read_*_text_data_file functions
-	// don't throw on missing files.
+	// Create empty required text data files, so that the Read_*_text_data_file functions don't throw on missing files.
 	for (const char* txt : {"gump_info.txt", "paperdol_info.txt", "bodies.txt", "shape_info.txt"}) {
 		const string p = static_path + '/' + txt;
 		if (!U7exists(p)) {
@@ -1427,8 +1420,7 @@ C_EXPORT void on_gameselect_gamelist_cursor_changed(GtkTreeView* treeview, gpoin
 			modname.replace(t, 1, " ");
 		}
 
-		// Titles need to be displayable in Exult menu, hence should not
-		// have any extra characters.
+		// Titles need to be displayable in Exult menu, hence should not have any extra characters.
 		const string title(convertToUTF8(modname.c_str(), "ASCII"));
 		gtk_tree_store_append(model, &iter, nullptr);
 		gtk_tree_store_set(model, &iter, 0, title.c_str(), 1, j, -1);
@@ -1449,8 +1441,7 @@ void fill_game_tree(GtkTreeView* treeview, int curr_game) {
 			gamename.replace(t, 1, " ");
 		}
 
-		// Titles need to be displayable in Exult menu, hence should not
-		// have any extra characters.
+		// Titles need to be displayable in Exult menu, hence should not have any extra characters.
 		const string title(convertToUTF8(gamename.c_str(), "ASCII"));
 		gtk_tree_store_append(model, &iter, nullptr);
 		gtk_tree_store_set(model, &iter, 0, title.c_str(), 1, j, -1);
@@ -2002,19 +1993,16 @@ void add_to_tree(GtkTreeStore* model, const char* folderName, const char* files,
 				if (!strcmp(fname, ".") || !strcmp(fname, "..") || strcasecmp(fname + flen - strlen(ext), ext) != 0) {
 					continue;
 				}
-				// Filter out 'font0000.vga' file as it is apparently
-				// from an old origin screensaver.
+				// Filter out 'font0000.vga' file as it is apparently from an old origin screensaver.
 				if (!strcasecmp(fname, "font0000.vga")) {
 					continue;
 				}
-				// Skip fonts_original.vga, fonts_serif.vga and
-				// shortcutbar.vga - handled separately.
+				// Skip fonts_original.vga, fonts_serif.vga and shortcutbar.vga - handled separately.
 				if (!strcasecmp(fname, "fonts_original.vga") || !strcasecmp(fname, "fonts_serif.vga")
 					|| !strcasecmp(fname, "shortcutbar.vga")) {
 					continue;
 				}
-				// Skip bg_paperdol.vga and bg_mr_faces.vga - handled
-				// separately for BG games.
+				// Skip bg_paperdol.vga and bg_mr_faces.vga - handled separately for BG games.
 				if (!strcasecmp(fname, "bg_paperdol.vga") || !strcasecmp(fname, "bg_mr_faces.vga")) {
 					continue;
 				}
@@ -2407,8 +2395,7 @@ void ExultStudio::set_edit_terrain(gboolean terrain    // True/false
 ) {
 	unsigned char  data[Exult_server::maxlength];
 	unsigned char* ptr = &data[0];
-	little_endian::Write2(ptr, terrain ? 1 : 0);    // NOTE:  Pass -1 to abort.  But I
-	//   haven't got an interface yet.
+	little_endian::Write2(ptr, terrain ? 1 : 0);    // NOTE:  Pass -1 to abort. But I haven't got an interface yet.
 	send_to_server(Exult_server::terrain_editing_mode, data, ptr - data);
 	if (!terrain) {
 		// Turning it off.
@@ -2850,8 +2837,7 @@ int ExultStudio::prompt(
 		GList* toplevels = gtk_window_list_toplevels();
 		for (GList* l = toplevels; l != nullptr; l = l->next) {
 			GtkWindow* win = GTK_WINDOW(l->data);
-			// Don't use the dialog itself as parent, and check for active
-			// window
+			// Don't use the dialog itself as parent, and check for active window.
 			if (win != GTK_WINDOW(dlg) && gtk_window_is_active(win)) {
 				parent = win;
 				break;
@@ -3377,9 +3363,7 @@ bool ExultStudio::connect_to_server() {
 		update_play_button(false);
 		return false;
 	}
-	// Set to be non-blocking.
-	//	fcntl(server_socket, F_SETFL,
-	//				fcntl(server_socket, F_GETFL) | O_NONBLOCK);
+	// REMOVED: Set to be non-blocking, was a fcntl F_SETFL with O_NONBLOCK.
 	cout << "Trying to connect to server at '" << addr.sun_path << "'" << endl;
 	if (connect(server_socket, reinterpret_cast<sockaddr*>(&addr), sizeof(addr.sun_family) + strlen(addr.sun_path) + 1) == -1) {
 		perror("Socket connect");
@@ -3693,8 +3677,7 @@ C_EXPORT void on_gameinfo_apply_clicked(GtkToggleButton* button, gpointer user_d
 	GtkTextIter    endpos;
 	gtk_text_buffer_get_bounds(buff, &startpos, &endpos);
 	gchar* modmenu = gtk_text_iter_get_text(&startpos, &endpos);
-	// Titles need to be displayable in Exult menu, hence should not
-	// have any extra characters.
+	// Titles need to be displayable in Exult menu, hence should not have any extra characters.
 	string menustr(convertFromUTF8(modmenu, "ASCII"));
 	for (size_t i = 0; i < strlen(menustr.c_str()); i++) {
 		if ((static_cast<unsigned char>(menustr[i]) & 0x80) != 0) {
@@ -3812,8 +3795,7 @@ void ExultStudio::set_game_information() {
 
 	BaseGameInfo*  gameinfo = get_game();
 	GtkTextBuffer* buff     = gtk_text_view_get_buffer(GTK_TEXT_VIEW(get_widget("gameinfo_menustring")));
-	// Titles need to be displayable in Exult menu, hence should not
-	// have any extra characters.
+	// Titles need to be displayable in Exult menu, hence should not have any extra characters.
 	const string title(convertToUTF8(gameinfo->get_menu_string().c_str(), "ASCII"));
 	gtk_text_buffer_set_text(buff, title.c_str(), -1);
 
@@ -3824,22 +3806,19 @@ void ExultStudio::set_game_information() {
  * Callbacks for the ICU Converters
  * Replace Illegal or Not Translatable characters by '?'
  */
-static void convertToUnicodeCallback(    // Called in the direction Codepage ->
-										 // UTF8
+static void convertToUnicodeCallback(    // Called in the direction Codepage -> UTF8.
 		const void* context, UConverterToUnicodeArgs* toArgs, const char* codeUnits, int32_t length,
 		UConverterCallbackReason reason, UErrorCode* err) {
 	ignore_unused_variable_warning(context, codeUnits, length);
-	if (reason == UCNV_ILLEGAL || reason == UCNV_UNASSIGNED) {    // Illegal : ASCII unexpected
-																  // code 80..ff, Unassigned : all non
-																  // defined
+	if (reason == UCNV_ILLEGAL || reason == UCNV_UNASSIGNED) {    // Illegal : ASCII unexpected code 80..ff,
+																  //  Unassigned : all non defined.
 		*err = U_ZERO_ERROR;
 		UChar toSubSource[]{'?'};
 		ucnv_cbToUWriteUChars(toArgs, toSubSource, 1, 0, err);
 	}
 }
 
-static void convertFromUnicodeCallback(    // Called in the direction UTF8 ->
-										   // Codepage
+static void convertFromUnicodeCallback(    // Called in the direction UTF8 -> Codepage.
 		const void* context, UConverterFromUnicodeArgs* fromArgs, const UChar* codeUnits, int32_t length, UChar32 codePoint,
 		UConverterCallbackReason reason, UErrorCode* err) {
 	ignore_unused_variable_warning(context, codeUnits, length, codePoint);
@@ -4116,10 +4095,9 @@ std::string convertToUTF8(const char* src_str, const char* enc) {
 	return tgt_str;
 }
 
-// HACK. NPC Paperdolls need this, but miscinf has too many
-// Exult-dependant stuff to be included in ES. Thus, Exult
-// defines the working version of this function.
-// Maybe we should do something about this...
+// HACK. NPC Paperdolls need this, but miscinf has too many Exult-dependant stuff to be included in ES.
+//  Thus, Exult defines the working version of this function.
+//  Maybe we should do something about this...
 int get_skinvar(const std::string& key) {
 	ignore_unused_variable_warning(key);
 	return -1;

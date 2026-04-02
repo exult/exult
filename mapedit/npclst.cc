@@ -105,8 +105,6 @@ void Npc_chooser::render() {
 	// Clear window first.
 	iwin->fill8(255);    // Set to background_color.
 	int curr_y = -row0_voffset;
-	// int total_cnt = get_count();
-	//    filter (group).
 	for (unsigned rownum = row0; curr_y < winh && rownum < rows.size(); ++rownum) {
 		const Npc_row& row  = rows[rownum];
 		unsigned       cols = get_num_cols(rownum);
@@ -185,12 +183,9 @@ void Npc_chooser::setup_info(bool savepos    // Try to keep current position.
 	rows.resize(0);
 	row0 = row0_voffset = 0;
 	last_npc            = 0;
-	/* +++++NOTE:  index0 is always 0 for the NPC browse.  It should
-		probably be removed from the base Obj_browser class */
-	index0       = 0;
-	voffset      = 0;
-	hoffset      = 0;
-	total_height = 0;
+	voffset             = 0;
+	hoffset             = 0;
+	total_height        = 0;
 	if (frames_mode) {
 		setup_frames_info();
 	} else {
@@ -229,7 +224,6 @@ void Npc_chooser::setup_shapes_info() {
 	int        row_h      = 0;
 	const int  total_cnt  = get_count();
 	const int  num_shapes = ifile->get_num_shapes();
-	//   filter (group).
 	rows.resize(1);    // Start 1st row.
 	rows[0].index0 = 0;
 	rows[0].y      = 0;
@@ -288,7 +282,7 @@ void Npc_chooser::setup_frames_info() {
 	const unsigned total_cnt  = get_count();
 	const int      num_shapes = ifile->get_num_shapes();
 	//   filter (group).
-	for (unsigned index = index0; index < total_cnt; index++) {
+	for (unsigned index = 0; index < total_cnt; index++) {
 		const int npcnum = group ? (*group)[index] : index;
 		if (npcnum >= 356 && npcnum <= 359) {
 			continue;
@@ -500,7 +494,7 @@ gint Npc_chooser::drag_motion(
 }
 
 /*
- *  Handle a mouse button-press event.
+ *  Handle a mouse button press event.
  */
 gint Npc_chooser::mouse_press(
 		GtkWidget*      widget,    // The view window.
@@ -559,6 +553,7 @@ gint Npc_chooser::mouse_press(
 /*
  *  Handle mouse button press/release events.
  */
+
 static gint Mouse_press(
 		GtkWidget*      widget,    // The view window.
 		GdkEventButton* event,
@@ -1084,8 +1079,7 @@ Npc_chooser::Npc_chooser(
 	gtk_box_pack_start(GTK_BOX(vbox), hscroll, false, true, 0);
 	// Set scrollbar handler.
 	g_signal_connect(G_OBJECT(shape_adj), "value-changed", G_CALLBACK(hscrolled), this);
-	//++++  gtk_widget_set_visible(hscroll, false);   // Only shown in 'frames'
-	// mode.
+	//++++  gtk_widget_set_visible(hscroll, false);   // Only shown in 'frames' mode.
 	// Scroll events.
 	enable_draw_vscroll(draw);
 

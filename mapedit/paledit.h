@@ -53,21 +53,20 @@ class Palette_edit : public Object_browser {
 	GtkWidget *                insert_btn, *remove_btn, *up_btn, *down_btn;
 	// Blit onto screen.
 	void show(int x, int y, int w, int h) override;
-	void select(int new_sel);    // Show new selection.
+	void select(int new_sel) override;    // Show new selection.
 
 	void load() override {
 		load_internal();
 	}
 
-	void       load_internal();      // Load from file data.
-	void       render() override;    // Draw list.
-	void       double_clicked();     // Handle double-click on a color.
-	GtkWidget* create_controls();    // Controls at bottom of browser.
-	void       enable_controls();    // Enable/disable controls after sel.
-	//   has changed.
-	void setup();                  // Setup box.
-	void new_palette();            // Create new palette.
-	void update_flex(int pnum);    // Update flex_info data.
+	void       load_internal();          // Load from file data.
+	void       render() override;        // Draw list.
+	void       double_clicked();         // Handle double-click on a color.
+	GtkWidget* create_controls();        // Controls at bottom of browser.
+	void       enable_controls();        // Enable/disable controls after selection has changed.
+	void       setup();                  // Setup box.
+	void       new_palette();            // Create new palette.
+	void       update_flex(int pnum);    // Update flex_info data.
 public:
 	Palette_edit(Flex_file_info* flinfo);
 	~Palette_edit() override;

@@ -801,8 +801,7 @@ void Shape_shape_single::draw_shape(Shape_frame* shape, int x, int y) {
 	int minx   = bbox_x * c_tilesize + bbox_z * c_tilesize / 2 + 1 - shape->get_xleft();
 	int miny   = bbox_y * c_tilesize + bbox_z * c_tilesize / 2 + 1 - shape->get_yabove();
 
-	// x and y need to exceed minx and miny
-	// to ensure there is enough space to draw the bbox
+	// x and y need to exceed minx and miny to ensure there is enough space to draw the bbox
 
 	if (x < minx || y < miny) {
 		// Not enough space for bbox so resize the draw area and queue a redraw
