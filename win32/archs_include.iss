@@ -75,5 +75,5 @@
  
 
 #if SameStr(archs,"")
-#error No architures selected for inclusion in installer
+#error No architectures selected for inclusion in installer
 #endif
