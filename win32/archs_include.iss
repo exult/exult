@@ -73,3 +73,7 @@
  #pragma message "archs= "+archs
  #pragma message "archs64= "+archs64
  
+
+#if SameStr(archs,"")
+#error No architures selected for inclusion in installer
+#endif
