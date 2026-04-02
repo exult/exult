@@ -630,8 +630,7 @@ Shape_file_info* Shape_file_set::create(const char* basename    // Like 'shapes.
 	} else if (strcasecmp(basename, "sprites.vga") == 0) {
 		return append(new Image_file_info(basename, fullname, new Vga_file(spath, U7_SHAPE_SPRITES, ppath), groups));
 	} else if (strcasecmp(basename, "paperdol.vga") == 0) {
-		// For BG, build multi-source: SI's paperdol + bg_paperdol from
-		// exult_bg.flx + patch, mirroring Paperdoll_source_parser.
+		// For BG, build multi-source: SI's paperdol + bg_paperdol from exult_bg.flx + patch, mirroring Paperdoll_source_parser.
 		ExultStudio* studio = ExultStudio::get_instance();
 		if (studio && studio->get_game_type() == BLACK_GATE && !serpent_sstr.empty()) {
 			std::vector<std::pair<std::string, int>> sources;

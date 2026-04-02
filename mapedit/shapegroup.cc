@@ -1346,8 +1346,7 @@ static void apply_group_window_changes(GtkWidget* grpwin) {
 	if (name_entry) {
 		const char* new_name = gtk_entry_get_text(GTK_ENTRY(name_entry));
 		if (new_name && *new_name) {
-			// Update the group name (set_name takes char*, but we copy the
-			// string internally)
+			// Update the group name (set_name takes char*, but we copy the string internally)
 			grp->set_name(const_cast<char*>(new_name));
 
 			// Update window title

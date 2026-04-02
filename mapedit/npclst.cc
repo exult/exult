@@ -1079,8 +1079,7 @@ Npc_chooser::Npc_chooser(
 	gtk_box_pack_start(GTK_BOX(vbox), hscroll, false, true, 0);
 	// Set scrollbar handler.
 	g_signal_connect(G_OBJECT(shape_adj), "value-changed", G_CALLBACK(hscrolled), this);
-	//++++  gtk_widget_set_visible(hscroll, false);   // Only shown in 'frames'
-	// mode.
+	//++++  gtk_widget_set_visible(hscroll, false);   // Only shown in 'frames' mode.
 	// Scroll events.
 	enable_draw_vscroll(draw);
 

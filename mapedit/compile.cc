@@ -60,8 +60,7 @@ void Ucc_done(
 ) {
 	ignore_unused_variable_warning(user_data);
 	if (exit_code == 0) {    // Success?
-		// TODO: Handle failure to write usecode file (e.g., due to a read-only
-		// destination).
+		// TODO: Handle failure to write usecode file (e.g., due to a read-only destination).
 		ExultStudio::get_instance()->reload_usecode();
 		box->add_message("Reloaded usecode\n");
 	} else {

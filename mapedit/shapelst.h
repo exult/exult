@@ -49,8 +49,7 @@ class Editing_file {
 	int         framenum;        // Frame number.
 	int         tiles;           // If > 0, #8x8 tiles per row or col.
 	bool        bycolumns;       // If true tile by column first.
-	bool        is_shp;          // If true, file is SHP format (whole shape), else PNG
-					// (single frame).
+	bool        is_shp;          // If true, file is SHP format (whole shape), else PNG (single frame).
 
 	// Private constructor for tiled
 	Editing_file(const char* vganm, const char* pnm, time_t m, int sh, int ts, bool bycol, int /*unused*/)
@@ -111,13 +110,11 @@ class Shape_chooser : public Object_browser, public Shape_draw {
 	long                     total_height;    // In pixels, for all rows.
 	int                      last_shape;      // Last shape visible in window.
 	bool                     frames_mode;     // Show all frames horizontally.
-	int                      hoffset;         // Horizontal offset in pixels (when in
-											  //   frames_mode).
-	int voffset;                              // Vertical offset in pixels.
-	int status_id;                            // Statusbar msg. ID.
+	int                      hoffset;         // Horizontal offset in pixels (when in frames_mode).
+	int                      voffset;         // Vertical offset in pixels.
+	int                      status_id;       // Statusbar msg. ID.
 	void (*sel_changed)();                    // Called when selection changes.
-	// List of files being edited by an
-	//   external program (Gimp, etc.)
+	// List of files being edited by an external program (Gimp, etc.)
 	static std::vector<std::unique_ptr<Editing_file>> editing_files;
 	static int                                        check_editing_timer;    // For monitoring files being edited.
 	// Blit onto screen.
@@ -196,8 +193,7 @@ public:
 	void   edit_shape_info();    // Edit selected shape's info.
 	// Edit selected shape-frame.
 	void edit_shape(int tiles = 0, bool bycols = false);
-	// Deal with list of files being edited
-	//   by an external prog. (Gimp).
+	// Deal with list of files being edited by an external prog. (Gimp).
 	static gint check_editing_files_cb(gpointer data);
 	static gint check_editing_files();
 	static void read_back_edited(Editing_file* ed);

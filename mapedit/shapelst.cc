@@ -469,8 +469,7 @@ gint Shape_chooser::configure(GdkEventConfigure* event) {
 	} else {
 		render();    // Same size?  Just render it.
 	}
-	// Set handler for shape dropped here,
-	//   BUT not more than once.
+	// Set handler for shape dropped here, BUT not more than once.
 	if (drop_callback != Shape_dropped_here) {
 		enable_drop(Shape_dropped_here, this);
 	}
@@ -669,8 +668,7 @@ time_t Shape_chooser::export_png(
 	const int   w = img.get_width();
 	const int   h = img.get_height();
 	struct stat fs;    // Write out to the .png.
-	// (Rotate transp. pixel to 0 for the
-	//   Gimp's sake.)
+	// (Rotate transp. pixel to 0 for the Gimp's sake.)
 	if (!Export_png8(fname, transp, w, h, w, xoff, yoff, img.get_bits(), &pal[0], 256, true) || stat(fname, &fs) != 0) {
 		Alert("Error creating '%s'", fname);
 		return 0;
@@ -686,9 +684,8 @@ time_t Shape_chooser::export_png(
 
 time_t Shape_chooser::export_tiled_png(
 		const char* fname,    // File to write out.
-		int         tiles,    // If #0, write all frames as tiles,
-		//   this many in each row (col).
-		bool bycols    // Write tiles columns-first.
+		int         tiles,    // If #0, write all frames as tiles, this many in each row (col).
+		bool        bycols    // Write tiles columns-first.
 ) {
 	assert(selected >= 0);
 	const int    shnum  = info[selected].shapenum;
@@ -765,8 +762,7 @@ void Shape_chooser::edit_shape_info() {
  */
 
 void Shape_chooser::edit_shape(
-		int tiles,    // If #0, write all frames as tiles,
-		//   this many in each row (col).
+		int  tiles,    // If #0, write all frames as tiles, this many in each row (col).
 		bool bycols    // Write tiles columns-first.
 ) {
 	ExultStudio* studio = ExultStudio::get_instance();
@@ -2363,8 +2359,7 @@ Shape_chooser::Shape_chooser(
 	gtk_box_pack_start(GTK_BOX(vbox), hscroll, false, true, 0);
 	// Set scrollbar handler.
 	g_signal_connect(G_OBJECT(shape_adj), "value-changed", G_CALLBACK(hscrolled), this);
-	//++++  gtk_widget_set_visible(hscroll, false);   // Only shown in 'frames'
-	// mode.
+	//++++  gtk_widget_set_visible(hscroll, false);   // Only shown in 'frames' mode.
 	// Scroll events.
 	enable_draw_vscroll(draw);
 

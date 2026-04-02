@@ -41,9 +41,7 @@ using Exec_done_fun = void (*)(int exit_code, Exec_box* box, gpointer user_data)
  */
 class Exec_process {
 public:
-	// Function called when data is read
-	//   from child.  If datalen == 0,
-	//   child is done & exit_code is set.
+	// Function called when data is read from child. If datalen == 0, child is done & exit_code is set.
 	using Reader_fun = void (*)(char* data, int datalen, int exit_code, gpointer user_data);
 
 private:

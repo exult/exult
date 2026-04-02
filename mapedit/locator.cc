@@ -230,8 +230,7 @@ void Locator::render(GdkRectangle* area    // nullptr for whole draw area.
 	cairo_set_source_rgb(drawgc, 0.0, 0.0, 64.0 / 255.0);
 	cairo_rectangle(drawgc, area->x, area->y, area->width, area->height);
 	cairo_fill(drawgc);
-	// Show superchunks with dotted lines.
-	// Paint in light grey.
+	// Show superchunks with dotted lines, paint in light grey.
 	int i;
 	int cur = 0;    // Cur. pixel.
 	// First the rows.
@@ -341,8 +340,7 @@ void Locator::vscrolled(       // For vertical scrollbar.
 	auto*     loc   = static_cast<Locator*>(data);
 	const int oldty = loc->ty;
 	loc->ty         = static_cast<gint>(gtk_adjustment_get_value(adj)) * c_tiles_per_chunk;
-	if (loc->ty != oldty)    // (Already equal if this event came
-							 //   from Exult msg.).
+	if (loc->ty != oldty)    // (Already equal if this event came from Exult msg.).
 	{
 		loc->render();
 		loc->send_location();
@@ -356,8 +354,7 @@ void Locator::hscrolled(       // For horizontal scrollbar.
 	auto*     loc   = static_cast<Locator*>(data);
 	const int oldtx = loc->tx;
 	loc->tx         = static_cast<gint>(gtk_adjustment_get_value(adj)) * c_tiles_per_chunk;
-	if (loc->tx != oldtx)    // (Already equal if this event came
-							 //   from Exult msg.).
+	if (loc->tx != oldtx)    // (Already equal if this event came from Exult msg.).
 	{
 		loc->render();
 		loc->send_location();
@@ -419,8 +416,7 @@ void Locator::goto_mouse(
 	const GdkRectangle oldbox = viewbox;    // Old location of box.
 	const int          oldtx  = tx;
 	const int          oldty  = ty;
-	// Set tx,ty here so hscrolled() &
-	//   vscrolled() don't send to Exult.
+	// Set tx,ty here so hscrolled() & vscrolled() don't send to Exult.
 	GtkAllocation alloc = {0, 0, 0, 0};
 	gtk_widget_get_allocation(draw, &alloc);
 	if (alloc.width <= 0 || alloc.height <= 0) {

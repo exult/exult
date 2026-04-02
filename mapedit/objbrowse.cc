@@ -106,8 +106,7 @@ void Object_browser::on_browser_group_add(GtkMenuItem* item, gpointer udata) {
  */
 
 void Object_browser::add_group_submenu(GtkWidget* popup) {
-	// Use our group, or assume we're in
-	//   the main window.
+	// Use our group, or assume we're in the main window.
 	Shape_group_file* groups = group ? group->get_file() : ExultStudio::get_instance()->get_cur_groups();
 	const int         gcnt   = groups ? groups->size() : 0;
 	if (gcnt > 1 ||    // Groups besides ours?
