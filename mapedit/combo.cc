@@ -330,8 +330,7 @@ void Combo::add(
 	}
 	auto* memb = new Combo_member(tx, ty, tz, shnum, frnum);
 	members.push_back(memb);
-	// Figure visible top-left tile, with
-	//   1 to spare.
+	// Figure visible top-left tile, with 1 to spare.
 	const int vtx = tx - xtiles - 2 - (tz + ztiles + 1) / 2;
 	const int vty = ty - ytiles - 2 - (tz + ztiles + 1) / 2;
 	if (vtx < starttx) {    // Adjust our starting point.
@@ -454,8 +453,7 @@ int Combo::find(
  *  Output: Allocated buffer containing result.
  */
 
-unique_ptr<unsigned char[]> Combo::write(int& datalen    // Actual length of data in buf. is
-														 //   returned here.
+unique_ptr<unsigned char[]> Combo::write(int& datalen    // Actual length of data in buffer is returned here.
 ) {
 	const int namelen = name.length();    // Name length.
 	// Room for our data + members.
