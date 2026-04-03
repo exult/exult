@@ -601,8 +601,7 @@ void Game_window::init_files(bool cycle) {
  *  Read any map. (This is for "multimap" games, not U7.)
  */
 
-Game_map* Game_window::get_map(
-		int num    // Should be > 0.
+Game_map* Game_window::get_map(int num    // Should be > 0.
 ) {
 	if (num >= static_cast<int>(maps.size())) {
 		maps.resize(num + 1);
@@ -687,8 +686,7 @@ bool Game_window::in_infravision() const {
  *  Add time for a light spell.
  */
 
-void Game_window::add_special_light(
-		int units    // Light=500, GreatLight=5000.
+void Game_window::add_special_light(int units    // Light=500, GreatLight=5000.
 ) {
 	if (!special_light) {    // Nothing in effect now?
 		special_light = clock->get_total_minutes();
@@ -701,10 +699,9 @@ void Game_window::add_special_light(
  *  Set 'stop time' value.
  */
 
-void Game_window::set_time_stopped(
-		long delay    // Delay in ticks (1/1000
-					  // secs.), -1 to stop
-					  // indefinitely, or 0 to end.
+void Game_window::set_time_stopped(long delay    // Delay in ticks (1/1000
+												 // secs.), -1 to stop
+												 // indefinitely, or 0 to end.
 ) {
 	if (delay == -1) {
 		time_stopped = -1;
@@ -1089,8 +1086,7 @@ void Game_window::set_scrolls(int newscrolltx, int newscrollty) {
  *  center_view.)
  */
 
-void Game_window::set_scrolls(
-		Tile_coord cent    // Want center here.
+void Game_window::set_scrolls(Tile_coord cent    // Want center here.
 ) {
 	// Figure in tiles.
 	// OFFSET HERE
