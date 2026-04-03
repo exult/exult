@@ -1977,10 +1977,9 @@ USECODE_INTRINSIC(sprite_effect) {
 	// Validate sprite number is in valid range before creating effect
 	Shape_manager* sman = Shape_manager::get_instance();
 	if (sprite_num >= 0 && sprite_num < sman->get_file(SF_SPRITES_VGA).get_num_shapes()) {
-		gwin->get_effects()->add_effect(
-				std::make_unique<Sprites_effect>(
-						sprite_num, Tile_coord(parms[1].get_int_value(), parms[2].get_int_value(), 0), parms[3].get_int_value(),
-						parms[4].get_int_value(), 0, parms[5].get_int_value(), parms[6].get_int_value()));
+		gwin->get_effects()->add_effect(std::make_unique<Sprites_effect>(
+				sprite_num, Tile_coord(parms[1].get_int_value(), parms[2].get_int_value(), 0), parms[3].get_int_value(),
+				parms[4].get_int_value(), 0, parms[5].get_int_value(), parms[6].get_int_value()));
 	}
 	return no_ret;
 }
@@ -1995,10 +1994,9 @@ USECODE_INTRINSIC(obj_sprite_effect) {
 		// Validate sprite number is in valid range before creating effect
 		Shape_manager* sman = Shape_manager::get_instance();
 		if (sprite_num >= 0 && sprite_num < sman->get_file(SF_SPRITES_VGA).get_num_shapes()) {
-			gwin->get_effects()->add_effect(
-					std::make_unique<Sprites_effect>(
-							sprite_num, obj, -parms[2].get_int_value(), -parms[3].get_int_value(), parms[4].get_int_value(),
-							parms[5].get_int_value(), parms[6].get_int_value(), parms[7].get_int_value()));
+			gwin->get_effects()->add_effect(std::make_unique<Sprites_effect>(
+					sprite_num, obj, -parms[2].get_int_value(), -parms[3].get_int_value(), parms[4].get_int_value(),
+					parms[5].get_int_value(), parms[6].get_int_value(), parms[7].get_int_value()));
 		}
 	}
 	return no_ret;

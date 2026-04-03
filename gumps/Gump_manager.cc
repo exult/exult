@@ -432,8 +432,7 @@ void Gump_manager::close_all_gumps(bool pers) {
  *  Set the keyboard focus to a given gump.
  */
 
-void Gump_manager::set_kbd_focus(
-		Gump* gump    // May be nullptr.
+void Gump_manager::set_kbd_focus(Gump* gump    // May be nullptr.
 ) {
 	if (gump && gump->can_handle_kbd()) {
 		kbd_focus = gump;

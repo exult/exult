@@ -51,10 +51,9 @@ using std::endl;
 /*
  *  Create for a given (newly created) object.
  */
-Dragging_info::Dragging_info(
-		Game_object_shared newobj    // Object NOT in world.  This is
-									 //   dropped, or deleted.
-		)
+Dragging_info::Dragging_info(Game_object_shared newobj    // Object NOT in world.  This is
+														  //   dropped, or deleted.
+							 )
 		: obj(std::move(newobj)), is_new(true), gump(nullptr), button(nullptr), mouse_widget(nullptr), widget_gump(nullptr),
 		  old_pos(-1, -1, -1), old_foot(0, 0, 0, 0), old_lift(-1), quantity(obj->get_quantity()), readied_index(-1), mousex(-1),
 		  mousey(-1), paintx(-1000), painty(-1000), mouse_shape(Mouse::mouse()->get_shape()), rect(0, 0, 0, 0), okay(true),

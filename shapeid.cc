@@ -384,8 +384,7 @@ bool Shape_manager::load_gumps_minimal() {
  *  Reload one of the shape files (msg. from ExultStudio).
  */
 
-void Shape_manager::reload_shapes(
-		int shape_kind    // Type from u7drag.h.
+void Shape_manager::reload_shapes(int shape_kind    // Type from u7drag.h.
 ) {
 	U7FileManager::get_ptr()->reset();    // Cache no longer valid.
 	shape_cache[shape_kind].clear();

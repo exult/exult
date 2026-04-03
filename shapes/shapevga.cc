@@ -713,8 +713,7 @@ void Shapes_vga_file::Read_Gumpinf_text_data_file(bool editing, Exult_Game game_
  *  Reload static data for weapons, ammo and mosters to
  *  fix data that was lost by earlier versions of ES.
  */
-void Shapes_vga_file::fix_old_shape_info(
-		Exult_Game game    // Which game.
+void Shapes_vga_file::fix_old_shape_info(Exult_Game game    // Which game.
 ) {
 	if (!info_read) {    // Read info first.
 		read_info(game, true);
@@ -731,8 +730,7 @@ void Shapes_vga_file::fix_old_shape_info(
  *  Reload info.
  */
 
-void Shapes_vga_file::reload_info(
-		Exult_Game game    // Which game.
+void Shapes_vga_file::reload_info(Exult_Game game    // Which game.
 ) {
 	info_read = false;
 	info.clear();
