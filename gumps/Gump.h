@@ -121,6 +121,10 @@ public:
 	virtual bool run() {
 		return false;
 	}
+
+	virtual int get_debug_flags() const {
+		return 0;
+	}
 };
 
 /*
@@ -142,10 +146,20 @@ protected:
 	}
 
 	void add_elem(Gump_widget* w) {
-		elems.push_back(w);
+		if (w) {
+			elems.push_back(w);
+		}
 	}
 
 public:
+	const Gump_elems& get_elems() const {
+		return elems;
+	}
+
+	Gump_elems& get_elems() {
+		return elems;
+	}
+
 	friend class Gump_model;
 	Gump(Container_game_object* cont, int initx, int inity, int shnum, ShapeFile shfile = SF_GUMPS_VGA);
 	// Create centered.
@@ -202,6 +216,14 @@ public:
 	virtual Game_object* get_owner();    // Get object this belongs to.
 	// Is a given point on a button?
 	Gump_button* on_button(int mx, int my) override;
+	// Forward mouse event to child widgets (e.g. slider thumb/track).
+	virtual Gump_widget* forward_mouse_down(int mx, int my, MouseButton button);
+
+	// Get custom click name for status bar display (nullptr = use default).
+	virtual const char* get_click_name() const {
+		return nullptr;
+	}
+
 	// Paint button.
 	virtual bool add(
 			Game_object* obj, int mx = -1, int my = -1, int sx = -1, int sy = -1, bool dont_check = false, bool combine = false);
