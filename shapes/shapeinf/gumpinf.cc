@@ -32,9 +32,12 @@ bool                                    Gump_info::any_modified = false;
 
 Gump_info::Gump_info()
 		: container_from_patch(false), checkmark_from_patch(false), special_from_patch(false), snapzones_from_patch(false),
-		  container_modified(false), checkmark_modified(false), special_modified(false), snapzones_modified(false), container_x(0),
-		  container_y(0), container_w(0), container_h(0), debug_flags(0), checkmark_x(0), checkmark_y(0), checkmark_shape(0),
-		  has_area(false), has_checkmark(false), is_checkmark(false), is_special(false) {}
+		  dynbuttons_from_patch(false), dyntexts_from_patch(false), dynshapes_from_patch(false), dynsliders_from_patch(false),
+		  gumpname_from_patch(false), container_modified(false), checkmark_modified(false), special_modified(false),
+		  snapzones_modified(false), dynbuttons_modified(false), dyntexts_modified(false), dynshapes_modified(false),
+		  dynsliders_modified(false), gumpname_modified(false), container_x(0), container_y(0), container_w(0), container_h(0),
+		  debug_flags(0), checkmark_x(0), checkmark_y(0), checkmark_shape(0), has_area(false), has_checkmark(false),
+		  is_checkmark(false), is_special(false) {}
 
 const Gump_info* Gump_info::get_gump_info(int shapenum) {
 	auto it = gump_info_map.find(shapenum);

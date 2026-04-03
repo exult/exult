@@ -38,11 +38,14 @@
 Dynamic_container_gump::Dynamic_container_gump(Container_game_object* cont, int initx, int inity, int shapenum, bool debug)
 		: Container_gump(cont, initx, inity, shapenum), debug_enabled(debug), debug_flags_(GUMP_DEBUG_ALL), paint_log_count(0),
 		  snap_zones_(nullptr) {
-	// Load snap zones and debug flags from gump_info if available
+	// Load snap zones, gump name, and debug flags from gump_info if available
 	const Gump_info* info = Gump_info::get_gump_info(shapenum);
 	if (info) {
 		if (info->has_snap_zones()) {
 			snap_zones_ = &info->snap_zones;
+		}
+		if (info->has_gump_name()) {
+			gump_name_ = info->gump_name;
 		}
 		debug_flags_ = info->debug_flags;
 		// Auto-enable debug if any debug flags are set in config
@@ -479,6 +482,18 @@ void Dynamic_container_gump::paint() {
 
 bool Dynamic_container_gump::has_config(int shapenum) {
 	const Gump_info* info = Gump_info::get_gump_info(shapenum);
-	// Only use Dynamic_container_gump when snap zones are configured
-	return info && info->has_area && info->has_snap_zones();
+	// Use Dynamic_container_gump when snap zones or dynamic elements are configured
+	if (!info || !info->has_area) {
+		return false;
+	}
+	return info->has_snap_zones() || info->has_dynamic_buttons() || info->has_dynamic_texts() || info->has_dynamic_shapes()
+		   || info->has_dynamic_sliders();
+}
+
+bool Dynamic_container_gump::has_dynamic_elements() const {
+	const Gump_info* info = Gump_info::get_gump_info(get_shapenum());
+	if (!info) {
+		return false;
+	}
+	return info->has_dynamic_buttons() || info->has_dynamic_texts() || info->has_dynamic_shapes() || info->has_dynamic_sliders();
 }

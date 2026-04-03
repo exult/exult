@@ -389,8 +389,9 @@ void Shapes_vga_file::Read_Gumpinf_text_data_file(bool editing, Exult_Game game_
 	if (Gump_info::was_any_modified()) {
 		return;
 	}
-	std::array sections{"container_area"sv, "checkmark_pos"sv,    "special"sv,
-						"snap_zones"sv,     "shortcutbar_icon"sv, "shortcutbar_action"sv};
+	std::array sections{"container_area"sv,  "checkmark_pos"sv,    "special"sv,           "snap_zones"sv,
+						"dynamic_buttons"sv, "dynamic_texts"sv,    "dynamic_shapes"sv,    "dynamic_sliders"sv,
+						"gump_name"sv,       "shortcutbar_icon"sv, "shortcutbar_action"sv};
 
 	// Functor for reading container area
 	// Format: :shape/x/y/w/h[/debug_flags]
@@ -468,6 +469,10 @@ void Shapes_vga_file::Read_Gumpinf_text_data_file(bool editing, Exult_Game game_
 					  << zone.zone_w << "," << zone.zone_h << ")"
 					  << " snap=(" << zone.snap_x << "," << zone.snap_y << ")"
 					  << " priority=" << zone.priority << " type='" << zone.zone_type << "'" << std::endl;
+			// Patch entries replace base entries for this gump.
+			if (patch) {
+				ginfo.begin_patch_snapzones();
+			}
 			// Validate zone dimensions
 			if (zone.zone_w > 0 && zone.zone_h > 0) {
 				ginfo.snap_zones.push_back(zone);
@@ -475,19 +480,207 @@ void Shapes_vga_file::Read_Gumpinf_text_data_file(bool editing, Exult_Game game_
 			} else {
 				std::cerr << "[SnapZone] REJECTED - invalid dimensions" << std::endl;
 			}
+			return true;
+		}
+	};
+
+	// Functor for reading dynamic buttons
+	// Format:
+	// :gump_shape/button_shape/pos_x/pos_y/default_frame/clicked_frame/sound_fx/usecode_fn/action_type/visibility_flag/usecode_param
+	struct Dynamic_buttons_functor {
+		bool operator()(std::istream& in, int version, bool patch, Exult_Game game, Gump_info& ginfo) const {
+			ignore_unused_variable_warning(version, game);
+			Dynamic_button_def btn;
+			btn.button_shape    = ReadInt(in);
+			btn.pos_x           = ReadInt(in);
+			btn.pos_y           = ReadInt(in);
+			btn.default_frame   = ReadInt(in);
+			btn.clicked_frame   = ReadInt(in);
+			btn.sound_fx        = ReadInt(in);
+			btn.usecode_fn      = ReadInt(in);
+			btn.action_type     = ReadInt(in);
+			btn.visibility_flag = ReadInt(in);
+			btn.usecode_param   = ReadInt(in);
 			if (patch) {
-				ginfo.set_snapzones_from_patch(true);
+				ginfo.begin_patch_dynbuttons();
 			}
+			ginfo.dynamic_buttons.push_back(btn);
+			return true;
+		}
+	};
+
+	// Functor for reading dynamic text fields
+	// Format: :gump_shape/field_id/pos_x/pos_y/font_num[/halign[/valign]]
+	// halign/valign are optional (default 0=left/top)
+	struct Dynamic_texts_functor {
+		bool operator()(std::istream& in, int version, bool patch, Exult_Game game, Gump_info& ginfo) const {
+			ignore_unused_variable_warning(version, game);
+			Dynamic_text_def txt;
+			txt.field_id = ReadInt(in);
+			txt.pos_x    = ReadInt(in);
+			txt.pos_y    = ReadInt(in);
+			txt.font_num = ReadInt(in);
+			// Optional alignment fields (default 0 = left/top)
+			// Note: ReadInt() consumes the trailing '/' via ignore(),
+			// so after font_num the stream is past the delimiter.
+			// Check for remaining data, not for '/'.
+			if (in.good() && in.peek() != std::char_traits<char>::eof()) {
+				txt.halign = ReadInt(in);
+				if (in.good() && in.peek() != std::char_traits<char>::eof()) {
+					txt.valign = ReadInt(in);
+				}
+			}
+			if (patch) {
+				ginfo.begin_patch_dyntexts();
+			}
+			ginfo.dynamic_texts.push_back(txt);
+			return true;
+		}
+	};
+
+	// Functor for reading dynamic shape displays
+	// Format: :gump_shape/field_id/pos_x/pos_y/shape_num/frame_num/shapefile
+	struct Dynamic_shapes_functor {
+		bool operator()(std::istream& in, int version, bool patch, Exult_Game game, Gump_info& ginfo) const {
+			ignore_unused_variable_warning(version, game);
+			Dynamic_shape_def shp;
+			shp.field_id  = ReadInt(in);
+			shp.pos_x     = ReadInt(in);
+			shp.pos_y     = ReadInt(in);
+			shp.shape_num = ReadInt(in);
+			shp.frame_num = ReadInt(in);
+			shp.shapefile = ReadInt(in);
+			if (patch) {
+				ginfo.begin_patch_dynshapes();
+			}
+			ginfo.dynamic_shapes.push_back(shp);
+			return true;
+		}
+	};
+
+	// Functor for reading dynamic sliders
+	// Format:
+	// :gump_shape/field_id/pos_x/pos_y/dec_shape/inc_shape/thumb_shape/min_val/max_val/step/default_val/extent/usecode_fn/orientation
+	struct Dynamic_sliders_functor {
+		bool operator()(std::istream& in, int version, bool patch, Exult_Game game, Gump_info& ginfo) const {
+			ignore_unused_variable_warning(version, game);
+			Dynamic_slider_def sld;
+			sld.field_id    = ReadInt(in);
+			sld.pos_x       = ReadInt(in);
+			sld.pos_y       = ReadInt(in);
+			sld.dec_shape   = ReadInt(in);
+			sld.inc_shape   = ReadInt(in);
+			sld.thumb_shape = ReadInt(in);
+			sld.min_val     = ReadInt(in);
+			sld.max_val     = ReadInt(in);
+			sld.step        = ReadInt(in);
+			sld.default_val = ReadInt(in);
+			sld.extent      = ReadInt(in);
+			sld.usecode_fn  = ReadInt(in);
+			sld.orientation = ReadInt(in);
+			if (patch) {
+				ginfo.begin_patch_dynsliders();
+			}
+			ginfo.dynamic_sliders.push_back(sld);
 			return true;
 		}
 	};
 
 	// The template parameters are: <Info, Functor>  (Info comes FIRST!)
 	// The constructor takes: std::map<int, Info>&
-	using Container_area_reader = Functor_multidata_reader<Gump_info, Container_area_functor>;
-	using Checkmark_pos_reader  = Functor_multidata_reader<Gump_info, Checkmark_pos_functor>;
-	using Special_reader        = Functor_multidata_reader<Gump_info, Special_functor>;
-	using Snap_zones_reader     = Functor_multidata_reader<Gump_info, Snap_zones_functor>;
+	using Container_area_reader  = Functor_multidata_reader<Gump_info, Container_area_functor>;
+	using Checkmark_pos_reader   = Functor_multidata_reader<Gump_info, Checkmark_pos_functor>;
+	using Special_reader         = Functor_multidata_reader<Gump_info, Special_functor>;
+	using Snap_zones_reader      = Functor_multidata_reader<Gump_info, Snap_zones_functor>;
+	using Dynamic_buttons_reader = Functor_multidata_reader<Gump_info, Dynamic_buttons_functor>;
+	using Dynamic_texts_reader   = Functor_multidata_reader<Gump_info, Dynamic_texts_functor>;
+	using Dynamic_shapes_reader  = Functor_multidata_reader<Gump_info, Dynamic_shapes_functor>;
+	using Dynamic_sliders_reader = Functor_multidata_reader<Gump_info, Dynamic_sliders_functor>;
+
+	// Functor for reading gump click-name
+	// Format: :gump_shape/name_string (rest of line, supports spaces)
+	struct Gump_name_functor {
+		bool operator()(std::istream& in, int version, bool patch, Exult_Game game, Gump_info& ginfo) const {
+			ignore_unused_variable_warning(version, game);
+			std::getline(in, ginfo.gump_name);
+			// Trim trailing whitespace
+			while (!ginfo.gump_name.empty()
+				   && (ginfo.gump_name.back() == '\r' || ginfo.gump_name.back() == '\n' || ginfo.gump_name.back() == ' ')) {
+				ginfo.gump_name.pop_back();
+			}
+			if (patch) {
+				ginfo.set_gumpname_from_patch(true);
+			}
+			return true;
+		}
+	};
+
+	using Gump_name_reader = Functor_multidata_reader<Gump_info, Gump_name_functor>;
+
+	// Functor for reading shortcutbar icon entries
+	// Format: :slot/transparent/vga/shape[/frame[/extra_frame
+	//         [/is_party_item[/fallback_vga[/fallback_shape
+	//         [/fallback_frame[/fallback_extra_frame]]]]]]]
+	struct Shortcutbar_icon_functor {
+		bool operator()(std::istream& in, int version, bool patch, Exult_Game game, Shortcutbar_icon_info& sinfo) const {
+			ignore_unused_variable_warning(version, patch, game);
+			const int transparent    = ReadInt(in);
+			const int shapefile_type = ReadInt(in);
+			const int shape          = ReadInt(in);
+			auto      has_more       = [&in]() {
+                return in.peek() != '\n' && in.peek() != '\r' && !in.eof();
+			};
+			const int              frame    = has_more() ? ReadInt(in, 0) : 0;
+			const int              extra    = has_more() ? ReadInt(in, -1) : -1;
+			const int              party    = has_more() ? ReadInt(in, 0) : 0;
+			const int              fb_vga   = has_more() ? ReadInt(in, -1) : -1;
+			const int              fb_shape = has_more() ? ReadInt(in, 0) : 0;
+			const int              fb_frame = has_more() ? ReadInt(in, 0) : 0;
+			const int              fb_extra = has_more() ? ReadInt(in, -1) : -1;
+			Shortcutbar_icon_entry entry;
+			entry.shapefile_type       = shapefile_type;
+			entry.shape                = shape;
+			entry.frame                = frame;
+			entry.extra_frame          = extra;
+			entry.check_party_item     = party != 0;
+			entry.fallback_vga         = fb_vga;
+			entry.fallback_shape       = fb_shape;
+			entry.fallback_frame       = fb_frame;
+			entry.fallback_extra_frame = fb_extra;
+			entry.valid                = true;
+			if (transparent == 2) {
+				sinfo.found = entry;
+			} else if (transparent == 1) {
+				sinfo.translucent = entry;
+			} else {
+				sinfo.normal = entry;
+			}
+			return true;
+		}
+	};
+
+	using Shortcutbar_icon_reader = Functor_multidata_reader<Shortcutbar_icon_info, Shortcutbar_icon_functor>;
+
+	// Functor for reading shortcutbar action entries
+	// Format: :slot/primary_cmd/primary_cheat[/secondary_cmd/secondary_cheat]
+	struct Shortcutbar_action_functor {
+		bool operator()(std::istream& in, int version, bool patch, Exult_Game game, Shortcutbar_action_entry& cmd) const {
+			ignore_unused_variable_warning(version, patch, game);
+			std::getline(in, cmd.primary_cmd, '/');
+			cmd.primary_cheat = ReadInt(in) != 0;
+			auto has_more     = [&in]() {
+                return in.peek() != '\n' && in.peek() != '\r' && !in.eof();
+			};
+			if (has_more()) {
+				std::getline(in, cmd.secondary_cmd, '/');
+				cmd.secondary_cheat = ReadInt(in) != 0;
+			}
+			cmd.valid = true;
+			return true;
+		}
+	};
+
+	using Shortcutbar_action_reader = Functor_multidata_reader<Shortcutbar_action_entry, Shortcutbar_action_functor>;
 
 	// Functor for reading shortcutbar icon entries
 	// Format: :slot/transparent/vga/shape[/frame[/extra_frame
@@ -559,6 +752,11 @@ void Shapes_vga_file::Read_Gumpinf_text_data_file(bool editing, Exult_Game game_
 			std::make_unique<Checkmark_pos_reader>(Gump_info::gump_info_map),
 			std::make_unique<Special_reader>(Gump_info::gump_info_map),
 			std::make_unique<Snap_zones_reader>(Gump_info::gump_info_map),
+			std::make_unique<Dynamic_buttons_reader>(Gump_info::gump_info_map),
+			std::make_unique<Dynamic_texts_reader>(Gump_info::gump_info_map),
+			std::make_unique<Dynamic_shapes_reader>(Gump_info::gump_info_map),
+			std::make_unique<Dynamic_sliders_reader>(Gump_info::gump_info_map),
+			std::make_unique<Gump_name_reader>(Gump_info::gump_info_map),
 			std::make_unique<Shortcutbar_icon_reader>(Gump_info::shortcutbar_icon_map),
 			std::make_unique<Shortcutbar_action_reader>(Gump_info::shortcutbar_action_map));
 	static_assert(sections.size() == readers.size());
@@ -580,7 +778,8 @@ void Shapes_vga_file::Read_Gumpinf_text_data_file(bool editing, Exult_Game game_
  *  Reload static data for weapons, ammo and mosters to
  *  fix data that was lost by earlier versions of ES.
  */
-void Shapes_vga_file::fix_old_shape_info(Exult_Game game    // Which game.
+void Shapes_vga_file::fix_old_shape_info(
+		Exult_Game game    // Which game.
 ) {
 	if (!info_read) {    // Read info first.
 		read_info(game, true);
@@ -597,7 +796,8 @@ void Shapes_vga_file::fix_old_shape_info(Exult_Game game    // Which game.
  *  Reload info.
  */
 
-void Shapes_vga_file::reload_info(Exult_Game game    // Which game.
+void Shapes_vga_file::reload_info(
+		Exult_Game game    // Which game.
 ) {
 	info_read = false;
 	info.clear();

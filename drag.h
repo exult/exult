@@ -29,6 +29,7 @@
 
 class Gump;
 class Gump_button;
+class Gump_widget;
 class Image_buffer;
 
 /*
@@ -39,7 +40,9 @@ class Dragging_info : public Game_singletons {
 	bool               is_new;    // Object was newly created.
 	Gump*              gump;
 	Gump_button*       button;
-	Tile_coord         old_pos;    // Original pos. of object if it wasn't
+	Gump_widget*       mouse_widget;    // Widget capturing mouse events (e.g. slider)
+	Gump*              widget_gump;     // Gump owning mouse_widget
+	Tile_coord         old_pos;         // Original pos. of object if it wasn't
 	//   in a container.
 	TileRect old_foot;         // Original footprint.
 	int      old_lift;         // Lift of obj OR its owner.

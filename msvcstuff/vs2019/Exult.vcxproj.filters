@@ -680,6 +680,21 @@
     <ClCompile Include="..\..\gumps\AudioOptions_gump.cc">
       <Filter>gumps</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\gumps\Dynamic_container_gump.cc">
+      <Filter>gumps</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\gumps\Dynamic_button.cc">
+      <Filter>gumps</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\gumps\Dynamic_text_widget.cc">
+      <Filter>gumps</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\gumps\Dynamic_shape_widget.cc">
+      <Filter>gumps</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\gumps\Dynamic_slider.cc">
+      <Filter>gumps</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\gamemgr\devgame.cc">
       <Filter>gamemgr</Filter>
     </ClCompile>
@@ -1349,6 +1364,21 @@
       <Filter>gumps</Filter>
     </ClInclude>
     <ClInclude Include="..\..\gumps\Actor_gump.h">
+      <Filter>gumps</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\gumps\Dynamic_container_gump.h">
+      <Filter>gumps</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\gumps\Dynamic_button.h">
+      <Filter>gumps</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\gumps\Dynamic_text_widget.h">
+      <Filter>gumps</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\gumps\Dynamic_shape_widget.h">
+      <Filter>gumps</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\gumps\Dynamic_slider.h">
       <Filter>gumps</Filter>
     </ClInclude>
     <ClInclude Include="..\..\gamemgr\bggame.h">

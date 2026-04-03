@@ -1,10 +1,15 @@
 #	Gumps information for Serpent Isle.
-#	Sections: container_area, checkmark_pos, special, snap_zones
+#	Sections: container_area, checkmark_pos, special, snap_zones,
+#	          dynamic_buttons, dynamic_texts, dynamic_shapes, dynamic_sliders
 #
 #	container_area: Defines the object placement area within gumps
 #	checkmark_pos: Position of the close button for each gump
 #	special: Gumps that cannot be containers or lack close buttons
 #	snap_zones: Optional guided placement zones for dynamic containers
+#	dynamic_buttons: Data-driven buttons on container gumps
+#	dynamic_texts: Data-driven text fields, set by usecode
+#	dynamic_shapes: Data-driven shape displays, set by usecode
+#	dynamic_sliders: Data-driven slider controls, set/read by usecode
 #
 
 %%section version
@@ -216,6 +221,67 @@
 # :111/north_candle/20/0/20/20/30/10/3/candle
 # :111/south_candle/55/110/20/20/65/120/3/candle
 # :111/center_focus/55/55/20/20/65/65/4/focus
+#
+%%endsection
+
+%%section dynamic_buttons
+# Format: :gump_shape/button_shape/pos_x/pos_y/default_frame/clicked_frame/sound_fx/usecode_fn/action_type/visibility_flag/usecode_param
+#
+# button_shape    = Shape number in gumps.vga for the button graphic
+# pos_x/pos_y     = Button position relative to gump origin
+# default_frame   = Frame displayed when idle (normally 0)
+# clicked_frame   = Frame displayed when pushed (normally 1)
+# sound_fx        = SFX index on click (-1 = none)
+# usecode_fn      = Usecode function to call (-1 = none)
+# action_type     = 0=nothing, 1=close gump, 2=toggle pushed state
+# visibility_flag = Global flag controlling visibility (-1 = always visible)
+# usecode_param   = Event parameter passed to usecode (-1 = default double_click)
+#
+%%endsection
+
+%%section dynamic_texts
+# Format: :gump_shape/field_id/pos_x/pos_y/font_num
+#
+# field_id   = Unique integer ID for usecode to address this field
+# pos_x/pos_y = Position relative to gump origin
+# font_num   = Font number from fonts.vga (0=normal, 2=small, 5=tiny)
+#
+# Text is set at runtime via UI_set_gump_text(item, field_id, "text")
+#
+%%endsection
+
+%%section dynamic_shapes
+# Format: :gump_shape/field_id/pos_x/pos_y/shape_num/frame_num/shapefile
+#
+# field_id      = Unique integer ID for usecode to address this field
+# pos_x/pos_y   = Position relative to gump origin
+# shape_num     = Initial shape number (0 = none until set by usecode)
+# frame_num     = Initial frame number
+# shapefile     = 0 = SF_SHAPES_VGA (shapes.vga), 1 = SF_GUMPS_VGA (gumps.vga)
+#
+# Shape is set at runtime via UI_set_gump_shape(item, field_id, shape, frame)
+#
+%%endsection
+
+%%section dynamic_sliders
+# Format: :gump_shape/field_id/pos_x/pos_y/dec_shape/inc_shape/thumb_shape/min_val/max_val/step/default_val/extent/usecode_fn/orientation
+#
+# field_id      = Unique integer ID for usecode to address this slider
+# pos_x/pos_y   = Position relative to gump origin
+# dec_shape     = Shape number in gumps.vga for decrement arrow button
+# inc_shape     = Shape number in gumps.vga for increment arrow button
+# thumb_shape   = Shape number in gumps.vga for the draggable thumb
+# min_val       = Minimum slider value
+# max_val       = Maximum slider value
+# step          = Value increment per click/key
+# default_val   = Initial value when gump opens
+# extent        = Pixel length of the slider track
+# usecode_fn    = Usecode function called on value change (-1 = none)
+# orientation   = 0 = vertical, 1 = horizontal
+#
+# Value is set/read at runtime via:
+#   UI_set_slider_value(item, field_id, value)
+#   UI_get_slider_value(item, field_id)
 #
 %%endsection
 

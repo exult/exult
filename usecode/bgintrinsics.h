@@ -246,11 +246,11 @@ USECODE_INTRINSIC_PTR(get_random),                               // 0x00
 		USECODE_INTRINSIC_PTR(create_new_egg),            // 0xdc (Exult)
 		USECODE_INTRINSIC_PTR(get_item_gump_position),    // 0xdd (Exult)
 		USECODE_INTRINSIC_PTR(set_item_gump_position),    // 0xde (Exult)
-		USECODE_INTRINSIC_PTR(UNKNOWN),                   // 0xdf
-		USECODE_INTRINSIC_PTR(UNKNOWN),                   // 0xe0
-		USECODE_INTRINSIC_PTR(UNKNOWN),                   // 0xe1
-		USECODE_INTRINSIC_PTR(UNKNOWN),                   // 0xe2
-		USECODE_INTRINSIC_PTR(UNKNOWN),                   // 0xe3
+		USECODE_INTRINSIC_PTR(set_gump_text),             // 0xdf (Exult)
+		USECODE_INTRINSIC_PTR(set_gump_shape),            // 0xe0 (Exult)
+		USECODE_INTRINSIC_PTR(set_slider_value),          // 0xe1 (Exult)
+		USECODE_INTRINSIC_PTR(get_slider_value),          // 0xe2 (Exult)
+		USECODE_INTRINSIC_PTR(set_gump_text_font),        // 0xe3 (Exult)
 		USECODE_INTRINSIC_PTR(UNKNOWN),                   // 0xe4
 		USECODE_INTRINSIC_PTR(UNKNOWN),                   // 0xe5
 		USECODE_INTRINSIC_PTR(UNKNOWN),                   // 0xe6

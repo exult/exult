@@ -384,7 +384,8 @@ bool Shape_manager::load_gumps_minimal() {
  *  Reload one of the shape files (msg. from ExultStudio).
  */
 
-void Shape_manager::reload_shapes(int shape_kind    // Type from u7drag.h.
+void Shape_manager::reload_shapes(
+		int shape_kind    // Type from u7drag.h.
 ) {
 	U7FileManager::get_ptr()->reset();    // Cache no longer valid.
 	shape_cache[shape_kind].clear();
@@ -518,7 +519,7 @@ std::shared_ptr<Font> Shape_manager::get_font(int fontnum) {
 
 Shape_manager::Cached_shape Shape_manager::cache_shape(int shape_kind, int shapenum, int framenum) {
 	Cached_shape cache{nullptr, false};
-	if (framenum == -1) {
+	if (shapenum < 0 || framenum == -1) {
 		return cache;
 	}
 	using cache_key = std::pair<int, int>;
