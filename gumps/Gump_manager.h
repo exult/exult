@@ -97,6 +97,7 @@ public:
 
 	bool double_clicked(int x, int y, Game_object*& obj);
 	bool handle_kbd_event(void* ev);
+	bool handle_mouse_wheel(float y, float x, int mx, int my);
 
 	inline bool can_right_click_close() {
 		return right_click_close;

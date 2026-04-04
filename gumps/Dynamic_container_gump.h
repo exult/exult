@@ -125,6 +125,27 @@ public:
 	 * Check if this gump has any dynamic element definitions.
 	 */
 	bool has_dynamic_elements() const;
+
+	/**
+	 * Handle keyboard event forwarded via kbd_focus.
+	 * Translates SDL key events and forwards to child widgets.
+	 */
+	bool handle_kbd_event(void* ev) override;
+
+	/**
+	 * Forward mouse wheel up to the child widget under the cursor.
+	 */
+	bool mousewheel_up(int mx, int my) override;
+
+	/**
+	 * Forward mouse wheel down to the child widget under the cursor.
+	 */
+	bool mousewheel_down(int mx, int my) override;
+
+	/**
+	 * Called every frame to tick child widgets; slider auto-repeat, etc
+	 */
+	void update_gump() override;
 };
 
 #endif    // DYNAMIC_CONTAINER_GUMP_H

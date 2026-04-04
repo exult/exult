@@ -24,11 +24,15 @@
 
 #include "Dynamic_container_gump.h"
 
+#include "Gump_manager.h"
+#include "Gump_widget.h"
 #include "contain.h"
 #include "game.h"
 #include "gamewin.h"
 #include "gumpinf.h"
 #include "objiter.h"
+
+#include <SDL3/SDL.h>
 
 #include <algorithm>
 #include <iostream>
@@ -38,6 +42,9 @@
 Dynamic_container_gump::Dynamic_container_gump(Container_game_object* cont, int initx, int inity, int shapenum, bool debug)
 		: Container_gump(cont, initx, inity, shapenum), debug_enabled(debug), debug_flags_(GUMP_DEBUG_ALL), paint_log_count(0),
 		  snap_zones_(nullptr) {
+	// Enable keyboard focus so this gump receives key events via kbd_focus
+	handles_kbd = true;
+
 	// Load snap zones, gump name, and debug flags from gump_info if available
 	const Gump_info* info = Gump_info::get_gump_info(shapenum);
 	if (info) {
@@ -496,4 +503,84 @@ bool Dynamic_container_gump::has_dynamic_elements() const {
 		return false;
 	}
 	return info->has_dynamic_buttons() || info->has_dynamic_texts() || info->has_dynamic_shapes() || info->has_dynamic_sliders();
+}
+
+/*
+ *  Handle keyboard event forwarded via kbd_focus.
+ *  Translates SDL key event and forwards key_down() to child widgets.
+ *  Returns true if a widget consumed the key.
+ */
+bool Dynamic_container_gump::handle_kbd_event(void* vev) {
+	if (!vev) {
+		return false;
+	}
+	SDL_Event&  ev      = *static_cast<SDL_Event*>(vev);
+	SDL_Keycode unicode = 0;
+	SDL_Keycode chr     = 0;
+	Translate_keyboard(ev, chr, unicode, true);
+
+	if (ev.type == SDL_EVENT_KEY_UP) {
+		return false;    // Don't consume key-up events
+	}
+	if (ev.type != SDL_EVENT_KEY_DOWN && ev.type != SDL_EVENT_TEXT_INPUT) {
+		return false;
+	}
+
+	const bool log_enabled = (debug_flags_ & GUMP_DEBUG_CONSOLE) != 0;
+	if (log_enabled) {
+		std::cerr << "[DynamicGump::handle_kbd_event] chr=" << chr << " unicode=" << unicode << " elems=" << elems.size()
+				  << std::endl;
+	}
+
+	// Forward to child widgets — first responder wins
+	for (auto* w : elems) {
+		if (w && w->key_down(chr, unicode)) {
+			if (log_enabled) {
+				std::cerr << "[DynamicGump::handle_kbd_event] Handled by widget" << std::endl;
+			}
+			return true;
+		}
+	}
+	return false;    // Not handled — let keybinder process it
+}
+
+/*
+ *  Forward mouse wheel up to child widgets.
+ *  Returns true if a widget consumed the event.
+ */
+bool Dynamic_container_gump::mousewheel_up(int mx, int my) {
+	for (auto* w : elems) {
+		if (w && w->mousewheel_up(mx, my)) {
+			return true;
+		}
+	}
+	return false;
+}
+
+/*
+ *  Forward mouse wheel down to child widgets.
+ *  Returns true if a widget consumed the event.
+ */
+bool Dynamic_container_gump::mousewheel_down(int mx, int my) {
+	for (auto* w : elems) {
+		if (w && w->mousewheel_down(mx, my)) {
+			return true;
+		}
+	}
+	return false;
+}
+
+/*
+ *  Tick child widgets each frame for auto-repeat (e.g. slider hold).
+ *  Called from Gump_manager::update_gumps().
+ */
+void Dynamic_container_gump::update_gump() {
+	Game_window* gwin = Game_window::get_instance();
+	for (auto* w : elems) {
+		if (w && w->run()) {
+			if (gwin) {
+				gwin->set_all_dirty();
+			}
+		}
+	}
 }
