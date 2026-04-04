@@ -12,13 +12,15 @@
 |---------|----------------------|---------------------|
 | Sliders created & painted | Yes | Yes |
 | Arrow clicks, thumb drag, track click | Yes | Yes |
-| Keyboard & mousewheel input | Yes | Yes |
+| Keyboard input | Yes | **No** — `handle_kbd_event()` is a `Dynamic_container_gump` override |
+| Mousewheel input | Yes | **No** — `mousewheel_up/down()` are `Dynamic_container_gump` overrides |
+| Auto-repeat (held arrows) | Yes | **No** — `update_gump()` is a `Dynamic_container_gump` override |
 | Intrinsics (set/get_slider_value) | Yes | Yes |
 | Usecode callback on value change | Yes | Yes |
 | On-open usecode fires | Yes | **No** — slider stays at `default_val` |
 | Screen centering | Yes | **No** — cascading/saved position used |
 
-Sliders are fully interactive on a plain `Container_gump` — all mouse, keyboard, and intrinsic paths operate through the base `Gump` class. The only gap is the on-open usecode handler not firing, which means sliders start at their `default_val` (from `gump_info.txt`) rather than a usecode-set value. See [dynamic_gumps.md](dynamic_gumps.md) for full container gump setup.
+Sliders are partially interactive on a plain `Container_gump` — mouse clicks (arrow buttons, thumb drag, track click) and intrinsics work because they route through the drag system and base `Gump` class. However, keyboard input, mousewheel, and auto-repeat require `Dynamic_container_gump` because they depend on overrides (`handle_kbd_event()`, `mousewheel_up/down()`, `update_gump()`) that only exist on that subclass. For full functionality, the gump shape should have a `container_area` entry in `gump_info.txt`. See [dynamic_gumps.md](dynamic_gumps.md) for full container gump setup.
 
 ---
 
@@ -187,6 +189,16 @@ The cross-axis bound uses the thumb shape's width (vertical) or height (horizont
 | Down | Increment | — |
 | Left | — | Decrement |
 | Right | — | Increment |
+
+Keyboard events reach the slider via `Dynamic_container_gump::handle_kbd_event()`, which translates the SDL key event and calls `key_down()` on each child widget. The container gump receives keyboard focus because it sets `handles_kbd = true`, which opts into Exult's `kbd_focus` system managed by `Gump_manager`.
+
+### Mouse Wheel Dispatch
+
+Mouse wheel events reach the slider via `Gump_manager::handle_mouse_wheel()` → `Dynamic_container_gump::mousewheel_up/down()` → `Dynamic_slider::mousewheel_up/down()`. The container gump forwards wheel events to **all** child widgets without per-widget hit testing — if the cursor is over the gump, any slider in it responds. `Gump_manager::handle_mouse_wheel()` always consumes the event when the cursor is over a gump, preventing the game-world cheat-scroll from firing through open gumps.
+
+### Auto-Repeat Dispatch
+
+`Dynamic_slider::run()` implements auto-repeat for held arrow buttons (500ms initial delay, 50ms repeat). It is called each frame by `Dynamic_container_gump::update_gump()`, which is invoked from `Gump_manager::update_gumps()` during the main game loop.
 
 ### Arrow Hit Testing
 

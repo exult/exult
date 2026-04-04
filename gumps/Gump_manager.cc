@@ -486,6 +486,26 @@ bool Gump_manager::handle_kbd_event(void* ev) {
 }
 
 /*
+ *  Forward a mouse wheel event to the topmost gump under the cursor.
+ *  Output: true if a gump handled the event.
+ */
+bool Gump_manager::handle_mouse_wheel(float y, float x, int mx, int my) {
+	ignore_unused_variable_warning(x);
+	Gump* gump = find_gump(mx, my);
+	if (!gump) {
+		return false;
+	}
+	if (y > 0) {
+		gump->mousewheel_up(mx, my);
+	} else if (y < 0) {
+		gump->mousewheel_down(mx, my);
+	}
+	// Always consume the event when cursor is over a gump so the
+	// game-world cheat-scroll never fires through an open gump.
+	return true;
+}
+
+/*
  *  Update the gumps
  */
 void Gump_manager::update_gumps() {

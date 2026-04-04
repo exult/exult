@@ -1830,6 +1830,11 @@ static void Handle_event(SDL_Event& event) {
 	}
 	// Mousewheel scrolling of view port with SDL2.
 	case SDL_EVENT_MOUSE_WHEEL: {
+		// Try forwarding to open gumps first (dynamic sliders)
+		if (gump_man->handle_mouse_wheel(
+					event.wheel.y, event.wheel.x, Mouse::mouse()->get_mousex(), Mouse::mouse()->get_mousey())) {
+			break;    // consumed by gump
+		}
 		if (!cheat() || !gwin->can_scroll_with_mouse()) {
 			break;
 		}

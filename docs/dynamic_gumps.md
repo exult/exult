@@ -367,6 +367,9 @@ UI_set_gump_text_font(item, 31, 2);
 4. **Dynamic widget hosting** — buttons, text fields, shape displays, and sliders are created automatically from `gump_info.txt` configuration
 5. **Custom click name** — `get_click_name()` returns the `gump_name` from config for status bar display
 6. **Screen centering** — gumps are positioned at the center of the game window using `get_rect()` bounding box
+7. **Keyboard input** — `handle_kbd_event()` translates SDL key events and forwards `key_down()` to child widgets (sliders respond to arrow keys)
+8. **Mouse wheel dispatch** — `mousewheel_up/down()` forward wheel events to child widgets; `Gump_manager::handle_mouse_wheel()` prevents game-world cheat-scroll from firing through open gumps
+9. **Auto-repeat** — `update_gump()` calls `run()` on child widgets each frame, enabling slider arrow button auto-repeat (500ms initial, 50ms repeat)
 
 ### Class Hierarchy
 
@@ -812,9 +815,11 @@ Sets a custom name displayed in the status bar when the player clicks inside the
 | `gumps/Gump.h` | Added `forward_mouse_down()` virtual for widget-level mouse event routing; added `get_click_name()` virtual for custom status bar text |
 | `gumps/Gump.cc` | Bug fix for `check_elem_positions()`; debug logging in `on_button()` (gated by `GUMP_DEBUG_CONSOLE`); `forward_mouse_down()` implementation |
 | `gumps/Gump_widget.cc` | Debug logging in `on_widget()` (gated by `GUMP_DEBUG_CONSOLE`) |
-| `gumps/Gump_manager.cc` | Auto-selection of `Dynamic_container_gump`; on-open usecode invocation; widget creation from config |
-| `gumps/Dynamic_container_gump.h` | Added `gump_name_` member and `get_click_name()` override |
-| `gumps/Dynamic_container_gump.cc` | Loads `gump_name` from `Gump_info` in constructor |
+| `gumps/Gump_manager.h` | Added `handle_mouse_wheel(float y, float x, int mx, int my)` declaration |
+| `gumps/Gump_manager.cc` | Auto-selection of `Dynamic_container_gump`; on-open usecode invocation; widget creation from config; `handle_mouse_wheel()` finds gump under cursor and forwards wheel events, always consuming when cursor is over a gump |
+| `gumps/Dynamic_container_gump.h` | Added `gump_name_` member and `get_click_name()` override; added `handle_kbd_event()`, `mousewheel_up()`, `mousewheel_down()`, `update_gump()` override declarations |
+| `gumps/Dynamic_container_gump.cc` | Loads `gump_name` from `Gump_info` in constructor; set `handles_kbd = true` for keyboard focus; implemented `handle_kbd_event()` (SDL key translation + forward to child widgets), `mousewheel_up/down()` (forward to all children), `update_gump()` (call `run()` on children for auto-repeat) |
+| `exult.cc` | `Handle_event()` `SDL_EVENT_MOUSE_WHEEL` case: try `gump_man->handle_mouse_wheel()` before cheat-scroll fallthrough |
 | `gumps/Dynamic_slider.h` | Added `arrow_clicked` member, `hit_arrow()` method, `thumb_travel` member; removed `on_button()` override (Bug 6) |
 | `gumps/Dynamic_slider.cc` | `hit_arrow()` implementation (slider-local hit test), arrow click handling in `mouse_down`/`mouse_up`/`paint`/`run`, orientation-aware `thumb_travel` calculation (Bug 7), track hit area upper-bound fix (Bug 8) |
 | `gumps/Dynamic_text_widget.h` | Added `set_font()` method for runtime font changes |
@@ -877,4 +882,5 @@ The frame management fix assumes that `default_frame` (frame 0) has the correct 
 | 2026-03-19 | theGreyWanderer-uc | Slider bug fixes (arrow clicks via on_button override, thumb drag via forward_mouse_down), UI_set_gump_text_font intrinsic, gump_name config section, font highlight system, custom gump click name |
 | 2026-03-20 | theGreyWanderer-uc | Arrow click reworked (hit_arrow bypasses 3-level parent chain — Bug 6), thumb_travel orientation fix for horizontal sliders (Bug 7), orientation documentation corrected (0=vertical, 1=horizontal), horizontal slider fully documented |
 | 2026-03-26 | theGreyWanderer-uc | Slider track hit area upper-bound fix (Bug 8) — prevents clicks outside track from registering, text alignment support (halign/valign) in Dynamic_text_widget |
+| 2026-04-04 | theGreyWanderer-uc | Keyboard input, mousewheel dispatch, and auto-repeat for `Dynamic_container_gump` — enables `handle_kbd_event()`, `mousewheel_up/down()`, `update_gump()` overrides; added `Gump_manager::handle_mouse_wheel()` and `exult.cc` event routing; mousewheel forwards to all child widgets without per-widget hit test |
 
