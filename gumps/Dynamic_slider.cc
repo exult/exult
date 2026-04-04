@@ -73,7 +73,7 @@ public:
 Dynamic_slider::Dynamic_slider(Gump* par, const Dynamic_slider_def& def)
 		: Gump_widget(par, -1, def.pos_x, def.pos_y, 0, SF_GUMPS_VGA), field_id(def.field_id), vertical(def.orientation == 0),
 		  min_val(def.min_val), max_val(def.max_val), step_val(def.step > 0 ? def.step : 1), val(def.default_val),
-		  usecode_fn(def.usecode_fn), thumb_pos(0), track_extent(def.extent > 0 ? def.extent : 60), thumb_travel(0),
+		  usecode_fn(def.usecode_fn), thumb_pos(0), track_extent(def.extent >= 0 ? def.extent : 60), thumb_travel(0),
 		  prev_drag(INT32_MIN), arrow_clicked(0), thumb(def.thumb_shape, 0, SF_GUMPS_VGA) {
 	if (val < min_val) {
 		val = min_val;
@@ -305,7 +305,9 @@ void Dynamic_slider::paint() {
 	if (parent) {
 		parent->local_to_screen(tx, ty);
 	}
-	thumb.paint_shape(tx, ty);
+	if (thumb.get_shape()) {
+		thumb.paint_shape(tx, ty);
+	}
 }
 
 bool Dynamic_slider::run() {
@@ -333,12 +335,24 @@ TileRect Dynamic_slider::get_rect() const {
 				inc_h = sf->get_height();
 			}
 		}
-		int   w  = 16;    // Estimate width from thumb
+		int   w  = 0;
 		auto* tf = thumb.get_shape();
 		if (tf) {
 			w = tf->get_width();
 		}
-		r = TileRect(x, y, w, track_start + track_extent + inc_h);
+		// Fall back to arrow widths when no thumb (e.g. spinner).
+		if (w <= 0) {
+			if (dec_btn) {
+				auto* sf = dec_btn->get_shape();
+				if (sf) {
+					w = sf->get_width();
+				}
+			}
+			if (w <= 0) {
+				w = 16;
+			}
+		}
+		r = TileRect(0, 0, w, track_start + track_extent + inc_h);
 	} else {
 		int inc_w = 8;
 		if (inc_btn) {
@@ -347,12 +361,24 @@ TileRect Dynamic_slider::get_rect() const {
 				inc_w = sf->get_width();
 			}
 		}
-		int   h  = 16;
+		int   h  = 0;
 		auto* tf = thumb.get_shape();
 		if (tf) {
 			h = tf->get_height();
 		}
-		r = TileRect(x, y, track_start + track_extent + inc_w, h);
+		// Fall back to arrow heights when no thumb (e.g. spinner).
+		if (h <= 0) {
+			if (dec_btn) {
+				auto* sf = dec_btn->get_shape();
+				if (sf) {
+					h = sf->get_height();
+				}
+			}
+			if (h <= 0) {
+				h = 16;
+			}
+		}
+		r = TileRect(0, 0, track_start + track_extent + inc_w, h);
 	}
 	local_to_screen(r.x, r.y);
 	return r;

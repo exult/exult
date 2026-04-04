@@ -1418,6 +1418,13 @@ static void Handle_events() {
 		// Lerping stuff...
 		const int lerp    = gwin->is_lerping_enabled();
 		bool      didlerp = false;
+
+		// Update gumps every frame (drives auto-repeat for held
+		// slider/spinner arrows).  Must run even when nothing is dirty.
+		if (!gwin->main_actor_dont_move()) {
+			gwin->get_gump_man()->update_gumps();
+		}
+
 		if (lerp && !gwin->get_moving_barge()) {
 			// Always repaint,
 			Actor* act    = gwin->get_camera_actor();
