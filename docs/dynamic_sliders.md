@@ -124,6 +124,25 @@ In this example:
 - The vertical slider (field_id 50) uses shapes 117/118 for arrows, shape 120 for the thumb, scrolls from 0-5 in steps of 1, starts at 0, has a 124px track, and calls usecode shape 1300 on change
 - The horizontal slider (field_id 60) uses shapes 121/122 for arrows, shape 123 for the thumb, ranges 0-100 in steps of 5, starts at 50, has a 200px track, and calls usecode shape 1301 on change
 
+### Spinner Mode
+
+A slider can be configured as a **spinner** (up/down or left/right arrows with no track or thumb) by setting `thumb_shape=-1` and `extent=0`:
+
+```
+dynamic_sliders
+; Spinner: field_id 51, range 0-99, step 1, vertical arrows only
+:119/51/181/15/117/118/-1/0/99/1/0/0/1216/0
+```
+
+With these settings:
+- **No thumb is painted** — the `thumb_shape=-1` tells the engine to skip thumb rendering
+- **No track area** — `extent=0` places the increment button directly below (vertical) or right of (horizontal) the decrement button with no gap
+- **Arrow clicks, keyboard, mousewheel, and auto-repeat all work** — the spinner uses the same input paths as a full slider
+- **`UI_get_slider_value` / `UI_set_slider_value` work normally** — the spinner is just a slider with no visual track
+- **Hit-test sizing is automatic** — `get_rect()` falls back to the increment/decrement button shape dimensions when no thumb exists, so the bounding rect matches whatever shapes the modder specified
+
+Spinner mode is useful for compact numeric controls where a full slider track would waste space.
+
 ---
 
 ## Layout and Geometry
@@ -432,6 +451,26 @@ Both orientations use the same `dynamic_sliders` section in `gump_info.txt` — 
 **Root Cause:** The track-click hit test checked the primary axis range but had no upper bound on the cross axis.
 
 **Fix:** Added upper-bound checks using the thumb shape's cross-axis dimension (width for vertical, height for horizontal) to define the clickable track area.
+
+---
+
+### Bug 9: Slider get_rect() Doubles Widget Position
+
+**Problem:** Slider/spinner arrow clicks fell through to the game world — `find_gump()` found the gump but `on_widget()` never matched the slider, so `forward_mouse_down()` wasn't reached.
+
+**Root Cause:** `Dynamic_slider::get_rect()` started with `TileRect(x, y, ...)` then called `local_to_screen(r.x, r.y)`, which adds `x` and `y` again through the parent chain. This doubled the widget's position, placing the hit-test rectangle at 2× the actual screen position. The base `Gump_widget::get_rect()` correctly starts from `(0, 0)`.
+
+**Fix:** Changed `get_rect()` to start from `TileRect(0, 0, ...)` before calling `local_to_screen()`, matching the base class pattern. Also improved the width/height fallback to use the dec arrow button shape dimensions when no thumb exists (for spinner mode).
+
+---
+
+### Bug 10: Auto-Repeat Not Firing on Non-Modal Gumps
+
+**Problem:** Click-and-hold on slider/spinner arrows did not auto-repeat — only the initial click registered.
+
+**Root Cause:** `update_gumps()` was called inside `Game_window::paint_dirty()`, which is gated behind `gwin->is_dirty()`. During the 500ms initial hold delay, `run()` returns false (no value change yet), so nothing marks the screen dirty, so `paint_dirty()` never runs, so `run()` never gets called again to check the timer.
+
+**Fix:** Moved `update_gumps()` from `paint_dirty()` to the main game loop in `Handle_events()` so it runs every frame unconditionally. This is safe — the base `Gump::update_gump()` is a no-op, and the only overrides (`Face_stats`, `ShortcutBar_gump`, `Dynamic_container_gump`) are all designed to run frequently with near-zero cost when idle.
 
 ---
 
