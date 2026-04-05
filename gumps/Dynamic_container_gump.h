@@ -23,6 +23,7 @@
 
 #include "Gump.h"
 
+#include <string>
 #include <vector>
 
 class Container_game_object;
@@ -42,6 +43,7 @@ private:
 	int                           debug_flags_;       // Bitmask of Gump_debug_flags
 	mutable int                   paint_log_count;    // Tracks paint calls to log
 	const std::vector<Snap_zone>* snap_zones_;        // Pointer to snap zones (owned by Gump_info)
+	std::string                   gump_name_;         // Custom click name from gump_info.txt
 
 	/**
 	 * Paint debug grid overlay showing container area.
@@ -104,6 +106,46 @@ public:
 	bool has_snap_zones() const noexcept {
 		return snap_zones_ != nullptr && !snap_zones_->empty();
 	}
+
+	/**
+	 * Get the debug flags bitmask.
+	 */
+	int get_debug_flags() const override {
+		return debug_flags_;
+	}
+
+	/**
+	 * Get custom click name for status bar display.
+	 */
+	const char* get_click_name() const override {
+		return gump_name_.empty() ? nullptr : gump_name_.c_str();
+	}
+
+	/**
+	 * Check if this gump has any dynamic element definitions.
+	 */
+	bool has_dynamic_elements() const;
+
+	/**
+	 * Handle keyboard event forwarded via kbd_focus.
+	 * Translates SDL key events and forwards to child widgets.
+	 */
+	bool handle_kbd_event(void* ev) override;
+
+	/**
+	 * Forward mouse wheel up to the child widget under the cursor.
+	 */
+	bool mousewheel_up(int mx, int my) override;
+
+	/**
+	 * Forward mouse wheel down to the child widget under the cursor.
+	 */
+	bool mousewheel_down(int mx, int my) override;
+
+	/**
+	 * Called every frame to tick child widgets; slider auto-repeat, etc
+	 */
+	void update_gump() override;
 };
 
 #endif    // DYNAMIC_CONTAINER_GUMP_H

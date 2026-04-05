@@ -2117,8 +2117,10 @@ void Game_window::show_items(
 	// Look for obj. in open gump.
 	Gump*        gump = gump_man->find_gump(x, y);
 	Game_object* obj;    // What we find.
+	bool         found_in_gump = false;
 	if (gump) {
-		obj = gump->find_object(x, y);
+		obj           = gump->find_object(x, y);
+		found_in_gump = (obj != nullptr);
 		if (!obj) {
 			obj = gump->get_cont_or_actor(x, y);
 		}
@@ -2160,8 +2162,15 @@ void Game_window::show_items(
 		snprintf(str, sizeof(str), "(%i) %s", npc->get_npc_num(), namestr.c_str());
 		effects->add_text(str, obj);
 	} else if (obj) {
-		// Show name.
-		std::string namestr = Get_object_name(obj);
+		// Show name.  If clicking empty space in a gump with a custom name,
+		// use that instead of the container object's name.
+		std::string namestr;
+		const char* gname = (gump && !found_in_gump) ? gump->get_click_name() : nullptr;
+		if (gname) {
+			namestr = gname;
+		} else {
+			namestr = Get_object_name(obj);
+		}
 		if (Game_window::get_instance()->failed_copy_protection() && (npc == main_actor || !npc)) {    // Avatar and items
 			namestr = Strings::Oink();
 		}

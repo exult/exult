@@ -404,6 +404,11 @@ class Usecode_internal : public Usecode_machine {
 	USECODE_INTRINSIC_DECL(play_scene);
 	USECODE_INTRINSIC_DECL(get_item_gump_position);
 	USECODE_INTRINSIC_DECL(set_item_gump_position);
+	USECODE_INTRINSIC_DECL(set_gump_text);
+	USECODE_INTRINSIC_DECL(set_gump_shape);
+	USECODE_INTRINSIC_DECL(set_slider_value);
+	USECODE_INTRINSIC_DECL(get_slider_value);
+	USECODE_INTRINSIC_DECL(set_gump_text_font);
 
 	/*
 	 *  Other private methods:

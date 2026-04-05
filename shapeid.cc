@@ -518,7 +518,7 @@ std::shared_ptr<Font> Shape_manager::get_font(int fontnum) {
 
 Shape_manager::Cached_shape Shape_manager::cache_shape(int shape_kind, int shapenum, int framenum) {
 	Cached_shape cache{nullptr, false};
-	if (framenum == -1) {
+	if (shapenum < 0 || framenum == -1) {
 		return cache;
 	}
 	using cache_key = std::pair<int, int>;

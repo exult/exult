@@ -25,6 +25,7 @@
 #include "drag.h"
 
 #include "Audio.h"
+#include "Dynamic_container_gump.h"
 #include "Gump.h"
 #include "Gump_button.h"
 #include "Gump_manager.h"
@@ -36,6 +37,7 @@
 #include "gamemap.h"
 #include "gamerend.h"
 #include "gamewin.h"
+#include "gumpinf.h"
 #include "ignore_unused_variable_warning.h"
 #include "mouse.h"
 #include "paths.h"
@@ -52,9 +54,10 @@ using std::endl;
 Dragging_info::Dragging_info(Game_object_shared newobj    // Object NOT in world.  This is
 														  //   dropped, or deleted.
 							 )
-		: obj(std::move(newobj)), is_new(true), gump(nullptr), button(nullptr), old_pos(-1, -1, -1), old_foot(0, 0, 0, 0),
-		  old_lift(-1), quantity(obj->get_quantity()), readied_index(-1), mousex(-1), mousey(-1), paintx(-1000), painty(-1000),
-		  mouse_shape(Mouse::mouse()->get_shape()), rect(0, 0, 0, 0), okay(true), possible_theft(false) {
+		: obj(std::move(newobj)), is_new(true), gump(nullptr), button(nullptr), mouse_widget(nullptr), widget_gump(nullptr),
+		  old_pos(-1, -1, -1), old_foot(0, 0, 0, 0), old_lift(-1), quantity(obj->get_quantity()), readied_index(-1), mousex(-1),
+		  mousey(-1), paintx(-1000), painty(-1000), mouse_shape(Mouse::mouse()->get_shape()), rect(0, 0, 0, 0), okay(true),
+		  possible_theft(false) {
 	rect = gwin->get_shape_rect(obj.get());
 	rect.enlarge(8);    // Make a little bigger.
 }
@@ -66,12 +69,20 @@ Dragging_info::Dragging_info(Game_object_shared newobj    // Object NOT in world
 Dragging_info::Dragging_info(
 		int x, int y    // Mouse position.
 		)
-		: obj(nullptr), is_new(false), gump(nullptr), button(nullptr), old_pos(-1, -1, -1), old_foot(0, 0, 0, 0), old_lift(-1),
-		  quantity(0), readied_index(-1), mousex(x), mousey(y), paintx(-1000), painty(-1000),
-		  mouse_shape(Mouse::mouse()->get_shape()), rect(0, 0, 0, 0), okay(false), possible_theft(false) {
+		: obj(nullptr), is_new(false), gump(nullptr), button(nullptr), mouse_widget(nullptr), widget_gump(nullptr),
+		  old_pos(-1, -1, -1), old_foot(0, 0, 0, 0), old_lift(-1), quantity(0), readied_index(-1), mousex(x), mousey(y),
+		  paintx(-1000), painty(-1000), mouse_shape(Mouse::mouse()->get_shape()), rect(0, 0, 0, 0), okay(false),
+		  possible_theft(false) {
 	// First see if it's a gump.
 	gump                 = gumpman->find_gump(x, y);
 	Game_object* to_drag = nullptr;
+	// Debug: log click chain for dynamic gumps
+	auto* dyn_gump = gump ? dynamic_cast<Dynamic_container_gump*>(gump) : nullptr;
+	if (dyn_gump && (dyn_gump->get_debug_flags() & GUMP_DEBUG_CONSOLE)) {
+		std::cerr << "[Drag] Click at screen (" << x << "," << y << ")"
+				  << " -> find_gump: " << (gump ? "FOUND" : "null") << " (shape " << (gump ? gump->get_shapenum() : -1) << ")"
+				  << std::endl;
+	}
 	if (gump) {
 		to_drag = gump->find_object(x, y);
 		if (to_drag) {
@@ -82,6 +93,10 @@ Dragging_info::Dragging_info(
 				old_lift = act->get_lift();
 			}
 		} else if ((button = gump->on_button(x, y)) != nullptr) {
+			if (dyn_gump && (dyn_gump->get_debug_flags() & GUMP_DEBUG_CONSOLE)) {
+				std::cerr << "[Drag] on_button -> FOUND button shape=" << button->get_shapenum() << " pos=(" << button->get_x()
+						  << "," << button->get_y() << ")" << std::endl;
+			}
 			gump = nullptr;
 			if (!button->is_draggable()) {
 				return;
@@ -92,7 +107,17 @@ Dragging_info::Dragging_info(
 				Audio::get_ptr()->play_sound_effect(Audio::game_sfx(73));
 			}
 			gwin->set_painted();
+		} else if ((mouse_widget = gump->forward_mouse_down(x, y, Gump::MouseButton::Left)) != nullptr) {
+			// A widget (e.g. slider thumb/track) captured the click.
+			if (dyn_gump && (dyn_gump->get_debug_flags() & GUMP_DEBUG_CONSOLE)) {
+				std::cerr << "[Drag] forward_mouse_down -> widget captured click" << std::endl;
+			}
+			widget_gump = gump;
+			gump        = nullptr;
 		} else if (gump->is_draggable()) {
+			if (dyn_gump && (dyn_gump->get_debug_flags() & GUMP_DEBUG_CONSOLE)) {
+				std::cerr << "[Drag] on_button -> null (no button found at click pos), dragging gump instead" << std::endl;
+			}
 			// Dragging whole gump.
 			paintx = gump->get_x();
 			painty = gump->get_y();
@@ -212,6 +237,11 @@ bool Dragging_info::start(
 bool Dragging_info::moved(
 		int x, int y    // Mouse pos. in window.
 ) {
+	// Forward drag to a widget that captured the initial click.
+	if (mouse_widget) {
+		mouse_widget->mouse_drag(x, y);
+		return true;
+	}
 	if (!obj && !gump) {
 		return false;
 	}
@@ -283,9 +313,18 @@ bool Dragging_info::drop(
 ) {
 	bool handled = moved;
 	Mouse::mouse()->set_shape(mouse_shape);
+	if (mouse_widget) {
+		// Release a widget that captured the initial click (e.g. slider).
+		mouse_widget->mouse_up(x, y, Gump::MouseButton::Left);
+		mouse_widget = nullptr;
+		widget_gump  = nullptr;
+		gwin->paint();
+		return true;
+	}
 	if (button) {
 		button->unpush(Gump::MouseButton::Left);
-		if (button->on_button(x, y)) {
+		const bool release_hit = button->on_button(x, y);
+		if (release_hit) {
 			// Clicked on button.
 			button->activate(Gump::MouseButton::Left);
 		}

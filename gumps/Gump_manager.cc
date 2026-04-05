@@ -111,6 +111,9 @@ Gump* Gump_manager::find_gump(
 	Gump*      found = nullptr;    // We want last found in chain.
 	for (gmp = open_gumps; gmp; gmp = gmp->next) {
 		Gump* gump = gmp->gump;
+		if (!gump) {
+			continue;
+		}
 		if (gump->has_point(x, y) && (pers || !gump->is_persistent())) {
 			found = gump;
 		}
@@ -126,6 +129,18 @@ Gump* Gump_manager::find_gump(const Game_object* obj) {
 	// Get container object is in.
 	const Game_object* owner = obj->get_owner();
 	if (!owner) {
+		// obj has no owner — check if obj itself is a container whose
+		// gump is open (e.g. usecode intrinsics called with the
+		// container object directly, as in Dynamic_container_gump).
+		for (Gump_list* gmp = open_gumps; gmp; gmp = gmp->next) {
+			if (gmp->gump->get_container() == obj) {
+				return gmp->gump;
+			}
+		}
+		Gump* dragged = gwin->get_dragging_gump();
+		if (dragged && dragged->get_container() == obj) {
+			return dragged;
+		}
 		return nullptr;
 	}
 	// Look for container's gump.
@@ -346,6 +361,20 @@ void Gump_manager::add_gump(
 
 	// Paint new one last.
 	add_gump(new_gump);
+
+	// Center dynamic gumps — the cascading position and saved-position
+	// restore can place these larger gumps offscreen.
+	if (dynamic_cast<Dynamic_container_gump*>(new_gump)) {
+		new_gump->set_pos();
+	}
+
+	// For Dynamic_container_gumps, fire the gump's shape usecode with
+	// double_click so that on-open initialisation functions can run.
+	if (dynamic_cast<Dynamic_container_gump*>(new_gump)) {
+		auto*     ucm = gwin->get_usecode();
+		const int fn  = ucm->get_shape_fun(shapenum);
+		ucm->call_usecode(fn, obj, Usecode_machine::double_click);
+	}
 	if (touchui != nullptr && !gumps_dont_pause_game()) {
 		touchui->hideGameControls();
 	}
@@ -454,6 +483,26 @@ bool Gump_manager::double_clicked(
  */
 bool Gump_manager::handle_kbd_event(void* ev) {
 	return kbd_focus ? kbd_focus->handle_kbd_event(ev) : false;
+}
+
+/*
+ *  Forward a mouse wheel event to the topmost gump under the cursor.
+ *  Output: true if a gump handled the event.
+ */
+bool Gump_manager::handle_mouse_wheel(float y, float x, int mx, int my) {
+	ignore_unused_variable_warning(x);
+	Gump* gump = find_gump(mx, my);
+	if (!gump) {
+		return false;
+	}
+	if (y > 0) {
+		gump->mousewheel_up(mx, my);
+	} else if (y < 0) {
+		gump->mousewheel_down(mx, my);
+	}
+	// Always consume the event when cursor is over a gump so the
+	// game-world cheat-scroll never fires through an open gump.
+	return true;
 }
 
 /*

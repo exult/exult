@@ -22,6 +22,10 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "Gump.h"
 
+#include "Dynamic_button.h"
+#include "Dynamic_shape_widget.h"
+#include "Dynamic_slider.h"
+#include "Dynamic_text_widget.h"
 #include "Gump_button.h"
 #include "Gump_manager.h"
 #include "U7obj.h"
@@ -78,7 +82,12 @@ Gump::Gump(Container_game_object* cont, int initx, int inity, Gump* from)
 		  object_area(from->object_area), handles_kbd(false) {
 	// Clone widgets.
 	for (auto* elem : from->elems) {
-		add_elem(elem->clone(this));
+		if (elem) {
+			auto* cloned = elem->clone(this);
+			if (cloned) {
+				add_elem(cloned);
+			}
+		}
 	}
 }
 
@@ -149,6 +158,27 @@ void Gump::set_object_area(TileRect area, int checkx, int checky, bool set_check
 			return dynamic_cast<Checkmark_button*>(elem) != nullptr;
 		})) {
 		elems.push_back(new Checkmark_button(this, checkx, checky));
+	}
+
+	// Create dynamic elements from gump_info.txt configuration.
+	// Only fires for gumps that have dynamic element definitions — zero impact
+	// on existing gumps.
+	if (get_shapenum() >= 0 && get_shapefile() == SF_GUMPS_VGA) {
+		const Gump_info* info = Gump_info::get_gump_info(get_shapenum());
+		if (info) {
+			for (const auto& def : info->dynamic_buttons) {
+				elems.push_back(new Dynamic_button(this, def));
+			}
+			for (const auto& def : info->dynamic_texts) {
+				elems.push_back(new Dynamic_text_widget(this, def));
+			}
+			for (const auto& def : info->dynamic_shapes) {
+				elems.push_back(new Dynamic_shape_widget(this, def));
+			}
+			for (const auto& def : info->dynamic_sliders) {
+				elems.push_back(new Dynamic_slider(this, def));
+			}
+		}
 	}
 }
 
@@ -246,8 +276,22 @@ Gump_button* Gump::on_button(
 		int mx, int my    // Point in window.
 ) {
 	for (auto* w : elems) {
-		if (w->on_button(mx, my)) {
+		if (w && w->on_button(mx, my)) {
 			return w->as_button();
+		}
+	}
+	return nullptr;
+}
+
+/*
+ *  Forward a mouse-down event to child widgets (e.g. slider thumb/track).
+ *  Returns the widget that handled the event, or nullptr.
+ */
+
+Gump_widget* Gump::forward_mouse_down(int mx, int my, MouseButton button) {
+	for (auto* w : elems) {
+		if (w && w->mouse_down(mx, my, button)) {
+			return w;
 		}
 	}
 	return nullptr;
@@ -332,7 +376,9 @@ void Gump::remove(Game_object* obj) {
 
 void Gump::paint_elems() {
 	for (auto* elem : elems) {
-		elem->paint();
+		if (elem) {
+			elem->paint();
+		}
 	}
 }
 
@@ -451,12 +497,22 @@ void Gump::close() {
 }
 
 /*
- *  Does the gump have this spot
+ *  Does the gump have this spot?  Check the background shape first,
+ *  then fall back to checking child widgets (buttons, sliders, etc.)
+ *  which may extend beyond the background art.
  */
 bool Gump::has_point(int sx, int sy) const {
 	Shape_frame* s = get_shape();
-
-	return s && s->has_point(sx - x, sy - y);
+	if (s && s->has_point(sx - x, sy - y)) {
+		return true;
+	}
+	// Check if any child widget covers this point.
+	for (const auto* w : elems) {
+		if (w && w->on_widget(sx, sy)) {
+			return true;
+		}
+	}
+	return false;
 }
 
 /*

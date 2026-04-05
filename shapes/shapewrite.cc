@@ -291,6 +291,10 @@ void Shapes_vga_file::Write_Gumpinf_text_data_file(Exult_Game game) {
 	std::map<int, const Gump_info*> container_data;
 	std::map<int, const Gump_info*> checkmark_data;
 	std::map<int, const Gump_info*> special_data;
+	std::map<int, const Gump_info*> dynbuttons_data;
+	std::map<int, const Gump_info*> dyntexts_data;
+	std::map<int, const Gump_info*> dynshapes_data;
+	std::map<int, const Gump_info*> dynsliders_data;
 
 	for (const auto& [shapenum, gumpinf] : Gump_info::gump_info_map) {
 		if (gumpinf.has_area && gumpinf.is_container_dirty()) {
@@ -302,9 +306,22 @@ void Shapes_vga_file::Write_Gumpinf_text_data_file(Exult_Game game) {
 		if (gumpinf.is_special && gumpinf.is_special_dirty()) {
 			special_data[shapenum] = &gumpinf;
 		}
+		if (gumpinf.has_dynamic_buttons() && gumpinf.is_dynbuttons_dirty()) {
+			dynbuttons_data[shapenum] = &gumpinf;
+		}
+		if (gumpinf.has_dynamic_texts() && gumpinf.is_dyntexts_dirty()) {
+			dyntexts_data[shapenum] = &gumpinf;
+		}
+		if (gumpinf.has_dynamic_shapes() && gumpinf.is_dynshapes_dirty()) {
+			dynshapes_data[shapenum] = &gumpinf;
+		}
+		if (gumpinf.has_dynamic_sliders() && gumpinf.is_dynsliders_dirty()) {
+			dynsliders_data[shapenum] = &gumpinf;
+		}
 	}
 
-	if (container_data.empty() && checkmark_data.empty() && special_data.empty()) {
+	if (container_data.empty() && checkmark_data.empty() && special_data.empty() && dynbuttons_data.empty() && dyntexts_data.empty()
+		&& dynshapes_data.empty() && dynsliders_data.empty()) {
 		return;
 	}
 
@@ -343,6 +360,56 @@ void Shapes_vga_file::Write_Gumpinf_text_data_file(Exult_Game game) {
 		out << "%%section special" << std::endl;
 		for (const auto& [shapenum, info] : special_data) {
 			out << ":" << shapenum << std::endl;
+		}
+		out << "%%endsection" << std::endl;
+	}
+
+	// dynamic_buttons
+	if (!dynbuttons_data.empty()) {
+		out << "%%section dynamic_buttons" << std::endl;
+		for (const auto& [shapenum, info] : dynbuttons_data) {
+			for (const auto& def : info->dynamic_buttons) {
+				out << ":" << shapenum << "/" << def.button_shape << "/" << def.pos_x << "/" << def.pos_y << "/"
+					<< def.default_frame << "/" << def.clicked_frame << "/" << def.sound_fx << "/" << def.usecode_fn << "/"
+					<< def.action_type << "/" << def.visibility_flag << "/" << def.usecode_param << std::endl;
+			}
+		}
+		out << "%%endsection" << std::endl;
+	}
+
+	// dynamic_texts
+	if (!dyntexts_data.empty()) {
+		out << "%%section dynamic_texts" << std::endl;
+		for (const auto& [shapenum, info] : dyntexts_data) {
+			for (const auto& def : info->dynamic_texts) {
+				out << ":" << shapenum << "/" << def.field_id << "/" << def.pos_x << "/" << def.pos_y << "/" << def.font_num << "/"
+					<< def.halign << "/" << def.valign << std::endl;
+			}
+		}
+		out << "%%endsection" << std::endl;
+	}
+
+	// dynamic_shapes
+	if (!dynshapes_data.empty()) {
+		out << "%%section dynamic_shapes" << std::endl;
+		for (const auto& [shapenum, info] : dynshapes_data) {
+			for (const auto& def : info->dynamic_shapes) {
+				out << ":" << shapenum << "/" << def.field_id << "/" << def.pos_x << "/" << def.pos_y << "/" << def.shape_num << "/"
+					<< def.frame_num << "/" << def.shapefile << std::endl;
+			}
+		}
+		out << "%%endsection" << std::endl;
+	}
+
+	// dynamic_sliders
+	if (!dynsliders_data.empty()) {
+		out << "%%section dynamic_sliders" << std::endl;
+		for (const auto& [shapenum, info] : dynsliders_data) {
+			for (const auto& def : info->dynamic_sliders) {
+				out << ":" << shapenum << "/" << def.field_id << "/" << def.pos_x << "/" << def.pos_y << "/" << def.dec_shape << "/"
+					<< def.inc_shape << "/" << def.thumb_shape << "/" << def.min_val << "/" << def.max_val << "/" << def.step << "/"
+					<< def.default_val << "/" << def.extent << "/" << def.usecode_fn << "/" << def.orientation << std::endl;
+			}
 		}
 		out << "%%endsection" << std::endl;
 	}

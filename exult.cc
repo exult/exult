@@ -1418,6 +1418,13 @@ static void Handle_events() {
 		// Lerping stuff...
 		const int lerp    = gwin->is_lerping_enabled();
 		bool      didlerp = false;
+
+		// Update gumps every frame (drives auto-repeat for held
+		// slider/spinner arrows).  Must run even when nothing is dirty.
+		if (!gwin->main_actor_dont_move()) {
+			gwin->get_gump_man()->update_gumps();
+		}
+
 		if (lerp && !gwin->get_moving_barge()) {
 			// Always repaint,
 			Actor* act    = gwin->get_camera_actor();
@@ -1830,6 +1837,11 @@ static void Handle_event(SDL_Event& event) {
 	}
 	// Mousewheel scrolling of view port with SDL2.
 	case SDL_EVENT_MOUSE_WHEEL: {
+		// Try forwarding to open gumps first (dynamic sliders)
+		if (gump_man->handle_mouse_wheel(
+					event.wheel.y, event.wheel.x, Mouse::mouse()->get_mousex(), Mouse::mouse()->get_mousey())) {
+			break;    // consumed by gump
+		}
 		if (!cheat() || !gwin->can_scroll_with_mouse()) {
 			break;
 		}
