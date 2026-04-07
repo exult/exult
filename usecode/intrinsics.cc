@@ -4274,6 +4274,7 @@ USECODE_INTRINSIC(set_gump_shape) {
 }
 
 USECODE_INTRINSIC(set_slider_value) {
+	ignore_unused_variable_warning(num_parms);
 	// set_slider_value(item, field_id, value)
 	// Sets the current value of a dynamic slider widget on the item's gump.
 	// Returns 1 on success, 0 on failure.
@@ -4307,6 +4308,7 @@ USECODE_INTRINSIC(set_slider_value) {
 }
 
 USECODE_INTRINSIC(get_slider_value) {
+	ignore_unused_variable_warning(num_parms);
 	// get_slider_value(item, field_id)
 	// Returns the current value of a dynamic slider widget, or 0 on failure.
 	Game_object* item = get_item(parms[0]);

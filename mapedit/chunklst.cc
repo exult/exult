@@ -293,7 +293,7 @@ gint Chunk_chooser::configure(GdkEventConfigure* event) {
 		render();    // Same size?  Just render it.
 	}
 	if (group) {          // Filtering?
-		enable_drop();    // Can drop NPCs here.
+		enable_drop();    // Can drop chunks here.
 	}
 	return true;
 }
