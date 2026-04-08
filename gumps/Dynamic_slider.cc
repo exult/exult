@@ -506,10 +506,8 @@ bool Dynamic_slider::mouse_drag(int mx, int my) {
 	if (newval != val) {
 		val = newval;
 		gwin->add_dirty(get_rect());
-		if (call_usecode_callback()) {
-			return true;    // `this` may be destroyed.
-		}
-		return true;
+		call_usecode_callback();    // May destroy `this` — no member
+		return true;                // access after this point.
 	}
 
 	gwin->add_dirty(get_rect());
