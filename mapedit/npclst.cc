@@ -949,7 +949,7 @@ void Npc_chooser::search(
 	}
 	vector<Estudio_npc>& npcs = get_npcs();
 	// Start with selection, or top.
-	int start = selected >= 0 ? selected : static_cast<int>(rows[row0].index0);
+	int start = selected >= 0 ? selected : static_cast<int>(rows[row0].index0) - dir;
 	int i;
 	start += dir;
 	const int stop = dir == -1 ? -1 : static_cast<int>(info.size());
