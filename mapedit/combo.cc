@@ -1577,10 +1577,10 @@ void Combo_chooser::search(
 		return;    // Empty.
 	}
 	// Start with selection, or top.
-	int start = selected >= 0 ? info[selected].num : 0;
+	int start = (selected >= 0 ? info[selected].num : (dir == -1 ? total : -1));
 	int i;
 	start += dir;
-	const int stop = dir == -1 ? -1 : total;
+	const int stop = (dir == -1 ? -1 : total);
 	for (i = start; i != stop; i += dir) {
 		// int num = group ? (*group)[i] : i;
 		const char* nm = combos[i]->name.c_str();
