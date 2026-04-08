@@ -1597,9 +1597,8 @@ void Combo_chooser::search(
 	while (row0 < rows.size() - 1 && i >= static_cast<int>(rows[row0 + 1].index0)) {    // Below?
 		scroll_row_vertical(row0 + 1);
 	}
-	const int newsel = i;    // New selection.
-	if (newsel >= 0 && newsel < static_cast<int>(info.size())) {
-		select(newsel);
+	if (i >= 0 && i < static_cast<int>(info.size())) {
+		select(i);
 	}
 	render();
 }
