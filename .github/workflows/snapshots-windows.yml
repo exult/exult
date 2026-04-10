@@ -26,6 +26,13 @@ jobs:
               echo repo_alive=true >> $GITHUB_OUTPUT
             fi
           fi
+
+      - name: Upload Empty Snapshot Artifact
+        if: ${{ steps.activity_check.outputs.repo_alive != 'true' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: "windows snapshot"
+          path: windows-snapshot
     outputs: 
       repo_alive: ${{steps.activity_check.outputs.repo_alive}}
 
