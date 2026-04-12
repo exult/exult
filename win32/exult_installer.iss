@@ -741,7 +741,7 @@ begin
         InstallMod('{tmp}\sifixes.zip','SIFixes mod for Serpent Isle','sifixes\data',sSImods);
       end;
       if (PrevItemAChecked <> WizardIsComponentSelected('downloads\3rdpartymods\ultima6')) AND (iBGVerified = 1) then begin
-        InstallMod('{tmp}\Ultima6.zip','Ultima VI Remake for The Black Gate','Ultima6v1.2\patch',sBGmods);
+        InstallMod('{tmp}\Ultima6.zip','Ultima VI Remake for The Black Gate','Ultima6v1.3\patch',sBGmods);
       end;
       if (PrevItemAChecked <> WizardIsComponentSelected('downloads\3rdpartymods\glimmerscape')) AND (iSIVerified = 1) then begin      
         InstallMod('{tmp}\Glimmerscape_SI_mod_by_Donfrow.zip','Glimmerscape by Donfrow for Serpent Isle','glimmerscape\data',sSImods);
