@@ -297,15 +297,23 @@ std::unique_ptr<MenuList> ExultMenu::create_main_menu(int first) {
 			Strings::EXIT()
 #endif
 	};
-	const int max_width = maximum_size(font, menuchoices, centerx);
-	xpos                = centerx - max_width * (menuchoices.size() - 1) / 2;
-	ypos                = gwin->get_win()->get_end_y() - 3 * font->get_text_height();
+	// Space items based on actual text widths with equal gaps.
+	int total_text_width = 0;
+	for (const auto* choice : menuchoices) {
+		total_text_width += font->get_text_width(choice);
+	}
+	const int count      = static_cast<int>(menuchoices.size());
+	const int gap        = std::max(16, (gwin->get_win()->get_full_width() - total_text_width) / (count + 1));
+	const int total_span = total_text_width + (count - 1) * gap;
+	xpos                 = centerx - total_span / 2;
+	ypos                 = gwin->get_win()->get_end_y() - 3 * font->get_text_height();
 	for (size_t i = 0; i < menuchoices.size(); i++) {
-		auto* entry = new MenuTextEntry(fonton, font, menuchoices[i], xpos, ypos);
+		const int text_width = font->get_text_width(menuchoices[i]);
+		auto*     entry      = new MenuTextEntry(fonton, font, menuchoices[i], xpos + text_width / 2, ypos);
 		// These commands have negative ids:
 		entry->set_id(i - 4);
 		menu->add_entry(entry);
-		xpos += max_width;
+		xpos += text_width + gap;
 	}
 	menu->set_selection(0);
 	return menu;
