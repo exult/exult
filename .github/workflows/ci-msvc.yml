@@ -55,7 +55,7 @@ on:
       - "!.gitattributes"
       - "!.github/workflows/*"
       - ".github/workflows/ci-msvc.yml"
-  
+
 env:
   # Path to the solution file relative to the root of the project.
   SOLUTION_FILE_PATH: msvcstuff\vs2019
@@ -274,102 +274,22 @@ jobs:
           ${{env.VCPKG_ASSETCACHE_PATH}}
         key: studio-vcpkg-packages-${{env.VCPKG_REV}}-${{github.sha}}-${{github.run_attempt}}
   notify:
-    name: Exult-CI (IRC & Discord notification)
-    runs-on: ubuntu-latest
-    continue-on-error: true
+    if: ${{ always() }}
     needs:
       - ci-msvc
-    if: ${{ always() && (github.repository_owner == 'exult' && github.event_name == 'push') }}
-    steps:
-      - name: IRC success notification (ircs://irc.libera.chat:6697/#exult)
-        uses: Gottox/irc-message-action@v2
-        continue-on-error: true
-        if: needs.ci-msvc.result == 'success'
-        with:
-          server: irc.libera.chat
-          port: 6697
-          channel: "#exult"
-          nickname: github-actions
-          tls: true
-          message: "\x0313exult\x03/\x0306${{ github.ref }}\x03 \x0314${{ github.sha }}\x03 https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }} The MSVC build \x033succeeded\x03."
-      - name: IRC failure notification (ircs://irc.libera.chat:6697/#exult)
-        uses: Gottox/irc-message-action@v2
-        continue-on-error: true
-        if: needs.ci-msvc.result != 'success'
-        with:
-          server: irc.libera.chat
-          port: 6697
-          channel: "#exult"
-          nickname: github-actions
-          tls: true
-          message: "\x0313exult\x03/\x0306${{ github.ref }}\x03 \x0314${{ github.sha }}\x03 https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }} The MSVC build \x034failed\x03."
-      - name: Discord success notification
-        uses: rjstone/discord-webhook-notify@v2
-        continue-on-error: true
-        if: needs.ci-msvc.result == 'success'
-        with:
-          severity: info
-          webhookUrl: ${{ secrets.DISCORD_WEBHOOK }}
-          username: Exult github-actions
-          avatarUrl: https://avatars.githubusercontent.com/u/15114538?s=200&v=4
-          text: '**[The MSVC build succeeded:](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})**'
-      - name: Discord failure notification
-        uses: rjstone/discord-webhook-notify@v2
-        continue-on-error: true
-        if: needs.ci-msvc.result != 'success'
-        with:
-          severity: error
-          webhookUrl: ${{ secrets.DISCORD_WEBHOOK }}
-          username: Exult github-actions
-          avatarUrl: https://avatars.githubusercontent.com/u/15114538?s=200&v=4
-          text: '**[The MSVC build failed:](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})**'
+    uses: ./.github/workflows/notify.yml
+    with:
+      build_name: "The Exult Windows MSVC build"
+      build_result: ${{ needs.ci-msvc.result }}
+    secrets:
+      DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
   notify-studio:
-    name: Exult-CI-ES (IRC & Discord notification)
-    runs-on: ubuntu-latest
-    continue-on-error: true
+    if: ${{ always() }}
     needs:
       - ci-msvc-exult_studio
-    if: ${{ always() && (github.repository_owner == 'exult' && github.event_name == 'push') }}
-    steps:
-      - name: ES IRC success notification (ircs://irc.libera.chat:6697/#exult)
-        uses: Gottox/irc-message-action@v2
-        continue-on-error: true
-        if: needs.ci-msvc-exult_studio.result == 'success'
-        with:
-          server: irc.libera.chat
-          port: 6697
-          channel: "#exult"
-          nickname: github-actions
-          tls: true
-          message: "\x0313exult\x03/\x0306${{ github.ref }}\x03 \x0314${{ github.sha }}\x03 https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }} The MSVC exult_studio build \x033succeeded\x03."
-      - name: ES IRC failure notification (ircs://irc.libera.chat:6697/#exult)
-        uses: Gottox/irc-message-action@v2
-        continue-on-error: true
-        if: needs.ci-msvc-exult_studio.result != 'success'
-        with:
-          server: irc.libera.chat
-          port: 6697
-          channel: "#exult"
-          nickname: github-actions
-          tls: true
-          message: "\x0313exult\x03/\x0306${{ github.ref }}\x03 \x0314${{ github.sha }}\x03 https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }} The MSVC exult_studio build \x034failed\x03."
-      - name: ES Discord success notification
-        uses: rjstone/discord-webhook-notify@v2
-        continue-on-error: true
-        if: needs.ci-msvc-exult_studio.result == 'success'
-        with:
-          severity: info
-          webhookUrl: ${{ secrets.DISCORD_WEBHOOK }}
-          username: Exult github-actions
-          avatarUrl: https://avatars.githubusercontent.com/u/15114538?s=200&v=4
-          text: '**[The MSVC exult_studio build succeeded:](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})**'
-      - name: ES Discord failure notification
-        uses: rjstone/discord-webhook-notify@v2
-        continue-on-error: true
-        if: needs.ci-msvc-exult_studio.result != 'success'
-        with:
-          severity: error
-          webhookUrl: ${{ secrets.DISCORD_WEBHOOK }}
-          username: Exult github-actions
-          avatarUrl: https://avatars.githubusercontent.com/u/15114538?s=200&v=4
-          text: '**[The MSVC exult_studio build failed:](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})**'
+    uses: ./.github/workflows/notify.yml
+    with:
+      build_name: "The Exult Studio Windows MSVC build"
+      build_result: ${{ needs.ci-msvc-exult_studio.result }}
+    secrets:
+      DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
