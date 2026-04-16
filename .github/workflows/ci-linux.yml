@@ -27,6 +27,7 @@ on:
       - "!.gitattributes"
       - "!.github/workflows/*"
       - ".github/workflows/ci-linux.yml"
+      - ".github/workflows/notify.yml"
   pull_request:
     paths:
       - "**"
@@ -53,58 +54,9 @@ on:
       - "!.gitattributes"
       - "!.github/workflows/*"
       - ".github/workflows/ci-linux.yml"
+      - ".github/workflows/notify.yml"
 
 jobs:
-  notify:
-    name: Exult-CI (IRC & Discord notification)
-    runs-on: ubuntu-latest
-    continue-on-error: true
-    needs:
-      - ci-linux
-    if: ${{ always() && (github.repository_owner == 'exult' && github.event_name != 'pull_request') }}
-    steps:
-      - name: IRC success notification (ircs://irc.libera.chat:6697/#exult)
-        uses: Gottox/irc-message-action@v2
-        continue-on-error: true
-        if: needs.ci-linux.result == 'success'
-        with:
-          server: irc.libera.chat
-          port: 6697
-          channel: "#exult"
-          nickname: github-actions
-          tls: true
-          message: "\x0313exult\x03/\x0306${{ github.ref }}\x03 \x0314${{ github.sha }}\x03 https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }} The Linux build \x033succeeded\x03."
-      - name: IRC failure notification (ircs://irc.libera.chat:6697/#exult)
-        uses: Gottox/irc-message-action@v2
-        continue-on-error: true
-        if: needs.ci-linux.result != 'success'
-        with:
-          server: irc.libera.chat
-          port: 6697
-          channel: "#exult"
-          nickname: github-actions
-          tls: true
-          message: "\x0313exult\x03/\x0306${{ github.ref }}\x03 \x0314${{ github.sha }}\x03 https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }} The Linux build \x034failed\x03."
-      - name: Discord success notification
-        uses: rjstone/discord-webhook-notify@v2
-        continue-on-error: true
-        if: needs.ci-linux.result == 'success'
-        with:
-          severity: info
-          webhookUrl: ${{ secrets.DISCORD_WEBHOOK }}
-          username: Exult github-actions
-          avatarUrl: https://avatars.githubusercontent.com/u/15114538?s=200&v=4
-          text: '**[The Linux build succeeded:](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})**'
-      - name: Discord failure notification
-        uses: rjstone/discord-webhook-notify@v2
-        continue-on-error: true
-        if: needs.ci-linux.result != 'success'
-        with:
-          severity: error
-          webhookUrl: ${{ secrets.DISCORD_WEBHOOK }}
-          username: Exult github-actions
-          avatarUrl: https://avatars.githubusercontent.com/u/15114538?s=200&v=4
-          text: '**[The Linux build failed:](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})**'
   ci-linux:
     runs-on: ubuntu-latest
     strategy:
@@ -177,3 +129,13 @@ jobs:
             CXX=${OVERRIDE_CXX} CC=${OVERRIDE_CC}
       - name: Build
         run: make -j 2
+  notify:
+    if: ${{ always() }}
+    needs:
+      - ci-linux
+    uses: ./.github/workflows/notify.yml
+    with:
+      build_name: "The Exult Linux build"
+      build_result: ${{ needs.ci-linux.result }}
+    secrets:
+      DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
