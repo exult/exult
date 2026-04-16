@@ -84,7 +84,7 @@ jobs:
           tls: true
           message: "\x0313exult\x03/\x0306${{ github.ref }}\x03 \x0314${{ github.sha }}\x03 https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }} The macOS build \x034failed\x03."
       - name: Discord success notification
-        uses: rjstone/discord-webhook-notify@v1
+        uses: rjstone/discord-webhook-notify@v2
         continue-on-error: true
         if: needs.ci-macos.result == 'success'
         with:
@@ -94,7 +94,7 @@ jobs:
           avatarUrl: https://avatars.githubusercontent.com/u/15114538?s=200&v=4
           text: '**[The macOS build succeeded:](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})**'
       - name: Discord failure notification
-        uses: rjstone/discord-webhook-notify@v1
+        uses: rjstone/discord-webhook-notify@v2
         continue-on-error: true
         if: needs.ci-macos.result != 'success'
         with:
@@ -113,7 +113,7 @@ jobs:
           brew install automake libtool pkg-config libpng zlib libogg libvorbis fluid-synth freetype gtk+3 libxml2 bison flex
           brew install sdl3 sdl3_image icu4c mt32emu autoconf-archive
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       - name: Run autoreconf
         run: |
           autoreconf -v -i

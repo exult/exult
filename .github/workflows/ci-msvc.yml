@@ -98,14 +98,14 @@ jobs:
   ci-msvc:
 
     runs-on: windows-2022
-    if: ${{ github.repository_owner == 'exult' || github.repository_owner == 'wench' }}
+    if: ${{ github.repository_owner == 'exult' || github.repository_owner == 'wench' || github.repository_owner == 'dominusexult'}}
  
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
     
     - name: Add MSBuild to PATH
-      uses: microsoft/setup-msbuild@v2
+      uses: microsoft/setup-msbuild@v3
 
     - name: Setup VCPKG for Exult
       working-directory: ${{env.GITHUB_WORKSPACE}}     
@@ -120,7 +120,7 @@ jobs:
         ('VCPKG_REV='+$vcpkg_json.'builtin-baseline')|Out-File -Append -NoNewLine ${{ github.env }}
 
     - name: Restore VCPKG packages for Exult from Cache 
-      uses: actions/cache/restore@v4
+      uses: actions/cache/restore@v5
       id: exult-vcpkg-cache-restore
       with:
         path: |
@@ -164,7 +164,7 @@ jobs:
 
     - name: Save Exult VCPKG cache
       id: exult-vcpkg-cache-save
-      uses: actions/cache/save@v4
+      uses: actions/cache/save@v5
       with:
         path: |
           ${{env.VCPKGCACHE_PATH}}
@@ -177,20 +177,20 @@ jobs:
 
   ci-msvc-exult_studio:
     runs-on: windows-2022
-    if: ${{ github.repository_owner == 'exult' || github.repository_owner == 'wench' }}
+    if: ${{ github.repository_owner == 'exult' || github.repository_owner == 'wench' || github.repository_owner == 'dominusexult'}}
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
     
     - name: Export GitHub Actions cache environment variables
-      uses: actions/github-script@v7
+      uses: actions/github-script@v9
       with:
         script: |
           core.exportVariable('ACTIONS_CACHE_URL', process.env.ACTIONS_CACHE_URL || '');
           core.exportVariable('ACTIONS_RUNTIME_TOKEN', process.env.ACTIONS_RUNTIME_TOKEN || '');
         
     - name: Add MSBuild to PATH
-      uses: microsoft/setup-msbuild@v2
+      uses: microsoft/setup-msbuild@v3
 
     - name: Setup VCPKG for Studio
       working-directory: ${{env.GITHUB_WORKSPACE}}     
@@ -206,7 +206,7 @@ jobs:
 
 
     - name: Restore Studio VCPKG cache 
-      uses: actions/cache/restore@v4
+      uses: actions/cache/restore@v5
       id: studio-vcpkg-cache-restore
       with:
         path: |
@@ -240,7 +240,7 @@ jobs:
           msbuild /v:${{ runner.debug =='1' && 'detailed' || 'normal' }} /m /p:Configuration=${{env.BUILD_CONFIGURATION_ES}} /p:Platform=${{env.BUILD_PLATFORM_ES}} ${{env.SOLUTION_FILE_PATH}}\exult_studio\exult_studio.vcxproj /t:${{env.TARGET_VCPKG_MANIFEST_INSTALL}}
 
     - name: Restore Exult VCPKG Cache 
-      uses: actions/cache/restore@v4
+      uses: actions/cache/restore@v5
       id: exult-vcpkg-cache-restore
       with:
         path: |
@@ -267,7 +267,7 @@ jobs:
     - name: Save Studio VCPKG cache
       if: always() 
       id: studio-vcpkg-cache-save
-      uses: actions/cache/save@v4
+      uses: actions/cache/save@v5
       with:
         path: |
           ${{env.VCPKGCACHE_PATH_ES}}
@@ -304,7 +304,7 @@ jobs:
           tls: true
           message: "\x0313exult\x03/\x0306${{ github.ref }}\x03 \x0314${{ github.sha }}\x03 https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }} The MSVC build \x034failed\x03."
       - name: Discord success notification
-        uses: rjstone/discord-webhook-notify@v1
+        uses: rjstone/discord-webhook-notify@v2
         continue-on-error: true
         if: needs.ci-msvc.result == 'success'
         with:
@@ -314,7 +314,7 @@ jobs:
           avatarUrl: https://avatars.githubusercontent.com/u/15114538?s=200&v=4
           text: '**[The MSVC build succeeded:](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})**'
       - name: Discord failure notification
-        uses: rjstone/discord-webhook-notify@v1
+        uses: rjstone/discord-webhook-notify@v2
         continue-on-error: true
         if: needs.ci-msvc.result != 'success'
         with:
@@ -354,7 +354,7 @@ jobs:
           tls: true
           message: "\x0313exult\x03/\x0306${{ github.ref }}\x03 \x0314${{ github.sha }}\x03 https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }} The MSVC exult_studio build \x034failed\x03."
       - name: ES Discord success notification
-        uses: rjstone/discord-webhook-notify@v1
+        uses: rjstone/discord-webhook-notify@v2
         continue-on-error: true
         if: needs.ci-msvc-exult_studio.result == 'success'
         with:
@@ -364,7 +364,7 @@ jobs:
           avatarUrl: https://avatars.githubusercontent.com/u/15114538?s=200&v=4
           text: '**[The MSVC exult_studio build succeeded:](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})**'
       - name: ES Discord failure notification
-        uses: rjstone/discord-webhook-notify@v1
+        uses: rjstone/discord-webhook-notify@v2
         continue-on-error: true
         if: needs.ci-msvc-exult_studio.result != 'success'
         with:
