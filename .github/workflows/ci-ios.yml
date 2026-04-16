@@ -26,6 +26,7 @@ on:
       - "!.gitattributes"
       - "!.github/workflows/*"
       - ".github/workflows/ci-ios.yml"
+      - ".github/workflows/notify.yml"
   pull_request:
     paths:
       - "**"
@@ -51,6 +52,7 @@ on:
       - "!.gitattributes"
       - "!.github/workflows/*"
       - ".github/workflows/ci-ios.yml"
+      - ".github/workflows/notify.yml"
 
 jobs:
   ci-ios:
