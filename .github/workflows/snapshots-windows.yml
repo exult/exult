@@ -29,7 +29,7 @@ jobs:
 
       - name: Upload Empty Snapshot Artifact
         if: ${{ steps.activity_check.outputs.repo_alive != 'true' }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: "windows snapshot"
           path: windows-snapshot
@@ -79,7 +79,7 @@ jobs:
           ${{ matrix.env }}-gimp ${{ matrix.env }}-icu            
       - name: Checkout munt
         if: ${{ matrix.sys == 'mingw32' }}
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           repository: munt/munt
           ref: libmt32emu_2_7_2
@@ -97,7 +97,7 @@ jobs:
 
       - name: Restore downloads Cache 
         if: ${{  matrix.sys == 'mingw32'}}
-        uses: actions/cache/restore@v4
+        uses: actions/cache/restore@v5
         id: downoads-cache-restore
         with:
           path: downloads
@@ -130,7 +130,7 @@ jobs:
       - name: Save downloads to cache
         if: ${{  matrix.sys == 'mingw32'}}
         id: downloads-cache-save
-        uses: actions/cache/save@v4
+        uses: actions/cache/save@v5
         with:
           path: downloads
           key: snapshot-windows-downloads-${{github.run_number}}-${{github.run_attempt}}
@@ -184,7 +184,7 @@ jobs:
          rm -r -f downloads/libtimidity-0.2.7.tar.gz libtimidity-0.2.7
 
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       - name: Build Exult
         run: |
           make -j 5 -f Makefile.mingw SNAPSHOT=1 DISTPATH=distdir DEBUG_LEVEL=-g1 dist 
@@ -200,7 +200,7 @@ jobs:
           cp *.exe distdir/unstripped/${{matrix.sys}}
 
       - name: Upload build 
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: "build-${{matrix.env}}"
           path: distdir/
@@ -249,20 +249,20 @@ jobs:
           cp "${SNAPSHOT_PATH}/exult_shp_win_arm64.aseprite-extension" ./windows-snapshot
 
       - name: Upload artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: "windows snapshot"
           path: windows-snapshot
 
       - name: Upload unstripped executable artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: "Unstripped Windows executables"
           path: |
            ~/Exult-dist/unstripped/
           compression-level: 9
       - name: Delete Build artifacts
-        uses: geekyeggo/delete-artifact@v5
+        uses: geekyeggo/delete-artifact@v6
         with:
           name: build*
           failOnError: false
