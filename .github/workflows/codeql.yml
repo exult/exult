@@ -77,7 +77,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       # Initializes the CodeQL tools for scanning.
       - name: Install dependencies
         run: |
@@ -96,7 +96,7 @@ jobs:
             libgdk-pixbuf2.0-dev libxml2-dev bison flex timidity libgimp2.0-dev autoconf-archive \
             cmake libusb-1.0-0 libusb-1.0-0-dev libunwind-dev ffmpeg libavcodec-dev libavdevice-dev libavfilter-dev libavformat-dev libavutil-dev libpostproc-dev libswresample-dev libswscale-dev
       - name: Checkout SDL 3
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           repository: libsdl-org/SDL
           path: SDL3
@@ -111,7 +111,7 @@ jobs:
           cd ..
           rm -r -f SDL3
       - name: Checkout SDL_image 3
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           repository: libsdl-org/SDL_image
           path: SDL3_image
@@ -126,7 +126,7 @@ jobs:
           cd ..
           rm -r -f SDL3_image
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@v3
+        uses: github/codeql-action/init@v4
         with:
           languages: ${{ matrix.language }}
           build-mode: manual
@@ -153,6 +153,6 @@ jobs:
       - name: Build
         run: make -j 2
       - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@v3
+        uses: github/codeql-action/analyze@v4
         with:
           category: "/language:${{matrix.language}}"

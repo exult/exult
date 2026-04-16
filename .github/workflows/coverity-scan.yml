@@ -53,7 +53,7 @@ jobs:
             cmake libusb-1.0-0 libusb-1.0-0-dev libunwind-dev ffmpeg libavcodec-dev libavdevice-dev libavfilter-dev libavformat-dev libavutil-dev libpostproc-dev libswresample-dev libswscale-dev
       - name: Checkout SDL 3
         if: ${{ steps.activity_check.outputs.repo_alive == 'true' }}
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           repository: libsdl-org/SDL
           path: SDL3
@@ -68,7 +68,7 @@ jobs:
           sudo cmake --install build
       - name: Checkout SDL_image 3
         if: ${{ steps.activity_check.outputs.repo_alive == 'true' }}
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           repository: libsdl-org/SDL_image
           path: SDL3_image
@@ -89,7 +89,7 @@ jobs:
           tar xzf /tmp/cov-analysis-linux64.tar.gz --strip 1 -C /tmp/cov-analysis-linux64
       - name: Checkout code
         if: ${{ steps.activity_check.outputs.repo_alive == 'true' }}
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       - name: Run autoreconf
         if: ${{ steps.activity_check.outputs.repo_alive == 'true' }}
         run: |

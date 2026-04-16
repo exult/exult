@@ -86,7 +86,7 @@ jobs:
           tls: true
           message: "\x0313exult\x03/\x0306${{ github.ref }}\x03 \x0314${{ github.sha }}\x03 https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }} The Linux build \x034failed\x03."
       - name: Discord success notification
-        uses: rjstone/discord-webhook-notify@v1
+        uses: rjstone/discord-webhook-notify@v2
         continue-on-error: true
         if: needs.ci-linux.result == 'success'
         with:
@@ -96,7 +96,7 @@ jobs:
           avatarUrl: https://avatars.githubusercontent.com/u/15114538?s=200&v=4
           text: '**[The Linux build succeeded:](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})**'
       - name: Discord failure notification
-        uses: rjstone/discord-webhook-notify@v1
+        uses: rjstone/discord-webhook-notify@v2
         continue-on-error: true
         if: needs.ci-linux.result != 'success'
         with:
@@ -135,7 +135,7 @@ jobs:
             libgdk-pixbuf2.0-dev libxml2-dev bison flex timidity libgimp2.0-dev libicu-dev autoconf-archive \
             cmake libusb-1.0-0 libusb-1.0-0-dev libunwind-dev ffmpeg libavcodec-dev libavdevice-dev libavfilter-dev libavformat-dev libavutil-dev libpostproc-dev libswresample-dev libswscale-dev
       - name: Checkout SDL 3
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           repository: libsdl-org/SDL
           path: SDL3
@@ -148,7 +148,7 @@ jobs:
           cmake --build build
           sudo cmake --install build
       - name: Checkout SDL_image 3
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           repository: libsdl-org/SDL_image
           path: SDL3_image
@@ -161,7 +161,7 @@ jobs:
           cmake --build build
           sudo cmake --install build
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       - name: Run autoreconf
         run: |
           autoreconf -v -i

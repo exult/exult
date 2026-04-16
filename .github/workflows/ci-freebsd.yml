@@ -86,7 +86,7 @@ jobs:
           tls: true
           message: "\x0313exult\x03/\x0306${{ github.ref }}\x03 \x0314${{ github.sha }}\x03 https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }} The FreeBSD build \x034failed\x03."
       - name: Discord success notification
-        uses: rjstone/discord-webhook-notify@v1
+        uses: rjstone/discord-webhook-notify@v2
         continue-on-error: true
         if: needs.ci-freebsd.result == 'success'
         with:
@@ -96,7 +96,7 @@ jobs:
           avatarUrl: https://avatars.githubusercontent.com/u/15114538?s=200&v=4
           text: '**[The FreeBSD build succeeded:](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})**'
       - name: Discord failure notification
-        uses: rjstone/discord-webhook-notify@v1
+        uses: rjstone/discord-webhook-notify@v2
         continue-on-error: true
         if: needs.ci-freebsd.result != 'success'
         with:
@@ -108,7 +108,7 @@ jobs:
   ci-freebsd:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
     - name: Build Exult in FreeBSD
       id: ci-freebsd
       uses: vmactions/freebsd-vm@v1

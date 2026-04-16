@@ -84,7 +84,7 @@ jobs:
           tls: true
           message: "\x0313exult\x03/\x0306${{ github.ref }}\x03 \x0314${{ github.sha }}\x03 https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }} The Windows build \x034failed\x03."
       - name: Discord success notification
-        uses: rjstone/discord-webhook-notify@v1
+        uses: rjstone/discord-webhook-notify@v2
         continue-on-error: true
         if: needs.ci-windows.result == 'success'
         with:
@@ -94,7 +94,7 @@ jobs:
           avatarUrl: https://avatars.githubusercontent.com/u/15114538?s=200&v=4
           text: '**[The Windows build succeeded:](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})**'
       - name: Discord failure notification
-        uses: rjstone/discord-webhook-notify@v1
+        uses: rjstone/discord-webhook-notify@v2
         continue-on-error: true
         if: needs.ci-windows.result != 'success'
         with:
@@ -134,7 +134,7 @@ jobs:
             ${{ matrix.env }}-gtk3 ${{ matrix.env }}-adwaita-icon-theme ${{ matrix.env }}-libxml2 ${{ matrix.env }}-freetype
             ${{ matrix.env }}-gimp ${{ matrix.env }}-icu
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       - name: Build
         run: |
           make -j 5 -f Makefile.mingw DEBUG=1 USECODE_DEBUGGER=1 DISTPATH=dist Exult.exe mods exult_studio.exe tools u7shp.exe exult_shp.exe exconfig.exe dist studiodist toolsdist plugindist aseprite-plugindist
