@@ -68,31 +68,18 @@ jobs:
         copyback: false
         prepare: |
           pkg update
-          pkg upgrade -y
+          # temporarily disabled
+          # pkg upgrade -y
           pkg install -y at-spi2-core
           pkg install -y alsa-lib fluidsynth libogg libvorbis
           pkg install -y autoconf autoconf-archive automake bison flex gettext-runtime \
-                         git glib gmake icu json-glib libtool pkgconf sdl2 sdl2_image
+                         git glib gmake icu json-glib libtool pkgconf sdl3 sdl3_image
           pkg install -y cairo gdk-pixbuf2 gegl gimp-app png
           pkg install -y freetype2 harfbuzz
           pkg install -y fontconfig
-          pkg install -y gtk2 gtk3 pango
+          pkg install -y gtk3 pango
           pkg install -y babl libX11 libXext
           pkg install -y git cmake libunwind ffmpeg
-          git -c advice.detachedHead=false clone --branch release-3.2.14 --depth 1 https://github.com/libsdl-org/SDL SDL3
-          cd SDL3
-          mkdir -p build
-          cmake -B build -S .
-          cmake --build build
-          cmake --install build
-          cd ..
-          git -c advice.detachedHead=false clone --branch release-3.2.4 --depth 1 https://github.com/libsdl-org/SDL_image SDL3_image
-          cd SDL3_image
-          mkdir -p build
-          cmake -B build -S .
-          cmake --build build
-          cmake --install build
-          cd ..
         run: |
           autoreconf -v -i
           ./configure --with-debug=extreme --enable-exult-studio --enable-exult-studio-support --enable-compiler --enable-gimp-plugin \
