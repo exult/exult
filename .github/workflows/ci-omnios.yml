@@ -61,41 +61,33 @@ jobs:
     - uses: actions/checkout@v6
     - name: Build Exult in OmniOS
       id: ci-omnios
-      uses: vmactions/omnios-vm@v1.2.9
+      uses: vmactions/omnios-vm@v1
       with:
         usesh: true
         sync: rsync
         copyback: false
         prepare: |
-          pkg update -v pkg
           pkg update -v
           pkg install gcc13
           pkg install llvm-17
           pkg install clang-17
-          curl -ORL https://pkgsrc.SmartOS.org/packages/SmartOS/bootstrap/bootstrap-2024Q4-x86_64.tar.gz
-          tar -zxpf bootstrap-2024Q4-x86_64.tar.gz -C /
+          curl -ORL https://pkgsrc.SmartOS.org/packages/SmartOS/bootstrap/bootstrap-2025Q4-x86_64.tar.gz
+          tar -zxpf bootstrap-2025Q4-x86_64.tar.gz -C /
           export PATH=/opt/local/bin:/opt/local/sbin:$PATH
-          export MANPATH=/opt/local/man:$MANPATH
+          export MANPATH=/opt/local/man
           pkgin -y update
           pkgin -y upgrade
           pkgin -y install at-spi2-core xorgproto
           pkgin -y install alsa-lib fluidsynth libogg libvorbis
           pkgin -y install autoconf autoconf-archive automake bison flex gettext \
-                           git glib2 gmake icu json-glib libtool pkgconf SDL2 SDL2_image
-          pkgin -y install cairo gdk-pixbuf2 gegl gimp png
+                           git glib2 gmake icu json-glib libtool pkgconf SDL3
+          pkgin -y install cairo gdk-pixbuf2 gegl png
           pkgin -y install freetype2 harfbuzz
           pkgin -y install fontconfig
-          pkgin -y install gtk2+ gtk3+ pango
+          pkgin -y install gtk3+ pango
           pkgin -y install babl libX11 libXext
           pkgin -y install git cmake libusb libunwind ffmpeg7
-          git -c advice.detachedHead=false clone --branch release-3.2.14 --depth 1 https://github.com/libsdl-org/SDL SDL3
-          cd SDL3
-          mkdir -p build
-          cmake -B build -S .
-          cmake --build build
-          cmake --install build
-          cd ..
-          git -c advice.detachedHead=false clone --branch release-3.2.4 --depth 1 https://github.com/libsdl-org/SDL_image SDL3_image
+          git -c advice.detachedHead=false clone --branch release-3.2.6 --depth 1 https://github.com/libsdl-org/SDL_image SDL3_image
           cd SDL3_image
           mkdir -p build
           cmake -B build -S .
@@ -104,10 +96,11 @@ jobs:
           cd ..
         run: |
           export PATH=/opt/local/bin:/opt/local/sbin:/usr/local/bin:$PATH
-          export MANPATH=/opt/local/man:/opt/local/share/man:/usr/local/share/man:$MANPATH
-          export PKG_CONFIG_PATH=/opt/local/share/pkgconfig:/opt/local/lib/pkgconfig:/opt/ooce/lib/amd64/pkgconfig:/usr/local/lib/pkgconfig:$PKG_CONFIG_PATH
+          export MANPATH=/opt/local/man:/opt/local/share/man:/usr/local/share/man
+          export PKG_CONFIG_PATH=/opt/local/share/pkgconfig:/opt/local/lib/pkgconfig:/opt/ooce/lib/amd64/pkgconfig:/usr/local/lib/pkgconfig
           autoreconf -v -i
-          ./configure --with-debug=extreme --enable-exult-studio --enable-exult-studio-support --enable-compiler --enable-gimp-plugin \
+          # Gimp Plugin is not tested as there is no The Gimp 3.x package
+          ./configure --with-debug=extreme --enable-exult-studio --enable-exult-studio-support --enable-compiler \
             --enable-zip-support --enable-shared --enable-midi-sfx --enable-shp-thumbnailer --enable-data --enable-mods \
             --with-usecode-debugger=yes --enable-usecode-container --enable-nonreadied-objects --enable-aseprite-plugin \
             CXX=clang++ CC=clang
