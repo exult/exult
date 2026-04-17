@@ -184,7 +184,7 @@ jobs:
          rm -r -f downloads/libtimidity-0.2.7.tar.gz libtimidity-0.2.7
 
       - name: Checkout code
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
       - name: Build Exult
         run: |
           make -j 5 -f Makefile.mingw SNAPSHOT=1 DISTPATH=distdir DEBUG_LEVEL=-g1 dist 

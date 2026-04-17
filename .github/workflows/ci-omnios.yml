@@ -67,14 +67,15 @@ jobs:
         sync: rsync
         copyback: false
         prepare: |
-          pkg update -v
+          pkg update -v pkg || true
+          pkg update -v || true
           pkg install gcc13
           pkg install llvm-17
           pkg install clang-17
           curl -ORL https://pkgsrc.SmartOS.org/packages/SmartOS/bootstrap/bootstrap-2025Q4-x86_64.tar.gz
           tar -zxpf bootstrap-2025Q4-x86_64.tar.gz -C /
           export PATH=/opt/local/bin:/opt/local/sbin:$PATH
-          export MANPATH=/opt/local/man
+          export MANPATH=/opt/local/man:${MANPATH:-}
           pkgin -y update
           pkgin -y upgrade
           pkgin -y install at-spi2-core xorgproto
@@ -96,8 +97,8 @@ jobs:
           cd ..
         run: |
           export PATH=/opt/local/bin:/opt/local/sbin:/usr/local/bin:$PATH
-          export MANPATH=/opt/local/man:/opt/local/share/man:/usr/local/share/man
-          export PKG_CONFIG_PATH=/opt/local/share/pkgconfig:/opt/local/lib/pkgconfig:/opt/ooce/lib/amd64/pkgconfig:/usr/local/lib/pkgconfig
+          export MANPATH=/opt/local/man:/opt/local/share/man:/usr/local/share/man:${MANPATH:-}
+          export PKG_CONFIG_PATH=/opt/local/share/pkgconfig:/opt/local/lib/pkgconfig:/opt/ooce/lib/amd64/pkgconfig:/usr/local/lib/pkgconfig:${PKG_CONFIG_PATH:-}
           autoreconf -v -i
           # Gimp Plugin is not tested as there is no The Gimp 3.x package
           ./configure --with-debug=extreme --enable-exult-studio --enable-exult-studio-support --enable-compiler \
