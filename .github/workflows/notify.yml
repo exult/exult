@@ -23,7 +23,7 @@ jobs:
     if: ${{ github.repository_owner == 'exult' && github.event_name != 'pull_request' }}
     steps:
       - name: IRC success notification (ircs://irc.libera.chat:6697/#exult)
-        uses: Gottox/irc-message-action@v2
+        uses: mauke/notify-irc@v1
         continue-on-error: true
         if: inputs.build_result == 'success'
         with:
@@ -31,10 +31,11 @@ jobs:
           port: 6697
           channel: "#exult"
           nickname: github-actions
+          join: true
           tls: true
           message: "\x0313exult\x03/\x0306${{ github.ref }}\x03 \x0314${{ github.sha }}\x03 https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }} ${{ inputs.build_name }} \x033succeeded\x03."
       - name: IRC failure notification (ircs://irc.libera.chat:6697/#exult)
-        uses: Gottox/irc-message-action@v2
+        uses: mauke/notify-irc@v1
         continue-on-error: true
         if: inputs.build_result != 'success'
         with:
@@ -42,10 +43,11 @@ jobs:
           port: 6697
           channel: "#exult"
           nickname: github-actions
+          join: true
           tls: true
           message: "\x0313exult\x03/\x0306${{ github.ref }}\x03 \x0314${{ github.sha }}\x03 https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }} ${{ inputs.build_name }} \x034failed\x03."
       - name: Discord success notification
-        uses: rjstone/discord-webhook-notify@v2
+        uses: opp-studio/discord-webhook-notify@2.2.5
         continue-on-error: true
         if: inputs.build_result == 'success'
         with:
@@ -55,7 +57,7 @@ jobs:
           avatarUrl: https://avatars.githubusercontent.com/u/15114538?s=200&v=4
           text: '**[${{ inputs.build_name }} succeeded:](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})**'
       - name: Discord failure notification
-        uses: rjstone/discord-webhook-notify@v2
+        uses: opp-studio/discord-webhook-notify@2.2.5
         continue-on-error: true
         if: inputs.build_result != 'success'
         with:
