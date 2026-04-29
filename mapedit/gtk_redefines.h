@@ -181,4 +181,9 @@ inline T1* gtk_cast(T2* obj) {
 #	pragma GCC diagnostic pop
 #endif
 
+// g_free macro dispatches to g_free or g_free_sized using an old style cast when free_sized exists as in GLibC 2.43
+#if defined(g_free)
+#	undef g_free
+#endif /* g_free */
+
 #endif

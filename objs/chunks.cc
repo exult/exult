@@ -1178,23 +1178,22 @@ static auto Get_square(
 	// Upper left corner:
 	square.emplace_back(DECR_TILE(pos.tx, dist), DECR_TILE(pos.ty, dist), pos.tz);
 	const int len = 2 * dist + 1;
-	int       out = 1;
-	for (int i = 1; i < len; i++, out++) {
+	for (int i = 1; i < len; i++) {
 		const auto& back = square.back();
 		square.emplace_back(INCR_TILE(back.tx), back.ty, pos.tz);
 	}
 	// Down right side.
-	for (int i = 1; i < len; i++, out++) {
+	for (int i = 1; i < len; i++) {
 		const auto& back = square.back();
 		square.emplace_back(back.tx, INCR_TILE(back.ty), pos.tz);
 	}
 	// Bottom, going back to left.
-	for (int i = 1; i < len; i++, out++) {
+	for (int i = 1; i < len; i++) {
 		const auto& back = square.back();
 		square.emplace_back(DECR_TILE(back.tx), back.ty, pos.tz);
 	}
 	// Left side, going up.
-	for (int i = 1; i < len - 1; i++, out++) {
+	for (int i = 1; i < len - 1; i++) {
 		const auto& back = square.back();
 		square.emplace_back(back.tx, DECR_TILE(back.ty), pos.tz);
 	}

@@ -14,9 +14,9 @@
 #endif
 
 #ifdef EXCONFIG_IS_DLL
-#define EXCONFIG_EXPORT __declspec(dllexport)
+#	define EXCONFIG_EXPORT __declspec(dllexport)
 #else
-#define EXCONFIG_EXPORT
+#	define EXCONFIG_EXPORT
 #endif
 #include <windows.h>
 
