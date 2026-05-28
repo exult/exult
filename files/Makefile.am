@@ -10,7 +10,7 @@ else
 SDLRWOPS=
 endif
 
-AM_CPPFLAGS = -I$(top_srcdir) -I$(top_srcdir)/headers $(SDL_CFLAGS) $(INCDIRS) $(WINDOWING_SYSTEM) \
+AM_CPPFLAGS = -I$(top_srcdir) -I$(top_srcdir)/headers -I$(top_srcdir)/data $(SDL_CFLAGS) $(INCDIRS) $(WINDOWING_SYSTEM) \
 		$(DEBUG_LEVEL) $(OPT_LEVEL) $(WARNINGS) $(CPPFLAGS) -DEXULT_DATADIR=\"$(EXULT_DATADIR)\"
 
 SUBDIRS = sha1 zip
