@@ -440,6 +440,9 @@
     <ClCompile Include="..\..\shapes\font.cc">
       <Filter>shapes</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\shapes\font_map.cc">
+      <Filter>shapes</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\shapes\fontgen.cc">
       <Filter>shapes</Filter>
     </ClCompile>
@@ -1082,6 +1085,9 @@
       <Filter>shapes</Filter>
     </ClInclude>
     <ClInclude Include="..\..\shapes\font.h">
+      <Filter>shapes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shapes\font_map.h">
       <Filter>shapes</Filter>
     </ClInclude>
     <ClInclude Include="..\..\shapes\fontgen.h">

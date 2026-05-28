@@ -48,6 +48,7 @@
 		8A8340D01F897827000696C7 /* AVKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8A8340CC1F897826000696C7 /* AVKit.framework */; };
 		8A8340D11F897827000696C7 /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8A8340CD1F897826000696C7 /* AVFoundation.framework */; };
 		8A8340D51F8979D3000696C7 /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FD77A0840E26BDB800F39101 /* AudioToolbox.framework */; };
+		8A85D25E2FC8FDD20062BC4A /* font_map.cc in Sources */ = {isa = PBXBuildFile; fileRef = 8A85D25D2FC8FDD20062BC4A /* font_map.cc */; };
 		8A8728EA1DD8BAA3005AC3FC /* sha1.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8A8728E81DD8BAA3005AC3FC /* sha1.cpp */; };
 		8A93BD6A1F8901E3001850AA /* Media.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 8A93BC931F869000001850AA /* Media.xcassets */; };
 		8A98326D27AD7A0C0028D9C9 /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8A98326C27AD7A0C0028D9C9 /* QuartzCore.framework */; };
@@ -393,6 +394,8 @@
 		8A8340C81F897806000696C7 /* GameController.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = GameController.framework; path = System/Library/Frameworks/GameController.framework; sourceTree = SDKROOT; };
 		8A8340CC1F897826000696C7 /* AVKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVKit.framework; path = System/Library/Frameworks/AVKit.framework; sourceTree = SDKROOT; };
 		8A8340CD1F897826000696C7 /* AVFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFoundation.framework; path = System/Library/Frameworks/AVFoundation.framework; sourceTree = SDKROOT; };
+		8A85D25C2FC8FDD20062BC4A /* font_map.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ../shapes/font_map.h; sourceTree = "<group>"; };
+		8A85D25D2FC8FDD20062BC4A /* font_map.cc */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = ../shapes/font_map.cc; sourceTree = "<group>"; };
 		8A8728E81DD8BAA3005AC3FC /* sha1.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = sha1.cpp; sourceTree = "<group>"; };
 		8A8728E91DD8BAA3005AC3FC /* sha1.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = sha1.h; sourceTree = "<group>"; };
 		8A93BC931F869000001850AA /* Media.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Media.xcassets; sourceTree = "<group>"; };
@@ -1237,6 +1240,8 @@
 			children = (
 				E700DCE81A6E3121006C8BE4 /* baseinf.h */,
 				E700DCE91A6E3121006C8BE4 /* data_utils.h */,
+				8A85D25C2FC8FDD20062BC4A /* font_map.h */,
+				8A85D25D2FC8FDD20062BC4A /* font_map.cc */,
 				E700DCEA1A6E3121006C8BE4 /* font.cc */,
 				E700DCEB1A6E3121006C8BE4 /* font.h */,
 				E700DCEC1A6E3121006C8BE4 /* fontgen.cc */,
@@ -1997,6 +2002,7 @@
 				E700DCE51A6E30D8006C8BE4 /* virstone.cc in Sources */,
 				8A8728EA1DD8BAA3005AC3FC /* sha1.cpp in Sources */,
 				E700DE951A6E3497006C8BE4 /* Paperdoll_gump.cc in Sources */,
+				8A85D25E2FC8FDD20062BC4A /* font_map.cc in Sources */,
 				E700DD561A6E3121006C8BE4 /* frnameinf.cc in Sources */,
 				E700DE2C1A6E344D006C8BE4 /* scale_2xSaI.cc in Sources */,
 				E700DE991A6E3497006C8BE4 /* Spellbook_gump.cc in Sources */,

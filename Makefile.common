@@ -227,6 +227,7 @@ IMAGEWIN_OBJS:=\
 
 SHAPES_OBJS:= \
 	shapes/font.o \
+	shapes/font_map.o \
 	shapes/fontvga.o\
 	shapes/items.o \
 	shapes/miscinf.o\
