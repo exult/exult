@@ -52,6 +52,7 @@
 #include "exultmenu.h"
 #include "fnames.h"
 #include "font.h"
+#include "font_map.h"
 #include "game.h"
 #include "gamemap.h"
 #include "gamemgr/modmgr.h"
@@ -505,6 +506,9 @@ int exult_main(const char* runpath) {
 #ifndef _WIN32
 	setup_program_paths();
 #endif
+	// Load font_map.txt from exult.flx and register the UTF-8 -> font
+	// glyph translator used by Text_msg_file_reader.
+	init_font_map();
 	// Read in configuration file
 	config = new Configuration;
 

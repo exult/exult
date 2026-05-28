@@ -35,6 +35,11 @@
 
 class IDataSource;
 
+// Optional translator applied to the raw file contents before parsing.
+// Used by the main game engine to map UTF-8 to font glyph bytes.
+using Text_msg_translator = void (*)(std::string& text, bool use_special_chars);
+void set_text_msg_translator(Text_msg_translator fn);
+
 class Text_msg_file_reader {
 	using Section_data   = std::vector<std::optional<std::string_view>>;
 	using Text_msg_data  = std::map<std::string_view, Section_data, std::less<>>;

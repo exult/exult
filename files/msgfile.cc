@@ -25,8 +25,6 @@
 #include "msgfile.h"
 
 #include "databuf.h"
-#include "exult_flx.h"
-#include "fnames.h"
 #include "ios_state.hpp"
 
 #include <algorithm>
@@ -38,7 +36,6 @@
 #include <sstream>
 #include <string>
 #include <string_view>
-#include <unordered_map>
 #include <vector>
 
 using std::cerr;
@@ -50,135 +47,20 @@ using std::string;
 using std::stringstream;
 using std::vector;
 
-/*
- *  Translation tables for UTF-8 encoded special characters to font hex
- *  positions. Loaded lazily from font_map.txt (see FONT_MAP in fnames.h).
- *  The builtin map covers fonts with special character positions (original/serif).
- *  The original map covers fonts without them, using ASCII equivalents.
- */
+// Optional translator hook (registered by init_font_map() in shapes/).
+static Text_msg_translator g_translator = nullptr;
 
-static std::unordered_map<std::string, std::string> utf8_to_font_special;
-static std::unordered_map<std::string, std::string> utf8_to_font_ascii;
-static bool                                         font_maps_initialized = false;
-
-// Converts a hex string like "C387" to the corresponding binary bytes "\xC3\x87".
-static std::string hex_to_bytes(std::string_view hex) {
-	std::string result;
-	result.reserve(hex.size() / 2);
-	for (size_t i = 0; i + 1 < hex.size(); i += 2) {
-		unsigned char byte = 0;
-		std::from_chars(hex.data() + i, hex.data() + i + 2, byte, 16);
-		result += static_cast<char>(byte);
-	}
-	return result;
-}
-
-// Loads both font maps from font_map.txt on first call, then overlays any
-// patch entries from PATCH_FONT_MAP (if present) — same layering pattern as
-// shape_info.txt.  Sets font_maps_initialized = true before creating the inner
-// Text_msg_file_reader so that re-entrant calls (translate_utf8_to_font_hex on
-// the font_map.txt itself) are no-ops and do not cause infinite recursion.
-static void ensure_font_maps_loaded() {
-	if (font_maps_initialized) {
-		return;
-	}
-	font_maps_initialized = true;    // Must be set before the recursive constructor call below.
-
-	// Parse one Text_msg_file_reader's sections into the two maps.
-	// Entries in a later call override entries from an earlier call,
-	// so patch entries naturally shadow base entries for the same key.
-	auto parse_reader = [](Text_msg_file_reader& reader) {
-		std::vector<std::string> strings;
-
-		// builtin section: entries are  <UTF8HEX>/<HEXBYTE>  e.g. C387/01
-		reader.get_section_strings("builtin", strings);
-		for (const auto& s : strings) {
-			if (s.empty()) {
-				continue;
-			}
-			const auto slash = s.find('/');
-			if (slash == std::string::npos) {
-				continue;
-			}
-			std::string   key = hex_to_bytes({s.data(), slash});
-			unsigned char val = 0;
-			std::from_chars(s.data() + slash + 1, s.data() + s.size(), val, 16);
-			utf8_to_font_special[std::move(key)] = std::string(1, static_cast<char>(val));
-		}
-
-		// original section: entries are  <UTF8HEX>/<ASCIIREPLACEMENT>  e.g. C3BC/ue
-		reader.get_section_strings("original", strings);
-		for (const auto& s : strings) {
-			if (s.empty()) {
-				continue;
-			}
-			const auto slash = s.find('/');
-			if (slash == std::string::npos) {
-				continue;
-			}
-			std::string key = hex_to_bytes({s.data(), slash});
-			utf8_to_font_ascii[std::move(key)] = s.substr(slash + 1);
-		}
-	};
-
-	// Base font map: always loaded from exult.flx.
-	{
-		IExultDataSource ds(BUNDLE_CHECK(BUNDLE_EXULT_FLX, EXULT_FLX), EXULT_FLX_FONT_MAP_TXT);
-		if (!ds.good()) {
-			cerr << "Warning: could not load font_map.txt from exult.flx" << endl;
-		} else {
-			Text_msg_file_reader reader(ds);
-			parse_reader(reader);
-		}
-	}
-
-	// Patch font map (loaded on top when a patch directory is active).
-	if (is_system_path_defined("<PATCH>") && U7exists(PATCH_FONT_MAP)) {
-		IFileDataSource ds(PATCH_FONT_MAP, true);
-		if (ds.good()) {
-			Text_msg_file_reader reader(ds);
-			parse_reader(reader);
-		}
-	}
-}
-
-/*
- *  Translate UTF-8 encoded special characters to font hex positions.
- *  This modifies the string in place, converting multi-byte UTF-8 sequences
- *  to single bytes (or multi-byte ASCII equivalents) based on font config.
- */
-static void translate_utf8_to_font_hex(std::string& text, bool use_special_chars) {
-	ensure_font_maps_loaded();
-	const auto& utf8_map = use_special_chars ? utf8_to_font_special : utf8_to_font_ascii;
-
-	std::string result;
-	result.reserve(text.size());
-
-	size_t i = 0;
-	while (i < text.size()) {
-		// Check for 2-byte UTF-8 sequence (0xC0-0xDF followed by 0x80-0xBF)
-		if (i + 1 < text.size() && (static_cast<unsigned char>(text[i]) & 0xE0) == 0xC0) {
-			auto it = utf8_map.find(std::string(text.data() + i, 2));
-			if (it != utf8_map.end()) {
-				result += it->second;
-				i += 2;
-				continue;
-			}
-		}
-		// Not a recognized UTF-8 sequence, copy byte as-is
-		result += text[i];
-		++i;
-	}
-
-	text = std::move(result);
+void set_text_msg_translator(Text_msg_translator fn) {
+	g_translator = fn;
 }
 
 Text_msg_file_reader::Text_msg_file_reader() : global_first(0) {}
 
 Text_msg_file_reader::Text_msg_file_reader(IDataSource& in, bool use_special_chars) : global_first(0) {
 	in.read(contents, in.getAvail());
-	// Translate UTF-8 special characters to font hex positions
-	translate_utf8_to_font_hex(contents, use_special_chars);
+	if (g_translator) {
+		g_translator(contents, use_special_chars);
+	}
 	if (!parse_contents()) {
 		cerr << "Error parsing text message file" << endl;
 		global_section.clear();

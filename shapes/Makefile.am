@@ -24,6 +24,8 @@ libshapes_la_SOURCES += \
 	data_utils.h \
 	font.cc \
 	font.h \
+	font_map.cc \
+	font_map.h \
 	fontgen.cc \
 	fontgen.h \
 	fontvga.cc \
