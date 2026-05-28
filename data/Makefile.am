@@ -28,7 +28,8 @@ EXULT_FLX_OBJECTS = \
 	scroll_right.shp \
 	checkmark_background.shp \
 	mixer.shp \
-	fs_badges.shp
+	fs_badges.shp	\
+	fonts/font_map.txt
 
 EXULT_FONTS_ORIGINAL_VGA_OBJECTS = \
 	fonts/original.in \

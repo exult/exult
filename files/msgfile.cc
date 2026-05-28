@@ -25,6 +25,8 @@
 #include "msgfile.h"
 
 #include "databuf.h"
+#include "exult_flx.h"
+#include "fnames.h"
 #include "ios_state.hpp"
 
 #include <algorithm>
@@ -50,93 +52,95 @@ using std::vector;
 
 /*
  *  Translation tables for UTF-8 encoded special characters to font hex
- *  positions. The font shapes have these characters at positions
- *  that don't match their UTF-8 encoding, so we need to translate them.
- *  Value is std::string to allow multi-character replacements (e.g., ü -> ue).
+ *  positions. Loaded lazily from font_map.txt (see FONT_MAP in fnames.h).
+ *  The builtin map covers fonts with special character positions (original/serif).
+ *  The original map covers fonts without them, using ASCII equivalents.
  */
 
-// Map for original/serif fonts with special character positions
-static const std::unordered_map<std::string_view, std::string> utf8_to_font_special = {
-		{"\xC3\x87", "\x01"}, // Ç (C cedilla uppercase)
-		{"\xC3\xBC", "\x02"}, // ü (u umlaut)
-		{"\xC3\xA9", "\x03"}, // é (e acute)
-		{"\xC3\xA2", "\x04"}, // â (a circumflex)
-		{"\xC3\xA4", "\x05"}, // ä (a umlaut)
-		{"\xC3\xA0", "\x06"}, // à (a grave)
-		{"\xC3\xA7", "\x07"}, // ç (c cedilla lowercase)
-		{"\xC3\xAA", "\x08"}, // ê (e circumflex)
-		{"\xC3\x8A", "\x09"}, // Ê (e circumflex uppercase)
-		{"\xC3\x82", "\x0a"}, // Â (A circumflex uppercase)
-		{"\xC3\xAB", "\x0b"}, // ë (e umlaut)
-		{"\xC3\xA8", "\x0c"}, // è (e grave)
-		{"\xC3\x88", "\x0d"}, // È (E grave uppercase)
-		{"\xC3\xAF", "\x0e"}, // ï (i umlaut)
-		{"\xC3\xAE", "\x0f"}, // î (i circumflex)
-		{"\xC3\xAC", "\x10"}, // ì (i grave)
-		{"\xC3\x84", "\x11"}, // Ä (A umlaut uppercase)
-		{"\xC3\x89", "\x12"}, // É (E acute uppercase)
-		{"\xC3\xB4", "\x13"}, // ô (o circumflex)
-		{"\xC3\xB6", "\x14"}, // ö (o umlaut)
-		{"\xC3\xBB", "\x15"}, // û (u circumflex)
-		{"\xC3\xB9", "\x16"}, // ù (u grave)
-		{"\xC3\x96", "\x17"}, // Ö (O umlaut uppercase)
-		{"\xC3\x9C", "\x18"}, // Ü (U umlaut uppercase)
-		{"\xC3\xA1", "\x19"}, // á (a acute)
-		{"\xC3\x81", "\x1a"}, // Á (a acute uppercase)
-		{"\xC3\x80", "\x1b"}, // À (a grave uppercase)
-		{"\xC3\x9F", "\x1c"}, // ß (German sharp S)
-		{"\xC3\xAD", "\x1d"}, // í (i acute)
-		{"\xC3\xB3", "\x1e"}, // ó (o acute)
-		{"\xC3\xBA", "\x1f"}, // ú (u acute)
-		{"\xC3\x91", "\x81"}, // Ñ (N tilde uppercase)
-		{"\xC3\xB1", "\x82"}, // ñ (n tilde)
-		{"\xC3\x93", "\x83"}, // Ó (o acute uppercase)
-		{"\xC3\x9A", "\x84"}, // Ú (u acute uppercase)
-		{"\xC3\xBF", "\x85"}, // ¿ (inverted question mark)
-		{"\xC2\xA1", "\x86"}, // ¡ (inverted exclamation mark)
-};
+static std::unordered_map<std::string, std::string> utf8_to_font_special;
+static std::unordered_map<std::string, std::string> utf8_to_font_ascii;
+static bool                                         font_maps_initialized = false;
 
-// Map for fonts.vga without special characters, using ASCII equivalents
-// (multi-char allowed)
-static const std::unordered_map<std::string_view, std::string> utf8_to_font_ascii = {
-		{"\xC3\x87",  "C"}, // Ç -> C
-		{"\xC3\xBC", "ue"}, // ü -> ue
-		{"\xC3\xA9",  "e"}, // é -> e
-		{"\xC3\xA2",  "a"}, // â -> a
-		{"\xC3\xA4", "ae"}, // ä -> ae
-		{"\xC3\xA0",  "a"}, // à -> a
-		{"\xC3\xA7",  "c"}, // ç -> c
-		{"\xC3\xAA",  "e"}, // ê -> e
-		{"\xC3\x8A",  "E"}, // Ê -> E
-		{"\xC3\x82",  "A"}, // Â -> A
-		{"\xC3\xAB",  "e"}, // ë -> e
-		{"\xC3\xA8",  "e"}, // è -> e
-		{"\xC3\x88",  "E"}, // È -> E
-		{"\xC3\xAF",  "i"}, // ï -> i
-		{"\xC3\xAE",  "i"}, // î -> i
-		{"\xC3\xAC",  "i"}, // ì -> i
-		{"\xC3\x84", "AE"}, // Ä -> Ae
-		{"\xC3\x89",  "E"}, // É -> E
-		{"\xC3\xB4",  "o"}, // ô -> o
-		{"\xC3\xB6", "oe"}, // ö -> oe
-		{"\xC3\xBB",  "u"}, // û -> u
-		{"\xC3\xB9",  "u"}, // ù -> u
-		{"\xC3\x96", "OE"}, // Ö -> Oe
-		{"\xC3\x9C", "UE"}, // Ü -> Ue
-		{"\xC3\xA1",  "a"}, // á -> a
-		{"\xC3\x81",  "A"}, // Á -> A
-		{"\xC3\x80",  "A"}, // À -> A
-		{"\xC3\x9F", "ss"}, // ß -> ss
-		{"\xC3\xAD",  "i"}, // í -> i
-		{"\xC3\xB3",  "o"}, // ó -> o
-		{"\xC3\xBA",  "u"}, // ú -> u
-		{"\xC3\x91",  "N"}, // Ñ -> N
-		{"\xC3\xB1",  "n"}, // ñ -> n
-		{"\xC3\x93",  "O"}, // Ó -> O
-		{"\xC3\x9A",  "U"}, // Ú -> U
-							   // {"\xC3\xBF",  ""}, // ¿ -> in this case no conversion
-							   // {"\xC2\xA1",  ""}, // ¡ -> in this case no conversion
-};
+// Converts a hex string like "C387" to the corresponding binary bytes "\xC3\x87".
+static std::string hex_to_bytes(std::string_view hex) {
+	std::string result;
+	result.reserve(hex.size() / 2);
+	for (size_t i = 0; i + 1 < hex.size(); i += 2) {
+		unsigned char byte = 0;
+		std::from_chars(hex.data() + i, hex.data() + i + 2, byte, 16);
+		result += static_cast<char>(byte);
+	}
+	return result;
+}
+
+// Loads both font maps from font_map.txt on first call, then overlays any
+// patch entries from PATCH_FONT_MAP (if present) — same layering pattern as
+// shape_info.txt.  Sets font_maps_initialized = true before creating the inner
+// Text_msg_file_reader so that re-entrant calls (translate_utf8_to_font_hex on
+// the font_map.txt itself) are no-ops and do not cause infinite recursion.
+static void ensure_font_maps_loaded() {
+	if (font_maps_initialized) {
+		return;
+	}
+	font_maps_initialized = true;    // Must be set before the recursive constructor call below.
+
+	// Parse one Text_msg_file_reader's sections into the two maps.
+	// Entries in a later call override entries from an earlier call,
+	// so patch entries naturally shadow base entries for the same key.
+	auto parse_reader = [](Text_msg_file_reader& reader) {
+		std::vector<std::string> strings;
+
+		// builtin section: entries are  <UTF8HEX>/<HEXBYTE>  e.g. C387/01
+		reader.get_section_strings("builtin", strings);
+		for (const auto& s : strings) {
+			if (s.empty()) {
+				continue;
+			}
+			const auto slash = s.find('/');
+			if (slash == std::string::npos) {
+				continue;
+			}
+			std::string   key = hex_to_bytes({s.data(), slash});
+			unsigned char val = 0;
+			std::from_chars(s.data() + slash + 1, s.data() + s.size(), val, 16);
+			utf8_to_font_special[std::move(key)] = std::string(1, static_cast<char>(val));
+		}
+
+		// original section: entries are  <UTF8HEX>/<ASCIIREPLACEMENT>  e.g. C3BC/ue
+		reader.get_section_strings("original", strings);
+		for (const auto& s : strings) {
+			if (s.empty()) {
+				continue;
+			}
+			const auto slash = s.find('/');
+			if (slash == std::string::npos) {
+				continue;
+			}
+			std::string key = hex_to_bytes({s.data(), slash});
+			utf8_to_font_ascii[std::move(key)] = s.substr(slash + 1);
+		}
+	};
+
+	// Base font map: always loaded from exult.flx.
+	{
+		IExultDataSource ds(BUNDLE_CHECK(BUNDLE_EXULT_FLX, EXULT_FLX), EXULT_FLX_FONT_MAP_TXT);
+		if (!ds.good()) {
+			cerr << "Warning: could not load font_map.txt from exult.flx" << endl;
+		} else {
+			Text_msg_file_reader reader(ds);
+			parse_reader(reader);
+		}
+	}
+
+	// Patch font map (loaded on top when a patch directory is active).
+	if (is_system_path_defined("<PATCH>") && U7exists(PATCH_FONT_MAP)) {
+		IFileDataSource ds(PATCH_FONT_MAP, true);
+		if (ds.good()) {
+			Text_msg_file_reader reader(ds);
+			parse_reader(reader);
+		}
+	}
+}
 
 /*
  *  Translate UTF-8 encoded special characters to font hex positions.
@@ -144,6 +148,7 @@ static const std::unordered_map<std::string_view, std::string> utf8_to_font_asci
  *  to single bytes (or multi-byte ASCII equivalents) based on font config.
  */
 static void translate_utf8_to_font_hex(std::string& text, bool use_special_chars) {
+	ensure_font_maps_loaded();
 	const auto& utf8_map = use_special_chars ? utf8_to_font_special : utf8_to_font_ascii;
 
 	std::string result;
@@ -153,8 +158,7 @@ static void translate_utf8_to_font_hex(std::string& text, bool use_special_chars
 	while (i < text.size()) {
 		// Check for 2-byte UTF-8 sequence (0xC0-0xDF followed by 0x80-0xBF)
 		if (i + 1 < text.size() && (static_cast<unsigned char>(text[i]) & 0xE0) == 0xC0) {
-			std::string_view seq(text.data() + i, 2);
-			auto             it = utf8_map.find(seq);
+			auto it = utf8_map.find(std::string(text.data() + i, 2));
 			if (it != utf8_map.end()) {
 				result += it->second;
 				i += 2;

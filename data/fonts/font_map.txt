@@ -1,0 +1,170 @@
+#	Character mapping for builtin and original font.
+#
+#	May 28, 2026
+#
+
+%%section version
+:1
+%%endsection
+
+%%section builtin
+#	Format
+#		:UTF-8 Hex Byte/shapenum
+#	Our built-in fonts have an extensive set of special characters available.
+#	To use these we map them to the shape number in our built-in fonts.
+
+# Ç (C cedilla uppercase)
+:C387/01
+# ü (u umlaut)
+:C3BC/02
+# é (e acute)
+:C3A9/03
+# â (a circumflex)
+:C3A2/04
+# ä (a umlaut)
+:C3A4/05
+# à (a grave)
+:C3A0/06
+# ç (c cedilla lowercase)
+:C3A7/07
+# ê (e circumflex)
+:C3AA/08
+# Ê (e circumflex uppercase)
+:C38A/09
+# Â (A circumflex uppercase)
+:C382/0A
+# ë (e umlaut)
+:C3AB/0B
+# è (e grave)
+:C3A8/0C
+# È (E grave uppercase)
+:C388/0D
+# ï (i umlaut)
+:C3AF/0E
+# î (i circumflex)
+:C3AE/0F
+# ì (i grave)
+:C3AC/10
+# Ä (A umlaut uppercase)
+:C384/11
+# É (E acute uppercase)
+:C389/12
+# ô (o circumflex)
+:C3B4/13
+# ö (o umlaut)
+:C3B6/14
+# û (u circumflex)
+:C3BB/15
+# ù (u grave)
+:C3B9/16
+# Ö (O umlaut uppercase)
+:C396/17
+# Ü (U umlaut uppercase)
+:C39C/18
+# á (a acute)
+:C3A1/19
+# Á (A acute uppercase)
+:C381/1A
+# À (A grave uppercase)
+:C380/1B
+# ß (German sharp S)
+:C39F/1C
+# í (i acute)
+:C3AD/1D
+# ó (o acute)
+:C3B3/1E
+# ú (u acute)
+:C3BA/1F
+# Ñ (N tilde uppercase)
+:C391/81
+# ñ (n tilde)
+:C3B1/82
+# Ó (O acute uppercase)
+:C393/83
+# Ú (U acute uppercase)
+:C39A/84
+# ¿ (inverted question mark)
+:C3BF/85
+# ¡ (inverted exclamation mark)
+:C2A1/86
+%%endsection
+
+%%section original
+#	Format
+#		:UTF-8 Hex Byte/replacement character
+#	When we use the original FONTS.VGA but want to have text with special characters
+#	not skip these, replace the special characters with these characters that are
+#	available in FONTS.VGA.
+
+# Ç -> C
+:C387/C
+# ü -> ue
+:C3BC/ue
+# é -> e
+:C3A9/e
+# â -> a
+:C3A2/a
+# ä -> ae
+:C3A4/ae
+# à -> a
+:C3A0/a
+# ç -> c
+:C3A7/c
+# ê -> e
+:C3AA/e
+# Ê -> E
+:C38A/E
+# Â -> A
+:C382/A
+# ë -> e
+:C3AB/e
+# è -> e
+:C3A8/e
+# È -> E
+:C388/E
+# ï -> i
+:C3AF/i
+# î -> i
+:C3AE/i
+# ì -> i
+:C3AC/i
+# Ä -> AE
+:C384/AE
+# É -> E
+:C389/E
+# ô -> o
+:C3B4/o
+# ö -> oe
+:C3B6/oe
+# û -> u
+:C3BB/u
+# ù -> u
+:C3B9/u
+# Ö -> OE
+:C396/OE
+# Ü -> UE
+:C39C/UE
+# á -> a
+:C3A1/a
+# Á -> A
+:C381/A
+# À -> A
+:C380/A
+# ß -> ss
+:C39F/ss
+# í -> i
+:C3AD/i
+# ó -> o
+:C3B3/o
+# ú -> u
+:C3BA/u
+# Ñ -> N
+:C391/N
+# ñ -> n
+:C3B1/n
+# Ó -> O
+:C393/O
+# Ú -> U
+:C39A/U
+
+%%endsection
