@@ -137,6 +137,19 @@ void translate_utf8_to_font_hex(std::string& text, bool use_special_chars) {
 	text = std::move(result);
 }
 
+// Mode used by translate_usecode_text(); kept in sync with the font config
+// by Game::setup_text(). Defaults to true so usecode strings are translated
+// against the special-char map even before setup_text() runs.
+static bool font_map_use_special_chars = true;
+
+void set_font_map_use_special_chars(bool value) {
+	font_map_use_special_chars = value;
+}
+
+void translate_usecode_text(std::string& text) {
+	translate_utf8_to_font_hex(text, font_map_use_special_chars);
+}
+
 void init_font_map() {
 	// Just register the translator. The actual load is deferred to the first
 	// translation call.

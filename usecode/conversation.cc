@@ -29,6 +29,7 @@
 #include "data/exult_bg_flx.h"
 #include "effects.h"
 #include "exult.h"
+#include "font_map.h"
 #include "game.h"
 #include "gamewin.h"
 #include "gump_utils.h"
@@ -77,8 +78,9 @@ void Conversation::clear_answers() {
 
 void Conversation::add_answer(const char* str) {
 	remove_answer(str);
-	const string s(str);
-	answers.push_back(s);
+	string s(str);
+	translate_usecode_text(s);
+	answers.push_back(std::move(s));
 }
 
 /*
@@ -98,7 +100,9 @@ void Conversation::add_answer(Usecode_value& val) {
 }
 
 void Conversation::remove_answer(const char* str) {
-	auto it = std::find(answers.cbegin(), answers.cend(), str);
+	string s(str);
+	translate_usecode_text(s);
+	auto it = std::find(answers.cbegin(), answers.cend(), s);
 
 	if (it != answers.cend()) {
 		answers.erase(it);
@@ -366,6 +370,9 @@ void Conversation::show_npc_message(const char* msg) {
 	if (last_face_shown == -1) {
 		return;
 	}
+	string translated(msg);
+	translate_usecode_text(translated);
+	msg = translated.c_str();
 	// Wait for any sprite effects to finish before showing text.
 	Effects_manager* eman = gwin->get_effects();
 	if (eman->has_active_sprites()) {

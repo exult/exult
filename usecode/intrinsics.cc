@@ -31,6 +31,7 @@
 #include "Scroll_gump.h"
 #include "ShortcutBar_gump.h"
 #include "Sign_gump.h"
+#include "font_map.h"
 #include "actions.h"
 #include "animate.h"
 #include "barge.h"
@@ -1071,7 +1072,13 @@ USECODE_INTRINSIC(display_runes) {
 			// Paint each line.
 			const Usecode_value& lval = !i ? parms[1].get_elem0() : parms[1].get_elem(i);
 			const char*          str  = lval.get_str_value();
-			sign.add_text(i, str);
+			if (str) {
+				std::string translated(str);
+				translate_usecode_text(translated);
+				sign.add_text(i, translated.c_str());
+			} else {
+				sign.add_text(i, str);
+			}
 		}
 		int x;
 		int y;    // Paint it, and wait for click.
@@ -4217,11 +4224,13 @@ USECODE_INTRINSIC(set_gump_text) {
 	}
 
 	// Search elems for matching Dynamic_text_widget
-	bool found = false;
+	bool        found = false;
+	std::string translated(txt);
+	translate_usecode_text(translated);
 	for (auto* elem : gump->get_elems()) {
 		auto* tw = dynamic_cast<Dynamic_text_widget*>(elem);
 		if (tw && tw->get_field_id() == fid) {
-			tw->set_text(txt);
+			tw->set_text(translated.c_str());
 			found = true;
 			break;
 		}

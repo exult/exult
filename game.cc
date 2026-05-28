@@ -42,6 +42,7 @@
 #include "gamewin.h"
 #include "istring.h"
 #include "items.h"
+#include "font_map.h"
 #include "keys.h"
 #include "menulist.h"
 #include "mouse.h"
@@ -204,6 +205,7 @@ void Game::setup_text() {
 	config->value("config/gameplay/fonts", font_config, "original");
 	Pentagram::tolower(font_config);
 	bool use_special_chars = (font_config == "original" || font_config == "serif");
+	set_font_map_use_special_chars(use_special_chars);
 
 	Setup_text(
 			get_game_type() == SERPENT_ISLE, has_expansion(), get_game_type() == SERPENT_ISLE && is_si_beta(),

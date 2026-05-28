@@ -27,6 +27,14 @@
 // mapped to ASCII fallback replacements (for the VGA font).
 void translate_utf8_to_font_hex(std::string& text, bool use_special_chars);
 
+// Set the mode used by translate_usecode_text(). Should be kept in sync with
+// the user's font config (Game::setup_text() does this).
+void set_font_map_use_special_chars(bool value);
+
+// Translate UTF-8 in a string coming from usecode using the mode last set by
+// set_font_map_use_special_chars().
+void translate_usecode_text(std::string& text);
+
 // Register translate_utf8_to_font_hex() as the Text_msg_file_reader translator
 // and trigger the initial load of font_map.txt. Call once early at startup.
 void init_font_map();

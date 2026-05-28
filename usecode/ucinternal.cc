@@ -39,6 +39,7 @@
 #include "conversation.h"
 #include "databuf.h"
 #include "effects.h"
+#include "font_map.h"
 #include "egg.h"
 #include "exult.h"
 #include "fnames.h"
@@ -578,8 +579,10 @@ void Usecode_internal::show_pending_text() {
  */
 
 void Usecode_internal::show_book() {
-	char* str = String;
-	book->add_text(str);
+	char*       str = String;
+	std::string translated(str);
+	translate_usecode_text(translated);
+	book->add_text(translated.c_str());
 	delete[] String;
 	String = nullptr;
 }
@@ -893,7 +896,9 @@ void Usecode_internal::item_say(Usecode_value& objval, Usecode_value& strval) {
 		if (gwin->failed_copy_protection()) {
 			str = get_text_msg(0x6F0 - msg_file_start);    // "Oink!"
 		}
-		eman->add_text(str, obj);
+		std::string translated(str);
+		translate_usecode_text(translated);
+		eman->add_text(translated.c_str(), obj);
 	}
 }
 
