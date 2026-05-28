@@ -86,7 +86,7 @@ static void ensure_font_maps_loaded() {
 			if (slash == std::string::npos) {
 				continue;
 			}
-			std::string key = hex_to_bytes({s.data(), slash});
+			std::string key                    = hex_to_bytes({s.data(), slash});
 			utf8_to_font_ascii[std::move(key)] = s.substr(slash + 1);
 		}
 	};
