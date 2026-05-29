@@ -25,6 +25,7 @@
 #include "utils.h"
 
 #include <charconv>
+#include <cstring>
 #include <iostream>
 #include <string_view>
 #include <unordered_map>
@@ -35,7 +36,11 @@ using std::endl;
 
 static std::unordered_map<std::string, std::string> utf8_to_font_special;
 static std::unordered_map<std::string, std::string> utf8_to_font_ascii;
-static bool                                         font_maps_initialized = false;
+// Reverse lookup of utf8_to_font_special, indexed by font byte. Each entry is
+// a NUL-terminated UTF-8 sequence (max 4 bytes + NUL). Empty first byte means
+// "no mapping".
+static char font_to_utf8_special[256][FONT_MAP_MAX_UTF8_BYTES + 1] = {};
+static bool font_maps_initialized                                  = false;
 
 // Convert a hex string like "C387" to the corresponding bytes "\xC3\x87".
 static std::string hex_to_bytes(std::string_view hex) {
@@ -73,6 +78,13 @@ static void ensure_font_maps_loaded() {
 			std::string   key = hex_to_bytes({s.data(), slash});
 			unsigned char val = 0;
 			std::from_chars(s.data() + slash + 1, s.data() + s.size(), val, 16);
+			if (key.size() <= FONT_MAP_MAX_UTF8_BYTES) {
+				auto& slot = font_to_utf8_special[val];
+				if (slot[0] == '\0') {
+					std::memcpy(slot, key.data(), key.size());
+					slot[key.size()] = '\0';
+				}
+			}
 			utf8_to_font_special[std::move(key)] = std::string(1, static_cast<char>(val));
 		}
 
@@ -148,6 +160,19 @@ void set_font_map_use_special_chars(bool value) {
 
 void translate_usecode_text(std::string& text) {
 	translate_utf8_to_font_hex(text, font_map_use_special_chars);
+}
+
+size_t translate_font_hex_to_utf8(unsigned char font_byte, char out[FONT_MAP_MAX_UTF8_BYTES + 1]) {
+	ensure_font_maps_loaded();
+	const char* mapped = font_to_utf8_special[font_byte];
+	if (mapped[0] != '\0') {
+		size_t len = std::strlen(mapped);
+		std::memcpy(out, mapped, len + 1);
+		return len;
+	}
+	out[0] = static_cast<char>(font_byte);
+	out[1] = '\0';
+	return 1;
 }
 
 void init_font_map() {

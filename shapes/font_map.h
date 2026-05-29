@@ -23,7 +23,7 @@
 
 // Translate UTF-8 encoded special characters to font byte positions, in place.
 // If use_special_chars is true, multi-byte UTF-8 sequences are mapped to the
-// matching single-byte glyph in the original/serif fonts. Otherwise they are
+// matching single-byte shape frame number in the original/serif fonts. Otherwise they are
 // mapped to ASCII fallback replacements (for the VGA font).
 void translate_utf8_to_font_hex(std::string& text, bool use_special_chars);
 
@@ -34,6 +34,18 @@ void set_font_map_use_special_chars(bool value);
 // Translate UTF-8 in a string coming from usecode using the mode last set by
 // set_font_map_use_special_chars().
 void translate_usecode_text(std::string& text);
+
+// Maximum bytes (excluding the terminating NUL) written by
+// translate_font_hex_to_utf8(). A UTF-8 code point fits in at most 4 bytes.
+constexpr size_t FONT_MAP_MAX_UTF8_BYTES = 4;
+
+// Reverse lookup: translate a single font shape frame number byte back to its UTF-8
+// representation as defined by the "builtin" section of font_map.txt.
+// Writes a NUL-terminated UTF-8 sequence into out (at most
+// FONT_MAP_MAX_UTF8_BYTES bytes + NUL). Returns the number of bytes written,
+// excluding the terminator. If the byte has no mapping, writes the byte
+// unchanged and returns 1.
+size_t translate_font_hex_to_utf8(unsigned char font_byte, char out[FONT_MAP_MAX_UTF8_BYTES + 1]);
 
 // Register translate_utf8_to_font_hex() as the Text_msg_file_reader translator
 // and trigger the initial load of font_map.txt. Call once early at startup.

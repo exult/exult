@@ -9,9 +9,9 @@
 
 %%section builtin
 #	Format
-#		:UTF-8 Hex Byte/shapenum
+#		:UTF-8 Hex Byte/frame number
 #	Our built-in fonts have an extensive set of special characters available.
-#	To use these we map them to the shape number in our built-in fonts.
+#	To use these we map them to the frame number in our built-in fonts.
 
 # Ç (C cedilla uppercase)
 :C387/01
@@ -94,7 +94,7 @@
 #		:UTF-8 Hex Byte/replacement character
 #	When we use the original FONTS.VGA but want to have text with special characters
 #	not skip these, replace the special characters with these characters that are
-#	available in FONTS.VGA.
+#	available in FONTS.VGA and close enough to the special character.
 
 # Ç -> C
 :C387/C
