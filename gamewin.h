@@ -850,6 +850,8 @@ private:
 	int avposx_ld, avposy_ld;
 	// Is lerping enabled
 	int lerping_enabled;
+	// Is actor interpolation enabled
+	bool smooth_actor_movement;
 
 public:
 	// Reset (well update really) saved lerp scroll positions
@@ -870,12 +872,25 @@ public:
 		return lerping_enabled;
 	}
 
+	bool get_smooth_actor_movement() const {
+		return smooth_actor_movement;
+	}
+
+	bool is_camera_actor_lerped(const Actor* actor) const {
+		return actor == camera_actor
+			   && (avposx_ld || avposy_ld || scrolltx_lo || scrollty_lo);
+	}
+
 	void set_lerping_enabled(int e) {
 		lerping_enabled = e;
 	}
 
 	Game_render* get_render() {
 		return render;
+	}
+
+	void set_smooth_actor_movement(bool e) {
+		smooth_actor_movement = e;
 	}
 };
 

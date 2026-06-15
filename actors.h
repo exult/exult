@@ -144,6 +144,10 @@ protected:
 	//   actor not moving.
 	int step_index;    // Index into walking frames, 1 1st.
 	int qsteps;        // # steps since last quake.
+	int walk_frame_elapsed;    // Time credit for walking-pose animation.
+	Tile_coord render_prev_tile;    // Previous tile for smooth walking.
+	unsigned long render_move_start;
+	int           render_move_duration;
 
 	std::unique_ptr<Npc_timer_list> timers;         // Timers for poison, hunger, etc.
 	TileRect                        weapon_rect;    // Screen area weapon was drawn in.
@@ -151,6 +155,7 @@ protected:
 	void                            init();         // Clear stuff during construction.
 	// Move and change frame.
 	void movef(Map_chunk* old_chunk, Map_chunk* new_chunk, int new_sx, int new_sy, int new_frame, int new_lift);
+	bool get_render_offset(int& xoff, int& yoff) const;
 	bool is_really_blocked(Tile_coord& t, bool force);
 	// Empty one hand
 	bool empty_hand(Game_object* obj, Game_object_shared* keep);
@@ -191,6 +196,8 @@ public:
 	int& get_step_index() {    // Get it (for updating).
 		return step_index;
 	}
+	int  get_next_walk_frame(int dir, bool& advanced);
+	void restore_walk_frame(int dir, bool advanced);
 
 	// Get attack frames.
 	int get_attack_frames(int weapon, bool projectile, int dir, signed char* frames) const;
