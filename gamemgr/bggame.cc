@@ -245,6 +245,10 @@ BG_Game::BG_Game() : shapes(ENDSHAPE_FLX, -1, PATCH_ENDSHAPE) {
 	fontManager.add_font("NORMAL_FONT", font_source, font_patch, 0, -1);
 	fontManager.add_font("SMALL_BLACK_FONT", font_source, font_patch, 2, 0);
 	fontManager.add_font("TINY_BLACK_FONT", font_source, font_patch, 4, 0);
+	Palette font_palette;
+	font_palette.load(PALETTES_FLX, PATCH_PALETTES, 0);
+	fontManager.get_font("TINY_BLACK_FONT")
+			->set_monochrome_color(font_palette.find_color(0, 0, 0));
 
 	if (font_config == "original" || font_config == "serif") {
 		fontManager.add_font("MENU_FONT", font_source, font_patch, 16, 1);
