@@ -41,6 +41,7 @@
 #include "VideoOptions_gump.h"
 #include "actors.h"
 #include "args.h"
+#include "barge.h"
 #include "cheat.h"
 #include "combat_opts.h"
 #include "crc.h"
@@ -1335,6 +1336,14 @@ static void Handle_events() {
 	 */
 	int last_x = -1;
 	int last_y = -1;
+	// Interpolation duration (ms) for the current smooth-scroll
+	// segment. Captured when the scroll actually changes so the glide always
+	// runs at the speed of the step that produced it.
+	int lerp_mswait = 0;
+	// True once the final catch-up glide has been shortened after the camera
+	// actor stopped (see the stop-skate handling below). Reset on each new
+	// step so it only ever fires once per stop.
+	bool lerp_stop_anchored = false;
 	while (!quitting_time) {
 #ifdef USE_EXULTSTUDIO
 		Server_delay();    // Handle requests.
@@ -1429,13 +1438,10 @@ static void Handle_events() {
 			gwin->get_gump_man()->update_gumps();
 		}
 
-		if (lerp && !gwin->get_moving_barge()) {
+		if (lerp) {
 			// Always repaint,
-			Actor* act    = gwin->get_camera_actor();
-			int    mswait = (act->get_frame_time() * lerp) / 100;
-			if (mswait <= 0) {
-				mswait = (gwin->get_std_delay() * lerp) / 100;
-			}
+			Actor*        act   = gwin->get_camera_actor();
+			Barge_object* barge = gwin->get_moving_barge();
 
 			// Force a reset if position changed
 			if (last_x != gwin->get_scrolltx() || last_y != gwin->get_scrollty()) {
@@ -1443,9 +1449,44 @@ static void Handle_events() {
 				// gwin->get_scrolltx(), last_y, gwin->get_scrollty());
 				gwin->lerp_reset();
 				last_repaint = ticks;
+				// A real step happened, so any pending stop-glide shortening no
+				// longer applies; allow it to fire again once we next stop.
+				lerp_stop_anchored = false;
+				const int ft = (barge && barge->contains(gwin->get_main_actor()))
+									   ? barge->get_frame_time()
+									   : act->get_frame_time();
+				if (ft > 0) {
+					lerp_mswait = (ft * lerp) / 100;
+				}
 			}
 			last_x = gwin->get_scrolltx();
 			last_y = gwin->get_scrollty();
+
+			int mswait = lerp_mswait;
+			if (mswait <= 0) {
+				mswait = (gwin->get_std_delay() * lerp) / 100;
+			}
+
+			// Shorten the final catch-up glide once the camera actor has
+			// stopped.
+			if (!lerp_stop_anchored && lerp_mswait > 0 && !gwin->is_moving()) {
+				const int stopwait = (gwin->get_std_delay() * lerp) / 100;
+				if (stopwait > 0 && stopwait < mswait) {
+					int factor = ((ticks - last_repaint) * 0x10000) / mswait;
+					if (factor < 0) {
+						factor = 0;
+					}
+					if (factor > 0x10000) {
+						factor = 0x10000;
+					}
+					// Pick last_repaint so the factor is unchanged right now but
+					// advances at the faster (stopwait) rate from here on.
+					last_repaint = ticks - (factor * stopwait) / 0x10000;
+					lerp_mswait  = stopwait;
+					mswait       = stopwait;
+				}
+				lerp_stop_anchored = true;
+			}
 
 			// Is lerping (smooth scrolling) enabled
 			if (mswait && ticks < (last_repaint + mswait * 2)) {

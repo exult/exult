@@ -645,6 +645,9 @@ void Game_window::set_moving_barge(Barge_object* b) {
 		}
 	} else if (!b && moving_barge) {
 		moving_barge->done();    // No longer 'barging'.
+		// Smooth scroll: prevent jerkiness on offboarding, especially the flying carpet.
+		scrolltx_lp = scrolltx_l = scrolltx;
+		scrollty_lp = scrollty_l = scrollty;
 	}
 	moving_barge = b;
 }
@@ -1224,14 +1227,26 @@ inline void Get_shape_location(Tile_coord t, int scrolltx, int scrollty, int& x,
  */
 
 void Game_window::get_shape_location(const Game_object* obj, int& x, int& y) {
-	Get_shape_location(obj->get_tile(), scrolltx, scrollty, x, y);
-	// Smooth scroll the avatar as well, if possible
-	const Actor* actor = obj->as_actor();
-	if (obj == get_camera_actor()) {
-		x += avposx_ld;
-		y += avposy_ld;
-	} else if (actor && actor->is_in_party() && lerping_enabled) {
-		// Apply the same lerping offset to party members
+	const Tile_coord t = obj->get_tile();
+	Get_shape_location(t, scrolltx, scrollty, x, y);
+	bool apply_avpos = false;
+	// Smooth scroll barges but only if the Avatar is on board,
+	// otherwise the barge could be jerking during automatic boarding.
+	if (moving_barge && moving_barge->contains(get_main_actor())) {
+		if (moving_barge->is_grouped_member(obj)) {
+			apply_avpos = true;
+		}
+	} else {
+		// Smooth scroll the avatar
+		const Actor* actor = obj->as_actor();
+		if (obj == get_camera_actor()) {
+			apply_avpos = true;
+		} else if (actor && actor->is_in_party() && lerping_enabled) {
+			// Apply the same lerping offset to party members
+			apply_avpos = true;
+		}
+	}
+	if (apply_avpos) {
 		x += avposx_ld;
 		y += avposy_ld;
 	}

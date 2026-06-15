@@ -74,6 +74,23 @@ public:
 		return frame_time > 0;
 	}
 
+	int get_frame_time() const {    // Time between steps, 0 if stopped.
+		return frame_time;
+	}
+
+	// Is obj part of this barge's gathered group (i.e. barge itself, its seats, cargo, etc.)?
+	bool is_grouped_member(const Game_object* obj) const {
+		if (obj == this) {
+			return true;
+		}
+		for (const auto& o : objects) {
+			if (o.get() == obj) {
+				return true;
+			}
+		}
+		return false;
+	}
+
 	int get_xtiles() const {    // Dims. in tiles.
 		return xtiles;
 	}
