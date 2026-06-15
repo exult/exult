@@ -30,6 +30,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "actors.h"
 #include "animate.h"
+#include "barge.h"
 #include "chunkter.h"
 #include "citerate.h"
 #include "databuf.h"
@@ -812,6 +813,41 @@ void Map_chunk::add_dependencies(
 						}
 						if (!would_cycle) {
 							cmp = new_asleep ? -1 : 1;
+						}
+					}
+				}
+			}
+		}
+		// Magic carpet dependencies compare.
+		Barge_object* const mbarge = gwin->get_moving_barge();
+		if (mbarge != nullptr && mbarge->get_lift() > 0) {
+			const bool new_member = mbarge->is_grouped_member(newobj);
+			const bool obj_member = mbarge->is_grouped_member(obj);
+			if (new_member != obj_member) {    // Exactly one rides the carpet.
+				const int deck = mbarge->get_lift();
+				const int pad = 2 * c_tilesize;
+				TileRect  a   = newinfo.area;
+				TileRect  r   = gwin->get_shape_rect(obj);
+				if (new_member) {
+					a.x -= pad;
+					a.y -= pad;
+					a.w += 2 * pad;
+					a.h += 2 * pad;
+				} else {
+					r.x -= pad;
+					r.y -= pad;
+					r.w += 2 * pad;
+					r.h += 2 * pad;
+				}
+				if (a.intersects(r)) {
+					if (new_member) {
+						const int objtop = obj->get_lift() + obj->get_info().get_3d_height() - 2;
+						if (objtop <= deck) {
+							cmp = 1;
+						}
+					} else {    // obj rides the carpet.
+						if (newinfo.ztop <= deck) {
+							cmp = -1;
 						}
 					}
 				}
