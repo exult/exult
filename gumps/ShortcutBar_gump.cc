@@ -308,8 +308,16 @@ ShortcutBar_gump::~ShortcutBar_gump() {
 void ShortcutBar_gump::paint() {
 	Game_window*   gwin = Game_window::get_instance();
 	Shape_manager* sman = Shape_manager::get_instance();
+	Image_window8* win  = gwin->get_win();
 
 	Gump::paint();
+	const int bar_x = locx + (gamex - 320) / 2;
+	const int bar_y = locy + starty;
+	constexpr unsigned char pavement_grey = 128;
+	win->fill8(pavement_grey, 320, height, bar_x, bar_y);
+	const unsigned char line = sman->get_special_pixel(PROTECT_PIXEL);
+	win->fill8(line, 320, 1, bar_x, bar_y);
+	win->fill8(line, 320, 1, bar_x, bar_y + height - 1);
 
 	for (int i = 0; i < numButtons; i++) {
 		const ShortcutBarButtonItem& item  = buttonItems[i];
