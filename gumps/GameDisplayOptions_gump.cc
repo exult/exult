@@ -46,6 +46,7 @@
 #include "Gump_manager.h"
 #include "ShortcutBar_gump.h"
 #include "Text_button.h"
+#include "files/U7obj.h"
 #include "exult.h"
 #include "font.h"
 #include "game.h"
@@ -461,6 +462,7 @@ void GameDisplayOptions_gump::save_settings() {
 	}
 	gwin->set_lerping_enabled(smooth_scrolling * 25);
 	config->set("config/gameplay/smooth_scrolling", smooth_scrolling * 25, false);
+	gwin->set_smooth_actor_movement(smooth_scrolling > 0);
 	config->set("config/gameplay/skip_intro", usecode_intro ? "yes" : "no", false);
 	config->set("config/gameplay/extended_intro", extended_intro ? "yes" : "no", false);
 	gwin->set_extended_intro(extended_intro);

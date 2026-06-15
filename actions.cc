@@ -291,15 +291,11 @@ int Path_walking_actor_action::handle_event(Actor* actor) {
 	if (done) {    // In case we're deleted.
 		reached_end = true;
 	}
-	const Tile_coord cur        = actor->get_tile();
-	const int        newdir     = static_cast<int>(Get_direction4(cur.ty - tile.ty, tile.tx - cur.tx));
-	Frames_sequence* frames     = actor->get_frames(newdir);
-	int&             step_index = actor->get_step_index();
-	if (!step_index) {    // First time?  Init.
-		step_index = frames->find_unrotated(actor->get_framenum());
-	}
-	// Get next (updates step_index).
-	const int frame     = frames->get_next(step_index);
+	const Tile_coord cur    = actor->get_tile();
+	const int        newdir = static_cast<int>(
+            Get_direction4(cur.ty - tile.ty, tile.tx - cur.tx));
+	bool      advance_frame;
+	const int frame = actor->get_next_walk_frame(newdir, advance_frame);
 	const int cur_speed = speed;    // Step() might delete us!
 	if (from_offscreen) {           // Teleport to 1st spot.
 		from_offscreen = false;
@@ -325,7 +321,7 @@ int Path_walking_actor_action::handle_event(Actor* actor) {
 		return 0;
 	}
 	reached_end = false;
-	frames->decrement(step_index);    // We didn't take the step.
+	actor->restore_walk_frame(newdir, advance_frame);
 	// Blocked by a door?
 	if (actor->distance(tile) <= 2 && !cheat.in_map_editor() &&    // And NOT map-editing?
 		actor->is_sentient()) {

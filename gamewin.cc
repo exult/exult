@@ -309,14 +309,15 @@ Game_window::Game_window(
 		  gump_man(new Gump_manager), party_man(new Party_manager), win(nullptr), npc_prox(new Npc_proximity_handler(this)),
 		  pal(nullptr), tqueue(new Time_queue()), background_noise(new Background_noise(this)), usecode(nullptr), combat(false),
 		  focus(true), ice_dungeon(false), painted(false), ambient_light(false), infravision_active(false), skip_above_actor(31),
-		  in_dungeon(0), num_npcs1(0), std_delay(c_std_delay), time_stopped(0), special_light(0), theft_warnings(0), theft_cx(255),
+		  in_dungeon(0), num_npcs1(0), std_delay(c_std_delay), configured_std_delay(c_std_delay),
+		  configured_combat_std_delay(c_std_delay), time_stopped(0), special_light(0), theft_warnings(0), theft_cx(255),
 		  theft_cy(255), moving_barge(nullptr), main_actor(nullptr), camera_actor(nullptr), npcs(0), bodies(0), scrolltx(0),
 		  scrollty(0), dirty(0, 0, 0, 0), save_names{}, mouse3rd(false), fastmouse(false), double_click_closes_gumps(false),
 		  text_bg(false), step_tile_delta(8), allow_right_pathfind(2), scroll_with_mouse(false), alternate_drop(false),
 		  allow_autonotes(false), allow_enhancements(false), in_exult_menu(false), extended_intro(false), load_palette_timer(0),
 		  plasma_start_color(0), plasma_cycle_range(0), skip_lift(255), paint_eggs(false), paint_egg_areas(0), armageddon(false),
 		  walk_in_formation(false), debug(0), blits(0), scrolltx_l(0), scrollty_l(0), scrolltx_lp(0), scrollty_lp(0),
-		  scrolltx_lo(0), scrollty_lo(0), avposx_ld(0), avposy_ld(0), lerping_enabled(0) {
+		  scrolltx_lo(0), scrollty_lo(0), avposx_ld(0), avposy_ld(0), lerping_enabled(0), smooth_actor_movement(true) {
 	game_window = this;    // Set static ->.
 	clock       = new Game_clock(tqueue);
 	shape_man   = new Shape_manager();    // Create the single instance.
@@ -385,6 +386,11 @@ Game_window::Game_window(
 
 	config->value("config/gameplay/smooth_scrolling", lerping_enabled, 0);
 	config->set("config/gameplay/smooth_scrolling", lerping_enabled, false);
+	config->value("config/gameplay/smooth_actor_movement", str, "yes");
+	smooth_actor_movement = str != "no";
+	config->set(
+			"config/gameplay/smooth_actor_movement",
+			smooth_actor_movement ? "yes" : "no", false);
 	config->value("config/gameplay/alternate_drop", str, "no");
 	alternate_drop = str == "yes";
 	config->set("config/gameplay/alternate_drop", alternate_drop ? "yes" : "no", false);

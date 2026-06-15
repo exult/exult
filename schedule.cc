@@ -903,15 +903,12 @@ void Pace_schedule::pace(Actor* npc, char& which, int& phase, Tile_coord& blocke
 			phase++;
 		} else {
 			const Tile_coord p0         = npc->get_tile().get_neighbor(dir);
-			Frames_sequence* frames     = npc->get_frames(dir);
-			int&             step_index = npc->get_step_index();
-			if (!step_index) {    // First time?  Init.
-				step_index = frames->find_unrotated(npc->get_framenum());
-			}
-			// Get next (updates step_index).
-			const int frame = frames->get_next(step_index);
+			bool      advance_frame;
+			const int frame = npc->get_next_walk_frame(dir, advance_frame);
 			// One step at a time.
-			npc->step(p0, frame);
+			if (!npc->step(p0, frame)) {
+				npc->restore_walk_frame(dir, advance_frame);
+			}
 		}
 		npc->start(delay, delay);
 		break;
