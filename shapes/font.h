@@ -21,10 +21,12 @@
 
 #include "hash_utils.h"
 
+#include <array>
 #include <memory>
 
 class Image_buffer8;
 class Shape_file;
+class Shape_frame;
 class IDataSource;
 struct File_spec;
 class U7multiobject;
@@ -54,10 +56,15 @@ private:
 	int                         ver_lead = 0;
 	std::unique_ptr<Shape_file> font_shapes;
 	int                         highest = 0, lowest = 0;
+	int                            monochrome_color = -1;
+	std::array<unsigned char, 256> monochrome_xform{};
 
 	void calc_highlow();
 	void clean_up();
 	int  load_internal(IDataSource& data, int hlead, int vlead);
+	void paint_shape(
+			Shape_frame* shape, int x, int y,
+			unsigned char* trans = nullptr);
 
 public:
 	Font();
@@ -85,6 +92,7 @@ public:
 	 *  @return 0 on success
 	 */
 	int load(const File_spec& fname0, const File_spec& fname1, int index, int hlead = 0, int vlead = 1);
+	void set_monochrome_color(int color);
 	// Text rendering:
 	int paint_text_box(
 			Image_buffer8* win, const char* text, int x, int y, int w, int h, int vert_lead = 0, bool pbreak = false,
