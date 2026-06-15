@@ -765,6 +765,17 @@ bool Actor::add_dirty(bool figure_rect    // Recompute weapon rectangle.
 	if (!gwin->add_dirty(this)) {
 		return false;
 	}
+	int body_xoff;
+	int body_yoff;
+	gwin->get_shape_location(this, body_xoff, body_yoff);
+	if (get_render_offset(body_xoff, body_yoff)) {
+		Shape_frame* shape = get_shape();
+		if (shape) {
+			TileRect rect = gwin->get_shape_rect(shape, body_xoff, body_yoff);
+			rect.enlarge(1 + c_tilesize / 2);
+			gwin->add_dirty(gwin->clip_to_win(rect));
+		}
+	}
 	if (figure_rect || get_casting_mode() == Actor::show_casting_frames) {
 		int weapon_x;
 		int weapon_y;
@@ -788,6 +799,9 @@ bool Actor::add_dirty(bool figure_rect    // Recompute weapon rectangle.
 		int      xoff;
 		int      yoff;
 		gwin->get_shape_location(this, xoff, yoff);
+		if (get_render_offset(xoff, yoff)) {
+			r.enlarge(c_tilesize);
+		}
 		r.shift(xoff, yoff);
 		r.enlarge(c_tilesize / 2);
 		gwin->add_dirty(gwin->clip_to_win(r));
@@ -913,6 +927,11 @@ Game_object* Actor::find_blocking(const Tile_coord& tile, int dir) {
  */
 inline void Actor::movef(Map_chunk* old_chunk, Map_chunk* new_chunk, int new_sx, int new_sy, int new_frame, int new_lift) {
 	const Game_object_shared keep = shared_from_this();
+	const Tile_coord         old_tile = get_tile();
+	const Tile_coord         new_tile(
+			new_chunk->get_cx() * c_tiles_per_chunk + new_sx,
+			new_chunk->get_cy() * c_tiles_per_chunk + new_sy,
+			new_lift >= 0 ? new_lift : old_tile.tz);
 	if (old_chunk) {    // Remove from current chunk.
 		old_chunk->remove(this);
 	}
@@ -923,7 +942,54 @@ inline void Actor::movef(Map_chunk* old_chunk, Map_chunk* new_chunk, int new_sx,
 	if (new_lift >= 0) {
 		set_lift(new_lift);
 	}
+	const int dx = (new_tile.tx - old_tile.tx + c_num_tiles) % c_num_tiles;
+	const int dy = (new_tile.ty - old_tile.ty + c_num_tiles) % c_num_tiles;
+	const int lerp = gwin->is_lerping_enabled();
+	if (lerp > 0 && gwin->get_smooth_actor_movement() && old_tile != new_tile
+		&& (dx <= 1 || dx >= c_num_tiles - 1)
+		&& (dy <= 1 || dy >= c_num_tiles - 1)) {
+		int       duration
+				= frame_time > 0 ? frame_time : gwin->get_std_delay();
+		duration = (duration * lerp) / 100;
+		render_prev_tile      = old_tile;
+		render_move_start     = Game::get_ticks();
+		render_move_duration  = duration > 0 ? duration : gwin->get_std_delay();
+	} else {
+		render_move_duration = 0;
+	}
 	new_chunk->add(this);
+}
+
+bool Actor::get_render_offset(int& xoff, int& yoff) const {
+	if (render_move_duration <= 0 || !gwin->get_smooth_actor_movement()
+		|| gwin->is_camera_actor_lerped(this)) {
+		return false;
+	}
+	const unsigned long now     = Game::get_ticks();
+	const unsigned long elapsed = now - render_move_start;
+	if (elapsed >= static_cast<unsigned long>(render_move_duration)) {
+		return false;
+	}
+	const Tile_coord tile = get_tile();
+	int              dx   = tile.tx - render_prev_tile.tx;
+	int              dy   = tile.ty - render_prev_tile.ty;
+	if (dx > c_num_tiles / 2) {
+		dx -= c_num_tiles;
+	} else if (dx < -c_num_tiles / 2) {
+		dx += c_num_tiles;
+	}
+	if (dy > c_num_tiles / 2) {
+		dy -= c_num_tiles;
+	} else if (dy < -c_num_tiles / 2) {
+		dy += c_num_tiles;
+	}
+	const int remaining = render_move_duration - static_cast<int>(elapsed);
+	const int lift_delta = tile.tz - render_prev_tile.tz;
+	const int xdelta     = -dx * c_tilesize + lift_delta * 4;
+	const int ydelta     = -dy * c_tilesize + lift_delta * 4;
+	xoff += xdelta * remaining / render_move_duration;
+	yoff += ydelta * remaining / render_move_duration;
+	return true;
 }
 
 /**
@@ -941,7 +1007,8 @@ Actor::Actor(const std::string& nm, int shapenum, int num, int uc)
 		  dormant(true), hit(false), combat_protected(false), user_set_attack(false), alignment(0), charmalign(0),
 		  two_handed(false), two_fingered(false), use_scabbard(false), use_neck(false), light_sources(0), usecode_dir(0),
 		  type_flags(0), gear_immunities(0), gear_powers(0), ident(0), skin_color(-1), action(nullptr), frame_time(0),
-		  step_index(0), qsteps(0), weapon_rect(0, 0, 0, 0), rest_time(0) {
+		  step_index(0), qsteps(0), walk_frame_elapsed(0), render_prev_tile(0, 0, 0), render_move_start(0),
+		  render_move_duration(0), weapon_rect(0, 0, 0, 0), rest_time(0) {
 	set_shape(shapenum, 0);
 	init();
 	frames = &npc_frames[0];    // Default:  5-frame walking.
@@ -1234,6 +1301,30 @@ void Actor::init_default_frames() {
 	avatar_frames[static_cast<int>(south) / 2] = &avatar_south_frames;
 	avatar_frames[static_cast<int>(east) / 2]  = &avatar_east_frames;
 	avatar_frames[static_cast<int>(west) / 2]  = &avatar_west_frames;
+}
+
+int Actor::get_next_walk_frame(int dir, bool& advanced) {
+	constexpr int walking_frame_msecs = 500;    // Original 2 FPS cadence.
+	Frames_sequence* sequence = get_frames(dir);
+	if (!step_index) {
+		step_index = sequence->find_unrotated(get_framenum());
+	}
+	walk_frame_elapsed = std::min(
+			walking_frame_msecs,
+			walk_frame_elapsed + gwin->get_std_delay());
+	advanced = walk_frame_elapsed >= walking_frame_msecs;
+	if (advanced) {
+		walk_frame_elapsed -= walking_frame_msecs;
+		return sequence->get_next(step_index);
+	}
+	return get_dir_framenum(dir, get_framenum());
+}
+
+void Actor::restore_walk_frame(int dir, bool advanced) {
+	if (advanced) {
+		get_frames(dir)->decrement(step_index);
+		walk_frame_elapsed = 500;
+	}
 }
 
 /*
@@ -2080,6 +2171,7 @@ void Actor::paint() {
 		int xoff;
 		int yoff;
 		gwin->get_shape_location(this, xoff, yoff);
+		get_render_offset(xoff, yoff);
 		const bool invis = flags & (1L << Obj_flags::invisible);
 		if (invis && party_id < 0 && npc_num != 0) {
 			return;    // Don't render invisible NPCs not in party.
@@ -2132,6 +2224,7 @@ void Actor::paint_weapon() {
 		int xoff;
 		int yoff;
 		gwin->get_shape_location(this, xoff, yoff);
+		get_render_offset(xoff, yoff);
 		xoff += weapon_x;
 		yoff += weapon_y;
 

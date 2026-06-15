@@ -567,13 +567,8 @@ int Party_manager::step(
 	if (npc->in_queue() || npc->is_moving()) {
 		cout << npc->get_name() << " shouldn't be stepping!" << endl;
 	}
-	Frames_sequence* frames     = npc->get_frames(dir);
-	int&             step_index = npc->get_step_index();
-	if (!step_index) {    // First time?  Init.
-		step_index = frames->find_unrotated(npc->get_framenum());
-	}
-	// Get next (updates step_index).
-	const int frame = frames->get_next(step_index);
+	bool      advance_frame;
+	const int frame = npc->get_next_walk_frame(dir, advance_frame);
 	// Want dz<=1, dx<=2, dy<=2.
 	if (Is_step_okay(npc, leader, to) && npc->step(to, frame))
 		;
@@ -582,7 +577,7 @@ int Party_manager::step(
 	else if (npc->is_dead() || !Take_best_step(npc, leader, pos, frame, npc->get_direction(dest))) {
 		// Failed to take a step.
 		cout << npc->get_name() << " failed to take a step" << endl;
-		frames->decrement(step_index);
+		npc->restore_walk_frame(dir, advance_frame);
 		return dir;
 	}
 	return Get_dir_from(npc, pos);
