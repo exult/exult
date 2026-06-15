@@ -29,6 +29,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "fontvga.h"
 
 #include "Flex.h"
+#include "fnames.h"
+#include "palette.h"
 
 #include <array>
 
@@ -60,6 +62,19 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 // +TODO: This shouldn't be hard-coded.
 constexpr static const std::array hlead{-2, -1, 0, -1, 0, 0, -1, -2, -1, -1};
 
+static int get_monochrome_color(size_t fontnum, const Palette& palette) {
+	switch (fontnum) {
+	case 3:
+		return palette.find_color(20, 20, 20);    // Dark gray.
+	case 4:
+		return palette.find_color(0, 0, 0);       // Black.
+	case 6:
+		return palette.find_color(40, 24, 8);     // Brown.
+	default:
+		return -1;
+	}
+}
+
 /*
  *  Default vertical leads, by fontnum.
  */
@@ -77,10 +92,16 @@ void Fonts_vga_file::init(
 	const size_t pn       = pfonts.number_of_objects();
 	const size_t numfonts = std::max(sn, pn);
 	fonts.resize(numfonts);
+	Palette palette;
+	palette.load(PALETTES_FLX, PATCH_PALETTES, 0);
 
 	for (size_t i = 0; i < numfonts; i++) {
 		const int vl
 				= (vlead_overrides && static_cast<int>(i) < num_overrides) ? vlead_overrides[i] : (i < vlead.size() ? vlead[i] : 0);
 		fonts[i] = std::make_shared<Font>(font_source, font_patch, i, i < hlead.size() ? hlead[i] : 0, vl);
+		const int color = get_monochrome_color(i, palette);
+		if (color >= 0) {
+			fonts[i]->set_monochrome_color(color);
+		}
 	}
 }

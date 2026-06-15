@@ -273,11 +273,7 @@ int Font::paint_text(
 
 				continue;
 			}
-			if (trans) {
-				shape->paint_rle_remapped(x, yoff, trans);
-			} else {
-				shape->paint_rle(x, yoff);
-			}
+			paint_shape(shape, x, yoff, trans);
 			x += shape->get_width() + hor_lead;
 		}
 	}
@@ -312,11 +308,7 @@ int Font::paint_text(
 
 				continue;
 			}
-			if (trans) {
-				shape->paint_rle_remapped(x, yoff, trans);
-			} else {
-				shape->paint_rle(x, yoff);
-			}
+			paint_shape(shape, x, yoff, trans);
 			x += shape->get_width() + hor_lead;
 		}
 	}
@@ -492,11 +484,7 @@ int Font::paint_text_fixedwidth(
 			continue;
 		}
 		x += w = (width - shape->get_width()) / 2;
-		if (trans) {
-			shape->paint_rle_remapped(x, yoff, trans);
-		} else {
-			shape->paint_rle(x, yoff);
-		}
+		paint_shape(shape, x, yoff, trans);
 		x += width - w;
 	}
 	return x - xoff;
@@ -532,11 +520,7 @@ int Font::paint_text_fixedwidth(
 			continue;
 		}
 		x += w = (width - shape->get_width()) / 2;
-		if (trans) {
-			shape->paint_rle_remapped(x, yoff, trans);
-		} else {
-			shape->paint_rle(x, yoff);
-		}
+		paint_shape(shape, x, yoff, trans);
 		x += width - w;
 	}
 	return x - xoff;
@@ -760,6 +744,22 @@ Font::Font(const File_spec& fname0, int index, int hlead, int vlead) {
 
 Font::Font(const File_spec& fname0, const File_spec& fname1, int index, int hlead, int vlead) {
 	load(fname0, fname1, index, hlead, vlead);
+}
+
+void Font::set_monochrome_color(int color) {
+	monochrome_color = color;
+	monochrome_xform.fill(static_cast<unsigned char>(color));
+}
+
+void Font::paint_shape(
+		Shape_frame* shape, int x, int y, unsigned char* trans) {
+	if (monochrome_color >= 0) {
+		shape->paint_rle_remapped(x, y, monochrome_xform.data());
+	} else if (trans) {
+		shape->paint_rle_remapped(x, y, trans);
+	} else {
+		shape->paint_rle(x, y);
+	}
 }
 
 void Font::clean_up() {
