@@ -144,7 +144,7 @@ namespace {
 		}
 	};
 
-	std::array framerates{2, 4, 5, 6, 8, 10, -1};
+	std::array framerates{2, 4, 5, 6, 8, 10, 15, 20, -1};
 	// -1 is placeholder for custom framerate
 	constexpr const size_t num_default_rates = framerates.size() - 1;
 
