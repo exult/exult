@@ -550,7 +550,9 @@ int exult_main(const char* runpath) {
 		}
 		config->remove("config/gameplay/allow_double_right_move", false);
 	}
-
+	if (!config->key_exists("config/gameplay/default_mod")) {
+		config->set("config/gameplay/default_mod", "", true);
+	}
 	// Setup virtual directories
 	string data_path;
 	config->value("config/disk/data_path", data_path, EXULT_DATADIR);
@@ -918,7 +920,17 @@ static void Init() {
 					// Prints error messages:
 					newgame = basegame->get_mod(arg_modname);
 				} else {
-					newgame = basegame;
+					string default_mod;
+					config->value("config/gameplay/default_mod", default_mod, "");
+					if (!default_mod.empty()) {
+						ModInfo* mod = basegame->find_mod(default_mod);
+						if (mod && mod->is_mod_compatible()) {
+							newgame = mod;
+						}
+					}
+					if (!newgame) {
+						newgame = basegame;
+					}
 				}
 				arg_modname = "default";
 			} else {
@@ -976,6 +988,21 @@ static void Init() {
 			exit(error);
 		}
 #endif
+		// If no game was selected, try the configured default mod before the
+		// Exult menu.
+		if (!newgame) {
+			string default_mod;
+			config->value("config/gameplay/default_mod", default_mod, "");
+			if (!default_mod.empty()) {
+				for (auto& game : gamemanager->get_game_list()) {
+					ModInfo* mod = game.find_mod(default_mod);
+					if (mod && mod->is_mod_compatible()) {
+						newgame = mod;
+						break;
+					}
+				}
+			}
+		}
 		if (!newgame) {
 			ExultMenu exult_menu(gwin);
 			newgame = exult_menu.run();
