@@ -809,6 +809,7 @@ public:
 
 	void show_inventory();
 	int  inventory_shapenum();
+	void consolidate_backpack_gold();
 
 	bool was_hit() {
 		return hit;
@@ -819,6 +820,9 @@ public:
 	bool in_usecode_control() const;
 	bool quake_on_walk();
 };
+
+// Consolidate gold if this is a party member's backpack.
+void Maybe_consolidate_backpack_gold(Container_game_object* cont);
 
 using Actor_shared = std::shared_ptr<Actor>;
 
