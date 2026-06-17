@@ -2441,7 +2441,37 @@ void Actor::update_from_studio(unsigned char* data, int datalen) {
 #endif
 }
 
+void Actor::consolidate_backpack_gold() {
+	Game_object* bp = get_readied(backpack);
+	if (!bp) {
+		return;
+	}
+	Container_game_object* cont = bp->as_container();
+	if (cont) {
+		cont->consolidate_gold(c_gold_coin_shapenum);
+	}
+}
+
+void Maybe_consolidate_backpack_gold(Container_game_object* cont) {
+	if (!cont) {
+		return;
+	}
+	Game_object* owner = cont->get_owner();
+	if (!owner) {
+		return;
+	}
+	Actor* act = owner->as_actor();
+	if (!act || !act->is_in_party()) {
+		return;
+	}
+	if (act->get_readied(backpack) != cont) {
+		return;
+	}
+	cont->consolidate_gold(c_gold_coin_shapenum);
+}
+
 void Actor::show_inventory() {
+	consolidate_backpack_gold();
 	Gump_manager* gump_man = gumpman;
 
 	const int shapenum = inventory_shapenum();
