@@ -125,6 +125,8 @@ class Game_window {
 	short         theft_cx, theft_cy;    // Chunk where warnings occurred.
 	// Gameplay objects:
 	Barge_object*             moving_barge;    // ->cart/ship that's moving, or 0.
+	// Track barge landing to keep party and barge moving in sync.
+	Barge_object*             landing_barge = nullptr;
 	Main_actor*               main_actor;      // Main sprite to move around.
 	Actor*                    camera_actor;    // What to center view around.
 	std::vector<Actor_shared> npcs;            // Array of NPC's + the Avatar.

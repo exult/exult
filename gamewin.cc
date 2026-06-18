@@ -643,11 +643,13 @@ void Game_window::set_moving_barge(Barge_object* b) {
 		if (!b->contains(main_actor)) {
 			b->set_to_gather();
 		}
+		landing_barge = nullptr;    // Boarding cancels any pending landing glide.
 	} else if (!b && moving_barge) {
 		moving_barge->done();    // No longer 'barging'.
 		// Smooth scroll: prevent jerkiness on offboarding, especially the flying carpet.
 		scrolltx_lp = scrolltx_l = scrolltx;
 		scrollty_lp = scrollty_l = scrollty;
+		landing_barge = moving_barge;
 	}
 	moving_barge = b;
 }
@@ -945,6 +947,7 @@ void Game_window::clear_world(bool restoremapedit) {
 	npcs.resize(0);    // NPC's already deleted above.
 	bodies.resize(0);
 	moving_barge       = nullptr;    // Get out of barge mode.
+	landing_barge      = nullptr;
 	special_light      = 0;          // Clear out light spells.
 	ambient_light      = false;      // And ambient lighting.
 	infravision_active = false;
@@ -1243,6 +1246,9 @@ void Game_window::get_shape_location(const Game_object* obj, int& x, int& y) {
 			apply_avpos = true;
 		} else if (actor && actor->is_in_party() && lerping_enabled) {
 			// Apply the same lerping offset to party members
+			apply_avpos = true;
+		} else if (landing_barge && lerping_enabled && landing_barge->is_grouped_member(obj)) {
+			// Keep party and barge in sync during landing.
 			apply_avpos = true;
 		}
 	}
@@ -1693,6 +1699,8 @@ void Game_window::start_actor_alt(
 		int winx, int winy,    // Mouse position to aim for.
 		int speed              // Msecs. between frames.
 ) {
+	// Avatar can move, don't sync the barge anymore.
+	landing_barge = nullptr;
 	int  ax;
 	int  ay;
 	bool blocked[8];
@@ -1919,7 +1927,8 @@ void Game_window::teleport_party(
 	const Tile_coord oldpos = main_actor->get_tile();
 	main_actor->set_action(nullptr);    // Definitely need this, or you may
 	//   step back to where you came from.
-	moving_barge = nullptr;    // Calling 'done()' could be risky...
+	moving_barge  = nullptr;    // Calling 'done()' could be risky...
+	landing_barge = nullptr;
 	int       i;
 	const int cnt = party_man->get_count();
 	if (!skip_eggs) {
