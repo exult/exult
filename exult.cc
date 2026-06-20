@@ -1452,9 +1452,7 @@ static void Handle_events() {
 				// A real step happened, so any pending stop-glide shortening no
 				// longer applies; allow it to fire again once we next stop.
 				lerp_stop_anchored = false;
-				const int ft = (barge && barge->contains(gwin->get_main_actor()))
-									   ? barge->get_frame_time()
-									   : act->get_frame_time();
+				const int ft = (barge && barge->contains(gwin->get_main_actor())) ? barge->get_frame_time() : act->get_frame_time();
 				if (ft > 0) {
 					lerp_mswait = (ft * lerp) / 100;
 				}

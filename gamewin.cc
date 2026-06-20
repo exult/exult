@@ -649,7 +649,7 @@ void Game_window::set_moving_barge(Barge_object* b) {
 		// Smooth scroll: prevent jerkiness on offboarding, especially the flying carpet.
 		scrolltx_lp = scrolltx_l = scrolltx;
 		scrollty_lp = scrollty_l = scrollty;
-		landing_barge = moving_barge;
+		landing_barge            = moving_barge;
 	}
 	moving_barge = b;
 }
@@ -948,8 +948,8 @@ void Game_window::clear_world(bool restoremapedit) {
 	bodies.resize(0);
 	moving_barge       = nullptr;    // Get out of barge mode.
 	landing_barge      = nullptr;
-	special_light      = 0;          // Clear out light spells.
-	ambient_light      = false;      // And ambient lighting.
+	special_light      = 0;        // Clear out light spells.
+	ambient_light      = false;    // And ambient lighting.
 	infravision_active = false;
 	effects->remove_all_effects(false);
 	Schedule_change::clear();

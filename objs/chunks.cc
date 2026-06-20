@@ -825,9 +825,9 @@ void Map_chunk::add_dependencies(
 			const bool obj_member = mbarge->is_grouped_member(obj);
 			if (new_member != obj_member) {    // Exactly one rides the carpet.
 				const int deck = mbarge->get_lift();
-				const int pad = 2 * c_tilesize;
-				TileRect  a   = newinfo.area;
-				TileRect  r   = gwin->get_shape_rect(obj);
+				const int pad  = 2 * c_tilesize;
+				TileRect  a    = newinfo.area;
+				TileRect  r    = gwin->get_shape_rect(obj);
 				if (new_member) {
 					a.x -= pad;
 					a.y -= pad;

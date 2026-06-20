@@ -124,9 +124,9 @@ class Game_window {
 	int           theft_warnings;        // # times warned in current chunk.
 	short         theft_cx, theft_cy;    // Chunk where warnings occurred.
 	// Gameplay objects:
-	Barge_object*             moving_barge;    // ->cart/ship that's moving, or 0.
+	Barge_object* moving_barge;    // ->cart/ship that's moving, or 0.
 	// Track barge landing to keep party and barge moving in sync.
-	Barge_object*             landing_barge = nullptr;
+	Barge_object* landing_barge = nullptr;
 	// Don't recenter barge during lift off and landing.
 	bool                      suppress_barge_recenter = false;
 	Main_actor*               main_actor;      // Main sprite to move around.
