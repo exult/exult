@@ -1136,6 +1136,11 @@ void Game_window::set_camera_actor(Actor* a) {
  */
 
 bool Game_window::scroll_if_needed(Tile_coord t) {
+	if (suppress_barge_recenter) {
+		// Change lift of a barge without recentering the view,
+		// afterwards the next move recenters.
+		return false;
+	}
 	bool scrolled = false;
 	// 1 lift = 1/2 tile.
 	const int tx = DECR_TILE(t.tx, t.tz / 2);
@@ -1155,6 +1160,20 @@ bool Game_window::scroll_if_needed(Tile_coord t) {
 		scrolled = true;
 	}
 	return scrolled;
+}
+
+/*
+ *  Change lift of a barge without recentering the view.
+ */
+
+void Game_window::barge_lift_move(Game_object* obj, const Tile_coord& t) {
+	if (!obj->as_barge()) {
+		obj->move(t);
+		return;
+	}
+	suppress_barge_recenter = true;
+	obj->move(t);
+	suppress_barge_recenter = false;
 }
 
 /*

@@ -458,7 +458,7 @@ int Usecode_script::exec(
 			if (t.tz < 10) {
 				t.tz++;
 			}
-			optr->move(t);
+			gwin->barge_lift_move(optr.get(), t);
 			break;
 		}
 		case descend: {
@@ -466,7 +466,7 @@ int Usecode_script::exec(
 			if (t.tz > 0) {
 				t.tz--;
 			}
-			optr->move(t);
+			gwin->barge_lift_move(optr.get(), t);
 			break;
 		}
 		case frame:    // Set frame.

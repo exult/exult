@@ -127,6 +127,8 @@ class Game_window {
 	Barge_object*             moving_barge;    // ->cart/ship that's moving, or 0.
 	// Track barge landing to keep party and barge moving in sync.
 	Barge_object*             landing_barge = nullptr;
+	// Don't recenter barge during lift off and landing.
+	bool                      suppress_barge_recenter = false;
 	Main_actor*               main_actor;      // Main sprite to move around.
 	Actor*                    camera_actor;    // What to center view around.
 	std::vector<Actor_shared> npcs;            // Array of NPC's + the Avatar.
@@ -471,6 +473,8 @@ public:
 	}
 
 	void set_moving_barge(Barge_object* b);
+	// Change lift of a barge without recentering the view.
+	void barge_lift_move(Game_object* obj, const Tile_coord& t);
 	bool is_moving() const;    // Is Avatar (or barge) moving?
 
 	inline Main_actor* get_main_actor() const {
