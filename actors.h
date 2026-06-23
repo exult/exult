@@ -171,7 +171,8 @@ public:
 	bool ready_ammo();           // Find and ready appropriate ammo.
 	bool ready_best_weapon();    // Find best weapon and ready it.
 	bool ready_best_shield();    // Find best shield and ready it.
-	void empty_hands();          // Make sure both hands are empty.
+	bool is_unstorable_spellbook(Game_object* obj) const;
+	void empty_hands();    // Make sure both hands are empty.
 	// Force repaint of area taken.
 	int  get_effective_weapon_shape() const;    // For displaying casting frames.
 	bool add_dirty(bool figure_rect = false);

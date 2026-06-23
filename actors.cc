@@ -489,6 +489,10 @@ bool Actor::ready_best_shield() {
 	if (two_handed) {
 		return false;
 	}
+	// Don't replace a spellbook if it can't be stored in a container.
+	if (spots[rhand] && is_unstorable_spellbook(spots[rhand])) {
+		return false;
+	}
 	if (spots[rhand]) {
 		const Shape_info& inf = spots[rhand]->get_info();
 		if (is_in_party() || inf.get_armor() || inf.get_armor_immunity()) {
@@ -543,6 +547,25 @@ bool Actor::ready_best_shield() {
 		add(old_rhand, true);
 	}
 	return true;
+}
+
+/**
+ *  A readied spellbook for which no container has room.
+ *  @return Returns true 'obj' is a spellbook for which no container
+ *  has room.
+ */
+
+bool Actor::is_unstorable_spellbook(Game_object* obj) const {
+	if (!obj || obj->get_info().get_shape_class() != Shape_info::spellbook) {
+		return false;
+	}
+	for (const int spot : {backpack, belt}) {
+		Container_game_object* bag = spots[spot] ? spots[spot]->as_container() : nullptr;
+		if (bag && bag->has_room(obj)) {
+			return false;    // Fits in a container.
+		}
+	}
+	return true;    // Nowhere to store it.
 }
 
 /**
@@ -617,6 +640,13 @@ bool Actor::ready_best_weapon() {
 	if (remove2 == best) {
 		remove2 = nullptr;
 	}
+	// A readied spellbook must never be dropped on the floor.
+	// If there's no room to store it when swapping for a weapon, keep the spellbook readied
+	// and skip the weapon swap.
+	if (wtype == both_hands && (is_unstorable_spellbook(remove1) || is_unstorable_spellbook(remove2))) {
+		ready_best_shield();
+		return false;    // Don't displace the spellbook.
+	}
 	// Free the spot(s).
 	if (remove1) {
 		remove1->remove_this(&keep1);
@@ -630,12 +660,44 @@ bool Actor::ready_best_weapon() {
 	} else {
 		add(best, true);    // Should go to the right place.
 	}
+	// Put back the items that were displaced from the hands.
+	// When there's no free ready spot or container with room, add() (with
+	// dont_check) still "succeeds" by stuffing the item loosely into our
+	// object list: it's owned by us but isn't in any ready spot, so it
+	// won't be displayed until a save/reload. In that case drop it on the
+	// floor instead. Except the spellbook, never drop it.
+	auto put_back_or_drop = [this](Game_object* obj) {
+		add(obj, true);
+		if (obj->get_info().get_shape_class() == Shape_info::spellbook) {
+			return;    // Spellbooks are never dropped (see check above).
+		}
+		if (obj->get_owner() != this || find_readied(obj) != -1) {
+			return;    // Stored in a ready spot or inside a container.
+		}
+		// No room anywhere: drop it on the floor near us.
+		const Tile_coord pos  = get_tile();
+		Tile_coord       drop = Map_chunk::find_spot(pos, 1, obj->get_shapenum(), obj->get_framenum(), 1);
+		if (drop.tx == -1) {
+			drop = pos;
+		}
+		obj->move(drop.tx, drop.ty, drop.tz, get_map_num());
+		Audio::get_ptr()->play_sound_effect(Audio::game_sfx(74));
+	};
+
+	if (remove1 && is_unstorable_spellbook(remove1)) {
+		put_back_or_drop(remove1);
+		remove1 = nullptr;
+	}
+	if (remove2 && is_unstorable_spellbook(remove2)) {
+		put_back_or_drop(remove2);
+		remove2 = nullptr;
+	}
 	ready_best_shield();    // Also add a shield for 1-handed weapons.
-	if (remove1) {          // Put back other things.
-		add(remove1, true);
+	if (remove1) {          // Put back the remaining displaced things.
+		put_back_or_drop(remove1);
 	}
 	if (remove2) {
-		add(remove2, true);
+		put_back_or_drop(remove2);
 	}
 	if (best_ammo) {
 		swap_ammo(best_ammo);
