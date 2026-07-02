@@ -961,12 +961,13 @@ gint Shape_chooser::check_editing_files() {
 
 static int Find_closest_color(
 		const unsigned char* pal,    // 3*255 bytes.
-		int r, int g, int b          // Color to match.
+		int r, int g, int b,         // Color to match.
+		int last                    // First palette index to exclude.
 ) {
 	int  best_index    = -1;
 	long best_distance = 0xfffffff;
 	// Be sure to search rotating colors too.
-	for (int i = 0; i < 0xff; i++) {
+	for (int i = 0; i < last; i++) {
 		// Get deltas.
 		const long dr = r - pal[3 * i];
 		const long dg = g - pal[3 * i + 1];
@@ -991,7 +992,8 @@ static void Convert_indexed_image(
 		int            count,         // # pixels.
 		unsigned char* oldpal,        // Palette pixels currently uses.
 		int            oldpalsize,    // Size of old palette.
-		unsigned char* newpal         // Palette (255 bytes) to convert to.
+		unsigned char* newpal,        // Palette (255 bytes) to convert to.
+		int            last           // First destination index to exclude.
 ) {
 	if (memcmp(oldpal, newpal, oldpalsize) == 0) {
 		return;    // Old palette matches new.
@@ -1006,7 +1008,7 @@ static void Convert_indexed_image(
 	for (i = 0; i < count; i++) {
 		const unsigned char pix = *pixels;
 		if (map[pix] == -1) {    // New one?
-			map[pix] = Find_closest_color(newpal, oldpal[3 * pix], oldpal[3 * pix + 1], oldpal[3 * pix + 2]);
+			map[pix] = Find_closest_color(newpal, oldpal[3 * pix], oldpal[3 * pix + 1], oldpal[3 * pix + 2], last);
 		}
 		Write1(pixels, map[pix]);
 	}
@@ -1044,7 +1046,13 @@ static void Import_png(
 		return;    // Just return if error, for now.
 	}
 	// Convert to game palette.
-	Convert_indexed_image(pixels, h * rowsize, oldpal, palsize, pal);
+	// Face portraits must not use palette entries 224-254: Exult cycles or
+	// interprets those entries as effects, making imported pixels flicker.
+	const int last_color = strcmp(finfo->get_basename(), "faces.vga") == 0
+								 ? 0xe0
+								 : 0xff;
+	Convert_indexed_image(
+			pixels, h * rowsize, oldpal, palsize, pal, last_color);
 	delete[] oldpal;
 	// Low shape in 'shapes.vga'?
 	const bool flat = IS_FLAT(shapenum) && finfo == studio->get_vgafile();

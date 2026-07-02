@@ -686,7 +686,7 @@ int Usecode_internal::get_face_shape(Usecode_value& arg1, Actor*& npc, int& fram
 void Usecode_internal::show_npc_face(
 		Usecode_value& arg1,    // Shape (NPC #).
 		Usecode_value& arg2,    // Frame.
-		int            slot     // 0, 1, or -1 to find free spot.
+		int            slot     // 0, 1, 2, or -1 to find free spot.
 ) {
 	show_pending_text();
 	Actor*    npc;

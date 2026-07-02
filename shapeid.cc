@@ -465,9 +465,14 @@ Shape_manager::~Shape_manager() {
  */
 int Shape_manager::paint_text_box(
 		int fontnum, const char* text, int x, int y, int w, int h, int vert_lead, bool pbreak, bool center, int shading,
-		Cursor_info* cursor) {
+		Cursor_info* cursor, bool opaque_background) {
 	if (shading >= 0) {
-		gwin->get_win()->fill_translucent8(0, w, h, x, y, xforms[shading]);
+		if (opaque_background) {
+			const unsigned char black = get_special_pixel(BLACK_PIXEL);
+			gwin->get_win()->fill8(xforms[shading][black], w, h, x, y);
+		} else {
+			gwin->get_win()->fill_translucent8(0, w, h, x, y, xforms[shading]);
+		}
 	}
 	return fonts->paint_text_box(gwin->get_win()->get_ib8(), fontnum, text, x, y, w, h, vert_lead, pbreak, center, cursor);
 }
