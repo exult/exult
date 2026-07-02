@@ -32,12 +32,13 @@ class Npc_face_info;
 class Usecode_value;
 class Game_window;
 
-class Conversation : public Game_singletons, public Paintable {
+class Conversation : public Game_singletons, public BackgroundPaintable {
 public:
 	~Conversation() override;
 
 private:
-	std::array<Npc_face_info*, 2> face_info{nullptr, nullptr};    // NPC's on-screen faces in convers.
+	std::array<Npc_face_info*, 3> face_info{
+			nullptr, nullptr, nullptr};    // NPC's on-screen faces in convers.
 	int                           num_faces       = 0;
 	int                           last_face_shown = 0;               // Index of last npc face shown.
 	TileRect                      avatar_face     = {0, 0, 0, 0};    // Area take by Avatar in conversation.
@@ -45,6 +46,8 @@ private:
 
 	std::vector<std::string>             answers;
 	std::deque<std::vector<std::string>> answer_stack;
+	int saved_ui_palette     = -1;
+	int saved_ui_brightness  = 100;
 
 public:
 	inline int get_num_answers() const {
@@ -94,7 +97,9 @@ public:
 	static bool noface;
 
 private:
-	void set_face_rect(Npc_face_info* info, Npc_face_info* prev, int screenw, int screenh);
+	void set_face_rect(Npc_face_info* info, int slot, int screenw, int screenh);
+	void ensure_day_palette();
+	void restore_ui_palette();
 	void show_avatar_choices(int num_choices, char** choices);
 	void add_answer(const char* str);
 	void remove_answer(const char* str);

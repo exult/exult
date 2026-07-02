@@ -29,12 +29,14 @@
 #include "data/exult_bg_flx.h"
 #include "effects.h"
 #include "exult.h"
+#include "fnames.h"
 #include "font_map.h"
 #include "game.h"
 #include "gamewin.h"
 #include "gump_utils.h"
 #include "miscinf.h"
 #include "mouse.h"
+#include "palette.h"
 #include "touchui.h"
 #include "tqueue.h"
 #include "useval.h"
@@ -46,6 +48,47 @@ using std::string;
 // TODO: show_avatar_choices shouldn't first convert to char**, probably
 
 bool Conversation::noface = false;
+
+static bool Is_dark_time_palette(int pal) {
+	return pal == PALETTE_DUSK || pal == PALETTE_NIGHT;
+}
+
+// Halfway between the active dark-time palette and day (see Palette_transition).
+static constexpr int Conversation_palette_blend_steps = 2;
+static constexpr int Conversation_palette_blend_pos   = 1;
+
+static void Blend_palettes(
+		const Palette& from, const Palette& to, unsigned char out[768]) {
+	const unsigned char* src = from.get_color_data();
+	const unsigned char* dst = to.get_color_data();
+	for (int c = 0; c < 768; ++c) {
+		out[c] = static_cast<unsigned char>(
+				((dst[c] - src[c]) * Conversation_palette_blend_pos)
+						/ Conversation_palette_blend_steps
+				+ src[c]);
+	}
+}
+
+static Palette& Get_day_reference_palette() {
+	static Palette day;
+	static bool    loaded = false;
+	if (!loaded) {
+		day.load(PALETTES_FLX, PATCH_PALETTES, PALETTE_DAY);
+		loaded = true;
+	}
+	return day;
+}
+
+static void Build_stable_face_remap(unsigned char stable_colors[256]) {
+	for (int i = 0; i < 256; ++i) {
+		stable_colors[i] = static_cast<unsigned char>(i);
+	}
+	Palette& day = Get_day_reference_palette();
+	for (int i = 0xe0; i < 0xff; ++i) {
+		stable_colors[i] = static_cast<unsigned char>(day.find_color(
+				day.get_red(i), day.get_green(i), day.get_blue(i), 0xe0));
+	}
+}
 
 /*
  *  Store information about an NPC's face and text on the screen during
@@ -69,6 +112,7 @@ public:
 };
 
 Conversation::~Conversation() {
+	restore_ui_palette();
 	delete[] conv_choices;
 }
 
@@ -133,7 +177,35 @@ void Conversation::remove_answer(Usecode_value& val) {
  *  Initialize face list.
  */
 
+void Conversation::ensure_day_palette() {
+	if (saved_ui_palette >= 0) {
+		return;
+	}
+	Palette* pal = gwin->get_pal();
+	const int active_palette = pal->get_palette_index();
+	if (!Is_dark_time_palette(active_palette)) {
+		return;
+	}
+	saved_ui_palette    = active_palette;
+	saved_ui_brightness = pal->get_brightness();
+	// Load the current time palette so night includes expand_night_shadow_contrast.
+	Palette current;
+	current.load(PALETTES_FLX, PATCH_PALETTES, active_palette);
+	unsigned char blended[768];
+	Blend_palettes(current, Get_day_reference_palette(), blended);
+	pal->set(blended, saved_ui_brightness, false);
+}
+
+void Conversation::restore_ui_palette() {
+	if (saved_ui_palette < 0) {
+		return;
+	}
+	gwin->get_pal()->set(saved_ui_palette, saved_ui_brightness, true);
+	saved_ui_palette = -1;
+}
+
 void Conversation::init_faces() {
+	restore_ui_palette();
 	for (Npc_face_info*& finfo : face_info) {
 		delete finfo;
 		finfo = nullptr;
@@ -153,8 +225,15 @@ void Conversation::init_faces() {
 	last_face_shown = -1;
 }
 
-void Conversation::set_face_rect(Npc_face_info* info, Npc_face_info* prev, int screenw, int screenh) {
-	const int text_height = sman->get_text_line_height(0);
+void Conversation::set_face_rect(
+		Npc_face_info* info, int slot, int screenw, int screenh) {
+	const int text_left   = screenw / 3;
+	const int text_right  = (2 * screenw) / 3;
+	// Speaker slots use the middle, bottom, then top thirds of the screen.
+	static constexpr int vertical_third[] = {1, 2, 0};
+	const int third = vertical_third[std::clamp(slot, 0, 2)];
+	const int text_top    = (third * screenh) / 3;
+	const int text_bottom = ((third + 1) * screenh) / 3;
 	// Figure starting y-coord.
 	// Get character's portrait.
 	Shape_frame* face   = info->shape.get_shapenum() >= 0 ? info->shape.get_shape() : nullptr;
@@ -166,44 +245,28 @@ void Conversation::set_face_rect(Npc_face_info* info, Npc_face_info* prev, int s
 	}
 	int startx;
 	int extraw;
-	if (face_w >= 119) {
+	// Shape 296 is the Guardian (and the SI special face that shares it).
+	// Do not classify ordinary high-resolution portraits by dimensions.
+	if (info->face_num == 296) {
 		startx           = (screenw - face_w) / 2;
 		extraw           = 0;
 		info->large_face = true;
 	} else {
-		startx = 8;
 		extraw = 4;
+		startx = std::max(1, text_left - face_w - extraw - 4);
 	}
-	int starty;
-	int extrah;
-	if (face_h >= 142) {
-		starty = (screenh - face_h) / 2;
-		extrah = 0;
-	} else if (prev) {
-		starty = prev->text_rect.y + prev->last_text_height;
-		if (starty < prev->face_rect.y + prev->face_rect.h) {
-			starty = prev->face_rect.y + prev->face_rect.h;
-		}
-		starty += 2 * text_height;
-		if (starty + face_h > screenh - 1) {
-			starty = screenh - face_h - 1;
-		}
-		extrah = 4;
-	} else {
-		starty = 1;
-		extrah = 4;
+	const int extrah = info->large_face ? 0 : 4;
+	int starty = info->large_face ? (screenh - face_h) / 2 : text_top;
+	if (starty + face_h + extrah > text_bottom) {
+		starty = std::max(text_top, text_bottom - face_h - extrah);
 	}
-	info->face_rect      = gwin->clip_to_win(TileRect(startx, starty, face_w + extraw, face_h + extrah));
-	const TileRect& fbox = info->face_rect;
-	// This is where NPC text will go.
-	info->text_rect = gwin->clip_to_win(TileRect(fbox.x + fbox.w + 3, fbox.y + 3, screenw - fbox.x - fbox.w - 6, 4 * text_height));
-	// No room?  (Serpent?)
-	if (info->large_face) {
-		// Show in lower center.
-		const int x     = screenw / 5;
-		const int y     = 3 * (screenh / 4);
-		info->text_rect = TileRect(x, y, screenw - (2 * x), screenh - y - 4);
-	}
+	info->face_rect = gwin->clip_to_win(
+			TileRect(startx, starty, face_w + extraw, face_h + extrah));
+	// Keep NPC speech in the middle third of the logical game viewport. This
+	// remains stable across display resolutions and output scaling modes.
+	info->text_rect       = gwin->clip_to_win(TileRect(
+			text_left, text_top, text_right - text_left,
+			text_bottom - text_top));
 	info->last_text_height = info->text_rect.h;
 }
 
@@ -214,6 +277,9 @@ void Conversation::set_face_rect(Npc_face_info* info, Npc_face_info* prev, int s
 
 void Conversation::show_face(int shape, int frame, int slot) {
 	ShapeID face_sid(shape, frame, SF_FACES_VGA);
+	if (slot < -1 || static_cast<unsigned>(slot) >= face_info.size()) {
+		slot = -1;
+	}
 
 	// Make sure mode is set right.
 	Palette* pal = gwin->get_pal();    // Watch for weirdness (lightning).
@@ -242,11 +308,13 @@ void Conversation::show_face(int shape, int frame, int slot) {
 		if (noface) {
 			info->no_show_face = true;
 		}
-		if (slot == -1) {    // Want next one?
-			slot = num_faces;
+		if (slot == -1) {    // Use the first free speaker region.
+			for (slot = 0; static_cast<unsigned>(slot) < face_info.size(); ++slot) {
+				if (!face_info[slot]) {
+					break;
+				}
+			}
 		}
-		// Get last one shown.
-		Npc_face_info* prev = slot ? face_info[slot - 1] : nullptr;
 		last_face_shown     = slot;
 		if (!face_info[slot]) {
 			num_faces++;    // We're adding one (not replacing).
@@ -254,7 +322,7 @@ void Conversation::show_face(int shape, int frame, int slot) {
 			delete face_info[slot];
 		}
 		face_info[slot] = info;
-		set_face_rect(info, prev, screenw, screenh);
+		set_face_rect(info, slot, screenw, screenh);
 	}
 	gwin->get_win()->set_clip(0, 0, screenw, screenh);
 	paint_faces();    // Paint all faces.
@@ -300,8 +368,7 @@ void Conversation::change_face_frame(int frame, int slot) {
 	// Get screen dims.
 	const int      screenw = gwin->get_width();
 	const int      screenh = gwin->get_height();
-	Npc_face_info* prev    = slot ? face_info[slot - 1] : nullptr;
-	set_face_rect(info, prev, screenw, screenh);
+	set_face_rect(info, slot, screenw, screenh);
 
 	gwin->get_win()->set_clip(0, 0, screenw, screenh);
 	paint_faces();    // Paint all faces.
@@ -391,6 +458,7 @@ void Conversation::show_npc_message(const char* msg) {
 		eman->set_sprites_always(false);
 		gwin->get_tqueue()->resume(SDL_GetTicks());
 	}
+	ensure_day_palette();
 	Npc_face_info* info = face_info[last_face_shown];
 	const int      font = info->large_face ? 7 : 0;    // Use red for Guardian, snake.
 	info->cur_text      = "";
@@ -400,7 +468,9 @@ void Conversation::show_npc_message(const char* msg) {
 	gwin->paint();
 	int height;    // Break at punctuation.
 	/* NOTE:  The original centers text for Guardian, snake.    */
-	while ((height = sman->paint_text_box(font, msg, box.x, box.y, box.w, box.h, -1, true, info->large_face, gwin->get_text_bg()))
+	while ((height = sman->paint_text_box(
+					font, msg, box.x, box.y, box.w, box.h, -1, true,
+					info->large_face, gwin->get_text_bg(), nullptr, true))
 		   < 0) {
 		// More to do?
 		info->cur_text = string(msg, -height);
@@ -450,6 +520,7 @@ void Conversation::clear_text_pending() {
  */
 
 void Conversation::show_avatar_choices(int num_choices, char** choices) {
+	ensure_day_palette();
 	const bool  SI         = Game::get_game_type() == SERPENT_ISLE;
 	Main_actor* main_actor = gwin->get_main_actor();
 	// Get screen rectangle.
@@ -510,11 +581,13 @@ void Conversation::show_avatar_choices(int num_choices, char** choices) {
 				  5 * line_height);    // Try 5 lines.
 	tbox = tbox.intersect(sbox);
 	// Draw portrait.
-	sman->paint_shape(mbox.x + face->get_xleft(), mbox.y + face->get_yabove(), face);
+	unsigned char stable_colors[256];
+	Build_stable_face_remap(stable_colors);
+	sman->paint_shape(
+			mbox.x + face->get_xleft(), mbox.y + face->get_yabove(), face,
+			false, stable_colors);
 	delete[] conv_choices;    // Set up new list of choices.
-	conv_choices        = new TileRect[num_choices + 1];
-	const int text_bg   = gwin->get_text_bg();
-	const int bg_offset = (sman->get_text_height(0) - line_height) / 2;
+	conv_choices = new TileRect[num_choices + 1];
 	// First pass: determine positions and draw all backgrounds.
 	for (int i = 0; i < num_choices; i++) {
 		char text[256];
@@ -530,11 +603,9 @@ void Conversation::show_avatar_choices(int num_choices, char** choices) {
 		conv_choices[i] = TileRect(tbox.x + x, tbox.y + y, width, line_height);
 		conv_choices[i] = conv_choices[i].intersect(sbox);
 		avatar_face     = avatar_face.add(conv_choices[i]);
-		// Draw shading with line_height, shifted down to align with text.
-		if (text_bg >= 0) {
-			gwin->get_win()->fill_translucent8(
-					0, width + space_width, line_height, tbox.x + x, tbox.y + y + bg_offset, sman->get_xform(text_bg));
-		}
+		sman->paint_text_box(
+				0, text, tbox.x + x, tbox.y + y, width + space_width, line_height, 0,
+				false, false, gwin->get_text_bg(), nullptr, true);
 		x += width + space_width;
 	}
 	// Second pass: draw all text on top of backgrounds.
@@ -608,6 +679,7 @@ void Conversation::paint() {
 
 void Conversation::paint_faces(bool text    // Show text too.
 ) {
+	ensure_day_palette();
 	if (!num_faces) {
 		return;
 	}
@@ -642,15 +714,26 @@ void Conversation::paint_faces(bool text    // Show text too.
 					win->fill_translucent8(0, gw, gh, gx, gy, xform);
 				}
 			}
-			// Use translucency.
-			sman->paint_shape(fx, fy, face, true);
+			if (finfo->large_face) {
+				// Guardian and other special faces intentionally use xform colors.
+				sman->paint_shape(fx, fy, face, true);
+			} else {
+				// Palette entries 224-254 are animated or reserved for xforms.
+				// Remap using day palette colors so night palette and rotation
+				// do not alter portrait appearance.
+				unsigned char stable_colors[256];
+				Build_stable_face_remap(stable_colors);
+				sman->paint_shape(fx, fy, face, false, stable_colors);
+			}
 		}
 		if (text) {    // Show text too?
 			const TileRect& box = finfo->text_rect;
 			// Use red for Guardian, snake.
 			const int font = finfo->large_face ? 7 : 0;
 			sman->paint_text_box(
-					font, finfo->cur_text.c_str(), box.x, box.y, box.w, box.h, -1, true, finfo->large_face, gwin->get_text_bg());
+					font, finfo->cur_text.c_str(), box.x, box.y, box.w, box.h,
+					-1, true, finfo->large_face, gwin->get_text_bg(), nullptr,
+					true);
 		}
 	}
 }
