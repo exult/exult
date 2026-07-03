@@ -33,7 +33,9 @@ private:
 	int                      gumps_pause;
 	bool                     alternate_drop;
 	int                      frames;
+	int                      combat_frames;
 	std::vector<std::string> frametext;
+	std::vector<std::string> combat_frametext;
 	int                      difficulty;
 	int                      show_hits;
 	int                      mode;
@@ -52,6 +54,7 @@ private:
 		id_gumps_pause,
 		id_alternate_drop,
 		id_frames,
+		id_combat_frames,
 		id_show_hits,
 		id_mode,
 		id_charmDiff,
@@ -95,6 +98,10 @@ public:
 
 	void toggle_frames(int state) {
 		frames = state;
+	}
+
+	void toggle_combat_frames(int state) {
+		combat_frames = state;
 	}
 
 	void toggle_difficulty(int state) {
