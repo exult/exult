@@ -50,6 +50,7 @@
 #include "exult.h"
 #include "font.h"
 #include "game.h"
+#include "gameclk.h"
 #include "gamewin.h"
 #include "items.h"
 
@@ -228,6 +229,10 @@ public:
 	static auto Serif() {
 		return get_text_msg(0x5DA - msg_file_start);
 	}
+
+	static auto BrightenNightColors_() {
+		return get_text_msg(0x5DC - msg_file_start);
+	}
 };
 
 using GameDisplayOptions_button = CallbackTextButton<GameDisplayOptions_gump>;
@@ -260,6 +265,14 @@ void GameDisplayOptions_gump::close() {
 }
 
 void GameDisplayOptions_gump::cancel() {
+	if (night_shadow_visibility != night_shadow_visibility_original) {
+		// The toggle applies live for instant visual feedback, so revert it
+		// if the user backs out via Cancel instead of OK.
+		night_shadow_visibility = night_shadow_visibility_original;
+		gwin->set_night_shadow_visibility(night_shadow_visibility);
+		gwin->get_clock()->clear_palette_transition();
+		gwin->get_pal()->reload();
+	}
 	done = true;
 }
 
@@ -350,6 +363,10 @@ void GameDisplayOptions_gump::build_buttons() {
 			this, &GameDisplayOptions_gump::toggle_fonts, fonts_txt, fonts, get_button_pos_for_label(Strings::Fonts_()),
 			yForRow(++y_index), large_size);
 
+	buttons[id_night_shadow_visibility] = std::make_unique<GameDisplayTextToggle>(
+			this, &GameDisplayOptions_gump::toggle_night_shadow_visibility, yesNo, night_shadow_visibility,
+			get_button_pos_for_label(Strings::BrightenNightColors_()), yForRow(++y_index), small_size);
+
 	// Risize to fit all
 	ResizeWidthToFitWidgets(tcb::span(buttons.data() + id_first, id_count));
 
@@ -357,6 +374,13 @@ void GameDisplayOptions_gump::build_buttons() {
 
 	// Right align other setting buttons
 	RightAlignWidgets(tcb::span(buttons.data() + id_first_setting, id_count - id_first_setting));
+}
+
+void GameDisplayOptions_gump::toggle_night_shadow_visibility(int state) {
+	night_shadow_visibility = state;
+	gwin->set_night_shadow_visibility(night_shadow_visibility);
+	gwin->get_clock()->clear_palette_transition();
+	gwin->get_pal()->reload();
 }
 
 void GameDisplayOptions_gump::load_settings() {
@@ -381,6 +405,10 @@ void GameDisplayOptions_gump::load_settings() {
 	paperdolls       = sman->are_paperdolls_enabled();
 	text_bg          = gwin->get_text_bg() + 1;
 	smooth_scrolling = gwin->is_lerping_enabled() / 25;
+
+	config->value("config/gameplay/night_shadow_visibility", value, "yes");
+	night_shadow_visibility          = (value == "yes");
+	night_shadow_visibility_original = night_shadow_visibility;
 
 	android_autolaunch = Android_getAutoLaunch ? Android_getAutoLaunch() : 0;
 	config->value("config/gameplay/language", value, "");
@@ -409,7 +437,7 @@ void GameDisplayOptions_gump::load_settings() {
 }
 
 GameDisplayOptions_gump::GameDisplayOptions_gump() : Modal_gump(nullptr, -1) {
-	SetProceduralBackground(TileRect(0, 0, 100, yForRow(13)), -1);
+	SetProceduralBackground(TileRect(0, 0, 100, yForRow(14)), -1);
 
 	for (auto& btn : buttons) {
 		btn.reset();
@@ -417,13 +445,13 @@ GameDisplayOptions_gump::GameDisplayOptions_gump() : Modal_gump(nullptr, -1) {
 
 	// Ok
 	buttons[id_ok] = std::make_unique<GameDisplayOptions_button>(
-			this, &GameDisplayOptions_gump::close, Strings::OK(), 15, yForRow(12), 50);
+			this, &GameDisplayOptions_gump::close, Strings::OK(), 15, yForRow(13), 50);
 	// Help
 	buttons[id_help] = std::make_unique<GameDisplayOptions_button>(
-			this, &GameDisplayOptions_gump::help, Strings::HELP(), 50, yForRow(12), 50);
+			this, &GameDisplayOptions_gump::help, Strings::HELP(), 50, yForRow(13), 50);
 	// Cancel
 	buttons[id_cancel] = std::make_unique<GameDisplayOptions_button>(
-			this, &GameDisplayOptions_gump::cancel, Strings::CANCEL(), 75, yForRow(12), 50);
+			this, &GameDisplayOptions_gump::cancel, Strings::CANCEL(), 75, yForRow(13), 50);
 
 	load_settings();
 	build_buttons();
@@ -463,6 +491,10 @@ void GameDisplayOptions_gump::save_settings() {
 	gwin->set_lerping_enabled(smooth_scrolling * 25);
 	config->set("config/gameplay/smooth_scrolling", smooth_scrolling * 25, false);
 	gwin->set_smooth_actor_movement(smooth_scrolling > 0);
+	config->set("config/gameplay/night_shadow_visibility", night_shadow_visibility ? "yes" : "no", false);
+	gwin->set_night_shadow_visibility(night_shadow_visibility);
+	gwin->get_clock()->clear_palette_transition();
+	gwin->get_pal()->reload();
 	config->set("config/gameplay/skip_intro", usecode_intro ? "yes" : "no", false);
 	config->set("config/gameplay/extended_intro", extended_intro ? "yes" : "no", false);
 	gwin->set_extended_intro(extended_intro);
@@ -530,5 +562,6 @@ void GameDisplayOptions_gump::paint() {
 	if (buttons[id_fonts]) {
 		font->paint_text(iwin->get_ib8(), Strings::Fonts_(), x + label_margin, y + yForRow(++y_index) + 1);
 	}
+	font->paint_text(iwin->get_ib8(), Strings::BrightenNightColors_(), x + label_margin, y + yForRow(++y_index) + 1);
 	gwin->set_painted();
 }

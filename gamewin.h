@@ -158,6 +158,7 @@ class Game_window {
 	Pixel_colors outline_color;
 	bool         sb_hide_missing;
 	bool         extended_intro;    // option to use SI's extended intro
+	bool         night_shadow_visibility;    // brighten dark colors in the night palette
 
 	// Touch Options
 	bool item_menu;
@@ -380,6 +381,14 @@ public:
 
 	void set_extended_intro(bool i) {
 		extended_intro = i;
+	}
+
+	bool get_night_shadow_visibility() const {
+		return night_shadow_visibility;
+	}
+
+	void set_night_shadow_visibility(bool state) {
+		night_shadow_visibility = state;
 	}
 
 	/*

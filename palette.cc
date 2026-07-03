@@ -51,6 +51,23 @@
 using std::size_t;
 using std::string;
 
+static void expand_night_shadow_contrast(unsigned char pal[768]) {
+	for (int i = 0; i < 224; ++i) {
+		unsigned char& red   = pal[3 * i];
+		unsigned char& green = pal[3 * i + 1];
+		unsigned char& blue  = pal[3 * i + 2];
+		const int      value = red + green + blue;
+		if (value == 0 || value > 90) {
+			continue;
+		}
+
+		const int scale = value <= 45 ? 200 : 300 - (value * 200) / 90;
+		red             = std::min(63, (red * scale + 50) / 100);
+		green           = std::min(63, (green * scale + 50) / 100);
+		blue            = std::min(63, (blue * scale + 50) / 100);
+	}
+}
+
 unsigned char Palette::border[3] = {0, 0, 0};
 
 Palette::Palette()
@@ -137,6 +154,17 @@ void Palette::set(
 	}
 
 	// could throw!
+	load(PALETTES_FLX, PATCH_PALETTES, palette);
+	set_brightness(brightness);
+	apply(repaint);
+}
+
+void Palette::reload(bool repaint) {
+	if (palette < 0) {
+		return;
+	}
+	border255 = (palette >= 0 && palette <= 12) && palette != 9;
+	// Reload the current palette so any palette-file post-processing runs again.
 	load(PALETTES_FLX, PATCH_PALETTES, palette);
 	set_brightness(brightness);
 	apply(repaint);
@@ -259,6 +287,9 @@ void Palette::set_loaded(const U7multiobject& pal, const char* xfname, int xinde
 void Palette::load(const File_spec& fname0, int index, const char* xfname, int xindex) {
 	const U7multiobject pal(fname0, index);
 	set_loaded(pal, xfname, xindex);
+	if (index == PALETTE_NIGHT && Game_window::get_instance()->get_night_shadow_visibility()) {
+		expand_night_shadow_contrast(pal1);
+	}
 }
 
 /**
@@ -273,6 +304,9 @@ void Palette::load(const File_spec& fname0, int index, const char* xfname, int x
 void Palette::load(const File_spec& fname0, const File_spec& fname1, int index, const char* xfname, int xindex) {
 	const U7multiobject pal(fname0, fname1, index);
 	set_loaded(pal, xfname, xindex);
+	if (index == PALETTE_NIGHT && Game_window::get_instance()->get_night_shadow_visibility()) {
+		expand_night_shadow_contrast(pal1);
+	}
 }
 
 /**
@@ -289,6 +323,9 @@ void Palette::load(
 		const File_spec& fname0, const File_spec& fname1, const File_spec& fname2, int index, const char* xfname, int xindex) {
 	const U7multiobject pal(fname0, fname1, fname2, index);
 	set_loaded(pal, xfname, xindex);
+	if (index == PALETTE_NIGHT && Game_window::get_instance()->get_night_shadow_visibility()) {
+		expand_night_shadow_contrast(pal1);
+	}
 }
 
 void Palette::set_brightness(int bright) {

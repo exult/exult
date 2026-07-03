@@ -42,6 +42,8 @@ private:
 	int                      paperdolls;
 	int                      language;
 	int                      fonts;
+	bool                     night_shadow_visibility;
+	bool                     night_shadow_visibility_original;
 
 	enum button_ids {
 		id_first = 0,
@@ -62,6 +64,7 @@ private:
 		id_android_autolaunch,
 		id_language,
 		id_fonts,
+		id_night_shadow_visibility,
 
 		id_count
 	};
@@ -129,6 +132,8 @@ public:
 	void toggle_paperdolls(int state) {
 		paperdolls = state;
 	}
+
+	void toggle_night_shadow_visibility(int state);
 
 private:
 	int android_autolaunch;

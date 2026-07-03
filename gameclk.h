@@ -102,6 +102,9 @@ public:
 
 	void set_palette();    // Set palette for current hour.
 	void reset_palette();
+	void clear_palette_transition() {
+		transition.reset();
+	}
 
 	// Set light source.  MUST be fast,
 	//   since it's called during paint().

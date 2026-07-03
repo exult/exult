@@ -73,6 +73,7 @@ public:
 	void flash_red();    // Flash red for a moment.
 	// Set desired palette.
 	void set(int pal_num, int new_brightness = -1, bool repaint = true);
+	void reload(bool repaint = true);
 	void set(const unsigned char palnew[768], int new_brightness = -1, bool repaint = true, bool border255 = false);
 
 	int get_brightness() const {    // Percentage:  100 = normal.
