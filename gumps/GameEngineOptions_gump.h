@@ -43,6 +43,7 @@ private:
 	int                      cheats;
 	int                      feeding;
 	int                      enhancements;
+	int                      show_item_properties;
 
 	enum button_ids {
 		id_first = 0,
@@ -62,6 +63,7 @@ private:
 		id_cheats,
 		id_feeding,
 		id_enhancements,
+		id_show_item_properties,
 		id_count
 	};
 
@@ -131,6 +133,10 @@ public:
 
 	void toggle_enhancements(int state) {
 		enhancements = state;
+	}
+
+	void toggle_show_item_properties(int state) {
+		show_item_properties = state;
 	}
 
 	Gump_button* on_button(int mx, int my) override;

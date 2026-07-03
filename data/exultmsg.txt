@@ -297,6 +297,7 @@
 0x633:Feeding:
 0x634:Enhancements:
 0x635:Combat Speed:
+0x636:Show Item Properties:
 
 #InputOptions_gump.cc
 0x640:Single
@@ -322,6 +323,7 @@
 0x654:Pickup
 0x655:Move to
 0x656:Do nothing
+0x657:Properties
 
 #Notebook_gump.cc
 0x658:Day

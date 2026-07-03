@@ -35,7 +35,8 @@ class Itemmenu_gump : public Modal_gump {
 		use_item,
 		pickup_item,
 		move_item,
-		show_inventory
+		show_inventory,
+		show_weapon_properties
 	};
 
 public:
@@ -56,6 +57,12 @@ public:
 
 	void select_object(Game_object* obj);
 
+	void select_weapon_properties(Game_object* obj) {
+		objectSelected = obj;
+		objectAction   = show_weapon_properties;
+		close();
+	}
+
 	void set_use() {
 		objectAction = use_item;
 		close();
@@ -73,6 +80,11 @@ public:
 
 	void set_inventory() {
 		objectAction = show_inventory;
+		close();
+	}
+
+	void set_weapon_properties() {
+		objectAction = show_weapon_properties;
 		close();
 	}
 
