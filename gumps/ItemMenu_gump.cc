@@ -22,8 +22,10 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "ItemMenu_gump.h"
 
+#include "Configuration.h"
 #include "Gump_button.h"
 #include "Gump_manager.h"
+#include "Scroll_gump.h"
 #include "Text_button.h"
 #include "actors.h"
 #include "cheat.h"
@@ -31,7 +33,14 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "exult_flx.h"
 #include "gamewin.h"
 #include "items.h"
+#include "ready.h"
 #include "shapeinf.h"
+#include "shapeinf/ammoinf.h"
+#include "shapeinf/armorinf.h"
+#include "shapeinf/weaponinf.h"
+
+#include <sstream>
+#include <string>
 
 using Itemmenu_button = CallbackTextButton<Itemmenu_gump>;
 using Itemmenu_object = CallbackTextButton<Itemmenu_gump, Game_object*>;
@@ -66,7 +75,330 @@ public:
 	static auto Donothing() {
 		return get_text_msg(0x656 - msg_file_start);
 	}
+
+	static auto Properties() {
+		return get_text_msg(0x657 - msg_file_start);
+	}
 };
+
+namespace {
+
+	constexpr int potion_shape = 0x154;
+
+	bool has_potion_properties(Game_object* object) {
+		return object && object->get_shapenum() == potion_shape && (object->get_framenum() & 31) <= 9;
+	}
+
+	bool show_item_properties() {
+		std::string enabled;
+		config->value("config/gameplay/show_item_properties", enabled, "yes");
+		return enabled == "yes";
+	}
+
+	const char* get_damage_type_name(int type) {
+		switch (type) {
+		case Weapon_data::normal_damage:
+			return "normal";
+		case Weapon_data::fire_damage:
+			return "fire";
+		case Weapon_data::magic_damage:
+			return "magic";
+		case Weapon_data::lightning_damage:
+			return "lightning/poison/freezing";
+		case Weapon_data::ethereal_damage:
+			return "ethereal";
+		case Weapon_data::sonic_damage:
+			return "sonic";
+		default:
+			return "unknown";
+		}
+	}
+
+	const char* get_weapon_kind_name(int uses) {
+		switch (uses) {
+		case Weapon_info::melee:
+			return "melee";
+		case Weapon_info::poor_thrown:
+			return "poor thrown";
+		case Weapon_info::good_thrown:
+			return "good thrown";
+		case Weapon_info::ranged:
+			return "ranged";
+		default:
+			return "unknown";
+		}
+	}
+
+	const char* get_ready_type_name(int ready) {
+		switch (ready) {
+		case head:
+			return "head";
+		case backpack:
+			return "backpack";
+		case belt:
+			return "belt";
+		case lhand:
+			return "lhand";
+		case lfinger:
+			return "lfinger";
+		case legs:
+			return "legs";
+		case feet:
+			return "feet";
+		case rfinger:
+			return "rfinger";
+		case rhand:
+			return "rhand";
+		case torso:
+			return "torso";
+		case amulet:
+			return "amulet";
+		case quiver:
+			return "quiver";
+		case back_2h:
+			return "back_2h";
+		case back_shield:
+			return "back_shield";
+		case earrings:
+			return "earrings";
+		case cloak:
+			return "cloak";
+		case gloves:
+			return "gloves";
+		case ucont:
+			return "ucont";
+		case both_hands:
+			return "both_hands";
+		case lrgloves:
+			return "lrgloves";
+		case neck:
+			return "neck";
+		case scabbard:
+			return "scabbard";
+		case triple_bolts:
+			return "triple_bolts";
+		default:
+			return "unknown";
+		}
+	}
+
+	void append_power(std::ostringstream& out, bool& first, unsigned char powers, int bit, const char* name) {
+		if ((powers & bit) == 0) {
+			return;
+		}
+		if (!first) {
+			out << ", ";
+		}
+		out << name;
+		first = false;
+	}
+
+	std::string get_power_names(unsigned char powers) {
+		if (powers == 0) {
+			return "none";
+		}
+		std::ostringstream out;
+		bool               first = true;
+		append_power(out, first, powers, Weapon_data::sleep, "sleep");
+		append_power(out, first, powers, Weapon_data::charm, "charm");
+		append_power(out, first, powers, Weapon_data::curse, "curse");
+		append_power(out, first, powers, Weapon_data::poison, "poison");
+		append_power(out, first, powers, Weapon_data::paralyze, "paralyze");
+		append_power(out, first, powers, Weapon_data::magebane, "magebane");
+		append_power(out, first, powers, Weapon_data::unknown, "unknown");
+		append_power(out, first, powers, Weapon_data::no_damage, "no damage");
+		return out.str();
+	}
+
+	const char* get_potion_name(int frame) {
+		switch (frame) {
+		case 0:
+			return "Blue Potion";
+		case 1:
+			return "Yellow Potion";
+		case 2:
+			return "Red Potion";
+		case 3:
+			return "Green Potion";
+		case 4:
+			return "Orange Potion";
+		case 5:
+			return "Purple Potion";
+		case 6:
+			return "White Potion";
+		case 7:
+			return "Black Potion";
+		case 8:
+			return "Essence of Mandrake";
+		case 9:
+			return "Warmth potion";
+		default:
+			return "Unknown potion";
+		}
+	}
+
+	const char* get_potion_effect(int frame) {
+		switch (frame) {
+		case 0:
+			return "Makes the target fall asleep.";
+		case 1:
+			return "Restores 3-12 HP.";
+		case 2:
+			return "Cures poison, paralysis, sleep, charm, and curse.";
+		case 3:
+			return "Poisons the target.";
+		case 4:
+			return "Wakes a sleeping target.";
+		case 5:
+			return "Gives protection.";
+		case 6:
+			return "Creates light.";
+		case 7:
+			return "Makes the target invisible.";
+		case 8:
+			return "";
+		case 9:
+			return "Sets the target's temperature to normal.";
+		default:
+			return "Unknown.";
+		}
+	}
+
+	std::string get_potion_description(Game_object* object) {
+		const int   frame  = object->get_framenum() & 31;
+		const char* effect = get_potion_effect(frame);
+		std::string description = get_potion_name(frame);
+		if (*effect != '\0') {
+			description += " - ";
+			description += effect;
+		}
+		return description;
+	}
+
+	const char* get_potion_duration(int frame) {
+		switch (frame) {
+		case 0:
+			return "Until awakened, rest, or another clearing effect";
+		case 1:
+		case 2:
+		case 4:
+		case 8:
+		case 9:
+			return "Instant";
+		case 3:
+			return "Until cured, rest, or another clearing effect";
+		case 5:
+		case 7:
+			return "Until rest or another clearing effect";
+		case 6:
+			return "About 10 game minutes";
+		default:
+			return "Unknown";
+		}
+	}
+
+	void display_potion_properties(Game_object* object) {
+		const int          frame = object->get_framenum() & 31;
+		std::ostringstream text;
+		text << get_potion_description(object) << "~";
+		text << "Duration: " << get_potion_duration(frame) << "~";
+
+		Game_window* gwin = Game_window::get_instance();
+		Scroll_gump  scroll;
+		scroll.add_text(text.str().c_str());
+		scroll.paint();
+		do {
+			int x;
+			int y;
+			Get_click(x, y, Mouse::hand, nullptr, false, &scroll);
+		} while (scroll.show_next_page());
+		gwin->paint();
+	}
+
+	void display_weapon_properties(Game_object* object) {
+		const Weapon_info* weapon = object->get_info().get_weapon_info();
+		if (!weapon) {
+			return;
+		}
+		const Shape_info&   info = object->get_info();
+		std::ostringstream  text;
+		text << "Name: " << object->get_name() << "~";
+		text << "Damage: " << weapon->get_damage() << "~";
+		text << "Range: " << weapon->get_range() << "~";
+		text << "Speed: " << weapon->get_missile_speed() << "~";
+		text << "XP: " << weapon->get_base_xp_value() << "~";
+		text << "Damage Type: " << get_damage_type_name(weapon->get_damage_type()) << "~";
+		text << "Powers: " << get_power_names(weapon->get_powers()) << "~";
+		text << "Kind of Weapon: " << get_weapon_kind_name(weapon->get_uses()) << "~";
+		text << "Weight: " << info.get_weight() << "~";
+		text << "Volume: " << info.get_volume() << "~";
+		text << "ReadyType: " << get_ready_type_name(info.get_ready_type()) << "~";
+
+		Game_window* gwin = Game_window::get_instance();
+		Scroll_gump  scroll;
+		scroll.add_text(text.str().c_str());
+		scroll.paint();
+		do {
+			int x;
+			int y;
+			Get_click(x, y, Mouse::hand, nullptr, false, &scroll);
+		} while (scroll.show_next_page());
+		gwin->paint();
+	}
+
+	void display_armor_properties(Game_object* object) {
+		const Armor_info* armor = object->get_info().get_armor_info();
+		if (!armor) {
+			return;
+		}
+		const Shape_info&  info = object->get_info();
+		std::ostringstream text;
+		text << "Name: " << object->get_name() << "~";
+		text << "Prot: " << static_cast<int>(armor->get_prot()) << "~";
+		text << "XP: " << armor->get_base_xp_value() << "~";
+		text << "Weight: " << info.get_weight() << "~";
+		text << "Volume: " << info.get_volume() << "~";
+		text << "ReadyType: " << get_ready_type_name(info.get_ready_type()) << "~";
+
+		Game_window* gwin = Game_window::get_instance();
+		Scroll_gump  scroll;
+		scroll.add_text(text.str().c_str());
+		scroll.paint();
+		do {
+			int x;
+			int y;
+			Get_click(x, y, Mouse::hand, nullptr, false, &scroll);
+		} while (scroll.show_next_page());
+		gwin->paint();
+	}
+
+	void display_ammo_properties(Game_object* object) {
+		const Ammo_info* ammo = object->get_info().get_ammo_info();
+		if (!ammo) {
+			return;
+		}
+		const Shape_info&  info = object->get_info();
+		std::ostringstream text;
+		text << "Name: " << object->get_name() << "~";
+		text << "Damage: " << ammo->get_damage() << "~";
+		text << "DamageType: " << get_damage_type_name(ammo->get_damage_type()) << "~";
+		text << "Powers: " << get_power_names(ammo->get_powers()) << "~";
+		text << "IsSpell: " << (info.is_spell() ? "true" : "false") << "~";
+		text << "ReadyType: " << get_ready_type_name(info.get_ready_type()) << "~";
+
+		Game_window* gwin = Game_window::get_instance();
+		Scroll_gump  scroll;
+		scroll.add_text(text.str().c_str());
+		scroll.paint();
+		do {
+			int x;
+			int y;
+			Get_click(x, y, Mouse::hand, nullptr, false, &scroll);
+		} while (scroll.show_next_page());
+		gwin->paint();
+	}
+
+}    // namespace
 
 void Itemmenu_gump::select_object(Game_object* obj) {
 	objectSelected = obj;
@@ -103,9 +435,21 @@ Itemmenu_gump::Itemmenu_gump(Game_object_map_xy* mobjxy, int cx, int cy)
 	// set_object_area(TileRect(0, 0, 0, 0), -1, -1);//++++++ ???
 	int       btop = 0;
 	const int maxh = Game_window::get_instance()->get_height() - 2 * button_spacing_y;
+	Game_object* ammoPropertiesObject   = nullptr;
+	Game_object* armorPropertiesObject  = nullptr;
+	Game_object* potionPropertiesObject = nullptr;
+	Game_object* weaponPropertiesObject = nullptr;
+	int          ammoPropertiesCount    = 0;
+	int          armorPropertiesCount   = 0;
+	int          potionPropertiesCount  = 0;
+	int          weaponPropertiesCount  = 0;
+	const bool   showProperties         = show_item_properties();
 	for (auto it = mobjxy->begin(); it != mobjxy->end() && btop < maxh; it++) {
 		Game_object* o    = it->first;
 		std::string  name = o->get_name();
+		if (showProperties && has_potion_properties(o)) {
+			name = get_potion_description(o);
+		}
 		// Skip objects with no name.
 		if (name.empty()) {
 			continue;
@@ -113,6 +457,38 @@ Itemmenu_gump::Itemmenu_gump(Game_object_map_xy* mobjxy, int cx, int cy)
 		objects[o] = it->second;
 		buttons.push_back(
 				std::make_unique<Itemmenu_object>(this, &Itemmenu_gump::select_object, ObjectParams{o}, name, 10, btop, 59, 20));
+		btop += button_spacing_y;
+		if (showProperties) {
+			if (o->get_info().has_weapon_info()) {
+				weaponPropertiesObject = o;
+				++weaponPropertiesCount;
+			}
+			if (o->get_info().has_armor_info()) {
+				armorPropertiesObject = o;
+				++armorPropertiesCount;
+			}
+			if (o->get_info().has_ammo_info()) {
+				ammoPropertiesObject = o;
+				++ammoPropertiesCount;
+			}
+			if (has_potion_properties(o)) {
+				potionPropertiesObject = o;
+				++potionPropertiesCount;
+			}
+		}
+	}
+	if (objects.size() == 1
+		&& (weaponPropertiesCount == 1 || armorPropertiesCount == 1 || ammoPropertiesCount == 1
+			|| potionPropertiesCount == 1)) {
+		Game_object* propertiesObject
+				= weaponPropertiesCount == 1
+						  ? weaponPropertiesObject
+						  : (armorPropertiesCount == 1
+									 ? armorPropertiesObject
+									 : (ammoPropertiesCount == 1 ? ammoPropertiesObject : potionPropertiesObject));
+		buttons.push_back(std::make_unique<Itemmenu_object>(
+				this, &Itemmenu_gump::select_weapon_properties, ObjectParams{propertiesObject}, Strings::Properties(),
+				10, btop, 59, 20));
 		btop += button_spacing_y;
 	}
 	buttons.push_back(std::make_unique<Itemmenu_button>(this, &Itemmenu_gump::cancel_menu, Strings::Cancel(), 10, btop, 59, 20));
@@ -156,6 +532,13 @@ Itemmenu_gump::Itemmenu_gump(Game_object* obj, int ox, int oy, int cx, int cy)
 		buttons.push_back(std::make_unique<Itemmenu_button>(this, &Itemmenu_gump::set_pickup, Strings::Pickup(), 10, btop, 59, 20));
 		btop += button_spacing_y;
 		buttons.push_back(std::make_unique<Itemmenu_button>(this, &Itemmenu_gump::set_move, Strings::Moveto(), 10, btop, 59, 20));
+		btop += button_spacing_y;
+	}
+	if (show_item_properties()
+		&& (info.has_weapon_info() || info.has_armor_info() || info.has_ammo_info()
+			|| has_potion_properties(objectSelected))) {
+		buttons.push_back(
+				std::make_unique<Itemmenu_button>(this, &Itemmenu_gump::set_weapon_properties, Strings::Properties(), 10, btop, 59, 20));
 		btop += button_spacing_y;
 	}
 	buttons.push_back(std::make_unique<Itemmenu_button>(this, &Itemmenu_gump::cancel_menu, Strings::Donothing(), 10, btop, 59, 20));
@@ -241,6 +624,17 @@ void Itemmenu_gump::postCloseActions() {
 	}
 	case use_item:
 		objectSelected->activate();
+		break;
+	case show_weapon_properties:
+		if (objectSelected->get_info().has_weapon_info()) {
+			display_weapon_properties(objectSelected);
+		} else if (objectSelected->get_info().has_armor_info()) {
+			display_armor_properties(objectSelected);
+		} else if (objectSelected->get_info().has_ammo_info()) {
+			display_ammo_properties(objectSelected);
+		} else if (has_potion_properties(objectSelected)) {
+			display_potion_properties(objectSelected);
+		}
 		break;
 	case pickup_item: {
 		Main_actor*      ava    = gwin->get_main_actor();

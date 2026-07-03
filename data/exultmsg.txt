@@ -322,6 +322,8 @@
 0x654:Pickup
 0x655:Move to
 0x656:Do nothing
+0x657:Properties
+0x636:Show Item Properties:
 
 #Notebook_gump.cc
 0x658:Day
