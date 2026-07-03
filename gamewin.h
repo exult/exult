@@ -119,6 +119,8 @@ class Game_window {
 	unsigned int  in_dungeon;            // true if inside a dungeon.
 	int           num_npcs1;             // Number of type1 NPC's.
 	int           std_delay;             // Standard delay between frames.
+	int           configured_std_delay;  // User speed restored after combat.
+	int           configured_combat_std_delay;  // Combat speed from config.
 	long          time_stopped;          // For 'stop time' spell.
 	unsigned long special_light;         // Game minute when light spell ends.
 	int           theft_warnings;        // # times warned in current chunk.
@@ -547,7 +549,17 @@ public:
 	}
 
 	void set_std_delay(int msecs) {
-		std_delay = msecs;
+		configured_std_delay = msecs;
+		if (!combat) {
+			std_delay = msecs;
+		}
+	}
+
+	void set_combat_std_delay(int msecs) {
+		configured_combat_std_delay = msecs;
+		if (combat) {
+			std_delay = msecs;
+		}
 	}
 
 	Actor* get_npc(long npc_num) const;

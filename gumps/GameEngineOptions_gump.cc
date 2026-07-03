@@ -115,6 +115,10 @@ namespace {
 			return get_text_msg(0x62D - msg_file_start);
 		}
 
+		static auto CombatSpeed_() {
+			return get_text_msg(0x635 - msg_file_start);
+		}
+
 		static auto CombatShowHits_() {
 			return get_text_msg(0x62E - msg_file_start);
 		}
@@ -205,6 +209,10 @@ void GameEngineOptions_gump::build_buttons() {
 			this, &GameEngineOptions_gump::toggle_frames, frametext, frames, get_button_pos_for_label(Strings::Speed_()),
 			yForRow(++y_index), small_size);
 
+	buttons[id_combat_frames] = std::make_unique<GameEngineTextToggle>(
+			this, &GameEngineOptions_gump::toggle_combat_frames, combat_frametext, combat_frames,
+			get_button_pos_for_label(Strings::CombatSpeed_()), yForRow(++y_index), small_size);
+
 	buttons[id_show_hits] = std::make_unique<GameEngineTextToggle>(
 			this, &GameEngineOptions_gump::toggle_show_hits, yesNo, show_hits, get_button_pos_for_label(Strings::CombatShowHits_()),
 			yForRow(++y_index), small_size);
@@ -278,8 +286,10 @@ void GameEngineOptions_gump::load_settings() {
 	enhancements          = gwin->get_allow_enhancements();
 	gumps_pause           = !gumpman->gumps_dont_pause_game();
 	frames                = -1;
+	combat_frames         = -1;
 	size_t num_framerates = num_default_rates;
 	frametext.clear();
+	combat_frametext.clear();
 	// setting the framerate number to show by actually loading from config
 	int fps;
 	config->value("config/video/fps", fps, 5);
@@ -287,12 +297,22 @@ void GameEngineOptions_gump::load_settings() {
 	if (fps <= 0) {
 		fps = 5;    // default should be 5 frames
 	}
+	int combat_fps;
+	config->value("config/gameplay/combat/fps", combat_fps, 10);
+	if (combat_fps <= 0) {
+		combat_fps = 10;
+	}
 	// Now we want to populate the framerates vector and match our current text
 	// to the proper index
 	for (size_t i = 0; i < num_framerates; i++) {
-		frametext.emplace_back(framestring(framerates[i]));
+		const string rate = framestring(framerates[i]);
+		frametext.emplace_back(rate);
+		combat_frametext.emplace_back(rate);
 		if (framerates[i] == fps) {
 			frames = i;
+		}
+		if (framerates[i] == combat_fps) {
+			combat_frames = i;
 		}
 	}
 	feeding = int(cheat.GetFoodUse(true));
@@ -335,6 +355,9 @@ void GameEngineOptions_gump::save_settings() {
 	const int fps = framerates[frames];
 	gwin->set_std_delay(1000 / fps);
 	config->set("config/video/fps", fps, false);
+	const int combat_fps = framerates[combat_frames];
+	gwin->set_combat_std_delay(1000 / combat_fps);
+	config->set("config/gameplay/combat/fps", combat_fps, false);
 	cheat.set_enabled(cheats != 0);
 	cheat.SetFoodUse(Cheat::FoodUse(feeding), false);
 	gumpman->set_gumps_dont_pause_game(!gumps_pause);
@@ -355,6 +378,7 @@ void GameEngineOptions_gump::paint() {
 	font->paint_text(iwin->get_ib8(), Strings::Gumpspausegame_(), x + label_margin, y + yForRow(++y_index) + 1);
 	font->paint_text(iwin->get_ib8(), Strings::Alternativedraganddrop_(), x + label_margin, y + yForRow(++y_index) + 1);
 	font->paint_text(iwin->get_ib8(), Strings::Speed_(), x + label_margin, y + yForRow(++y_index) + 1);
+	font->paint_text(iwin->get_ib8(), Strings::CombatSpeed_(), x + label_margin, y + yForRow(++y_index) + 1);
 	font->paint_text(iwin->get_ib8(), Strings::CombatShowHits_(), x + label_margin, y + yForRow(++y_index) + 1);
 	font->paint_text(iwin->get_ib8(), Strings::CombatpausedwithSpace_(), x + label_margin, y + yForRow(++y_index) + 1);
 	font->paint_text(iwin->get_ib8(), Strings::CombatCharmedDifficulty_(), x + label_margin, y + yForRow(++y_index) + 1);

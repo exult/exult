@@ -594,7 +594,15 @@ void Game_window::init_files(bool cycle) {
 	if (fps <= 0) {
 		fps = 5;
 	}
-	std_delay = 1000 / fps;    // Convert to msecs. between frames.
+	configured_std_delay = 1000 / fps;    // Convert to msecs. between frames.
+	std_delay            = configured_std_delay;
+
+	int combat_fps;
+	config->value("config/gameplay/combat/fps", combat_fps, 10);
+	if (combat_fps <= 0) {
+		combat_fps = 10;
+	}
+	configured_combat_std_delay = 1000 / combat_fps;
 }
 
 /*
@@ -742,6 +750,9 @@ long Game_window::check_time_stopped() {
 
 void Game_window::toggle_combat() {
 	combat = !combat;
+	// Combat mode is player-controlled.  Run it at the configured combat
+	// pacing, then restore the normal speed in peaceful mode.
+	std_delay = combat ? configured_combat_std_delay : configured_std_delay;
 	// Change party member's schedules.
 	int       newsched = combat ? Schedule::combat : Schedule::follow_avatar;
 	const int cnt      = party_man->get_count();
@@ -773,6 +784,9 @@ void Game_window::toggle_combat() {
 		for (int i = 0; i < cnt; i++) {
 			// Did Usecode set to flee?
 			Actor* act = all[i];
+			// Only clear script-forced flee.  Player-selected flee is the
+			// passive combat behavior and should remain sticky across
+			// combat toggles and save/load.
 			if (act->get_attack_mode() == Actor::flee && !act->did_user_set_attack()) {
 				act->set_attack_mode(Actor::nearest);
 			}
@@ -1539,6 +1553,8 @@ void Game_window::read_gwin() {
 	if (!gin.good()) {
 		combat = false;
 	}
+	// Restore the active frame delay to match the loaded combat state.
+	std_delay = combat ? configured_combat_std_delay : configured_std_delay;
 
 	infravision_active = gin.read1() == 1;
 	if (!gin.good()) {
