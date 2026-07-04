@@ -94,10 +94,11 @@ public:
 	static bool noface;
 
 private:
-	void set_face_rect(Npc_face_info* info, Npc_face_info* prev, int screenw, int screenh);
-	void show_avatar_choices(int num_choices, char** choices);
-	void add_answer(const char* str);
-	void remove_answer(const char* str);
+	void     set_face_rect(Npc_face_info* info, Npc_face_info* prev, const TileRect& conv);
+	TileRect get_conv_rect() const;
+	void     show_avatar_choices(int num_choices, char** choices);
+	void     add_answer(const char* str);
+	void     remove_answer(const char* str);
 };
 
 #endif

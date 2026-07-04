@@ -153,8 +153,29 @@ void Conversation::init_faces() {
 	last_face_shown = -1;
 }
 
-void Conversation::set_face_rect(Npc_face_info* info, Npc_face_info* prev, int screenw, int screenh) {
+/*
+ * Get the rectangle within the game area used for conversation faces
+ * and text. For game areas bigger than the original, a fixed 320x200
+ * rectangle is used, centered in the game area.
+ */
+TileRect Conversation::get_conv_rect() const {
+	const int screenw = gwin->get_width();
+	const int screenh = gwin->get_height();
+	const int convw   = 320;
+	const int convh   = 200;
+
+	if (screenw <= convw && screenh <= convh) {
+		return TileRect(0, 0, screenw, screenh);
+	}
+	return TileRect((screenw - convw) / 2, (screenh - convh) / 2, convw, convh);
+}
+
+void Conversation::set_face_rect(Npc_face_info* info, Npc_face_info* prev, const TileRect& conv) {
 	const int text_height = sman->get_text_line_height(0);
+	const int offx        = conv.x;
+	const int offy        = conv.y;
+	const int screenw     = conv.w;
+	const int screenh     = conv.h;
 	// Figure starting y-coord.
 	// Get character's portrait.
 	Shape_frame* face   = info->shape.get_shapenum() >= 0 ? info->shape.get_shape() : nullptr;
@@ -167,17 +188,17 @@ void Conversation::set_face_rect(Npc_face_info* info, Npc_face_info* prev, int s
 	int startx;
 	int extraw;
 	if (face_w >= 119) {
-		startx           = (screenw - face_w) / 2;
+		startx           = offx + (screenw - face_w) / 2;
 		extraw           = 0;
 		info->large_face = true;
 	} else {
-		startx = 8;
+		startx = offx + 8;
 		extraw = 4;
 	}
 	int starty;
 	int extrah;
 	if (face_h >= 142) {
-		starty = (screenh - face_h) / 2;
+		starty = offy + (screenh - face_h) / 2;
 		extrah = 0;
 	} else if (prev) {
 		starty = prev->text_rect.y + prev->last_text_height;
@@ -185,24 +206,25 @@ void Conversation::set_face_rect(Npc_face_info* info, Npc_face_info* prev, int s
 			starty = prev->face_rect.y + prev->face_rect.h;
 		}
 		starty += 2 * text_height;
-		if (starty + face_h > screenh - 1) {
-			starty = screenh - face_h - 1;
+		if (starty + face_h > offy + screenh - 1) {
+			starty = offy + screenh - face_h - 1;
 		}
 		extrah = 4;
 	} else {
-		starty = 1;
+		starty = offy + 1;
 		extrah = 4;
 	}
 	info->face_rect      = gwin->clip_to_win(TileRect(startx, starty, face_w + extraw, face_h + extrah));
 	const TileRect& fbox = info->face_rect;
 	// This is where NPC text will go.
-	info->text_rect = gwin->clip_to_win(TileRect(fbox.x + fbox.w + 3, fbox.y + 3, screenw - fbox.x - fbox.w - 6, 4 * text_height));
+	info->text_rect
+			= gwin->clip_to_win(TileRect(fbox.x + fbox.w + 3, fbox.y + 3, offx + screenw - fbox.x - fbox.w - 6, 4 * text_height));
 	// No room?  (Serpent?)
 	if (info->large_face) {
 		// Show in lower center.
-		const int x     = screenw / 5;
-		const int y     = 3 * (screenh / 4);
-		info->text_rect = TileRect(x, y, screenw - (2 * x), screenh - y - 4);
+		const int lx    = screenw / 5;
+		const int ly    = 3 * (screenh / 4);
+		info->text_rect = TileRect(offx + lx, offy + ly, screenw - (2 * lx), screenh - ly - 4);
 	}
 	info->last_text_height = info->text_rect.h;
 }
@@ -254,7 +276,7 @@ void Conversation::show_face(int shape, int frame, int slot) {
 			delete face_info[slot];
 		}
 		face_info[slot] = info;
-		set_face_rect(info, prev, screenw, screenh);
+		set_face_rect(info, prev, get_conv_rect());
 	}
 	gwin->get_win()->set_clip(0, 0, screenw, screenh);
 	paint_faces();    // Paint all faces.
@@ -301,7 +323,7 @@ void Conversation::change_face_frame(int frame, int slot) {
 	const int      screenw = gwin->get_width();
 	const int      screenh = gwin->get_height();
 	Npc_face_info* prev    = slot ? face_info[slot - 1] : nullptr;
-	set_face_rect(info, prev, screenw, screenh);
+	set_face_rect(info, prev, get_conv_rect());
 
 	gwin->get_win()->set_clip(0, 0, screenw, screenh);
 	paint_faces();    // Paint all faces.
@@ -452,8 +474,8 @@ void Conversation::clear_text_pending() {
 void Conversation::show_avatar_choices(int num_choices, char** choices) {
 	const bool  SI         = Game::get_game_type() == SERPENT_ISLE;
 	Main_actor* main_actor = gwin->get_main_actor();
-	// Get screen rectangle.
-	const TileRect sbox        = gwin->get_game_rect();
+	// Get rectangle for face and text.
+	const TileRect sbox        = get_conv_rect();
 	int            x           = 0;
 	int            y           = 0;    // Keep track of coords. in box.
 	const int      line_height = sman->get_text_line_height(0);
@@ -484,17 +506,17 @@ void Conversation::show_avatar_choices(int num_choices, char** choices) {
 	}
 	// Get last one shown.
 	Npc_face_info* prev = empty ? face_info[empty - 1] : nullptr;
-	int            fx   = prev ? prev->face_rect.x + prev->face_rect.w + 4 : 16;
+	int            fx   = prev ? prev->face_rect.x + prev->face_rect.w + 4 : sbox.x + 16;
 	int            fy;
 	if (SI) {
 		if (static_cast<unsigned>(num_faces) == face_info.size()) {
 			// Remove face #1 if still there.
 			remove_slot_face(face_info.size() - 1);
 		}
-		fy = sbox.h - 2 - face->get_height();
-		fx = 8;
+		fy = sbox.y + sbox.h - 2 - face->get_height();
+		fx = sbox.x + 8;
 	} else if (!prev) {
-		fy = sbox.h - face->get_height() - 3 * line_height;
+		fy = sbox.y + sbox.h - face->get_height() - 3 * line_height;
 	} else {
 		fy = prev->text_rect.y + prev->last_text_height;
 		if (fy < prev->face_rect.y + prev->face_rect.h) {
@@ -506,7 +528,7 @@ void Conversation::show_avatar_choices(int num_choices, char** choices) {
 	mbox        = mbox.intersect(sbox);
 	avatar_face = mbox;    // Repaint entire width.
 	// Set to where to draw sentences.
-	TileRect tbox(mbox.x + mbox.w + 8, mbox.y + 4, sbox.w - mbox.x - mbox.w - 16,
+	TileRect tbox(mbox.x + mbox.w + 8, mbox.y + 4, sbox.x + sbox.w - mbox.x - mbox.w - 16,
 				  5 * line_height);    // Try 5 lines.
 	tbox = tbox.intersect(sbox);
 	// Draw portrait.
