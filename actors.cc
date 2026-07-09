@@ -1547,7 +1547,8 @@ void Actor::get_tile_info(
 	} else {
 		const Shape_info& finfo = flat.get_info();
 		water                   = finfo.is_water();
-		poison                  = finfo.is_poisonous();
+		// For flats, the raw contact-effect bit means terrain poison.
+		poison = finfo.has_contact_effect();
 		// Check for swamp/swamp boots.
 		if (poison && actor) {
 			if ((actor->gear_powers & (Frame_flags::swamp_safe | Frame_flags::poison_safe)) != 0) {

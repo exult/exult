@@ -1137,7 +1137,8 @@ Ireg_game_object_shared Game_map::create_ireg_object(
 ) {
 	Ireg_game_object_shared newobj;
 	// (These are all animated.)
-	if (info.is_field() && info.get_field_type() >= 0) {
+	// Contact-effect shapes with field type become runtime field objects.
+	if (info.has_contact_effect() && info.get_field_type() >= 0) {
 		newobj = std::make_shared<Field_object>(shnum, frnum, tilex, tiley, lift, Egg_object::fire_field + info.get_field_type());
 	} else if (info.is_animated() || info.has_sfx()) {
 		newobj = std::make_shared<Animated_ireg_object>(shnum, frnum, tilex, tiley, lift);

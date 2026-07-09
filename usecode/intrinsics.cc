@@ -2694,6 +2694,164 @@ USECODE_INTRINSIC(is_water) {
 	return Usecode_value(0);
 }
 
+namespace {
+
+	enum Shape_query_flag_id {
+		shape_flag_sfx = 0,
+		shape_flag_strange,
+		shape_flag_contact_effect,
+		shape_flag_water,
+		shape_flag_fire_field,
+		shape_flag_sleep_field,
+		shape_flag_poison_field,
+		shape_flag_caltrops_field,
+		shape_flag_campfire_field,
+		shape_flag_typed_field,
+		shape_flag_animated,
+		shape_flag_solid,
+		shape_flag_transparent,
+		shape_flag_translucent,
+		shape_flag_occludes,
+		shape_flag_light_source,
+		shape_flag_x_obstacle,
+		shape_flag_y_obstacle,
+		shape_flag_door,
+		shape_flag_barge_part,
+		shape_flag_container_locked,
+		shape_flag_extradimensional_storage,
+		shape_flag_quantity_frames,
+		shape_flag_usecode_events,
+		shape_flag_explosive,
+		shape_flag_on_fire,
+		shape_flag_lightweight,
+		shape_flag_body,
+		shape_flag_jawbone,
+		shape_flag_mirror,
+		shape_flag_spell,
+		shape_flag_count
+	};
+
+	bool eval_shape_flag(const Shape_info& info, int flag_id) {
+		switch (flag_id) {
+		case shape_flag_sfx:
+			return info.has_sfx();
+		case shape_flag_strange:
+			return info.has_strange_movement();
+		case shape_flag_contact_effect:
+			return info.has_contact_effect();
+		case shape_flag_water:
+			return info.is_water();
+		case shape_flag_fire_field:
+			return info.get_field_type() == Shape_info::fire_field;
+		case shape_flag_sleep_field:
+			return info.get_field_type() == Shape_info::sleep_field;
+		case shape_flag_poison_field:
+			return info.get_field_type() == Shape_info::poison_field;
+		case shape_flag_caltrops_field:
+			return info.get_field_type() == Shape_info::caltrops_field;
+		case shape_flag_campfire_field:
+			return info.get_field_type() == Shape_info::campfire_field;
+		case shape_flag_typed_field:
+			return info.get_field_type() != Shape_info::no_field;
+		case shape_flag_animated:
+			return info.is_animated();
+		case shape_flag_solid:
+			return info.is_solid();
+		case shape_flag_transparent:
+			return info.is_transparent();
+		case shape_flag_translucent:
+			return info.has_translucency();
+		case shape_flag_occludes:
+			return info.occludes();
+		case shape_flag_light_source:
+			return info.is_light_source();
+		case shape_flag_x_obstacle:
+			return info.is_xobstacle();
+		case shape_flag_y_obstacle:
+			return info.is_yobstacle();
+		case shape_flag_door:
+			return info.is_door();
+		case shape_flag_barge_part:
+			return info.is_barge_part();
+		case shape_flag_container_locked:
+			return info.is_container_locked();
+		case shape_flag_extradimensional_storage:
+			return info.has_extradimensional_storage();
+		case shape_flag_quantity_frames:
+			return info.has_quantity_frames();
+		case shape_flag_usecode_events:
+			return info.has_usecode_events();
+		case shape_flag_explosive:
+			return info.is_explosive();
+		case shape_flag_on_fire:
+			return info.is_on_fire();
+		case shape_flag_lightweight:
+			return info.is_lightweight();
+		case shape_flag_body:
+			return info.is_body_shape();
+		case shape_flag_jawbone:
+			return info.is_jawbone();
+		case shape_flag_mirror:
+			return info.is_mirror();
+		case shape_flag_spell:
+			return info.is_spell();
+		default:
+			return false;
+		}
+	}
+
+	const Shape_info* get_shape_info_for_shape(int shapenum) {
+		Shape_manager* sman = Shape_manager::get_instance();
+		if (!sman || shapenum < 0 || shapenum >= sman->get_shapes().get_num_shapes()) {
+			return nullptr;
+		}
+		return &ShapeID::get_info(shapenum);
+	}
+
+	bool eval_flat_shape_flag(Game_window* gwin, int xpos, int ypos, int flag_id) {
+		const int x   = (xpos - gwin->get_scrolltx()) * c_tilesize;
+		const int y   = (ypos - gwin->get_scrollty()) * c_tilesize;
+		ShapeID   sid = gwin->get_flat(x, y);
+		return !sid.is_invalid() && eval_shape_flag(sid.get_info(), flag_id);
+	}
+
+}    // namespace
+
+USECODE_INTRINSIC(get_shape_flag) {
+	if (num_parms < 2) {
+		return Usecode_value(0);
+	}
+	const int flag_id = parms[1].get_int_value();
+	if (flag_id < 0 || flag_id >= shape_flag_count) {
+		return Usecode_value(0);
+	}
+
+	const Usecode_value& target = parms[0];
+	const size_t         size   = target.get_array_size();
+	if (size) {
+		if (size == 4) {
+			if (Game_object* obj = get_item(target.get_elem(0))) {
+				return Usecode_value(eval_shape_flag(obj->get_info(), flag_id));
+			}
+			return Usecode_value(
+					eval_flat_shape_flag(gwin, target.get_elem(1).get_int_value(), target.get_elem(2).get_int_value(), flag_id));
+		}
+		if (size == 2 || size == 3) {
+			return Usecode_value(
+					eval_flat_shape_flag(gwin, target.get_elem(0).get_int_value(), target.get_elem(1).get_int_value(), flag_id));
+		}
+		return Usecode_value(0);
+	}
+
+	if (target.is_ptr() || target.get_int_value() < 0) {
+		Game_object* obj = get_item(target);
+		return Usecode_value(obj ? eval_shape_flag(obj->get_info(), flag_id) : 0);
+	}
+
+	const Shape_info* info = get_shape_info_for_shape(target.get_int_value());
+	return Usecode_value(info ? eval_shape_flag(*info, flag_id) : 0);
+}
+
 USECODE_INTRINSIC(run_endgame) {
 	ignore_unused_variable_warning(num_parms);
 	Audio::get_ptr()->stop_sound_effects();

@@ -2617,9 +2617,9 @@ void ExultStudio::init_shape_notebook(
 	set_toggle("shinfo_animated_check", info.is_animated());
 	set_toggle("shinfo_solid_check", info.is_solid());
 	set_toggle("shinfo_water_check", info.is_water());
-	// ++++Set poison for flats, field for non-flats.
-	set_toggle("shinfo_poison_check", info.is_poisonous());
-	set_toggle("shinfo_field_check", info.is_field());
+	// Shared contact-effect bit, shown as poison for flats and field for objects.
+	set_toggle("shinfo_poison_check", info.has_contact_effect());
+	set_toggle("shinfo_field_check", info.has_contact_effect());
 	set_toggle("shinfo_door_check", info.is_door());
 	set_toggle("shinfo_barge_check", info.is_barge_part());
 	set_toggle("shinfo_transp_check", info.is_transparent());
@@ -3519,8 +3519,8 @@ void ExultStudio::save_shape_notebook(
 	info.set_animated(get_toggle("shinfo_animated_check"));
 	info.set_solid(get_toggle("shinfo_solid_check"));
 	info.set_water(get_toggle("shinfo_water_check"));
-	// ++++Set poison for flats, field for non-flats.
-	info.set_field(get_toggle("shinfo_field_check") || get_toggle("shinfo_poison_check"));
+	// Shared contact-effect bit, shown as poison for flats and field for objects.
+	info.set_contact_effect(get_toggle("shinfo_field_check") || get_toggle("shinfo_poison_check"));
 	info.set_door(get_toggle("shinfo_door_check"));
 	info.set_barge_part(get_toggle("shinfo_barge_check"));
 	info.set_transparent(get_toggle("shinfo_transp_check"));

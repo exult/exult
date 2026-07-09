@@ -258,7 +258,7 @@ USECODE_INTRINSIC_PTR(get_random),                               // 0x00
 		USECODE_INTRINSIC_PTR(set_slider_value),          // 0xe2 (Exult)
 		USECODE_INTRINSIC_PTR(get_slider_value),          // 0xe3 (Exult)
 		USECODE_INTRINSIC_PTR(set_gump_text_font),        // 0xe4 (Exult)
-		USECODE_INTRINSIC_PTR(UNKNOWN),                   // 0xe5
+		USECODE_INTRINSIC_PTR(get_shape_flag),            // 0xe5 (Exult)
 		USECODE_INTRINSIC_PTR(UNKNOWN),                   // 0xe6
 		USECODE_INTRINSIC_PTR(UNKNOWN),                   // 0xe7
 		USECODE_INTRINSIC_PTR(UNKNOWN),                   // 0xe8

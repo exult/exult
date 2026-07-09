@@ -254,7 +254,8 @@ public:
 		fire_field = 0,
 		sleep_field,
 		poison_field,
-		caltrops
+		caltrops_field,
+		campfire_field
 	};
 	friend class Shapes_vga_file;    // Class that reads in data.
 
@@ -803,16 +804,24 @@ public:
 		set_tfa(0, 4, tf);
 	}
 
-	bool is_poisonous() const {    // Swamps.  Applies to tiles.
+	bool has_contact_effect() const {
 		return (tfa[1] & (1 << 4)) != 0;
 	}
 
-	bool is_field() const {    // Applies to Game_objects??
-		return (tfa[1] & (1 << 4)) != 0;
-	}
-
-	void set_field(bool tf) {
+	void set_contact_effect(bool tf) {
 		set_tfa(1, 4, tf);
+	}
+
+	bool is_poisonous() const {    // Legacy tile-facing alias for contact effects.
+		return has_contact_effect();
+	}
+
+	bool is_field() const {    // Legacy object-facing alias for contact effects.
+		return has_contact_effect();
+	}
+
+	void set_field(bool tf) {    // Legacy object-facing setter for contact effects.
+		set_contact_effect(tf);
 	}
 
 	bool is_door() const {
