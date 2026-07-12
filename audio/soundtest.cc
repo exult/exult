@@ -89,13 +89,27 @@ void SoundTester::test_sound() {
 	bool      redraw  = true;
 	SDL_Event event;
 
-	const int centerx    = gwin->get_width() / 2;
-	const int centery    = gwin->get_height() / 2;
-	const int left       = centerx - 68;
-	const int first_line = centery - 53;
+	const int centerx = gwin->get_width() / 2;
+	const int centery = gwin->get_height() / 2;
+
+	// Create the scroll once and paint the dynamic text INTO that layer
+	// so the text sits ON the scroll instead of behind it in the game
+	// buffer. Text positions are relative to the layer.
+	Scroll_gump scroll;
+	scroll.set_from_help(true);
+	scroll.add_text(" ~");
+	const auto scroll_rect = scroll.get_rect();
+
+	const int left       = centerx - 68 - scroll_rect.x;
+	const int first_line = centery - 53 - scroll_rect.y;
 	const int height     = 6;
 	const int width      = 6;
 	int       sfx_id     = -1;
+
+	// Show only the text-gump layer so the mouse pointer, HUD and any other
+	// gumps stay hidden while the sound tester is up.
+	const uint32 saved_mask = gwin->get_ui_layer_kind_mask();
+	gwin->set_ui_layer_kind_mask(1u << static_cast<int>(Image_window::UiLayerTextGumps));
 
 	Mouse::mouse()->hide();
 
@@ -104,10 +118,15 @@ void SoundTester::test_sound() {
 	int line;
 	do {
 		if (redraw) {
-			Scroll_gump scroll;
-			scroll.set_from_help(true);
-			scroll.add_text(" ~");
 			scroll.paint();
+			// Font::paint_text_fixedwidth() ignores its buffer argument and draws
+			// into the current render target, so redirect drawing to the scroll's
+			// overlay layer for the duration of the text painting.
+			Image_buffer8* lbuf = gwin->get_layer_ibuf(scroll.get_render_layer());
+			Image_buffer8* prev = lbuf ? gwin->push_render_target(lbuf) : nullptr;
+			if (lbuf) {
+				lbuf->clear_clip();
+			}
 			// Update our repeat flag to match the player if it is playing out
 			// song
 			if (player && player->is_track_playing(song)) {
@@ -169,6 +188,10 @@ void SoundTester::test_sound() {
 				}
 			}
 
+			if (lbuf) {
+				gwin->pop_render_target(prev);
+				gwin->layer_set_dirty(scroll.get_render_layer());
+			}
 			gwin->show();
 			redraw = false;
 		}
@@ -295,6 +318,13 @@ void SoundTester::test_sound() {
 			redraw = redraw || SDL_GetTicks() > repainttime;
 		}
 	} while (looping);
+
+	// Hide the scroll and restore normal layer compositing before the game
+	// view is repainted below.
+	if (scroll.get_render_layer() >= 0) {
+		gwin->layer_set_visible(scroll.get_render_layer(), false);
+	}
+	gwin->set_ui_layer_kind_mask(saved_mask);
 
 	gwin->get_tqueue()->resume(SDL_GetTicks());
 
