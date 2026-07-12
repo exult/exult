@@ -77,6 +77,7 @@ public:
 		UiLayerModalGumps,
 		UiLayerDisplayMap,
 		UiLayerTextEffects,
+		UiLayerFullScreenScene,
 		NumUiLayerKinds
 	};
 
@@ -172,6 +173,9 @@ public:
 		int                           logh;                 // Logical (game-pixel) height.
 		int                           fixed_scale;          // >0 forces integer scale, 0 = auto-fit.
 		unsigned char                 transparent;          // Palette index drawn as transparent.
+		bool                          opaque   = false;    // If set, NO index is transparent (a
+														  // full-screen opaque scene: every pixel
+														  // is drawn, even the 'transparent' index).
 		bool                          visible  = true;
 		bool                          dirty    = true;     // Buffer changed => re-upload.
 		int                           z        = 0;        // Composite order (higher = on top).
@@ -204,6 +208,14 @@ public:
 
 		unsigned char get_transparent() const {
 			return transparent;
+		}
+
+		bool is_opaque() const {
+			return opaque;
+		}
+
+		void set_opaque(bool o) {
+			opaque = o;
 		}
 
 		void set_dirty() {
@@ -293,9 +305,21 @@ protected:
 	int saved_game_height;             // Normally this is the same as game_height and is
 									   // used by the PaintIntoGuardBand code so it can
 									   // change and restore the value of game_height
-	int inter_width;
-	int inter_height;
-
+	// While a full-screen "scene" layer drives the display through the normal
+	// blit path (intro, endgame, cheat screen), scene_mode is on: the guard band
+	// is bypassed (the scene buffer has none) and every show() re-uploads the
+	// layers so an animated scene refreshes. get_game_width()/get_game_height()
+	// report the scene size so existing centring math lines up with the scene
+	// buffer.
+	bool scene_mode        = false;
+	int  scene_game_width  = 0;
+	int  scene_game_height = 0;
+	// When scene mode is on, the handle of the full-screen scene layer that owns
+	// the display, so screen_to_game()/game_to_screen() can map through it (mouse
+	// hit-testing + cursor placement line up with the scaled scene).
+	int  active_scene_layer = -1;
+	int  inter_width;
+	int  inter_height;
 	// Guardband around the edge of the draw surface to allow scalers to run
 	// without per pixel bounds checking and to allow rounding up to
 	// multiples of 4. It should  not be less than 4 and there is no reason for
@@ -570,11 +594,11 @@ public:
 	}
 
 	int get_game_width() {
-		return game_width;
+		return scene_mode ? scene_game_width : game_width;
 	}
 
 	int get_game_height() {
-		return game_height;
+		return scene_mode ? scene_game_height : game_height;
 	}
 
 	int get_end_x() {
@@ -698,6 +722,11 @@ public:
 	// Map a point in display/window coords to a layer's logical coords.
 	// Returns false if the layer is invalid or the point falls outside it.
 	bool screen_to_layer(int handle, int sx, int sy, int& lx, int& ly);
+	// Inverse of screen_to_layer: map a layer's logical coords to display coords.
+	bool layer_to_screen(int handle, int lx, int ly, int& sx, int& sy);
+	// Mark a layer as fully opaque: no palette index is treated as transparent
+	// (for a full-screen scene whose content may legitimately use index 255).
+	void layer_set_opaque(int handle, bool opaque);
 
 	// Set palette.
 	virtual void set_palette(const unsigned char* rgbs, int maxval, int brightness = 100) {
@@ -726,6 +755,11 @@ public:
 	// whether or not we should do guardband painting
 	// Criteria is using a scaler other than point and there is a guardband
 	bool ShouldPaintIntoGuardband() {
+		// A full-screen scene layer buffer has no guard band, so use the plain
+		// (point-scaler style) path with no guard band expansion.
+		if (scene_mode) {
+			return false;
+		}
 		// Only if actually scaling
 		if (draw_surface == display_surface) {
 			return false;
@@ -755,6 +789,37 @@ public:
 	void ShowFillGuardBand() {
 		FillGuardband();
 		show();
+	}
+
+	// Enter/leave "scene mode" while a full-screen scene layer is driving the
+	// display through the normal blit path. In scene mode the guard band fill is
+	// skipped (the scene buffer has no guard band) and every show() re-uploads
+	// the layers so an animated scene refreshes. get_game_width()/
+	// get_game_height() report the scene size so existing centring math lines up
+	// with the scene buffer.
+	void set_scene_mode(bool on, int scene_w = 0, int scene_h = 0, int layer_handle = -1) {
+		scene_mode         = on;
+		scene_game_width   = scene_w;
+		scene_game_height  = scene_h;
+		active_scene_layer = on ? layer_handle : -1;
+	}
+
+	bool in_scene_mode() const {
+		return scene_mode;
+	}
+
+	// The scene size reported by get_game_width()/get_game_height() while scene
+	// mode is on. Used to save/restore scene mode so scenes can nest.
+	int get_scene_game_width() const {
+		return scene_game_width;
+	}
+
+	int get_scene_game_height() const {
+		return scene_game_height;
+	}
+
+	int get_active_scene_layer() const {
+		return active_scene_layer;
 	}
 
 	/*

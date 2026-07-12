@@ -1,4 +1,4 @@
-﻿// !$*UTF8*$!
+// !$*UTF8*$!
 {
 	archiveVersion = 1;
 	classes = {
@@ -430,6 +430,7 @@
 		8ADFFDF525DE791000FC4D3A /* verify.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = verify.h; path = ../verify.h; sourceTree = "<group>"; };
 		8ADFFDF725DE791000FC4D3A /* cheat_screen_strings.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = cheat_screen_strings.h; path = ../cheat_screen_strings.h; sourceTree = "<group>"; };
 		8ADFFDF825DE791000FC4D3A /* cheat_screen_actors.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = cheat_screen_actors.cc; path = ../cheat_screen_actors.cc; sourceTree = "<group>"; };
+		8AE3D1093001610500BCB1FF /* scene_layer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = scene_layer.h; path = ../scene_layer.h; sourceTree = SOURCE_ROOT; };
 		8AE8B9BC2E400B4F0094DF3C /* SDL3.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = SDL3.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		8AF2AFD62016707F00696E08 /* joypad-glass-southwest.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "joypad-glass-southwest.png"; sourceTree = "<group>"; };
 		8AF2AFD72016708000696E08 /* joypad-glass-north.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "joypad-glass-north.png"; sourceTree = "<group>"; };
@@ -1186,6 +1187,7 @@
 				8A38EB762E2AA11300450868 /* playscene.cc */,
 				E700DC781A6E30A7006C8BE4 /* readnpcs.cc */,
 				E700DC791A6E30A7006C8BE4 /* rect.h */,
+				8AE3D1093001610500BCB1FF /* scene_layer.h */,
 				E700DC7A1A6E30A7006C8BE4 /* schedule.cc */,
 				E700DC7B1A6E30A7006C8BE4 /* schedule.h */,
 				E700DC7D1A6E30A7006C8BE4 /* shapeid.cc */,

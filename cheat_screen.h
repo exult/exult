@@ -57,6 +57,7 @@ class Font;
 class Game_clock;
 class Game_object;
 class Actor;
+class Scene_layer;
 
 // #define CHEAT_SCREEN_TEST_MOBILE 1
 
@@ -796,6 +797,11 @@ private:
 
 	void RunMenu(std::shared_ptr<Menu> menu);
 
+	// Map display/event coordinates to cheat-screen (scene layer) coordinates.
+	// The cheat screen is drawn into a scaled scene layer, so raw mouse events
+	// must be mapped through that layer rather than the game area.
+	void screen_to_cheat(int ex, int ey, int& cx, int& cy) const;
+
 	struct {
 		Uint32 last = 0;
 		// Accumulated swipe deltas. We treat these as a vector
@@ -803,7 +809,14 @@ private:
 		float dy = 0;
 	} swipe;
 
-	Image_buffer8*        ibuf  = nullptr;
+	Image_buffer8* ibuf = nullptr;
+	// The cheat screen renders into a full-screen scene layer (owned by a local
+	// in show_screen); this is a non-owning pointer valid only while the screen
+	// is shown. Null if no layer is available.
+	Scene_layer* scene = nullptr;
+	// Current mouse position in cheat-screen (scene) coordinates, used for
+	// hotspot hit-testing and hover.
+	int                   cheat_mousex = 0, cheat_mousey = 0;
 	std::shared_ptr<Font> font  = nullptr;
 	Game_clock*           clock = nullptr;
 	int                   maxx = 0, maxy = 0;

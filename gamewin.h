@@ -446,6 +446,10 @@ public:
 		win->layer_set_visible(handle, visible);
 	}
 
+	void layer_set_opaque(int handle, bool opaque) {
+		win->layer_set_opaque(handle, opaque);
+	}
+
 	bool layer_is_visible(int handle) {
 		return win->layer_is_visible(handle);
 	}

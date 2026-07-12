@@ -105,6 +105,7 @@ EXULTSOURCES =	\
 	playscene.h	\
 	readnpcs.cc	\
 	rect.h		\
+	scene_layer.h	\
 	schedule.cc	\
 	schedule.h	\
 	shapeid.cc	\

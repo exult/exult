@@ -944,6 +944,13 @@ void Image_window::show(int x, int y, int w, int h) {
 	if (!ready()) {
 		return;
 	}
+	// While a full-screen scene layer is driving the display, the caller paints
+	// into the scene buffer (not the game buffer) and blits via the normal path
+	// (show(), palette apply/fade, FLI player). Re-upload the layers each show so
+	// the animated scene refreshes.
+	if (scene_mode) {
+		mark_all_layers_dirty();
+	}
 	// call EndPaintIntoGuardBand just in case. It is safe to call it when not
 	// needed
 	EndPaintIntoGuardBand();
@@ -1191,6 +1198,11 @@ void Image_window::EndPaintIntoGuardBand() {
 }
 
 void Image_window::FillGuardband() {
+	// In scene mode drawing goes to a full-screen scene layer buffer that has no
+	// guard band; the game window's guard band must not be filled from it.
+	if (scene_mode) {
+		return;
+	}
 	auto pixels = static_cast<uint8*>(draw_surface->pixels) + guard_band + guard_band * draw_surface->pitch;
 	// Bottom
 	auto read  = pixels + (ibuf->height - 1) * draw_surface->pitch;
@@ -1233,6 +1245,12 @@ int Image_window::get_display_height() {
 }
 
 void Image_window::screen_to_game(int sx, int sy, bool fast, int& gx, int& gy) {
+	// While a full-screen scene layer owns the display, map through it so mouse
+	// hit-testing lines up with widgets drawn in the (scaled) scene.
+	if (scene_mode && active_scene_layer >= 0) {
+		screen_to_layer(active_scene_layer, sx, sy, gx, gy);
+		return;
+	}
 	if (fast) {
 		gx = sx + get_start_x();
 		gy = sy + get_start_y();
@@ -1246,6 +1264,12 @@ void Image_window::screen_to_game(int sx, int sy, bool fast, int& gx, int& gy) {
 }
 
 void Image_window::game_to_screen(int gx, int gy, bool fast, int& sx, int& sy) {
+	// Inverse of screen_to_game while a full-screen scene layer owns the display
+	// (keeps the cursor aligned with the scaled scene).
+	if (scene_mode && active_scene_layer >= 0) {
+		layer_to_screen(active_scene_layer, gx, gy, sx, sy);
+		return;
+	}
 	if (fast) {
 		if (Mouse::mouse()) {
 			Mouse::mouse()->unapply_fast_offset(gx, gy);
@@ -1559,6 +1583,16 @@ void Image_window::layer_set_visible(int handle, bool visible) {
 		return;
 	}
 	layers[handle]->set_visible(visible);
+}
+
+void Image_window::layer_set_opaque(int handle, bool opaque) {
+	if (handle < 0 || handle >= static_cast<int>(layers.size()) || !layers[handle]) {
+		return;
+	}
+	if (layers[handle]->is_opaque() != opaque) {
+		layers[handle]->set_opaque(opaque);
+		layers[handle]->set_dirty();    // Re-upload with the new transparency.
+	}
 }
 
 bool Image_window::layer_is_visible(int handle) {
@@ -1944,6 +1978,21 @@ bool Image_window::screen_to_layer(int handle, int sx, int sy, int& lx, int& ly)
 	ly = static_cast<int>((static_cast<float>(sy) - dst.y) * layer.logh / dst.h);
 	return static_cast<float>(sx) >= dst.x && static_cast<float>(sy) >= dst.y && lx >= 0 && ly >= 0 && lx < layer.logw
 		   && ly < layer.logh;
+}
+
+bool Image_window::layer_to_screen(int handle, int lx, int ly, int& sx, int& sy) {
+	if (handle < 0 || handle >= static_cast<int>(layers.size()) || !layers[handle]) {
+		return false;
+	}
+	const Layer& layer = *layers[handle];
+	SDL_FRect    dst;
+	get_layer_dest(layer, dst);
+	if (dst.w <= 0 || dst.h <= 0 || layer.logw <= 0 || layer.logh <= 0) {
+		return false;
+	}
+	sx = static_cast<int>(dst.x + static_cast<float>(lx) * dst.w / layer.logw);
+	sy = static_cast<int>(dst.y + static_cast<float>(ly) * dst.h / layer.logh);
+	return true;
 }
 
 void Image_window::free_layer_textures() {

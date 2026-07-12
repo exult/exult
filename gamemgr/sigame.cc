@@ -40,6 +40,7 @@
 #include "mappatch.h"
 #include "miscinf.h"
 #include "palette.h"
+#include "scene_layer.h"
 #include "shapeid.h"
 #include "span.h"
 #include "touchui.h"
@@ -47,6 +48,7 @@
 
 #include <array>
 #include <cctype>
+#include <optional>
 
 using std::cout;
 using std::endl;
@@ -273,8 +275,8 @@ static int get_frame() {
 }
 
 void SI_Game::play_intro() {
-	Game_window::Scoped_ui_layer_mask scene_layers(gwin, 0);
-	Audio*                            audio = Audio::get_ptr();
+	Scene_view scene(topx, topy, centerx, centery, ibuf);
+	Audio*     audio = Audio::get_ptr();
 	audio->stop_music();
 	MyMidiPlayer* midi = audio->get_midi();
 	if (midi) {
@@ -874,8 +876,6 @@ Shape_frame* SI_Game::get_menu_shape() {
 }
 
 void SI_Game::top_menu() {
-	const uint32                      menu_mouse_only = 1u << static_cast<int>(Image_window::UiLayerMousePointer);
-	Game_window::Scoped_ui_layer_mask scene_layers(gwin, menu_mouse_only);
 	Audio::get_ptr()->start_music(28, true, MyMidiPlayer::Force_None, MAINSHP_FLX);
 	sman->paint_shape(topx, topy, get_menu_shape());
 	pal->load(MAINSHP_FLX, PATCH_MAINSHP, 26);
@@ -883,8 +883,7 @@ void SI_Game::top_menu() {
 }
 
 void SI_Game::show_journey_failed() {
-	const uint32                      menu_mouse_only = 1u << static_cast<int>(Image_window::UiLayerMousePointer);
-	Game_window::Scoped_ui_layer_mask scene_layers(gwin, menu_mouse_only);
+	Scene_view scene(topx, topy, centerx, centery, ibuf, true);
 	pal->fade_out(50);
 	gwin->clear_screen(true);
 	sman->paint_shape(topx, topy, get_menu_shape());
@@ -1057,8 +1056,8 @@ std::vector<unsigned int> SI_Game::get_congratulations_messages() {
 void SI_Game::end_game(bool success, bool within_game) {
 	ignore_unused_variable_warning(success);
 	waitforspeech();
-	Game_window::Scoped_ui_layer_mask scene_layers(gwin, 0);
-	Audio*                            audio = Audio::get_ptr();
+	Scene_view scene(topx, topy, centerx, centery, ibuf);
+	Audio*     audio = Audio::get_ptr();
 	audio->stop_music();
 	MyMidiPlayer* midi = audio->get_midi();
 	if (midi) {
@@ -1360,16 +1359,14 @@ void SI_Game::end_game(bool success, bool within_game) {
 }
 
 void SI_Game::show_quotes() {
-	const uint32                      menu_mouse_only = 1u << static_cast<int>(Image_window::UiLayerMousePointer);
-	Game_window::Scoped_ui_layer_mask scene_layers(gwin, menu_mouse_only);
+	Scene_view scene(topx, topy, centerx, centery, ibuf);
 	Audio::get_ptr()->start_music(32, false, MyMidiPlayer::Force_None, MAINSHP_FLX);
 	TextScroller quotes(MAINSHP_FLX, 0x10, fontManager.get_font("MENU_FONT"), menushapes.extract_shape(0x14), true);
 	quotes.run(gwin);
 }
 
 void SI_Game::show_credits() {
-	const uint32                      menu_mouse_only = 1u << static_cast<int>(Image_window::UiLayerMousePointer);
-	Game_window::Scoped_ui_layer_mask scene_layers(gwin, menu_mouse_only);
+	Scene_view scene(topx, topy, centerx, centery, ibuf);
 	pal->load(MAINSHP_FLX, PATCH_MAINSHP, 26);
 	Audio::get_ptr()->start_music(30, false, MyMidiPlayer::Force_None, MAINSHP_FLX);
 	TextScroller credits(MAINSHP_FLX, 0x0E, fontManager.get_font("MENU_FONT"), menushapes.extract_shape(0x14), true);
@@ -1379,10 +1376,10 @@ void SI_Game::show_credits() {
 }
 
 bool SI_Game::new_game(Vga_file& shapes) {
-	const uint32                      menu_mouse_only = 1u << static_cast<int>(Image_window::UiLayerMousePointer);
-	Game_window::Scoped_ui_layer_mask scene_layers(gwin, menu_mouse_only);
-	const int                         menuy = topy + 110;
-	std::shared_ptr<Font>             font  = fontManager.get_font("MENU_FONT");
+	std::optional<Scene_view> scene;
+	scene.emplace(topx, topy, centerx, centery, ibuf, true);
+	const int             menuy = topy + 110;
+	std::shared_ptr<Font> font  = fontManager.get_font("MENU_FONT");
 
 	if (Mouse::mouse() && !Mouse::use_touch_input) {    // If not primarily touch input
 		Mouse::mouse()->show();                         // Attempt to make the mouse visible initially
@@ -1474,7 +1471,7 @@ bool SI_Game::new_game(Vga_file& shapes) {
 				const SDL_Rect rectOnward = {topx + 10, topy + 180, 130, 16};
 				const SDL_Rect rectReturn = {centerx + 10, topy + 180, 130, 16};
 				SDL_Point      point;
-				gwin->get_win()->screen_to_game(event.button.x, event.button.y, gwin->get_fastmouse(), point.x, point.y);
+				scene->screen_to_scene(event.button.x, event.button.y, point.x, point.y);
 				if (SDL_GetRectEnclosingPoints(&point, 1, &rectName, nullptr)) {
 					if (event.type == SDL_EVENT_MOUSE_BUTTON_DOWN) {
 						selected = 0;
@@ -1627,6 +1624,9 @@ bool SI_Game::new_game(Vga_file& shapes) {
 		set_avname(npc_name);
 		set_avsex(skindata->is_female);
 		pal->fade_out(c_fade_out_time);
+		// Leave the scene before init_gamedat so its error dialog (a gump) is not
+		// hidden by the scene layer mask.
+		scene.reset();
 		gwin->clear_screen(true);
 		// Immediately restore the palette after clearing the screen incase
 		// init_gamedat errors and displays a yesno_gump

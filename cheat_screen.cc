@@ -43,6 +43,7 @@
 #include "ignore_unused_variable_warning.h"
 #include "miscinf.h"
 #include "party.h"
+#include "scene_layer.h"
 #include "schedule.h"
 #include "touchui.h"
 #include "ucmachine.h"
@@ -83,6 +84,15 @@ int CheatScreen::Get_highest_map() {
 	return n;
 }
 
+void CheatScreen::screen_to_cheat(int ex, int ey, int& cx, int& cy) const {
+	if (scene != nullptr && scene->valid()) {
+		// Map through the scaled scene layer so input lines up with what is drawn.
+		gwin->get_win()->screen_to_layer(scene->get_handle(), ex, ey, cx, cy);
+	} else {
+		gwin->get_win()->screen_to_game(ex, ey, gwin->get_fastmouse(), cx, cy);
+	}
+}
+
 void CheatScreen::show_screen() {
 	cscreen                              = this;
 	ibuf                                 = gwin->get_win()->get_ib8();
@@ -117,12 +127,27 @@ void CheatScreen::show_screen() {
 		font = fontManager.get_font("MENU_FONT");
 	}
 	clock = gwin->get_clock();
-	maxx  = gwin->get_width();
+	// Render the cheat screen into a fixed-size full-screen scene layer that is
+	// scaled to fill the display using the main game video settings. 360x225
+	// normally; 320x200 with the touch UI so its on-screen controls line up.
+	const int   scene_w = (touchui != nullptr) ? 320 : 360;
+	const int   scene_h = (touchui != nullptr) ? 200 : 225;
+	Scene_layer scene_obj(scene_w, scene_h);
+	scene = &scene_obj;
+	if (scene_obj.valid()) {
+		ibuf = scene_obj.buffer();
+		maxx = scene_obj.width();
+		maxy = scene_obj.height();
+	} else {
+		// No layer available: fall back to painting straight to the window.
+		ibuf = gwin->get_win()->get_ib8();
+		maxx = gwin->get_width();
 #if defined(SDL_PLATFORM_IOS) || defined(ANDROID) || defined(CHEAT_SCREEN_TEST_MOBILE)
-	maxy = 200;
+		maxy = 200;
 #else
-	maxy = gwin->get_height();
+		maxy = gwin->get_height();
 #endif
+	}
 	centerx            = maxx / 2;
 	centery            = maxy / 2;
 	SDL_Window* window = gwin->get_win()->get_screen_window();
@@ -166,10 +191,20 @@ void CheatScreen::show_screen() {
 	buttons_down.clear();
 	// Run the Menu
 	{
-		const uint32                      mouse_only = 1u << static_cast<int>(Image_window::UiLayerMousePointer);
-		Game_window::Scoped_ui_layer_mask scene_layers(gwin, mouse_only);
+		const uint32 scene_mask = (1u << static_cast<int>(Image_window::UiLayerMousePointer))
+								  | (1u << static_cast<int>(Image_window::UiLayerFullScreenScene));
+		Game_window::Scoped_ui_layer_mask scene_layers(gwin, scene_mask);
 		RunMenu(RootMenu());
 	}
+	// Make sure drawing is no longer redirected to the scene buffer (in case a
+	// render loop broke out before its end_frame), then hide the scene layer
+	// before the game view is repainted below; scene_obj's destructor removes it
+	// entirely when show_screen returns. Point ibuf back at the game window so
+	// nothing keeps a dangling reference to the scene buffer.
+	scene_obj.restore_target();
+	scene_obj.set_visible(false);
+	scene = nullptr;
+	ibuf  = gwin->get_win()->get_ib8();
 
 	Mouse::mouse()->set_speed_cursor();
 	Mouse::mouse()->hide();
@@ -552,6 +587,11 @@ bool CheatScreen::InputHandlers::GameObject::OnInput(SDL_Keycode key_sym) {
 	// Enter Pick Mode
 	if (hotspots[0].IsKeycode(key_sym)) {
 		cscreen->WaitButtonsUp(true);
+		// Temporarily hide the scene layer so the game world is visible while
+		// the user picks an object; the next menu frame re-shows the scene.
+		if (cscreen->scene != nullptr) {
+			cscreen->scene->set_visible(false);
+		}
 		gwin->set_all_dirty();
 		gwin->paint();
 		gwin->show(true);
@@ -800,13 +840,18 @@ SDL_Keycode CheatScreen::GetKey(const std::vector<Hotspot*>& hotspots, SDL_Keyco
 					gwin->get_win()->screen_to_game(event.motion.x, event.motion.y, gwin->get_fastmouse(), gx, gy);
 
 					Mouse::mouse()->move(gx, gy);
+					// Track the pointer in cheat-screen (scene) coordinates for
+					// hotspot hover/hit-testing.
+					screen_to_cheat(event.motion.x, event.motion.y, cheat_mousex, cheat_mousey);
 					Mouse::mouse_update = true;
 				} break;
 					// return;
 
 				case SDL_EVENT_MOUSE_BUTTON_DOWN: {
 					SDL_ConvertEventToRenderCoordinates(renderer, &event);
-					gwin->get_win()->screen_to_game(event.button.x, event.button.y, gwin->get_fastmouse(), gx, gy);
+					screen_to_cheat(event.button.x, event.button.y, gx, gy);
+					cheat_mousex = gx;
+					cheat_mousey = gy;
 					CERR("SDL_EVENT_MOUSE_BUTTON_DOWN( " << gx << " , " << gy << " )");
 					buttons_down.insert(event.button.button);
 					if (event.button.button == 1) {
@@ -818,13 +863,12 @@ SDL_Keycode CheatScreen::GetKey(const std::vector<Hotspot*>& hotspots, SDL_Keyco
 								simulate_key = SDLK_RETURN;
 							}
 
-							CERR("window size( " << gwin->get_width() << " , " << gwin->get_height() << " )");
 							// Touch on the cheat screen will bring up the
 							// keyboard but not if the tap was within a 20 pixel
-							// border on the edge of the game screen)
+							// border on the edge of the cheat screen.
 							if (SDL_TextInputActive(window)) {
 								SDL_StopTextInput(window);
-							} else if (gx > 20 && gy > 20 && gx < (gwin->get_width() - 20) && gy < (gwin->get_height() - 20)) {
+							} else if (gx > 20 && gy > 20 && gx < (maxx - 20) && gy < (maxy - 20)) {
 								TouchUI::startTextInput(window);
 							}
 						}
@@ -933,7 +977,11 @@ void CheatScreen::RunMenu(std::shared_ptr<Menu> menu) {
 				for (;;) {
 					current->run();
 					hotspots.clear();
-					gwin->clear_screen();
+					if (scene && scene->valid()) {
+						scene->begin_frame();
+					} else {
+						gwin->clear_screen();
+					}
 					current->paint_display();
 					current->GatherHotspots(hotspots);
 
@@ -981,7 +1029,10 @@ void CheatScreen::RunMenu(std::shared_ptr<Menu> menu) {
 						}
 					}
 					for (const auto hs : hotspots) {
-						hs->Paint(highlighted, Mouse::mouse()->get_mousex(), Mouse::mouse()->get_mousey());
+						hs->Paint(highlighted, cheat_mousex, cheat_mousey);
+					}
+					if (scene && scene->valid()) {
+						scene->end_frame();
 					}
 					Mouse::mouse()->show();
 					gwin->get_win()->show();
@@ -1237,7 +1288,7 @@ std::shared_ptr<CheatScreen::Menu> CheatScreen::RootMenu() {
 #if !defined(SDL_PLATFORM_IOS) && !defined(ANDROID) && !defined(CHEAT_SCREEN_TEST_MOBILE)
 	// for small screens taking the liberty of leaving that out
 	command                  = std::make_shared<LeftRightIntegerCommand>(1, 20, clock->get_time_rate());
-	command->events.Activate = [this](MenuCommand* self, SDL_Keycode) noexcept -> std::shared_ptr<MenuCommand> {
+	command->events.Activate = [this](MenuCommand* self, SDL_Keycode) -> std::shared_ptr<MenuCommand> {
 		clock->set_time_rate(static_cast<LeftRightIntegerCommand*>(self)->currentval);
 		return {};
 	};
@@ -1519,7 +1570,7 @@ std::shared_ptr<CheatScreen::Menu> CheatScreen::GlobalFlagMenu(unsigned num) {
 		snprintf(buf, sizeof(buf), "%d ", num);
 		std::string_view flag_name;
 
-		if (num < global_flag_names.size() && !global_flag_names[num].empty()) {
+		if (num < static_cast<unsigned>(global_flag_names.size()) && !global_flag_names[num].empty()) {
 			flag_name = global_flag_names[num];
 		} else {
 			flag_name = Strings::AdvancedFlagsMenu::unnamed();
@@ -1589,7 +1640,7 @@ std::shared_ptr<CheatScreen::Menu> CheatScreen::GlobalFlagMenu(unsigned num) {
 	auto menu = std::make_shared<Menu>(std::move(items));
 	menu->setData<unsigned>(num);
 
-	menu->events.paint_display = [=](MenuCommand*) noexcept -> bool {
+	menu->events.paint_display = [=](MenuCommand*) -> bool {
 #if defined(SDL_PLATFORM_IOS) || defined(ANDROID) || defined(CHEAT_SCREEN_TEST_MOBILE)
 		font->paint_text_fixedwidth(ibuf, Strings::AdvancedFlagsMenu::GlobalFlags, 15, 0, 8, fontcolor.colors);
 		return true;
@@ -1663,7 +1714,7 @@ std::shared_ptr<CheatScreen::Menu> CheatScreen::TeleportMenu() {
 	command->inputs.push_back(std::make_shared<InputHandlers::KeyOnly>(Strings::TeleportMenu::Longitude, std::move(hotspots)));
 	command->inputs.push_back(std::make_shared<InputHandlers::Integer>(false, 0, 193, false, Strings::ENTER_LONGITUDE));
 
-	command->events.begin_phase = [=](MenuCommand* self) noexcept {
+	command->events.begin_phase = [=](MenuCommand* self) {
 		// Check phase 0 input and update maximum accepted for input[1]
 		if (self->phase == 1) {
 			auto latkeypress = static_cast<InputHandlers::KeyOnly*>(self->inputs[0].get());
@@ -1889,7 +1940,11 @@ void CheatScreen::WaitButtonsUp(bool silent) {
 			SDL_Keycode unicode;
 			keycode = GetKey(hotspotptrs, unicode);
 		}
-		gwin->clear_screen();
+		if (scene && scene->valid()) {
+			scene->begin_frame();
+		} else {
+			gwin->clear_screen();
+		}
 
 		// exit if escape is pressed
 		if (keycode == SDLK_ESCAPE) {
@@ -1950,7 +2005,7 @@ void CheatScreen::WaitButtonsUp(bool silent) {
 						continue;
 					}
 
-					button_name = Strings::MouseButton(button - 1);
+					button_name = Strings::MouseButton[button - 1];
 				} break;
 
 				default: {
@@ -2000,11 +2055,14 @@ void CheatScreen::WaitButtonsUp(bool silent) {
 		}
 
 		for (auto& hs : hotspots) {
-			hs.Paint(SDLK_UNKNOWN, Mouse::mouse()->get_mousex(), Mouse::mouse()->get_mousey());
-			Mouse::mouse()->show();
-			gwin->get_win()->show();
-			Mouse::mouse()->hide();    // Must immediately hide to prevent flickering
+			hs.Paint(SDLK_UNKNOWN, cheat_mousex, cheat_mousey);
 		}
+		if (scene && scene->valid()) {
+			scene->end_frame();
+		}
+		Mouse::mouse()->show();
+		gwin->get_win()->show();
+		Mouse::mouse()->hide();    // Must immediately hide to prevent flickering
 	}
 }
 

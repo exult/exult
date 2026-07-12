@@ -48,6 +48,7 @@
 #include "mouse.h"
 #include "palette.h"
 #include "playscene.h"
+#include "scene_layer.h"
 #include "shapeid.h"
 #include "shapes/miscinf.h"
 
@@ -56,6 +57,7 @@
 #include <array>
 #include <cstdlib>
 #include <cstring>
+#include <optional>
 #include <regex>
 #include <sstream>
 
@@ -568,7 +570,6 @@ bool Game::read_game_xml(const char* name1) {
 }
 
 bool Game::show_menu(bool skip) {
-	const int menuy = topy + 120;
 	// Brand-new game in development?
 	if (skip || (is_editing() && !U7exists(MAINSHP_FLX))) {
 		const bool first = !U7exists(IDENTITY);
@@ -579,6 +580,10 @@ bool Game::show_menu(bool skip) {
 	}
 	IExultDataSource mouse_data(MAINSHP_FLX, PATCH_MAINSHP, 19);
 	Mouse            menu_mouse(gwin, mouse_data);
+
+	std::optional<Scene_view> menu_scene;
+	menu_scene.emplace(topx, topy, centerx, centery, ibuf, true);
+	const int menuy = topy + 120;
 
 	top_menu();
 	MenuList* menu = nullptr;
@@ -623,6 +628,10 @@ bool Game::show_menu(bool skip) {
 	bool exitmenu = false;
 
 	do {
+		if (!menu_scene) {
+			menu_scene.emplace(topx, topy, centerx, centery, ibuf, true);
+			top_menu();
+		}
 		if (menu == nullptr) {
 			menu       = new MenuList();
 			int offset = 0;
@@ -693,6 +702,7 @@ bool Game::show_menu(bool skip) {
 #endif
 		case 0:    // Intro
 			pal->fade_out(c_fade_out_time);
+			menu_scene.reset();
 			if (scene_available("intro")) {
 				Audio::get_ptr()->stop_music();
 				play_scene("intro");
@@ -701,15 +711,13 @@ bool Game::show_menu(bool skip) {
 			} else {
 				play_intro();
 			}
-			gwin->clear_screen(true);
-			top_menu();
 			break;
 		case 2:    // Journey Onwards
+			// init_gamedat may raise an error gump, so drop the menu scene first.
+			menu_scene.reset();
 			created = gwin->init_gamedat(false);
 			if (!created) {
 				show_journey_failed();
-				gwin->clear_screen(true);
-				top_menu();
 				menu->set_selection(1);
 				break;
 			}
@@ -718,6 +726,9 @@ bool Game::show_menu(bool skip) {
 			play     = true;
 			break;
 		case 1:    // New Game
+			// new_game() runs its own scene and may raise an error gump from
+			// init_gamedat, so drop the menu scene while it runs.
+			menu_scene.reset();
 			if (new_game(menushapes)) {
 				exitmenu = true;
 			} else {
@@ -728,6 +739,7 @@ bool Game::show_menu(bool skip) {
 			break;
 		case 3:    // Credits
 			pal->fade_out(c_fade_out_time);
+			menu_scene.reset();
 			if (scene_available("credits")) {
 				Audio::get_ptr()->stop_music();
 				play_scene("credits");
@@ -737,20 +749,20 @@ bool Game::show_menu(bool skip) {
 			}
 			delete menu;
 			menu = nullptr;
-			top_menu();
 			break;
 		case 4:    // Quotes
 			pal->fade_out(c_fade_out_time);
+			menu_scene.reset();
 			if (scene_available("quotes")) {
 				Audio::get_ptr()->stop_music();
 				play_scene("quotes");
 			} else {
 				show_quotes();
 			}
-			top_menu();
 			break;
 		case 5:    // End Game
 			pal->fade_out(c_fade_out_time);
+			menu_scene.reset();
 			if (scene_available("endgame")) {
 				Audio::get_ptr()->stop_music();
 				play_scene("endgame");
@@ -759,7 +771,6 @@ bool Game::show_menu(bool skip) {
 			} else {
 				end_game(true, false);
 			}
-			top_menu();
 			break;
 		case 6:    // Return to Menu
 			play     = false;

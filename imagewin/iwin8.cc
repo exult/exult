@@ -228,7 +228,7 @@ unique_ptr<unsigned char[]> Image_window8::mini_screenshot() {
  *  ARGB for one palette index within a layer.
  */
 uint32 Image_window8::layer_argb_pixel(const Layer& layer, unsigned char p) const {
-	if (p == layer.get_transparent()) {
+	if (!layer.is_opaque() && p == layer.get_transparent()) {
 		return 0;    // Fully transparent.
 	}
 	if (!layer.index_argb.empty() && layer.index_argb[p] != 0) {
@@ -298,6 +298,74 @@ bool Image_window8::refresh_layer_scaled(Layer& layer, int factor) {
 	// Fixed-palette override for this layer, if any (else the live palette).
 	const std::vector<unsigned char>& pal_ov      = get_ui_cfg(layer.ui_kind).ui_palette_colors;
 	const unsigned char*              palette_rgb = pal_ov.empty() ? colors : pal_ov.data();
+
+	// A fully opaque layer (a full-screen scene) has no transparent index and no
+	// translucency, so skip the transparency matting entirely: scale the colours
+	// once through the game scaler and mark every pixel opaque. Otherwise the
+	// scene's legitimate use of the 'transparent' index (e.g. index 255 in an
+	// FLI frame) would be matted away to see-through.
+	if (layer.is_opaque()) {
+		const int    ossw  = ((logw + 3) & ~3) + 2 * gb;
+		const int    ossh  = logh + 2 * gb;
+		SDL_Surface* osrc8 = SDL_CreateSurface(ossw, ossh, SDL_PIXELFORMAT_INDEX8);
+		SDL_Surface* odst  = SDL_CreateSurface(ossw * factor, ossh * factor, SDL_PIXELFORMAT_ARGB8888);
+		bool         done  = false;
+		if (osrc8 && odst) {
+			SDL_Palette* sdl_pal = SDL_CreateSurfacePalette(osrc8);
+			if (sdl_pal) {
+				SDL_Color cols[256];
+				for (int i = 0; i < 256; i++) {
+					cols[i].r = palette_rgb[3 * i];
+					cols[i].g = palette_rgb[3 * i + 1];
+					cols[i].b = palette_rgb[3 * i + 2];
+					cols[i].a = 255;
+				}
+				SDL_SetPaletteColors(sdl_pal, cols, 0, 256);
+				uint8*    sp       = static_cast<uint8*>(osrc8->pixels);
+				const int sp_pitch = osrc8->pitch;
+				// Copy content at (gb,gb), replicating edge pixels into the guard
+				// band so the scaler does not bleed a stray colour at the border.
+				for (int y = 0; y < logh; y++) {
+					uint8*               drow = sp + static_cast<size_t>(y + gb) * sp_pitch;
+					const unsigned char* srow = src + static_cast<size_t>(y) * spitch;
+					memset(drow, srow[0], gb);
+					memcpy(drow + gb, srow, logw);
+					memset(drow + gb + logw, srow[logw - 1], ossw - gb - logw);
+				}
+				for (int y = 0; y < gb; y++) {
+					memcpy(sp + static_cast<size_t>(y) * sp_pitch, sp + static_cast<size_t>(gb) * sp_pitch, ossw);
+				}
+				for (int y = logh + gb; y < ossh; y++) {
+					memcpy(sp + static_cast<size_t>(y) * sp_pitch, sp + static_cast<size_t>(logh + gb - 1) * sp_pitch, ossw);
+				}
+				if (scale_layer_color(layer, osrc8, logw, logh, odst)) {
+					auto          texpix = make_unique<uint32[]>(static_cast<size_t>(tex_w) * tex_h);
+					const uint32* pix    = static_cast<const uint32*>(odst->pixels);
+					const size_t  dpitch = static_cast<size_t>(odst->pitch) / sizeof(uint32);
+					const size_t  sgb    = static_cast<size_t>(factor) * gb;
+					for (int y = 0; y < tex_h; y++) {
+						const uint32* row  = pix + (static_cast<size_t>(y) + sgb) * dpitch + sgb;
+						uint32*       trow = texpix.get() + static_cast<size_t>(y) * tex_w;
+						for (int x = 0; x < tex_w; x++) {
+							trow[x] = 0xff000000u | (row[x] & 0x00ffffffu);
+						}
+					}
+					SDL_UpdateTexture(layer.texture, nullptr, texpix.get(), tex_w * static_cast<int>(sizeof(uint32)));
+					done = true;
+				}
+			}
+		}
+		if (odst) {
+			SDL_DestroySurface(odst);
+		}
+		if (osrc8) {
+			SDL_DestroySurface(osrc8);
+		}
+		if (done) {
+			return true;
+		}
+		// If the fast path failed, fall through to the normal (matting) path.
+	}
 
 	// Guard-banded 8-bit source (content at (gb,gb)) and a scaled 32-bit dest.
 	const int    ssw    = ((logw + 3) & ~3) + 2 * gb;
