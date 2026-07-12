@@ -144,6 +144,24 @@ public:
 		}
 	}
 
+	// Change the scene's composite order.
+	void set_z(int z) {
+		if (handle >= 0) {
+			Game_window::get_instance()->layer_set_z(handle, z);
+		}
+	}
+
+	// A scene normally sits on top of every other overlay. Lower it beneath the
+	// text-gump layers so a text gump (scroll/sign/book) can be shown ON TOP of
+	// the scene; call restore_z() afterwards to put the scene back on top.
+	void lower_beneath_gumps() {
+		set_z(1 << 18);
+	}
+
+	void restore_z() {
+		set_z(scene_layer_z);
+	}
+
 private:
 	// Above the gump/HUD/modal layers, below the display-map overlay and mouse.
 	constexpr static int           scene_layer_z     = 1 << 19;
@@ -184,16 +202,16 @@ public:
 	Scene_view(
 			int& topx, int& topy, int& centerx, int& centery, Image_buffer8*& ibuf, bool interactive = false, int width = 320,
 			int height = 200)
-			: scene(width, height), r_topx(topx), r_topy(topy), r_centerx(centerx), r_centery(centery), r_ibuf(ibuf),
-			  s_topx(topx), s_topy(topy), s_centerx(centerx), s_centery(centery), s_ibuf(ibuf) {
+			: scene(width, height), r_topx(topx), r_topy(topy), r_centerx(centerx), r_centery(centery), r_ibuf(ibuf), s_topx(topx),
+			  s_topy(topy), s_centerx(centerx), s_centery(centery), s_ibuf(ibuf) {
 		Game_window*  gwin = Game_window::get_instance();
 		Image_window* iwin = gwin->get_win();
 		// Save everything we are about to change so it can be restored (this is
 		// also what makes scenes nestable).
-		s_mask       = gwin->get_ui_layer_kind_mask();
-		s_scene_mode = iwin->in_scene_mode();
-		s_scene_w    = iwin->get_scene_game_width();
-		s_scene_h    = iwin->get_scene_game_height();
+		s_mask         = gwin->get_ui_layer_kind_mask();
+		s_scene_mode   = iwin->in_scene_mode();
+		s_scene_w      = iwin->get_scene_game_width();
+		s_scene_h      = iwin->get_scene_game_height();
 		s_scene_handle = iwin->get_active_scene_layer();
 
 		uint32 mask = 1u << static_cast<int>(Image_window::UiLayerFullScreenScene);
@@ -276,10 +294,10 @@ private:
 	int             s_centerx;
 	int             s_centery;
 	Image_buffer8*  s_ibuf;
-	uint32          s_mask       = 0;
-	bool            s_scene_mode = false;
-	int             s_scene_w    = 0;
-	int             s_scene_h    = 0;
+	uint32          s_mask         = 0;
+	bool            s_scene_mode   = false;
+	int             s_scene_w      = 0;
+	int             s_scene_h      = 0;
 	int             s_scene_handle = -1;
 };
 

@@ -27,6 +27,7 @@
 #include "game.h"
 #include "gamewin.h"
 #include "palette.h"
+#include "scene_layer.h"
 #include "txtscroll.h"
 #include "vgafile.h"
 
@@ -927,7 +928,14 @@ void ScenePlayer::play_scene() {
 	if (!scene_available() || !parse_info_file()) {
 		return;
 	}
-	Game_window::Scoped_ui_layer_mask scene_layers(gwin, 0);
+	// Render the scripted scene into a full-screen scene layer scaled to fill the
+	// display. ScenePlayer positions its content via gwin->get_width()/
+	// get_height() (scene-aware) and gwin->get_win()->get_ib8() (redirected into
+	// the scene), so it does not use the Game coordinate anchors that Scene_view
+	// rewrites; unused local anchors are passed for those.
+	int            anchor_x = 0, anchor_y = 0, anchor_cx = 0, anchor_cy = 0;
+	Image_buffer8* anchor_ibuf = nullptr;
+	Scene_view     scene(anchor_x, anchor_y, anchor_cx, anchor_cy, anchor_ibuf);
 
 	try {
 		// Save the current palette index to restore it later.

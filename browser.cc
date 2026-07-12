@@ -45,6 +45,7 @@
 #include "items.h"
 #include "keys.h"
 #include "palette.h"
+#include "scene_layer.h"
 #include "shapeid.h"
 
 #include <iomanip>
@@ -133,7 +134,13 @@ static void handle_key(bool shift, int& value, int max, int amt = 1) {
 void ShapeBrowser::browse_shapes() {
 	Game_window*   gwin = Game_window::get_instance();
 	Shape_manager* sman = Shape_manager::get_instance();
-	Image_buffer8* ibuf = gwin->get_win()->get_ib8();
+
+	// Render the browser into a fixed-size full-screen scene layer that is
+	// scaled to fill the display using the main game video settings, the same
+	// way the cheat screen does. 360x225 gives a little more room than the
+	// classic 320x200.
+	Scene_layer    scene_obj(360, 225);
+	Image_buffer8* ibuf = scene_obj.valid() ? scene_obj.buffer() : gwin->get_win()->get_ib8();
 
 	Palette             pal;
 	const str_int_pair& pal_tuple_static = game->get_resource("palettes/0");
@@ -166,9 +173,9 @@ void ShapeBrowser::browse_shapes() {
 		}
 	}
 
-	const int   maxx    = gwin->get_width();
+	const int   maxx    = scene_obj.valid() ? scene_obj.width() : gwin->get_width();
 	const int   centerx = maxx / 2;
-	const int   maxy    = gwin->get_height();
+	const int   maxy    = scene_obj.valid() ? scene_obj.height() : gwin->get_height();
 	const int   centery = maxy / 2;
 	char        buf[255];
 	const char* fname;
@@ -272,9 +279,18 @@ void ShapeBrowser::browse_shapes() {
 		shapes->load(sources);
 	}
 
+	// Show only the full-screen scene layer. The mouse pointer and text gumps
+	// are overlaid only while the help scroll (K) is on screen (see below).
+	const uint32                      scene_mask = 1u << static_cast<int>(Image_window::UiLayerFullScreenScene);
+	Game_window::Scoped_ui_layer_mask scene_layers(gwin, scene_mask);
+
 	do {
 		if (redraw) {
-			gwin->clear_screen();
+			if (scene_obj.valid()) {
+				scene_obj.begin_frame();
+			} else {
+				gwin->clear_screen();
+			}
 			snprintf(buf, sizeof(buf), "palettes/%d", current_palette);
 			const str_int_pair& pal_tuple = game->get_resource(buf);
 			snprintf(buf, sizeof(buf), "palettes/patch/%d", current_palette);
@@ -288,7 +304,7 @@ void ShapeBrowser::browse_shapes() {
 				pal.load(pal_tuple.str, patch_tuple.str, pal_tuple.num);
 			}
 
-			pal.apply();
+			pal.apply(false);
 
 			font->paint_text_fixedwidth(ibuf, Strings::ShowKeys(), 2, maxy - 50, 8, fontcolor.colors);
 
@@ -326,8 +342,8 @@ void ShapeBrowser::browse_shapes() {
 					font->paint_text_fixedwidth(ibuf, buf, 2, 22, 8, fontcolor.colors);
 
 					// Coords for shape to be drawn (centre of the screen)
-					const int x = gwin->get_width() / 2;
-					const int y = gwin->get_height() / 2;
+					const int x = centerx;
+					const int y = centery;
 
 					// draw outline if not drawing bbox
 					if (current_file != 0 || !bounding_box) {
@@ -376,7 +392,11 @@ void ShapeBrowser::browse_shapes() {
 				font->draw_text(ibuf, centerx - 20, centery - 5, Strings::NoShape());
 			}
 
-			pal.apply();
+			pal.apply(false);
+			if (scene_obj.valid()) {
+				scene_obj.end_frame();
+			}
+			gwin->get_win()->show();
 			redraw = false;
 		}
 		Delay();
@@ -459,9 +479,23 @@ void ShapeBrowser::browse_shapes() {
 			case SDLK_RIGHT:
 				handle_key(false, current_frame, num_frames);
 				break;
-			case SDLK_K:
+			case SDLK_K: {
+				// Overlay the help scroll (a text gump) and the mouse pointer on
+				// top of the browser. The scene normally composites above text
+				// gumps, so lower it beneath them for the duration of the scroll.
+				const uint32 help_mask = (1u << static_cast<int>(Image_window::UiLayerFullScreenScene))
+										 | (1u << static_cast<int>(Image_window::UiLayerMousePointer))
+										 | (1u << static_cast<int>(Image_window::UiLayerTextGumps));
+				Game_window::Scoped_ui_layer_mask help_layers(gwin, help_mask);
+				if (scene_obj.valid()) {
+					scene_obj.lower_beneath_gumps();
+				}
 				keybinder->ShowBrowserKeys();
+				if (scene_obj.valid()) {
+					scene_obj.restore_z();
+				}
 				break;
+			}
 			default:
 				break;
 			}
