@@ -1247,7 +1247,7 @@ public:
 		}
 		int sx;
 		int sy;
-		gwin->get_win()->game_to_screen(gx, gy, gwin->get_fastmouse(), sx, sy);
+		gwin->get_win()->game_to_screen(gx, gy, false, sx, sy);
 		return gwin->screen_to_layer(layer, sx, sy, lx, ly);
 	}
 

@@ -851,7 +851,7 @@ int Conversation::conversation_choice(int x, int y) {
 	// the world, so map the click through the layer's placement.
 	int sx;
 	int sy;
-	gwin->get_win()->game_to_screen(x, y, gwin->get_fastmouse(), sx, sy);
+	gwin->get_win()->game_to_screen(x, y, false, sx, sy);
 	int lx;
 	int ly;
 	if (!gwin->screen_to_layer(conv_layer, sx, sy, lx, ly)) {

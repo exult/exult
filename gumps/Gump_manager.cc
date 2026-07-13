@@ -196,7 +196,7 @@ void Gump_manager::render_gump_part_to_layer(Gump* g, int z, int part, bool is_h
 	const float   f    = iwin->get_ui_scale_factor(ui_kind_for(g, is_hud));
 	int           csx;
 	int           csy;
-	iwin->game_to_screen(b.x + b.w / 2, b.y + b.h / 2, gwin->get_fastmouse(), csx, csy);
+	iwin->game_to_screen(b.x + b.w / 2, b.y + b.h / 2, false, csx, csy);
 	float dw = static_cast<float>(b.w) * f;
 	float dh = static_cast<float>(b.h) * f;
 	float dx = static_cast<float>(csx) - dw / 2.0f;
@@ -284,7 +284,7 @@ bool Gump_manager::map_game_to_gump(const Gump* g, int gx, int gy, int& lx, int&
 	}
 	int sx;
 	int sy;
-	gwin->get_win()->game_to_screen(gx, gy, gwin->get_fastmouse(), sx, sy);
+	gwin->get_win()->game_to_screen(gx, gy, false, sx, sy);
 	int        llx;
 	int        lly;
 	const bool inside = gwin->screen_to_layer(g->render_layer, sx, sy, llx, lly);
@@ -587,7 +587,7 @@ void Gump_manager::add_gump(
 		const int     gh    = shape->get_height();
 		int           csx;
 		int           csy;
-		iwin->game_to_screen(gleft + gw / 2, gtop + gh / 2, gwin->get_fastmouse(), csx, csy);
+		iwin->game_to_screen(gleft + gw / 2, gtop + gh / 2, false, csx, csy);
 		const float dw    = static_cast<float>(gw) * f;
 		const float dh    = static_cast<float>(gh) * f;
 		const float dispw = static_cast<float>(iwin->get_display_width());
@@ -611,8 +611,8 @@ void Gump_manager::add_gump(
 			int ngy;
 			int ogx;
 			int ogy;
-			iwin->screen_to_game(static_cast<int>(ncsx), static_cast<int>(ncsy), gwin->get_fastmouse(), ngx, ngy);
-			iwin->screen_to_game(csx, csy, gwin->get_fastmouse(), ogx, ogy);
+			iwin->screen_to_game(static_cast<int>(ncsx), static_cast<int>(ncsy), false, ngx, ngy);
+			iwin->screen_to_game(csx, csy, false, ogx, ogy);
 			x += ngx - ogx;
 			y += ngy - ogy;
 			cnt = 0;    // Restart the stagger since we wrapped back on-screen.
