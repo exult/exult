@@ -36,6 +36,7 @@
 #include "barge.h"
 #include "cheat.h"
 #include "chunks.h"
+#include "citerate.h"
 #include "combat.h"
 #include "conversation.h"
 #include "effects.h"
@@ -54,6 +55,7 @@
 #include "monsters.h"
 #include "monstinf.h"
 #include "mouse.h"
+#include "objiter.h"
 #include "palette.h"
 #include "party.h"
 #include "playscene.h"
@@ -2872,6 +2874,55 @@ namespace {
 		return !sid.is_invalid() && eval_shape_flag(sid.get_info(), flag_id);
 	}
 
+	bool eval_tile_object_shape_flag(Game_window* gwin, const Tile_coord& tile, int flag_id) {
+		if (tile.tx < 0 || tile.tx >= c_num_tiles || tile.ty < 0 || tile.ty >= c_num_tiles || tile.tz < 0) {
+			return false;
+		}
+
+		Game_map* gmap = gwin->get_map();
+		if (!gmap) {
+			return false;
+		}
+
+		const int      scan_delta = 8;
+		const TileRect bounds(
+				(tile.tx - scan_delta + c_num_tiles) % c_num_tiles, (tile.ty - scan_delta + c_num_tiles) % c_num_tiles,
+				1 + 2 * scan_delta, 1 + 2 * scan_delta);
+
+		Chunk_intersect_iterator next_chunk(bounds);
+		TileRect                 chunk_tiles;
+		int                      cx;
+		int                      cy;
+		bool                     result = false;
+		while (next_chunk.get_next(chunk_tiles, cx, cy)) {
+			Map_chunk* chunk = gmap->get_chunk(cx, cy);
+			if (!chunk) {
+				continue;
+			}
+			chunk_tiles.x += cx * c_tiles_per_chunk;
+			chunk_tiles.y += cy * c_tiles_per_chunk;
+			Object_iterator next(chunk->get_objects());
+			Game_object*    obj;
+			while ((obj = next.get_next()) != nullptr) {
+				const Tile_coord objpos = obj->get_tile();
+				if (!chunk_tiles.has_point(objpos.tx, objpos.ty)) {
+					continue;
+				}
+
+				const Shape_info& info     = obj->get_info();
+				const TileRect    foot     = obj->get_footprint();
+				const int         ztiles   = info.get_3d_height();
+				const bool        xy_match = foot.has_world_point(tile.tx, tile.ty);
+				const bool z_match    = ztiles <= 0 ? tile.tz == objpos.tz : tile.tz >= objpos.tz && tile.tz < objpos.tz + ztiles;
+				const bool flag_match = eval_shape_flag(info, flag_id);
+				if (xy_match && z_match && flag_match) {
+					result = true;
+				}
+			}
+		}
+		return result;
+	}
+
 }    // namespace
 
 USECODE_INTRINSIC(get_shape_flag) {
@@ -2890,12 +2941,20 @@ USECODE_INTRINSIC(get_shape_flag) {
 			if (Game_object* obj = get_item(target.get_elem(0))) {
 				return Usecode_value(eval_shape_flag(obj->get_info(), flag_id));
 			}
-			return Usecode_value(
-					eval_flat_shape_flag(gwin, target.get_elem(1).get_int_value(), target.get_elem(2).get_int_value(), flag_id));
+			const int  xpos          = target.get_elem(1).get_int_value();
+			const int  ypos          = target.get_elem(2).get_int_value();
+			const int  zpos          = target.get_elem(3).get_int_value();
+			const bool flat_result   = eval_flat_shape_flag(gwin, xpos, ypos, flag_id);
+			const bool object_result = eval_tile_object_shape_flag(gwin, Tile_coord(xpos, ypos, zpos), flag_id);
+			return Usecode_value(flat_result || object_result);
 		}
 		if (size == 2 || size == 3) {
-			return Usecode_value(
-					eval_flat_shape_flag(gwin, target.get_elem(0).get_int_value(), target.get_elem(1).get_int_value(), flag_id));
+			const int  xpos          = target.get_elem(0).get_int_value();
+			const int  ypos          = target.get_elem(1).get_int_value();
+			const int  zpos          = size == 3 ? target.get_elem(2).get_int_value() : 0;
+			const bool flat_result   = eval_flat_shape_flag(gwin, xpos, ypos, flag_id);
+			const bool object_result = eval_tile_object_shape_flag(gwin, Tile_coord(xpos, ypos, zpos), flag_id);
+			return Usecode_value(flat_result || object_result);
 		}
 		return Usecode_value(0);
 	}
