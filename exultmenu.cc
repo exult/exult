@@ -42,6 +42,7 @@
 #include "menulist.h"
 #include "mouse.h"
 #include "palette.h"
+#include "scene_layer.h"
 #include "shapeid.h"
 #include "sigame.h"
 #include "span.h"
@@ -49,6 +50,7 @@
 
 #include <array>
 #include <memory>
+#include <optional>
 
 #ifdef SDL_PLATFORM_IOS
 #	include "ios_utils.h"
@@ -376,6 +378,14 @@ BaseGameInfo* ExultMenu::show_mods_menu(ModManager* selgame) {
 	gpal->load(BUNDLE_CHECK(BUNDLE_EXULT_FLX, EXULT_FLX), EXULT_FLX_EXULT0_PAL);
 	gpal->apply();
 
+	// Render the mods menu into a 360x225 full-screen scene layer, like the main
+	// menu. Every exit fades out then returns/throws, so the scene stays active
+	// for the whole function and is torn down by its destructor.
+	int        dummy_topx = 0;
+	int        dummy_topy = 0;
+	Scene_view mods_scene(dummy_topx, dummy_topy, centerx, centery, ibuf, true, 360, 225);
+	calc_win();
+
 	int           first_mod   = 0;
 	const int     num_choices = selgame->get_mod_list().size() - 1;
 	const int     last_page   = num_choices - num_choices % pagesize;
@@ -387,10 +397,8 @@ BaseGameInfo* ExultMenu::show_mods_menu(ModManager* selgame) {
 		std::cerr << "Exult.flx file is corrupted. Please reinstall Exult." << std::endl;
 		throw quit_exception();
 	}
-	int logox;
-	int logoy;
-	logox = centerx - exultlogo->get_width() / 2;
-	logoy = centery - exultlogo->get_height() / 2;
+	const int logox = centerx - exultlogo->get_width() / 2;
+	const int logoy = centery - exultlogo->get_height() / 2;
 
 	do {
 		// Interferes with the menu.
@@ -496,24 +504,50 @@ BaseGameInfo* ExultMenu::run() {
 		std::cerr << "Exult.flx file is corrupted. Please reinstall Exult." << std::endl;
 		throw quit_exception();
 	}
-	int logox = centerx - exultlogo->get_width() / 2;
-	int logoy = centery - exultlogo->get_height() / 2;
-	sman->paint_shape(logox, logoy, exultlogo);
-	gpal->fade_in(c_fade_in_time);
-	wait_delay(2000);
+	{
+		// Show the initial logo splash in its own 320x200 scene layer so the
+		// full-screen logo fills the display (the menu below uses 360x225).
+		int        splash_topx = 0;
+		int        splash_topy = 0;
+		Scene_view logo_scene(splash_topx, splash_topy, centerx, centery, ibuf, false, 320, 200);
+		const int  logox = centerx - exultlogo->get_width() / 2;
+		const int  logoy = centery - exultlogo->get_height() / 2;
+		sman->paint_shape(logox, logoy, exultlogo);
+		gpal->fade_in(c_fade_in_time);
+		wait_delay(2000);
+	}
 
 	exultlogo = exult_flx.get_shape(EXULT_FLX_EXULT_LOGO_SHP, 1);
 
 	int       first_game  = 0;
 	const int num_choices = gamemanager->get_game_count() - 1;
-	const int last_page   = num_choices - num_choices % pagesize;
+	int       last_page   = num_choices - num_choices % pagesize;
 	// Erase the old logo.
 	gwin->clear_screen(true);
 
-	auto          menu     = create_main_menu(first_game);
-	BaseGameInfo* sel_game = nullptr;
+	// Render the menu into a 360x225 full-screen scene layer (like the shape
+	// browser and cheat screen). The scene is torn down before any sub-action
+	// (setup gump, credits/quotes scroller, mods menu, game load) and recreated
+	// on the next loop so those render normally.
+	int                       dummy_topx = 0;
+	int                       dummy_topy = 0;
+	int                       logox      = 0;
+	int                       logoy      = 0;
+	std::optional<Scene_view> menu_scene;
+	std::unique_ptr<MenuList> menu;
+	BaseGameInfo*             sel_game = nullptr;
 
 	do {
+		if (!menu_scene) {
+			menu_scene.emplace(dummy_topx, dummy_topy, centerx, centery, ibuf, true, 360, 225);
+			calc_win();
+			last_page = num_choices - num_choices % pagesize;
+			logox     = centerx - exultlogo->get_width() / 2;
+			logoy     = centery - exultlogo->get_height() / 2;
+			if (!menu) {
+				menu = create_main_menu(first_game);
+			}
+		}
 		// Interferes with the menu.
 		sman->paint_shape(logox, logoy, exultlogo);
 		font->draw_text(
@@ -523,6 +557,7 @@ BaseGameInfo* ExultMenu::run() {
 
 		switch (choice) {
 		case -4:    // Setup
+			menu_scene.reset();
 			gpal->fade_out(c_fade_out_time);
 			setup();
 			if (quitting_time == QUIT_TIME_YES) {
@@ -535,13 +570,12 @@ BaseGameInfo* ExultMenu::run() {
 				Audio::get_ptr()->start_music(EXULT_FLX_MEDITOWN_MID, true, MyMidiPlayer::Force_None, EXULT_FLX);
 			}
 
-			calc_win();
-			logox      = centerx - exultlogo->get_width() / 2;
-			logoy      = centery - exultlogo->get_height() / 2;
 			first_game = 0;
-			menu       = create_main_menu(first_game);
+			menu.reset();
 			break;
 		case -3: {    // Exult Credits
+			// Keep the 360x225 menu scene active so the scroller renders scaled
+			// like the menu instead of at the native game-area size.
 			gpal->fade_out(c_fade_out_time);
 			TextScroller credits(
 					BUNDLE_CHECK(BUNDLE_EXULT_FLX, EXULT_FLX), EXULT_FLX_CREDITS_TXT, fontManager.get_font("CREDITS_FONT"),
@@ -551,6 +585,8 @@ BaseGameInfo* ExultMenu::run() {
 			gpal->apply();
 		} break;
 		case -2: {    // Exult Quotes
+			// Keep the 360x225 menu scene active so the scroller renders scaled
+			// like the menu instead of at the native game-area size.
 			gpal->fade_out(c_fade_out_time);
 			TextScroller quotes(
 					BUNDLE_CHECK(BUNDLE_EXULT_FLX, EXULT_FLX), EXULT_FLX_QUOTES_TXT, fontManager.get_font("CREDITS_FONT"),
@@ -569,6 +605,7 @@ BaseGameInfo* ExultMenu::run() {
 #	endif
 			break;
 #else
+			menu_scene.reset();
 			gpal->fade_out(c_fade_out_time);
 			Audio::get_ptr()->stop_music();
 			throw quit_exception();
@@ -576,10 +613,12 @@ BaseGameInfo* ExultMenu::run() {
 		default:
 			if (choice >= 0 && choice < MAX_GAMES) {
 				// Load the game:
+				menu_scene.reset();
 				gpal->fade_out(c_fade_out_time);
 				sel_game = gamemanager->get_game(choice);
 			} else if (choice >= MAX_GAMES && choice < 2 * MAX_GAMES) {
 				// Show the mods for the game:
+				menu_scene.reset();
 				gpal->fade_out(c_fade_out_time / 2);
 				sel_game = show_mods_menu(gamemanager->get_game(choice - MAX_GAMES));
 				gwin->clear_screen(true);
@@ -591,6 +630,7 @@ BaseGameInfo* ExultMenu::run() {
 			break;
 		}
 	} while (sel_game == nullptr);
+	menu_scene.reset();
 	gwin->clear_screen(true);
 	Audio::get_ptr()->stop_music();
 	return sel_game;
