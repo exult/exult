@@ -378,12 +378,15 @@ BaseGameInfo* ExultMenu::show_mods_menu(ModManager* selgame) {
 	gpal->load(BUNDLE_CHECK(BUNDLE_EXULT_FLX, EXULT_FLX), EXULT_FLX_EXULT0_PAL);
 	gpal->apply();
 
-	// Render the mods menu into a 360x225 full-screen scene layer, like the main
-	// menu. Every exit fades out then returns/throws, so the scene stays active
-	// for the whole function and is torn down by its destructor.
+	// Render the mods menu into a full-screen scene layer, like the main menu:
+	// 360x225, 320x200 for touch UI. Every exit fades out then eturns/throws,
+	// so the scene stays active for the whole function and is torn down by
+	// its destructor.
+	const int  scene_w    = (touchui != nullptr) ? 320 : 360;
+	const int  scene_h    = (touchui != nullptr) ? 200 : 225;
 	int        dummy_topx = 0;
 	int        dummy_topy = 0;
-	Scene_view mods_scene(dummy_topx, dummy_topy, centerx, centery, ibuf, true, 360, 225);
+	Scene_view mods_scene(dummy_topx, dummy_topy, centerx, centery, ibuf, true, scene_w, scene_h);
 	calc_win();
 
 	int           first_mod   = 0;
@@ -505,8 +508,7 @@ BaseGameInfo* ExultMenu::run() {
 		throw quit_exception();
 	}
 	{
-		// Show the initial logo splash in its own 320x200 scene layer so the
-		// full-screen logo fills the display (the menu below uses 360x225).
+		// Show the initial logo splash in its own 320x200 scene layer.
 		int        splash_topx = 0;
 		int        splash_topy = 0;
 		Scene_view logo_scene(splash_topx, splash_topy, centerx, centery, ibuf, false, 320, 200);
@@ -525,10 +527,12 @@ BaseGameInfo* ExultMenu::run() {
 	// Erase the old logo.
 	gwin->clear_screen(true);
 
-	// Render the menu into a 360x225 full-screen scene layer (like the shape
-	// browser and cheat screen). The scene is torn down before any sub-action
-	// (setup gump, credits/quotes scroller, mods menu, game load) and recreated
-	// on the next loop so those render normally.
+	// Render the menu into a full-screen scene layer (like the shape browser and
+	// cheat screen): 360x225, 320x200 for touch UI. The scene is torn down before
+	// any sub-action (setup gump, mods menu, game load) and recreated on the next
+	// loop so those render normally.
+	const int                 scene_w    = (touchui != nullptr) ? 320 : 360;
+	const int                 scene_h    = (touchui != nullptr) ? 200 : 225;
 	int                       dummy_topx = 0;
 	int                       dummy_topy = 0;
 	int                       logox      = 0;
@@ -539,7 +543,7 @@ BaseGameInfo* ExultMenu::run() {
 
 	do {
 		if (!menu_scene) {
-			menu_scene.emplace(dummy_topx, dummy_topy, centerx, centery, ibuf, true, 360, 225);
+			menu_scene.emplace(dummy_topx, dummy_topy, centerx, centery, ibuf, true, scene_w, scene_h);
 			calc_win();
 			last_page = num_choices - num_choices % pagesize;
 			logox     = centerx - exultlogo->get_width() / 2;

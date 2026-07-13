@@ -138,8 +138,10 @@ void ShapeBrowser::browse_shapes() {
 	// Render the browser into a fixed-size full-screen scene layer that is
 	// scaled to fill the display using the main game video settings, the same
 	// way the cheat screen does. 360x225 gives a little more room than the
-	// classic 320x200.
-	Scene_layer    scene_obj(360, 225);
+	// classic 320x200; for touch UI use 320x200
+	const int      scene_w = (touchui != nullptr) ? 320 : 360;
+	const int      scene_h = (touchui != nullptr) ? 200 : 225;
+	Scene_layer    scene_obj(scene_w, scene_h);
 	Image_buffer8* ibuf = scene_obj.valid() ? scene_obj.buffer() : gwin->get_win()->get_ib8();
 
 	Palette             pal;
