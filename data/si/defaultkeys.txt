@@ -18,19 +18,19 @@ KP1		walk_south_west	# Run south west
 KP2		walk_south	# Run south
 KP3		walk_south_east	# Run south-east
 
-Shift-right	walk_east	1	# Run east
-Shift-left	walk_west	1	# Run west
-Shift-up	walk_north	1	# Run north
-Shift-down	walk_south	1	# Run south
+Shift-right	walk_east	1	# Walk east
+Shift-left	walk_west	1	# Walk west
+Shift-up	walk_north	1	# Walk north
+Shift-down	walk_south	1	# Walk south
 
-Shift-KP7	walk_north_west	1	# Run north-west
-Shift-KP8	walk_north	1	# Run north
-Shift-KP9	walk_north_east	1	# Run north-east
-Shift-KP4	walk_west	1	# Run west
-Shift-KP6	walk_east	1	# Run east
-Shift-KP1	walk_south_west	1	# Run south west
-Shift-KP2	walk_south	1	# Run south
-Shift-KP3	walk_south_east	1	# Run south-east
+Shift-KP7	walk_north_west	1	# Walk north-west
+Shift-KP8	walk_north	1	# Walk north
+Shift-KP9	walk_north_east	1	# Walk north-east
+Shift-KP4	walk_west	1	# Walk west
+Shift-KP6	walk_east	1	# Walk east
+Shift-KP1	walk_south_west	1	# Walk south west
+Shift-KP2	walk_south	1	# Walk south
+Shift-KP3	walk_south_east	1	# Walk south-east
 
 Alt-right	scroll_right
 Alt-left	scroll_left
