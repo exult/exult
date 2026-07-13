@@ -119,7 +119,7 @@ Game* Game::create_game(BaseGameInfo* mygame) {
 	mygame->setup_game_paths();
 	gametitle    = mygame->get_cfgname();
 	modtitle     = mygame->get_mod_title();
-	menustring     = mygame->get_menu_string();
+	menustring   = mygame->get_menu_string();
 	game_type    = mygame->get_game_type();
 	language     = mygame->get_game_language();
 	expansion    = mygame->have_expansion();

@@ -173,18 +173,18 @@ public:
 		int                           logh;                 // Logical (game-pixel) height.
 		int                           fixed_scale;          // >0 forces integer scale, 0 = auto-fit.
 		unsigned char                 transparent;          // Palette index drawn as transparent.
-		bool                          opaque   = false;    // If set, NO index is transparent (a
-														  // full-screen opaque scene: every pixel
-														  // is drawn, even the 'transparent' index).
-		bool                          visible  = true;
-		bool                          dirty    = true;     // Buffer changed => re-upload.
-		int                           z        = 0;        // Composite order (higher = on top).
-		bool                          has_dest = false;    // Explicit destination override?
-		SDL_FRect                     dest{};              // Destination rect (display coords).
-		UiLayerKind                   ui_kind      = UiLayerDefault;
-		int                           render_scale = 1;    // 1 = 1:1 upload; >1 = pre-scaled by
-														   // the game's scaler at this factor.
-		unsigned char alpha = 255;                         // Whole-layer opacity (255 = opaque).
+		bool                          opaque = false;       // If set, NO index is transparent (a
+															// full-screen opaque scene: every pixel
+															// is drawn, even the 'transparent' index).
+		bool        visible  = true;
+		bool        dirty    = true;     // Buffer changed => re-upload.
+		int         z        = 0;        // Composite order (higher = on top).
+		bool        has_dest = false;    // Explicit destination override?
+		SDL_FRect   dest{};              // Destination rect (display coords).
+		UiLayerKind ui_kind      = UiLayerDefault;
+		int         render_scale = 1;    // 1 = 1:1 upload; >1 = pre-scaled by
+										 // the game's scaler at this factor.
+		unsigned char alpha = 255;       // Whole-layer opacity (255 = opaque).
 		// Optional 256-entry ARGB override, one per palette index. A non-zero
 		// entry is used verbatim (with its own alpha) instead of the opaque
 		// palette colour, letting a layer draw translucent pixels.
@@ -317,9 +317,9 @@ protected:
 	// When scene mode is on, the handle of the full-screen scene layer that owns
 	// the display, so screen_to_game()/game_to_screen() can map through it (mouse
 	// hit-testing + cursor placement line up with the scaled scene).
-	int  active_scene_layer = -1;
-	int  inter_width;
-	int  inter_height;
+	int active_scene_layer = -1;
+	int inter_width;
+	int inter_height;
 	// Guardband around the edge of the draw surface to allow scalers to run
 	// without per pixel bounds checking and to allow rounding up to
 	// multiples of 4. It should  not be less than 4 and there is no reason for
