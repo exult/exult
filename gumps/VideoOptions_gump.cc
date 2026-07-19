@@ -287,23 +287,26 @@ void VideoOptions_gump::rebuild_dynamic_buttons() {
 	buttons[id_has_ac].reset();
 
 	const auto&  resolutionsref = fullscreen ? resolutions : win_resolutions;
-	const uint32 current_res    = make_resolution(gwin->get_win()->get_display_width(), gwin->get_win()->get_display_height());
+	const uint32 current_res    = resolution;
 
 	std::vector<std::string> restext;
 	restext.reserve(resolutionsref.size());
 	for (auto res : resolutionsref) {
 		restext.emplace_back(resolutionstring(res));
 	}
-	auto it           = std::find(resolutionsref.cbegin(), resolutionsref.cend(), current_res);
-	int  selected_res = 0;
+	auto it = std::find(resolutionsref.cbegin(), resolutionsref.cend(), current_res);
+	int  selected_res;
 	if (it == resolutionsref.cend()) {
-		// Just in case
+		// If the configured resolution is unavailable in this mode,
+		// fall back to the first available entry.
 		selected_res = 0;
+		if (!resolutionsref.empty()) {
+			resolution = resolutionsref[selected_res];
+		}
 	} else {
 		selected_res = it - resolutionsref.cbegin();
+		resolution   = current_res;
 	}
-
-	resolution = resolutionsref[selected_res];
 
 	buttons[id_resolution] = std::make_unique<VideoTextToggle>(
 			this, &VideoOptions_gump::toggle_resolution, std::move(restext), selected_res,
