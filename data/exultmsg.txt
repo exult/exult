@@ -390,6 +390,8 @@
 0x695:AR Correction:
 0x696:Same settings for window
 0x697:and fullscreen:
+0x698:Current Mode:
+0x699:Current Size:
 
 #imagewin.cc scaler displaynames 
 0x69A:Point

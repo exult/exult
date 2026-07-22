@@ -147,6 +147,14 @@ public:
 	static auto andfullscreen_() {
 		return get_text_msg(0x697 - msg_file_start);
 	}
+
+	static auto currentmode_() {
+		return get_text_msg(0x698 - msg_file_start);
+	}
+
+	static auto currentsize_() {
+		return get_text_msg(0x699 - msg_file_start);
+	}
 };
 
 static inline uint32 make_resolution(uint16 width, uint16 height) {
@@ -285,6 +293,13 @@ void VideoOptions_gump::rebuild_dynamic_buttons() {
 	buttons[id_resolution].reset();
 	buttons[id_scaling].reset();
 	buttons[id_has_ac].reset();
+	int current_mode_pos = std::max(
+			std::max(get_button_pos_for_label(Strings::Resolution_()), get_button_pos_for_label(Strings::WindowSize_())),
+			get_button_pos_for_label(Strings::DisplayMode_()));
+#if !defined(SDL_PLATFORM_MACOS) && !defined(SDL_PLATFORM_IOS) && !defined(ANDROID)
+	const char* current_mode_label = fullscreen ? Strings::currentmode_() : Strings::currentsize_();
+	current_mode_pos               = std::max(current_mode_pos, get_button_pos_for_label(current_mode_label));
+#endif
 
 	const auto&  resolutionsref = fullscreen ? resolutions : win_resolutions;
 	const uint32 current_res    = resolution;
@@ -309,11 +324,7 @@ void VideoOptions_gump::rebuild_dynamic_buttons() {
 	}
 
 	buttons[id_resolution] = std::make_unique<VideoTextToggle>(
-			this, &VideoOptions_gump::toggle_resolution, std::move(restext), selected_res,
-			std::max(
-					std::max(get_button_pos_for_label(Strings::Resolution_()), get_button_pos_for_label(Strings::WindowSize_())),
-					get_button_pos_for_label(Strings::DisplayMode_())),
-			yForRow(1), 74);
+			this, &VideoOptions_gump::toggle_resolution, std::move(restext), selected_res, current_mode_pos, yForRow(1), 74);
 
 	const int max_scales = scaling > 8 && scaling <= 16 ? scaling : 8;
 	const int num_scales = (scaler == Image_window::point || scaler == Image_window::interlaced || scaler == Image_window::bilinear
@@ -351,6 +362,9 @@ void VideoOptions_gump::rebuild_dynamic_buttons() {
 	// resize if needed to make sure there is enough room for first line of Same
 	// Settings label
 	ResizeWidthToFitText(Strings::Samesettingsforwindow());
+#if !defined(SDL_PLATFORM_MACOS) && !defined(SDL_PLATFORM_IOS) && !defined(ANDROID)
+	ResizeWidthToFitText(fullscreen ? Strings::currentmode_() : Strings::currentsize_());
+#endif
 
 	HorizontalArrangeWidgets(tcb::span(buttons.data() + id_apply, 3));
 
@@ -615,15 +629,42 @@ void VideoOptions_gump::paint() {
 	}
 
 	Image_window8* iwin = gwin->get_win();
+#if !defined(SDL_PLATFORM_MACOS) && !defined(SDL_PLATFORM_IOS) && !defined(ANDROID)
+	const uint32      real_res      = make_resolution(gwin->get_win()->get_display_width(), gwin->get_win()->get_display_height());
+	const std::string real_res_text = resolutionstring(real_res);
+	const char*       current_mode_label = fullscreen ? Strings::currentmode_() : Strings::currentsize_();
+	int               current_mode_value_x
+			= x
+			  + std::max(
+					  std::max(get_button_pos_for_label(Strings::Resolution_()), get_button_pos_for_label(Strings::WindowSize_())),
+					  std::max(get_button_pos_for_label(Strings::DisplayMode_()), get_button_pos_for_label(current_mode_label)));
+	int current_mode_value_width = 74;
+	if (buttons[id_resolution] != nullptr) {
+		const TileRect rr        = buttons[id_resolution]->get_rect();
+		current_mode_value_x     = rr.x;
+		current_mode_value_width = rr.w;
+	}
+#endif
+#if !defined(SDL_PLATFORM_IOS) && !defined(ANDROID)
+	const char* resolution_label = fullscreen ? Strings::DisplayMode_() : Strings::WindowSize_();
+#else
+	const char* resolution_label = Strings::Resolution_();
+#endif
 #if !defined(SDL_PLATFORM_IOS) && !defined(ANDROID)
 	font->paint_text(iwin->get_ib8(), Strings::FullScreen_(), x + label_margin, y + yForRow(0) + 1);
-	if (fullscreen) {
-		font->paint_text(iwin->get_ib8(), Strings::DisplayMode_(), x + label_margin, y + yForRow(1) + 1);
-	} else {
-		font->paint_text(iwin->get_ib8(), Strings::WindowSize_(), x + label_margin, y + yForRow(1) + 1);
-	}
+	font->paint_text(iwin->get_ib8(), resolution_label, x + label_margin, y + yForRow(1) + 1);
 #else
-	font->paint_text(iwin->get_ib8(), Strings::Resolution_(), x + label_margin, y + yForRow(1) + 1);
+	font->paint_text(iwin->get_ib8(), resolution_label, x + label_margin, y + yForRow(1) + 1);
+#endif
+#if !defined(SDL_PLATFORM_MACOS) && !defined(SDL_PLATFORM_IOS) && !defined(ANDROID)
+	font->paint_text(iwin->get_ib8(), current_mode_label, x + label_margin, y + yForRow(2) + 1);
+	// Match Text_button centering inside the button's inner draw area,
+	// not the outer border width.
+	const int current_mode_draw_x = current_mode_value_x + 2;
+	const int current_mode_draw_w = std::max(1, current_mode_value_width - 3);
+	const int current_mode_text_x
+			= current_mode_draw_x + std::max(0, (current_mode_draw_w - font->get_text_width(real_res_text.c_str())) >> 1);
+	font->paint_text(iwin->get_ib8(), real_res_text.c_str(), current_mode_text_x, y + yForRow(2) + 1);
 #endif
 	font->paint_text(iwin->get_ib8(), Strings::Scaler_(), x + label_margin, y + yForRow(3) + 1);
 	if (buttons[id_scaling] != nullptr) {
