@@ -32,6 +32,10 @@ class Game_render {
 	int           skip       = 31;    // Set for each render.  We skip
 									  //   painting at or above this.
 	int bbox_palindex = -1;
+	// True when the Avatar is inside a completely light-tight enclosure (no
+	// light_passes_through object and no passable gap in the walls).  Computed
+	// once per paint_map and used to block outside light while inside.
+	bool avatar_enclosure_sealed = false;
 
 public:
 	void paint_terrain_only(int start_chunkx, int start_chunky, int stop_chunkx, int stop_chunky);

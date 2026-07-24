@@ -39,11 +39,21 @@
 #include "objiter.h"
 
 #include <algorithm>
+#include <array>
+#include <cstdlib>
 #include <cstdio>
+#include <iostream>
+#include <utility>
 
 /*
  *  Paint just the map with given top-left-corner tile.
  */
+
+// Forward declarations for light-passing helpers defined later in this file
+// but used by paint_map().
+static bool Chunk_find_light_passes_through(
+		Map_chunk* chunk, int& pass_shape, int& pass_frame, int& pass_match_frame, int& pass_tx, int& pass_ty, int& pass_lift);
+static bool Enclosure_open_to_outside(const Tile_coord& start);
 
 void Game_window::paint_map_at_tile(
 		int x, int y, int w, int h,    // Clip to this area.
@@ -219,6 +229,25 @@ int Game_render::paint_map(
 		paint_terrain_only(start_chunkx, start_chunky, stop_chunkx, stop_chunky);
 		return 10;    // Pretend there's lots of light!
 	}
+	// Determine once per frame whether the Avatar is inside a completely
+	// light-tight enclosure.  It is sealed only if its own chunk has no
+	// light_passes_through object (window / open door / ...) AND there is no
+	// passable gap in the walls (e.g. a doorway with no door object).
+	avatar_enclosure_sealed = false;
+	{
+		Main_actor* const main_actor = gwin->get_main_actor();
+		if (main_actor != nullptr && gwin->is_main_actor_inside()) {
+			Map_chunk* const avatar_chunk = main_actor->get_chunk();
+			bool             has_opening   = false;
+			if (avatar_chunk != nullptr) {
+				int a_s, a_f, a_mf, a_tx, a_ty, a_lift;
+				has_opening = Chunk_find_light_passes_through(avatar_chunk, a_s, a_f, a_mf, a_tx, a_ty, a_lift);
+			}
+			if (!has_opening) {
+				avatar_enclosure_sealed = !Enclosure_open_to_outside(main_actor->get_tile());
+			}
+		}
+	}
 	int cx;
 	int cy;    // Chunk #'s.
 	// Paint all the flat scenery.
@@ -306,15 +335,170 @@ int Game_render::get_light_strength(const Game_object* obj, const Game_object* a
 	return Get_light_strength(obj, av, info.get_object_light(obj->get_framenum()));
 }
 
+static bool Shape_light_passes_through_strict(
+		const Shape_info& info, int frame, int& match_frame, bool& has_explicit, bool& has_wildcard) {
+	const int want_frame = frame & 31;
+	has_explicit         = false;
+	has_wildcard         = false;
+	bool explicit_hit    = false;
+
+	for (const auto& ent : info.get_light_passes_info()) {
+		if (ent.is_invalid()) {
+			continue;
+		}
+		const int ent_frame = ent.get_frame();
+		if (ent_frame >= 0) {
+			has_explicit = true;
+			if (ent_frame == want_frame) {
+				explicit_hit = true;
+			}
+		} else if (ent_frame == -1) {
+			has_wildcard = true;
+		}
+	}
+
+	const bool hit = has_explicit ? explicit_hit : has_wildcard;
+	match_frame    = hit ? (has_explicit ? want_frame : -1) : -2;
+	return hit;
+}
+
+static bool Chunk_find_light_passes_through(
+		Map_chunk* chunk, int& pass_shape, int& pass_frame, int& pass_match_frame, int& pass_tx, int& pass_ty, int& pass_lift) {
+	pass_shape = -1;
+	pass_frame = -1;
+	pass_match_frame = -2;
+	pass_tx          = -1;
+	pass_ty          = -1;
+	pass_lift        = -1;
+	if (chunk == nullptr) {
+		return false;
+	}
+	Object_iterator it(chunk->get_objects());
+	Game_object*    obj;
+	while ((obj = it.get_next()) != nullptr) {
+		int match_frame = -2;
+		bool has_explicit = false;
+		bool has_wildcard = false;
+		if (Shape_light_passes_through_strict(obj->get_info(), obj->get_framenum(), match_frame, has_explicit, has_wildcard)) {
+			if (match_frame == -1 && std::getenv("EXULT_DEBUG_LIGHT_PASS")) {
+				std::cerr << "[light-pass-debug] wildcard-hit shape=" << obj->get_shapenum() << '/' << obj->get_framenum()
+						  << " explicit=" << (has_explicit ? 1 : 0) << " wildcard=" << (has_wildcard ? 1 : 0)
+						  << " frames=";
+				const auto& lpv = obj->get_info().get_light_passes_info();
+				for (size_t i = 0; i < lpv.size(); ++i) {
+					if (i) {
+						std::cerr << ',';
+					}
+					if (lpv[i].is_invalid()) {
+						std::cerr << '!';
+					}
+					std::cerr << lpv[i].get_frame();
+				}
+				std::cerr << std::endl;
+			}
+			pass_shape = obj->get_shapenum();
+			pass_frame = obj->get_framenum();
+			pass_match_frame = match_frame;
+			pass_tx          = obj->get_tx();
+			pass_ty          = obj->get_ty();
+			pass_lift        = obj->get_lift();
+			return true;
+		}
+	}
+	return false;
+}
+
+static bool Is_interior_light_source(const Game_object* obj) {
+	Map_chunk* chunk = obj ? obj->get_chunk() : nullptr;
+	if (chunk == nullptr) {
+		return false;
+	}
+	const int roof = chunk->is_roof(obj->get_tx(), obj->get_ty(), obj->get_lift());
+	return roof != 255;
+}
+
+// Bounded flood fill from the Avatar's tile.  Returns true if the roofed
+// enclosure the Avatar is standing in has a passable gap in its walls that
+// leads outside -- e.g. a doorway with no door object at all, which has no
+// light_passes_through shape to detect.  Light spreads between tiles unless a
+// wall blocks it (tested a couple of tiles above the floor so low furniture is
+// not mistaken for a wall).  If the flood reaches a tile with no roof, the
+// enclosure is not light-tight.
+static bool Enclosure_open_to_outside(const Tile_coord& start) {
+	Game_map* const gmap = Game_window::get_instance()->get_map();
+	if (gmap == nullptr) {
+		return false;
+	}
+	constexpr int R = 12;             // Search radius in tiles.
+	constexpr int W = 2 * R + 1;      // Window width.
+	const int     base_tx  = start.tx - R;
+	const int     base_ty  = start.ty - R;
+	// Height at which we test for walls: a few tiles above the floor so that
+	// low furniture (tables, chairs, ...) is not mistaken for a wall, while
+	// full-height building walls still block the flood.
+	const int     wall_tz  = start.tz + 3;
+	auto          normalize = [](int t) { return (t % c_num_tiles + c_num_tiles) % c_num_tiles; };
+	auto is_wall = [&](int tx, int ty) -> bool {
+		const int  wtx   = normalize(tx);
+		const int  wty   = normalize(ty);
+		Map_chunk* const chunk = gmap->get_chunk_safely(wtx / c_tiles_per_chunk, wty / c_tiles_per_chunk);
+		if (chunk == nullptr) {
+			return true;    // Unknown -> treat as blocking.
+		}
+		return chunk->is_tile_occupied(wtx % c_tiles_per_chunk, wty % c_tiles_per_chunk, wall_tz);
+	};
+	auto is_roofless = [&](int tx, int ty) -> bool {
+		const int  wtx   = normalize(tx);
+		const int  wty   = normalize(ty);
+		Map_chunk* const chunk = gmap->get_chunk_safely(wtx / c_tiles_per_chunk, wty / c_tiles_per_chunk);
+		if (chunk == nullptr) {
+			return false;
+		}
+		return chunk->is_roof(wtx % c_tiles_per_chunk, wty % c_tiles_per_chunk, start.tz) >= 31;
+	};
+	std::array<bool, W * W>                  visited{};
+	std::array<std::pair<int, int>, W * W>   queue{};
+	int                                      qhead = 0;
+	int                                      qtail = 0;
+	auto push = [&](int tx, int ty) {
+		const int lx = tx - base_tx;
+		const int ly = ty - base_ty;
+		if (lx < 0 || lx >= W || ly < 0 || ly >= W) {
+			return;
+		}
+		bool& seen = visited[ly * W + lx];
+		if (seen) {
+			return;
+		}
+		seen             = true;
+		queue[qtail++]   = {tx, ty};
+	};
+	push(start.tx, start.ty);
+	while (qhead < qtail) {
+		const auto [tx, ty] = queue[qhead++];
+		if (is_roofless(tx, ty)) {
+			return true;    // Flood escaped the roof: there is an opening.
+		}
+		const int nbrs[4][2] = {{tx + 1, ty}, {tx - 1, ty}, {tx, ty + 1}, {tx, ty - 1}};
+		for (const auto& n : nbrs) {
+			if (!is_wall(n[0], n[1])) {
+				push(n[0], n[1]);
+			}
+		}
+	}
+	return false;    // Fully enclosed within the search radius.
+}
+
 void Game_render::increment_bbox_index() {
 	int  bbox_indices[] = {15, 0, 22, 38, 5, 64, 80, 94, -1};
 	auto start          = bbox_indices;
-	auto end            = bbox_indices + std::size(bbox_indices);
+	auto end            = bbox_indices + (sizeof(bbox_indices) / sizeof(bbox_indices[0]));
 
 	size_t found = std::find(start, end, bbox_palindex) - start;
+	const size_t bbox_count = sizeof(bbox_indices) / sizeof(bbox_indices[0]);
 
-	if (found < std::size(bbox_indices)) {
-		bbox_palindex = bbox_indices[(found + 1) % std::size(bbox_indices)];
+	if (found < bbox_count) {
+		bbox_palindex = bbox_indices[(found + 1) % bbox_count];
 	}
 	Game_window::get_instance()->set_all_dirty();
 }
@@ -560,12 +744,96 @@ int Game_render::paint_chunk_objects(
 	Main_actor* const main_actor    = gwin->get_main_actor();
 	if (main_actor != nullptr) {
 		const auto& lights = gwin->is_in_dungeon() ? olist->get_dungeon_lights() : olist->get_non_dungeon_lights();
+		const bool  viewer_outside    = !gwin->is_main_actor_inside();
+		const bool  dbg_light_pass    = std::getenv("EXULT_DEBUG_LIGHT_PASS") != nullptr;
+		// All lights in this loop live in the chunk being painted (cx, cy).
+		// Treat the Avatar's own chunk as "the building you are in".
+		const bool  same_chunk        = (cx == main_actor->get_cx() && cy == main_actor->get_cy());
+		int         opening_shape       = -1;
+		int         opening_frame       = -1;
+		int         opening_match_frame = -2;
+		int         opening_tx          = -1;
+		int         opening_ty          = -1;
+		int         opening_lift        = -1;
+		// Whether this chunk has a shape light can pass through (window, open
+		// door, ...).  Needed when the Avatar is outside: interior light leaks
+		// out through it.
+		const bool  chunk_has_opening   = Chunk_find_light_passes_through(
+				olist, opening_shape, opening_frame, opening_match_frame, opening_tx, opening_ty, opening_lift);
+		// Whether the Avatar's own enclosure is completely light-tight.
+		// Computed once per frame in paint_map (sealed = no light_passes_through
+		// object AND no passable gap in the walls).
+		const bool  avatar_sealed       = avatar_enclosure_sealed;
+		static int light_dbg_counter = 0;
 		for (const auto& light_obj : lights) {
 			const Shape_info& info = light_obj->get_info();
-			if (info.get_object_light(light_obj->get_framenum()) > 0) {
-				// Count light sources.
-				light_sources += get_light_strength(light_obj, main_actor);
+			if (!info.is_light_source()) {
+				continue;
 			}
+			if (info.get_object_light(light_obj->get_framenum()) <= 0) {
+				continue;
+			}
+			const int strength = get_light_strength(light_obj, main_actor);
+			if (strength <= 0) {
+				continue;
+			}
+			const bool interior_source = Is_interior_light_source(light_obj);
+			// Can this light source's light escape its OWN enclosure?  An
+			// exterior source always can.  An interior source can only if its
+			// enclosure has a light_passes_through object (window / open door)
+			// or a passable physical gap in its walls (a doorway with no door
+			// object).  The flood-fill is only run when there is no object
+			// opening, to bound the cost.
+			bool source_can_escape;
+			bool leaks_through_gap = false;
+			if (!interior_source) {
+				source_can_escape = true;
+			} else if (chunk_has_opening) {
+				source_can_escape = true;
+			} else {
+				source_can_escape = Enclosure_open_to_outside(light_obj->get_tile());
+				leaks_through_gap = source_can_escape;
+			}
+			bool blocked;
+			if (viewer_outside) {
+				// Interior light reaches the outside viewer only if it can
+				// escape its enclosure.  Palette lighting is global, so this
+				// only approximates spatial light.
+				blocked = !source_can_escape;
+			} else if (same_chunk) {
+				// The Avatar's own chunk light always applies (open/closed
+				// doors or shutters must not toggle it).
+				blocked = false;
+			} else if (avatar_sealed) {
+				// The Avatar's enclosure is completely light-tight: no outside
+				// light gets in.
+				blocked = true;
+			} else {
+				// The Avatar's room has an opening, so outside light enters --
+				// but a light source sealed inside its OWN building still can't
+				// escape to reach the Avatar (fixes a sealed building leaking
+				// light into a neighbouring open building).
+				blocked = !source_can_escape;
+			}
+
+			if (dbg_light_pass && ((light_dbg_counter++ % 25) == 0)) {
+				std::cerr << "[light-pass] chunk=" << cx << ',' << cy << " src=" << light_obj->get_shapenum() << '/'
+						  << light_obj->get_framenum() << " inside=" << (viewer_outside ? 0 : 1)
+						  << " same_chunk=" << (same_chunk ? 1 : 0) << " sealed=" << (avatar_sealed ? 1 : 0)
+						  << " roof=" << (interior_source ? 1 : 0)
+						  << " brightness=" << info.get_object_light(light_obj->get_framenum()) << " strength=" << strength
+						  << " opening=" << (chunk_has_opening ? 1 : 0) << " gap=" << (leaks_through_gap ? 1 : 0);
+				if (chunk_has_opening) {
+					std::cerr << " open_shape=" << opening_shape << '/' << opening_frame << " open_match=" << opening_match_frame
+							  << " open_tile=" << opening_tx << ',' << opening_ty << ',' << opening_lift;
+				}
+				std::cerr << " blocked=" << (blocked ? 1 : 0) << std::endl;
+			}
+			if (blocked) {
+				continue;
+			}
+			// Count light sources.
+			light_sources += strength;
 		}
 	}
 	skip = gwin->get_render_skip_lift();
