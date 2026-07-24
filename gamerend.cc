@@ -764,6 +764,12 @@ int Game_render::paint_chunk_objects(
 		// Computed once per frame in paint_map (sealed = no light_passes_through
 		// object AND no passable gap in the walls).
 		const bool  avatar_sealed       = avatar_enclosure_sealed;
+		// Per-crossing light dimming.  Each inside/outside boundary a light
+		// crosses divides its strength by this factor (one darker palette step)
+		// but it is floored so an escaping light never drops below the lowest
+		// lit palette (candle) -- it is never dimmed to full darkness.
+		constexpr int light_pass_dim_divisor  = 3;
+		constexpr int light_pass_min_strength = 1;
 		static int light_dbg_counter = 0;
 		for (const auto& light_obj : lights) {
 			const Shape_info& info = light_obj->get_info();
@@ -795,11 +801,20 @@ int Game_render::paint_chunk_objects(
 				leaks_through_gap = source_can_escape;
 			}
 			bool blocked;
+			// Number of inside<->outside boundary crossings the light makes on
+			// its way from the source to the Avatar.  Each crossing dims the
+			// light by one palette step (see below).
+			int  crossings = 0;
 			if (viewer_outside) {
 				// Interior light reaches the outside viewer only if it can
 				// escape its enclosure.  Palette lighting is global, so this
 				// only approximates spatial light.
 				blocked = !source_can_escape;
+				// Interior source seen from outside crosses one boundary
+				// (out of its building).
+				if (interior_source && !same_chunk) {
+					crossings = 1;
+				}
 			} else if (same_chunk) {
 				// The Avatar's own chunk light always applies (open/closed
 				// doors or shutters must not toggle it).
@@ -814,6 +829,13 @@ int Game_render::paint_chunk_objects(
 				// escape to reach the Avatar (fixes a sealed building leaking
 				// light into a neighbouring open building).
 				blocked = !source_can_escape;
+				// Light enters the Avatar's building (one crossing); if the
+				// source is itself indoors it also left its own building
+				// (a second crossing).
+				crossings = 1;
+				if (interior_source) {
+					crossings += 1;
+				}
 			}
 
 			if (dbg_light_pass && ((light_dbg_counter++ % 25) == 0)) {
@@ -822,7 +844,8 @@ int Game_render::paint_chunk_objects(
 						  << " same_chunk=" << (same_chunk ? 1 : 0) << " sealed=" << (avatar_sealed ? 1 : 0)
 						  << " roof=" << (interior_source ? 1 : 0)
 						  << " brightness=" << info.get_object_light(light_obj->get_framenum()) << " strength=" << strength
-						  << " opening=" << (chunk_has_opening ? 1 : 0) << " gap=" << (leaks_through_gap ? 1 : 0);
+						  << " opening=" << (chunk_has_opening ? 1 : 0) << " gap=" << (leaks_through_gap ? 1 : 0)
+						  << " crossings=" << crossings;
 				if (chunk_has_opening) {
 					std::cerr << " open_shape=" << opening_shape << '/' << opening_frame << " open_match=" << opening_match_frame
 							  << " open_tile=" << opening_tx << ',' << opening_ty << ',' << opening_lift;
@@ -832,8 +855,22 @@ int Game_render::paint_chunk_objects(
 			if (blocked) {
 				continue;
 			}
+			// Dim the light once per inside/outside boundary crossing so a
+			// light seen through an opening looks one palette step darker, and
+			// through two openings (out of one building and into another) two
+			// steps darker.  It is never dimmed to nothing: an escaping light
+			// always contributes at least enough for the lowest lit palette
+			// (candle) so a room the light reaches never falls back to full
+			// night darkness.
+			int effective = strength;
+			for (int i = 0; i < crossings; ++i) {
+				effective /= light_pass_dim_divisor;
+			}
+			if (crossings > 0 && effective < light_pass_min_strength) {
+				effective = light_pass_min_strength;
+			}
 			// Count light sources.
-			light_sources += strength;
+			light_sources += effective;
 		}
 	}
 	skip = gwin->get_render_skip_lift();
