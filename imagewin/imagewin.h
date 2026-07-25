@@ -78,6 +78,14 @@ public:
 		UiLayerDisplayMap,
 		UiLayerTextEffects,
 		UiLayerFullScreenScene,
+		// Spatial lighting overlays: a copy of the world drawn with a brighter
+		// (candle / single-light / many-lights) fixed palette, masked by a
+		// per-pixel radial coverage so only the area under a light source is
+		// brightened.  Ordered candle < single < many so a brighter tier wins
+		// where two lights overlap.
+		UiLayerLightCandle,
+		UiLayerLightSingle,
+		UiLayerLightMany,
 		NumUiLayerKinds
 	};
 
@@ -189,6 +197,12 @@ public:
 		// entry is used verbatim (with its own alpha) instead of the opaque
 		// palette colour, letting a layer draw translucent pixels.
 		std::vector<uint32> index_argb;
+
+		// Optional per-pixel alpha multiplier (0..255), one byte per logical
+		// pixel (logw*logh row-major).  Empty = every pixel keeps its full
+		// (index-derived) alpha.  Used by the spatial light overlays to fade a
+		// lit region smoothly to transparent at the light's radius.
+		std::vector<unsigned char> coverage;
 
 	public:
 		Layer(std::unique_ptr<Image_buffer> b, int w, int h, unsigned char transp, int fscale, int zorder)
@@ -558,6 +572,12 @@ public:
 
 	void game_to_screen(int gx, int gy, bool fast, int& sx, int& sy);
 
+	// On-screen rectangle (in layer/display coords) that the game viewport
+	// occupies, computed with the same transform the mouse cursor uses
+	// (game_to_screen).  Used to place a full-game-area overlay (the spatial
+	// light layers) so it lines up with the world exactly under any scaler.
+	void get_game_area_dest(int& x, int& y, int& w, int& h);
+
 	int get_scaler() {    // Returns 1 or 2.
 		return scaler;
 	}
@@ -679,6 +699,11 @@ public:
 	// Non-zero entries replace the opaque palette colour for that index,
 	// carrying their own alpha (used for translucent pixels).
 	void layer_set_index_argb(int handle, const uint32* argb256);
+	// Set (or clear, with nullptr) a layer's per-pixel alpha multiplier.
+	// 'cov' points to w*h bytes (0..255, row-major) matching the layer's
+	// logical size; each pixel's final alpha is scaled by cov/255.  Used by the
+	// spatial light overlays for a smooth radial falloff.
+	void layer_set_coverage(int handle, const unsigned char* cov, int w, int h);
 	// Whole-layer opacity (255 = opaque). Lets an opaque-painted layer be
 	// composited semi-transparently (e.g. the translucent shortcut bar).
 	void layer_set_alpha(int handle, unsigned char a);

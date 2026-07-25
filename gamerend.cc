@@ -205,6 +205,7 @@ int Game_render::paint_map(
 	Shape_manager* sman = gwin->shape_man;
 	render_seq++;    // Increment sequence #.
 	gwin->painted = true;
+	gwin->clear_light_renders();    // Rebuild the spatial-light source list.
 
 	const int scrolltx      = gwin->scrolltx;
 	const int scrollty      = gwin->scrollty;
@@ -572,21 +573,53 @@ void Game_window::paint(
 
 	// Complete repaint?
 	if (!gx && !gy && gw == get_width() && gh == get_height() && main_actor) {
-		// Look for lights.
-		Actor*    party[9];    // Get party, including Avatar.
-		const int cnt           = get_party(party, 1);
-		int       carried_light = 0;
-		for (int i = 0; i < cnt; i++) {
-			carried_light += Get_light_strength(party[i], main_actor, party[i]->get_light_source());
+		if (natural_light) {
+			// Carried light (torch/lamp) becomes a spatial light centered on the
+			// Avatar, like any placed source, instead of tinting the whole scene.
+			Actor*    party[9];    // Get party, including Avatar.
+			const int cnt            = get_party(party, 1);
+			int       carried_bright = 0;
+			for (int i = 0; i < cnt; i++) {
+				carried_bright += party[i]->get_light_source();
+			}
+			if (carried_bright > 0) {
+				int asx = 0;
+				int asy = 0;
+				get_shape_location(main_actor, asx, asy);
+				const int radius = carried_bright * 3 * c_tilesize;
+				const int tier   = carried_bright <= 2 ? 0 : (carried_bright <= 4 ? 1 : 2);
+				add_light_render(asx, asy, radius, tier);
+			}
+			// Also check light spell.
+			if (special_light && clock->get_total_minutes() > special_light) {
+				// Just expired.
+				special_light = 0;
+				clock->set_palette();
+			}
+			// Light sources no longer tint the global palette; it stays purely
+			// time-of-day (incl. dawn/dusk).  The spatial light layers do the local
+			// brightening around each source instead.
+			(void)light_sources;
+			clock->set_light_source(0, in_dungeon);
+			build_light_layers();
+		} else {
+			// Legacy lighting: carried and placed lights tint the whole global
+			// palette based on their combined strength.
+			Actor*    party[9];    // Get party, including Avatar.
+			const int cnt           = get_party(party, 1);
+			int       carried_light = 0;
+			for (int i = 0; i < cnt; i++) {
+				carried_light += Get_light_strength(party[i], main_actor, party[i]->get_light_source());
+			}
+			// Also check light spell.
+			if (special_light && clock->get_total_minutes() > special_light) {
+				// Just expired.
+				special_light = 0;
+				clock->set_palette();
+			}
+			// Set palette for lights.
+			clock->set_light_source(carried_light + light_sources, in_dungeon);
 		}
-		// Also check light spell.
-		if (special_light && clock->get_total_minutes() > special_light) {
-			// Just expired.
-			special_light = 0;
-			clock->set_palette();
-		}
-		// Set palette for lights.
-		clock->set_light_source(carried_light + light_sources, in_dungeon);
 	}
 
 	win->EndPaintIntoGuardBand();
@@ -854,6 +887,19 @@ int Game_render::paint_chunk_objects(
 			}
 			if (blocked) {
 				continue;
+			}
+			// Spatial lighting: record this (unblocked) source so
+			// build_light_layers can brighten the world around it.  Radius and
+			// palette tier scale with the light's intrinsic brightness (not the
+			// distance-decayed strength used for the legacy global palette).
+			if (gwin->get_natural_light()) {
+				const int brightness = info.get_object_light(light_obj->get_framenum());
+				int       lsx        = 0;
+				int       lsy        = 0;
+				gwin->get_shape_location(light_obj, lsx, lsy);
+				const int radius = brightness * 3 * c_tilesize;    // ~3 tiles/level.
+				const int tier   = brightness <= 2 ? 0 : (brightness <= 4 ? 1 : 2);
+				gwin->add_light_render(lsx, lsy, radius, tier);
 			}
 			// Dim the light once per inside/outside boundary crossing so a
 			// light seen through an opening looks one palette step darker, and

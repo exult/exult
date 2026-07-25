@@ -114,6 +114,19 @@ class Game_window {
 	bool painted;               // true if we updated image buffer.
 	bool ambient_light;         // Permanent version of special_light.
 	bool infravision_active;    // Infravision flag.
+	// Spatial light overlays: per-frame list of light sources (in ibuf
+	// game-pixel coords) that the light layers brighten around, plus the three
+	// tier layer handles and a reusable coverage (radial-alpha) scratch buffer.
+	struct Light_render_info {
+		int sx, sy;    // Center of the light in game-pixel (ibuf) coords.
+		int radius;    // Radius in game pixels.
+		int tier;      // 0 = candle, 1 = single light, 2 = many lights.
+	};
+	std::vector<Light_render_info> light_renders;
+	int                            light_layer_handles[3] = {-1, -1, -1};
+	int                            light_layer_w          = -1;
+	int                            light_layer_h          = -1;
+	std::vector<unsigned char>     light_coverage_scratch;
 	// Game state values:
 	int           skip_above_actor;      // Level above actor to skip rendering.
 	unsigned int  in_dungeon;            // true if inside a dungeon.
@@ -151,6 +164,8 @@ class Game_window {
 								  // key modifier
 	bool         allow_autonotes;
 	bool         allow_enhancements;
+	bool         natural_light;       // Use spatial (layered) light instead of
+									  // tinting the whole global palette
 	bool         in_exult_menu;      // used for menu options
 	uint8        use_shortcutbar;    // 0 = no, 1 = trans, 2 = yes
 	Pixel_colors outline_color;
@@ -329,6 +344,14 @@ public:
 		allow_autonotes = s;
 	}
 
+	bool get_natural_light() const {
+		return natural_light;
+	}
+
+	void set_natural_light(bool s) {
+		natural_light = s;
+	}
+
 	bool get_allow_enhancements() const {
 		return allow_enhancements;
 	}
@@ -473,6 +496,23 @@ public:
 	void layer_set_index_argb(int handle, const uint32* argb256) {
 		win->layer_set_index_argb(handle, argb256);
 	}
+
+	void layer_set_coverage(int handle, const unsigned char* cov, int w, int h) {
+		win->layer_set_coverage(handle, cov, w, h);
+	}
+
+	// Spatial lighting: gamerend collects visible, unblocked light sources here
+	// (screen/ibuf coords + radius + tier) each frame; build_light_layers turns
+	// them into radial brightening overlays over the (dark) base world.
+	void clear_light_renders() {
+		light_renders.clear();
+	}
+
+	void add_light_render(int sx, int sy, int radius, int tier) {
+		light_renders.push_back({sx, sy, radius, tier});
+	}
+
+	void build_light_layers();
 
 	void layer_set_alpha(int handle, unsigned char a) {
 		win->layer_set_alpha(handle, a);

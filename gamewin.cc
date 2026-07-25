@@ -75,6 +75,7 @@
 #include "paths.h"
 #include "schedule.h"
 #include "spellbook.h"
+#include "palette.h"
 #include "touchui.h"
 #include "ucmachine.h"
 #include "ucsched.h" /* Only used to flush objects. */
@@ -87,6 +88,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
+#include <cmath>
 #include <memory>
 #include <sstream>
 
@@ -395,6 +397,9 @@ Game_window::Game_window(
 	allow_enhancements = str == "yes";
 	config->set("config/gameplay/enhancements", allow_enhancements ? "yes" : "no", false);
 	Shape_info::set_allow_enhancements(allow_enhancements);
+	config->value("config/gameplay/natural_light", str, "yes");
+	natural_light = str != "no";
+	config->set("config/gameplay/natural_light", natural_light ? "yes" : "no", false);
 #if defined(SDL_PLATFORM_IOS) || defined(ANDROID)
 	const string default_scroll_with_mouse = "no";
 	const string default_item_menu         = "yes";
@@ -1309,6 +1314,173 @@ void Game_window::get_shape_location(const Tile_coord& t, int& x, int& y) {
 	Get_shape_location(t, scrolltx, scrollty, x, y);
 	x -= scrolltx_lo;
 	y -= scrollty_lo;
+}
+
+/*
+ *  Rebuild the spatial-light overlay layers from the per-frame light_renders
+ *  list (populated by the renderer for every visible, unblocked light source).
+ *
+ *  Each brightness tier (0 = candle, 1 = single light, 2 = many lights) gets one
+ *  game-area overlay layer: a copy of the just-painted (dark, time-of-day) world
+ *  image, drawn through that tier's brighter fixed UI palette and masked by a
+ *  per-pixel radial alpha (coverage) that fades smoothly from full at the source
+ *  to zero at the radius edge.  Composited over the dark base world this lights
+ *  only the area under each source, leaving the global palette untouched.
+ */
+void Game_window::build_light_layers() {
+	static const Image_window::UiLayerKind kinds[3] = {
+			Image_window::UiLayerLightCandle, Image_window::UiLayerLightSingle,
+			Image_window::UiLayerLightMany};
+	// Brighter tiers sit on top (greater z) so they win where lights overlap;
+	// all stay below conversation (z 0) and gump layers.
+	static const int zvals[3] = {-1002, -1001, -1000};
+
+	const int W = get_width();
+	const int H = get_height();
+
+	// If the game area changed size (video settings change), the existing
+	// layers are the wrong size: their coverage would be dropped, leaving a
+	// full-opaque brightened layer covering the whole screen.  Recreate them.
+	if (W != light_layer_w || H != light_layer_h) {
+		for (int t = 0; t < 3; ++t) {
+			if (light_layer_handles[t] >= 0) {
+				destroy_layer(light_layer_handles[t]);
+				light_layer_handles[t] = -1;
+			}
+		}
+		light_layer_w = W;
+		light_layer_h = H;
+	}
+
+	// Re-assert each light layer's config every build: some video/UI changes
+	// (toggling infravision, changing a UI layer palette, etc.) reset the
+	// per-kind configs, which would otherwise drop the brighter fixed palette.
+	// Use the game's own scaler / fill scaler so the lit copy is filtered like
+	// the world; placement is exact via get_game_area_dest (game_to_screen).
+	static const int modes[3] = {
+			Image_window::UiPaletteCandle, Image_window::UiPaletteSingleLight,
+			Image_window::UiPaletteManyLights};
+	const int gscaler = win->get_scaler();
+	const int gfill   = win->get_fill_scaler();
+	for (int t = 0; t < 3; ++t) {
+		win->set_ui_layer_config(kinds[t], 0, 0, gscaler, Image_window::Fill, gfill);
+		win->set_ui_layer_palette(kinds[t], modes[t]);
+	}
+	if (pal) {
+		pal->update_ui_layer_palettes();    // Refill the (brightened) colors.
+	}
+
+	// No spatial lighting at full day or mid palette-transition: the fixed UI
+	// palettes are disabled then, so just hide any existing layers.
+	const int  palnum        = pal ? pal->get_palette_number() : PALETTE_DAY;
+	const bool lights_active  = palnum != PALETTE_DAY && !light_renders.empty();
+
+	// A tier only brightens if its fixed palette is actually lighter than the
+	// current world palette; at dawn/dusk the world may already be brighter
+	// than (say) candlelight, in which case that tier would darken the scene.
+	static const int tier_palnum[3] = {PALETTE_CANDLE, PALETTE_SINGLE_LIGHT, PALETTE_MANY_LIGHTS};
+	const int        world_lum      = pal ? pal->get_luminance() : 0;
+
+	// Source pixels = the world image just painted (world + effects only; gumps
+	// live in their own layers and must not be brightened).
+	Image_buffer*        src    = win->get_ibuf();
+	const unsigned char* srcpix = src ? src->get_bits() : nullptr;
+	const int            src_lw = src ? static_cast<int>(src->get_line_width()) : 0;
+
+	for (int t = 0; t < 3; ++t) {
+		bool any = false;
+		for (const auto& lr : light_renders) {
+			if (lr.tier == t) {
+				any = true;
+				break;
+			}
+		}
+		// Skip the tier if its palette is no brighter than the world palette.
+		const int  tier_lum = pal ? pal->get_reference_luminance(tier_palnum[t]) : -1;
+		const bool brighter = tier_lum > world_lum;
+		if (!lights_active || !any || !srcpix || !brighter) {
+			if (light_layer_handles[t] >= 0) {
+				layer_set_visible(light_layer_handles[t], false);
+			}
+			continue;
+		}
+		// Ensure the (game-area sized) layer exists.
+		int handle = light_layer_handles[t];
+		if (handle < 0) {
+			handle                 = create_layer(W, H, 255, 0, zvals[t]);
+			light_layer_handles[t] = handle;
+		}
+		layer_set_opaque(handle, true);
+		layer_set_ui_kind(handle, kinds[t]);
+
+		Image_buffer8* dst = get_layer_ibuf(handle);
+		if (!dst) {
+			continue;
+		}
+		unsigned char* dstpix = dst->get_bits();
+		const int      dst_lw = static_cast<int>(dst->get_line_width());
+
+		// Reset this tier's radial-alpha (coverage) mask.
+		light_coverage_scratch.assign(static_cast<size_t>(W) * H, 0);
+		unsigned char* cov = light_coverage_scratch.data();
+
+		for (const auto& lr : light_renders) {
+			if (lr.tier != t || lr.radius <= 0) {
+				continue;
+			}
+			const int   r  = lr.radius;
+			const float rf = static_cast<float>(r);
+			int         x0 = lr.sx - r;
+			int         x1 = lr.sx + r;
+			int         y0 = lr.sy - r;
+			int         y1 = lr.sy + r;
+			if (x0 < 0) {
+				x0 = 0;
+			}
+			if (y0 < 0) {
+				y0 = 0;
+			}
+			if (x1 >= W) {
+				x1 = W - 1;
+			}
+			if (y1 >= H) {
+				y1 = H - 1;
+			}
+			for (int y = y0; y <= y1; ++y) {
+				const int   dy  = y - lr.sy;
+				const float dy2 = static_cast<float>(dy) * static_cast<float>(dy);
+				for (int x = x0; x <= x1; ++x) {
+					const int   dx   = x - lr.sx;
+					const float dist = std::sqrt(static_cast<float>(dx) * static_cast<float>(dx) + dy2);
+					if (dist > rf) {
+						continue;
+					}
+					// Soft (quadratic) falloff: stays bright well into the
+					// radius, then fades gently to the edge, for a wider glow.
+					const float tnorm = dist / rf;
+					const int   a     = static_cast<int>(255.0f * (1.0f - tnorm * tnorm) + 0.5f);
+					if (a <= 0) {
+						continue;
+					}
+					const size_t idx = static_cast<size_t>(y) * W + x;
+					if (a > cov[idx]) {
+						cov[idx]                    = static_cast<unsigned char>(a);
+						dstpix[y * dst_lw + x] = srcpix[y * src_lw + x];
+					}
+				}
+			}
+		}
+		layer_set_coverage(handle, cov, W, H);
+		// Align the overlay with the world's on-screen rectangle.
+		int gx0 = 0;
+		int gy0 = 0;
+		int gdw = W;
+		int gdh = H;
+		win->get_game_area_dest(gx0, gy0, gdw, gdh);
+		layer_set_dest(handle, gx0, gy0, gdw, gdh);
+		layer_set_visible(handle, true);
+		layer_set_dirty(handle);
+	}
 }
 
 /*
