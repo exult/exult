@@ -1327,6 +1327,72 @@ void Game_window::get_shape_location(const Tile_coord& t, int& x, int& y) {
  *  to zero at the radius edge.  Composited over the dark base world this lights
  *  only the area under each source, leaving the global palette untouched.
  */
+
+/*
+ *  Prepare the global roof-pixel mask for a world render.  Only active when a
+ *  night/dawn/dusk palette is in effect (spatial lights only brighten then);
+ *  at full day it stays inactive and costs nothing.  The mask mirrors the
+ *  world ibuf so build_light_layers can test roof coverage per pixel.
+ */
+
+void Game_window::begin_roof_mask() {
+	roof_light_mask_active = false;
+	if (!natural_light) {
+		return;
+	}
+	const int palnum = pal ? pal->get_palette_number() : PALETTE_DAY;
+	if (palnum == PALETTE_DAY) {
+		return;    // No spatial lighting at full day: no roof mask needed.
+	}
+	Image_buffer8* ib = win ? win->get_ib8() : nullptr;
+	if (!ib) {
+		return;
+	}
+	const int bw = static_cast<int>(ib->get_width());
+	const int bh = static_cast<int>(ib->get_height());
+	if (!roof_light_mask || static_cast<int>(roof_light_mask->get_width()) != bw
+		|| static_cast<int>(roof_light_mask->get_height()) != bh) {
+		roof_light_mask = std::make_unique<Image_buffer8>(bw, bh);
+	}
+	roof_light_mask->fill8(0);    // 0 = not a roof pixel.
+	roof_light_mask_active = true;
+}
+
+/*
+ *  Update the global roof mask as one object is painted.  Objects paint
+ *  back-to-front, so the topmost shape at each pixel wins: a roof shape SETS
+ *  its pixels (kept dark under lights), and any other shape painted over them
+ *  CLEARS them (e.g. a tree overlapping a roof stays lit).  The final mask
+ *  therefore marks exactly the pixels where the visible shape is a roof.
+ */
+
+void Game_window::update_roof_mask(Game_object* obj, int sx, int sy) {
+	if (!roof_light_mask_active || !roof_light_mask || !obj) {
+		return;
+	}
+	Shape_frame* frame = obj->get_shape();
+	if (!frame || !frame->is_rle()) {
+		return;
+	}
+	// A roof marks its pixels (255); anything painted over them clears (0).
+	static const Xform_palette roof_set = [] {
+		Xform_palette x;
+		for (int i = 0; i < 256; ++i) {
+			x.colors[i] = 255;
+		}
+		return x;
+	}();
+	static const Xform_palette roof_clear = [] {
+		Xform_palette x;
+		for (int i = 0; i < 256; ++i) {
+			x.colors[i] = 0;
+		}
+		return x;
+	}();
+	frame->paint_rle_transformed(
+			roof_light_mask.get(), sx, sy, obj->get_info().is_roof() ? roof_set : roof_clear);
+}
+
 void Game_window::build_light_layers() {
 	static const Image_window::UiLayerKind kinds[3] = {
 			Image_window::UiLayerLightCandle, Image_window::UiLayerLightSingle,
@@ -1387,6 +1453,12 @@ void Game_window::build_light_layers() {
 	const unsigned char* srcpix = src ? src->get_bits() : nullptr;
 	const int            src_lw = src ? static_cast<int>(src->get_line_width()) : 0;
 
+	// Global roof-pixel mask: any pixel a drawn roof covers stays dark under
+	// every light so an interior light never lights up the roof over it.
+	const unsigned char* roofpix
+			= (roof_light_mask_active && roof_light_mask) ? roof_light_mask->get_bits() : nullptr;
+	const int            roof_lw = roofpix ? static_cast<int>(roof_light_mask->get_line_width()) : 0;
+
 	for (int t = 0; t < 3; ++t) {
 		bool any = false;
 		for (const auto& lr : light_renders) {
@@ -1430,6 +1502,9 @@ void Game_window::build_light_layers() {
 			}
 			const int   r  = lr.radius;
 			const float rf = static_cast<float>(r);
+			// Only an interior light keeps roof pixels dark; an exterior light
+			// (torch outside, street lamp, ...) still lights house roofs.
+			const bool  mask_roof = roofpix && lr.mask_roof;
 			int         x0 = lr.sx - r;
 			int         x1 = lr.sx + r;
 			int         y0 = lr.sy - r;
@@ -1449,7 +1524,11 @@ void Game_window::build_light_layers() {
 			for (int y = y0; y <= y1; ++y) {
 				const int   dy  = y - lr.sy;
 				const float dy2 = static_cast<float>(dy) * static_cast<float>(dy);
+				const unsigned char* roofrow = mask_roof ? roofpix + y * roof_lw : nullptr;
 				for (int x = x0; x <= x1; ++x) {
+					if (roofrow && roofrow[x]) {
+						continue;    // Roof pixel: keep dark under every light.
+					}
 					const int   dx   = x - lr.sx;
 					const float dist = std::sqrt(static_cast<float>(dx) * static_cast<float>(dx) + dy2);
 					if (dist > rf) {

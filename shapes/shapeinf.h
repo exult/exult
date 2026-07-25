@@ -190,6 +190,7 @@ enum Data_flag_bits {
 	tf_on_fire_flag,
 	tf_extradimensional_storage_flag,
 	tf_on_hit_usecode_flag,
+	tf_roof_flag,
 };
 
 enum Data_flag_names {
@@ -212,6 +213,7 @@ enum Data_flag_names {
 	on_fire_flag                  = (1U << tf_on_fire_flag),
 	extradimensional_storage_flag = (1U << tf_extradimensional_storage_flag),
 	on_hit_usecode_flag           = (1U << tf_on_hit_usecode_flag),
+	roof_flag                     = (1U << tf_roof_flag),
 };
 
 /*
@@ -304,6 +306,7 @@ public:
 		mirror,
 		on_fire,
 		extradimensional_storage,
+		roof,
 	};
 
 	enum Mountain_tops {
@@ -766,6 +769,13 @@ public:
 
 	bool has_extradimensional_storage() const {
 		return get_shape_flag(extradimensional_storage);
+	}
+
+	// Flagged in shape_info.txt %%section roof_shapes: a roof shape whose
+	// pixels the spatial light layers keep dark (so an interior light never
+	// lights up its own roof).
+	bool is_roof() const {
+		return get_shape_flag(roof);
 	}
 
 	unsigned char get_actor_flags() const {

@@ -118,15 +118,23 @@ class Game_window {
 	// game-pixel coords) that the light layers brighten around, plus the three
 	// tier layer handles and a reusable coverage (radial-alpha) scratch buffer.
 	struct Light_render_info {
-		int sx, sy;    // Center of the light in game-pixel (ibuf) coords.
-		int radius;    // Radius in game pixels.
-		int tier;      // 0 = candle, 1 = single light, 2 = many lights.
+		int  sx, sy;    // Center of the light in game-pixel (ibuf) coords.
+		int  radius;    // Radius in game pixels.
+		int  tier;      // 0 = candle, 1 = single light, 2 = many lights.
+		bool mask_roof = false;    // Interior source: keep roof pixels dark.
 	};
 	std::vector<Light_render_info> light_renders;
 	int                            light_layer_handles[3] = {-1, -1, -1};
 	int                            light_layer_w          = -1;
 	int                            light_layer_h          = -1;
 	std::vector<unsigned char>     light_coverage_scratch;
+	// Global roof-pixel mask: marks which on-screen pixels belong to a drawn
+	// roof (an occluding overhead object).  Built during the world render and
+	// consumed by build_light_layers to keep those pixels dark under every
+	// light, so an interior light never lights up the roof over it.  Same
+	// pixel geometry as the world ibuf (win->get_ib8()).
+	std::unique_ptr<Image_buffer8> roof_light_mask;
+	bool                           roof_light_mask_active = false;
 	// Game state values:
 	int           skip_above_actor;      // Level above actor to skip rendering.
 	unsigned int  in_dungeon;            // true if inside a dungeon.
@@ -508,11 +516,19 @@ public:
 		light_renders.clear();
 	}
 
-	void add_light_render(int sx, int sy, int radius, int tier) {
-		light_renders.push_back({sx, sy, radius, tier});
+	void add_light_render(int sx, int sy, int radius, int tier, bool mask_roof = false) {
+		light_renders.push_back({sx, sy, radius, tier, mask_roof});
 	}
 
 	void build_light_layers();
+
+	// Roof-pixel mask (see roof_light_mask above): begin_roof_mask allocates /
+	// clears the mask at the start of a world render when night lighting is
+	// active; update_roof_mask marks a roof object's pixels and clears any that
+	// a later (front) non-roof object paints over, so overlapping shapes such as
+	// a tree in front of a roof stay lit.
+	void begin_roof_mask();
+	void update_roof_mask(Game_object* obj, int sx, int sy);
 
 	void layer_set_alpha(int handle, unsigned char a) {
 		win->layer_set_alpha(handle, a);

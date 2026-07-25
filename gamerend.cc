@@ -279,6 +279,7 @@ int Game_render::paint_map(
 	}
 	// Draw the chunks' objects
 	//   diagonally NE.
+	gwin->begin_roof_mask();    // Reset the global roof-pixel mask for this frame.
 	const int tmp_stopy = DECR_CHUNK(start_chunky);
 	for (cy = start_chunky; cy != stop_chunky; cy = INCR_CHUNK(cy)) {
 		for (int dx = start_chunkx, dy = cy; dx != stop_chunkx && dy != tmp_stopy; dx = INCR_CHUNK(dx), dy = DECR_CHUNK(dy)) {
@@ -414,7 +415,13 @@ static bool Is_interior_light_source(const Game_object* obj) {
 	if (chunk == nullptr) {
 		return false;
 	}
-	const int roof = chunk->is_roof(obj->get_tx(), obj->get_ty(), obj->get_lift());
+	// Look for a roof above this tile from the floor up, NOT from the light's
+	// own lift.  is_roof() searches from lift+4, so passing an elevated light's
+	// lift (e.g. a candle on a table, a hanging lamp, or any raised z level)
+	// starts the search above the roof and misses it -- making an interior
+	// light read as exterior so it wrongly shines through the roof and walls.
+	// Testing from lift 0 finds the roof regardless of how high the source sits.
+	const int roof = chunk->is_roof(obj->get_tx(), obj->get_ty(), 0);
 	return roof != 255;
 }
 
@@ -830,7 +837,14 @@ int Game_render::paint_chunk_objects(
 			} else if (chunk_has_opening) {
 				source_can_escape = true;
 			} else {
-				source_can_escape = Enclosure_open_to_outside(light_obj->get_tile());
+				// Test the enclosure from the floor, not the light's own lift.
+				// A raised source (candle on a table, hanging lamp) has an
+				// elevated tz; feeding that in makes the flood test walls and
+				// the roof too high up (above the walls / past the roof) so a
+				// sealed room reads as open and the light leaks through walls.
+				Tile_coord floor_tile = light_obj->get_tile();
+				floor_tile.tz         = 0;
+				source_can_escape = Enclosure_open_to_outside(floor_tile);
 				leaks_through_gap = source_can_escape;
 			}
 			bool blocked;
@@ -899,7 +913,11 @@ int Game_render::paint_chunk_objects(
 				gwin->get_shape_location(light_obj, lsx, lsy);
 				const int radius = brightness * 3 * c_tilesize;    // ~3 tiles/level.
 				const int tier   = brightness <= 2 ? 0 : (brightness <= 4 ? 1 : 2);
-				gwin->add_light_render(lsx, lsy, radius, tier);
+				// The global roof-pixel mask (built during the world render)
+				// keeps any roof this light reaches dark, but only for an
+				// interior source: a light inside a building must not light up
+				// its own roof, while a light outside still lights house roofs.
+				gwin->add_light_render(lsx, lsy, radius, tier, interior_source);
 			}
 			// Dim the light once per inside/outside boundary crossing so a
 			// light seen through an opening looks one palette step darker, and
@@ -957,6 +975,9 @@ void Game_render::paint_object(Game_object* obj) {
 				bbox_x, bbox_y, obj->get_framenum(), Game_window::get_instance()->get_win()->get_ib8(), bbox_palindex, 2);
 	}
 	obj->paint();    // Finally, paint this one.
+	// Update the roof-pixel mask: roofs mark their pixels, front objects clear
+	// them, so an overlapping shape (e.g. a tree) is not darkened as a roof.
+	Game_window::get_instance()->update_roof_mask(obj, bbox_x, bbox_y);
 	// paint bbox front
 	if (bbox_palindex != -1) {
 		obj->get_info().paint_bbox(
