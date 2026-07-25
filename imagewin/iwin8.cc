@@ -149,6 +149,23 @@ void Image_window8::rotate_colors(
 		rotate(start, start + 3, finish);
 	}
 
+	// Rotate the same range in every layer's fixed-palette override (the
+	// spatial-light candle / single / many palettes) so their colour-cycled
+	// ranges (fire, ...) animate in phase with the live palette, using that
+	// palette's own correct flame colours instead of freezing under a light.
+	for (auto& cfg : ui_cfgs) {
+		if (cfg.ui_palette_colors.size() != 768) {
+			continue;
+		}
+		unsigned char* ostart  = cfg.ui_palette_colors.data() + first;
+		unsigned char* ofinish = ostart + cnt;
+		if (num > 0) {
+			rotate(ostart, ofinish - 3, ofinish);
+		} else {
+			rotate(ostart, ostart + 3, ofinish);
+		}
+	}
+
 	if (upd) {    // Take effect now?
 		SDL_Color colors2[256];
 		for (int i = 0; i < 256; i++) {

@@ -127,6 +127,7 @@ class Game_window {
 	int                            light_layer_handles[3] = {-1, -1, -1};
 	int                            light_layer_w          = -1;
 	int                            light_layer_h          = -1;
+	int                            light_layer_palnum     = -2;
 	std::vector<unsigned char>     light_coverage_scratch;
 	// Global roof-pixel mask: marks which on-screen pixels belong to a drawn
 	// roof (an occluding overhead object).  Built during the world render and

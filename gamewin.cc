@@ -1432,13 +1432,19 @@ void Game_window::build_light_layers() {
 		win->set_ui_layer_config(kinds[t], 0, 0, gscaler, Image_window::Fill, gfill);
 		win->set_ui_layer_palette(kinds[t], modes[t]);
 	}
-	if (pal) {
-		pal->update_ui_layer_palettes();    // Refill the (brightened) colors.
-	}
 
 	// No spatial lighting at full day or mid palette-transition: the fixed UI
 	// palettes are disabled then, so just hide any existing layers.
 	const int  palnum        = pal ? pal->get_palette_number() : PALETTE_DAY;
+	// Refill the (brightened) fixed palettes only when the palette number
+	// actually changes.  Doing it every frame would overwrite the per-frame
+	// colour-cycling rotation that rotate_colors applies to these overrides,
+	// freezing animated flames under a light.  Palette::apply also refills them
+	// on every real palette change, keeping them in phase with the live palette.
+	if (pal && palnum != light_layer_palnum) {
+		pal->update_ui_layer_palettes();
+		light_layer_palnum = palnum;
+	}
 	const bool lights_active  = palnum != PALETTE_DAY && !light_renders.empty();
 
 	// A tier only brightens if its fixed palette is actually lighter than the
