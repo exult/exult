@@ -422,6 +422,79 @@ namespace NaturalLight {
 		return false;
 	}
 
+	LightVisibility Evaluate_light_visibility(
+			Game_object* light_obj, Map_chunk* olist, Game_object* main_actor, bool viewer_outside, bool same_chunk,
+			bool avatar_sealed, bool chunk_has_opening) {
+		LightVisibility vis;
+		// Resolve the source to a nearby interior tile (a wall torch sits on the
+		// wall itself, whose own tile is not a room floor) and learn whether it is
+		// an interior source. The resolved tile is where the enclosure flood
+		// begins, so a wall-mounted light is tested from inside its room rather
+		// than from the wall (which would let the flood escape straight out
+		// through the wall to the exterior).
+		bool             source_interior = false;
+		const Tile_coord interior_tile   = Resolve_interior_light_tile(light_obj->get_tile(), source_interior);
+		vis.interior_source              = source_interior;
+		// Can this light source's light escape its OWN enclosure?  An exterior
+		// source always can. An interior source can only if its enclosure has a
+		// light_passes_through object (window / open door) or a passable physical
+		// gap in its walls (a doorway with no door object). The flood-fill is only
+		// run when there is no object opening, to bound the cost.
+		if (!source_interior) {
+			vis.source_can_escape = true;
+		} else if (chunk_has_opening && Light_reaches_chunk_opening(olist, interior_tile, light_obj)) {
+			// A window / open door in the chunk lets light out, but only if this
+			// light can actually reach it. A torch sealed behind an interior wall
+			// must not leak through a window in a different part of the same chunk
+			// (the chunk-wide test is too coarse).
+			vis.source_can_escape = true;
+		} else {
+			vis.source_can_escape = Enclosure_open_to_outside(interior_tile);
+			vis.leaks_through_gap = vis.source_can_escape;
+		}
+		if (viewer_outside) {
+			// Interior light reaches the outside viewer only if it can escape its
+			// enclosure. Palette lighting is global, so this only approximates
+			// spatial light.
+			vis.blocked = !vis.source_can_escape;
+			// Interior source seen from outside crosses one boundary (out of its
+			// building).
+			if (vis.interior_source && !same_chunk) {
+				vis.crossings = 1;
+			}
+		} else {
+			// Viewer inside. A light in the Avatar's own chunk always applies; so
+			// does one that shares the Avatar's interior space across a chunk
+			// boundary (e.g. two candles in one room but in different chunks --
+			// otherwise only the candle in the Avatar's chunk would light while the
+			// neighbour is blocked as "outside light" the moment the Avatar's room
+			// reads as sealed).
+			const bool in_avatar_space
+					= same_chunk || (vis.interior_source && Tiles_in_same_enclosure(interior_tile, main_actor->get_tile()));
+			if (in_avatar_space) {
+				vis.blocked = false;
+			} else if (avatar_sealed) {
+				// The Avatar's enclosure is completely light-tight: no outside
+				// light gets in.
+				vis.blocked = true;
+			} else {
+				// The Avatar's room has an opening, so outside light enters -- but a
+				// light source sealed inside its OWN building still can't escape to
+				// reach the Avatar (fixes a sealed building leaking light into a
+				// neighbouring open building).
+				vis.blocked = !vis.source_can_escape;
+				// Light enters the Avatar's building (one crossing); if the source
+				// is itself indoors it also left its own building (a second
+				// crossing).
+				vis.crossings = 1;
+				if (vis.interior_source) {
+					vis.crossings += 1;
+				}
+			}
+		}
+		return vis;
+	}
+
 	int Light_radius(int brightness) {
 		return brightness * 3 * c_tilesize;    // ~3 tiles per brightness level.
 	}

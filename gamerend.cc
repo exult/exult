@@ -660,89 +660,20 @@ int Game_render::paint_chunk_objects(
 			if (strength <= 0) {
 				continue;
 			}
-			// Resolve the source to a nearby interior tile (a wall torch sits
-			// on the wall itself, whose own tile is not a room floor) and learn
-			// whether it is an interior source. The resolved tile is where the
-			// enclosure flood begins, so a wall-mounted light is tested from
-			// inside its room rather than from the wall (which would let the
-			// flood escape straight out through the wall to the exterior).
-			bool             source_interior = false;
-			const Tile_coord interior_tile   = NaturalLight::Resolve_interior_light_tile(light_obj->get_tile(), source_interior);
-			const bool       interior_source = source_interior;
-			// Can this light source's light escape its OWN enclosure?  An
-			// exterior source always can. An interior source can only if its
-			// enclosure has a light_passes_through object (window / open door)
-			// or a passable physical gap in its walls (a doorway with no door
-			// object). The flood-fill is only run when there is no object
-			// opening, to bound the cost.
-			bool source_can_escape;
-			bool leaks_through_gap = false;
-			if (!interior_source) {
-				source_can_escape = true;
-			} else if (chunk_has_opening && NaturalLight::Light_reaches_chunk_opening(olist, interior_tile, light_obj)) {
-				// A window / open door in the chunk lets light out, but only if
-				// this light can actually reach it. A torch sealed behind an
-				// interior wall must not leak through a window in a different
-				// part of the same chunk (the chunk-wide test is too coarse).
-				source_can_escape = true;
-			} else {
-				source_can_escape = NaturalLight::Enclosure_open_to_outside(interior_tile);
-				leaks_through_gap = source_can_escape;
-			}
-			bool blocked;
-			// Number of inside<->outside boundary crossings the light makes on
-			// its way from the source to the Avatar. Each crossing dims the
-			// light by one palette step (see below).
-			int crossings = 0;
-			if (viewer_outside) {
-				// Interior light reaches the outside viewer only if it can
-				// escape its enclosure. Palette lighting is global, so this
-				// only approximates spatial light.
-				blocked = !source_can_escape;
-				// Interior source seen from outside crosses one boundary
-				// (out of its building).
-				if (interior_source && !same_chunk) {
-					crossings = 1;
-				}
-			} else {
-				// Viewer inside. A light in the Avatar's own chunk always
-				// applies; so does one that shares the Avatar's interior space
-				// across a chunk boundary (e.g. two candles in one room but in
-				// different chunks -- otherwise only the candle in the Avatar's
-				// chunk would light while the neighbour is blocked as "outside
-				// light" the moment the Avatar's room reads as sealed).
-				const bool in_avatar_space
-						= same_chunk
-						  || (interior_source && NaturalLight::Tiles_in_same_enclosure(interior_tile, main_actor->get_tile()));
-				if (in_avatar_space) {
-					blocked = false;
-				} else if (avatar_sealed) {
-					// The Avatar's enclosure is completely light-tight: no
-					// outside light gets in.
-					blocked = true;
-				} else {
-					// The Avatar's room has an opening, so outside light enters
-					// -- but a light source sealed inside its OWN building still
-					// can't escape to reach the Avatar (fixes a sealed building
-					// leaking light into a neighbouring open building).
-					blocked = !source_can_escape;
-					// Light enters the Avatar's building (one crossing); if the
-					// source is itself indoors it also left its own building
-					// (a second crossing).
-					crossings = 1;
-					if (interior_source) {
-						crossings += 1;
-					}
-				}
-			}
+			// Decide whether this source reaches the viewer, and how many
+			// inside/outside boundaries its light crosses on the way.
+			const NaturalLight::LightVisibility vis = NaturalLight::Evaluate_light_visibility(
+					light_obj, olist, main_actor, viewer_outside, same_chunk, avatar_sealed, chunk_has_opening);
+			const bool blocked   = vis.blocked;
+			const int  crossings = vis.crossings;
 
 			if (dbg_light_pass && ((light_dbg_counter++ % 25) == 0)) {
 				std::cerr << "[light-pass] chunk=" << cx << ',' << cy << " src=" << light_obj->get_shapenum() << '/'
 						  << light_obj->get_framenum() << " inside=" << (viewer_outside ? 0 : 1)
 						  << " same_chunk=" << (same_chunk ? 1 : 0) << " sealed=" << (avatar_sealed ? 1 : 0)
-						  << " roof=" << (interior_source ? 1 : 0)
+						  << " roof=" << (vis.interior_source ? 1 : 0)
 						  << " brightness=" << info.get_object_light(light_obj->get_framenum()) << " strength=" << strength
-						  << " opening=" << (chunk_has_opening ? 1 : 0) << " gap=" << (leaks_through_gap ? 1 : 0)
+						  << " opening=" << (chunk_has_opening ? 1 : 0) << " gap=" << (vis.leaks_through_gap ? 1 : 0)
 						  << " crossings=" << crossings;
 				if (chunk_has_opening) {
 					std::cerr << " open_shape=" << opening_shape << '/' << opening_frame << " open_match=" << opening_match_frame

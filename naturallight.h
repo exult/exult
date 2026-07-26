@@ -58,6 +58,24 @@ namespace NaturalLight {
 	// at is_roof() objects (ignoring the light itself).
 	bool Light_beneath_roof(Game_object* light_obj);
 
+	// Result of deciding whether one light source reaches the current viewer.
+	struct LightVisibility {
+		bool blocked           = false;    // Light does not reach the viewer.
+		int  crossings         = 0;        // Inside<->outside boundaries crossed.
+		bool interior_source   = false;    // Source sits inside a roofed enclosure.
+		bool source_can_escape = false;    // Its own enclosure lets light out.
+		bool leaks_through_gap = false;    // Escape is via a physical wall gap.
+	};
+
+	// Decide whether the light living in `olist` (the chunk being painted)
+	// reaches the viewer, by composing the enclosure/opening tests above.
+	// `viewer_outside`, `same_chunk`, `avatar_sealed` and `chunk_has_opening` are
+	// the per-frame / per-chunk facts the caller already computed; `main_actor`
+	// is the viewer whose enclosure the light must reach.
+	LightVisibility Evaluate_light_visibility(
+			Game_object* light_obj, Map_chunk* olist, Game_object* main_actor, bool viewer_outside, bool same_chunk,
+			bool avatar_sealed, bool chunk_has_opening);
+
 	// Map a light's intrinsic brightness (object_light / carried strength) to the
 	// spatial-light glow radius in game pixels (~3 tiles per brightness level).
 	int Light_radius(int brightness);
