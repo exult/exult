@@ -121,8 +121,13 @@ class Game_window {
 		int  sx, sy;    // Center of the light in game-pixel (ibuf) coords.
 		int  radius;    // Radius in game pixels.
 		int  tier;      // 0 = candle, 1 = single light, 2 = many lights.
-		bool mask_roof = false;    // Interior source: keep roof pixels dark.
+		// True if the light is itself under a roof (a stable geometric verdict
+		// from Light_beneath_roof): build_light_layers then keeps roof pixels
+		// dark for it so it never lights its own roof.  False (e.g. the
+		// Avatar's carried light, or any light out in the open) lights roofs.
+		bool mask_roof = false;
 	};
+
 	std::vector<Light_render_info> light_renders;
 	int                            light_layer_handles[3] = {-1, -1, -1};
 	int                            light_layer_w          = -1;

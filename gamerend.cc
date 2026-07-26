@@ -657,6 +657,50 @@ static bool Tiles_in_same_enclosure(const Tile_coord& start, const Tile_coord& t
 	return false;    // Not connected within the search radius.
 }
 
+// True if an actual roof shape covers the light's tile from above.  Scans the
+// light's chunk and its neighbours (a roof spans several tiles / chunks) for
+// is_roof() objects whose footprint contains the light's tile.  Unlike
+// Map_chunk::is_roof() -- which counts ANY blocking object above a lift, so a
+// tall lamp post reads as "roofed" over itself -- this looks ONLY at roof
+// shapes and ignores the light object itself.  It is a stable, geometric,
+// avatar-independent test, so an interior light keeps its verdict no matter
+// where the Avatar stands (screen-space roof-mask sampling flips as Exult hides
+// roofs above/near the Avatar, which wrongly let interior lights light roofs).
+static bool Light_beneath_roof(Game_object* light_obj) {
+	Game_window* const gwin = Game_window::get_instance();
+	Game_map* const    gmap = gwin ? gwin->get_map() : nullptr;
+	if (gmap == nullptr) {
+		return false;
+	}
+	const Tile_coord lt  = light_obj->get_tile();
+	const int        lcx = lt.tx / c_tiles_per_chunk;
+	const int        lcy = lt.ty / c_tiles_per_chunk;
+	for (int dcy = -1; dcy <= 1; ++dcy) {
+		for (int dcx = -1; dcx <= 1; ++dcx) {
+			Map_chunk* const chunk = gmap->get_chunk_safely(lcx + dcx, lcy + dcy);
+			if (chunk == nullptr) {
+				continue;
+			}
+			Object_iterator it(chunk->get_objects());
+			Game_object*    obj;
+			while ((obj = it.get_next()) != nullptr) {
+				if (obj == light_obj || !obj->get_info().is_roof()) {
+					continue;
+				}
+				// The roof must be at or above the light (a roof the light sits
+				// on top of does not cover it).
+				if (obj->get_lift() < lt.tz) {
+					continue;
+				}
+				if (obj->get_footprint().has_world_point(lt.tx, lt.ty)) {
+					return true;
+				}
+			}
+		}
+	}
+	return false;
+}
+
 void Game_render::increment_bbox_index() {
 	int  bbox_indices[] = {15, 0, 22, 38, 5, 64, 80, 94, -1};
 	auto start          = bbox_indices;
@@ -1090,11 +1134,15 @@ int Game_render::paint_chunk_objects(
 				gwin->get_shape_location(light_obj, lsx, lsy);
 				const int radius = brightness * 3 * c_tilesize;    // ~3 tiles/level.
 				const int tier   = brightness <= 2 ? 0 : (brightness <= 4 ? 1 : 2);
-				// The global roof-pixel mask (built during the world render)
-				// keeps any roof this light reaches dark, but only for an
-				// interior source: a light inside a building must not light up
-				// its own roof, while a light outside still lights house roofs.
-				gwin->add_light_render(lsx, lsy, radius, tier, interior_source);
+				// Keep roofs dark only for a light that is itself under a roof
+				// (interior candle, hanging lamp): it must not light up its own
+				// roof.  A light out in the open -- street lamp, torch, brazier
+				// -- lights nearby house roofs.  Light_beneath_roof is a stable
+				// geometric test (actual roof shapes, ignoring the light's own
+				// shape), so the verdict does not flip as the Avatar moves and
+				// Exult hides roofs near it.
+				const bool under_roof = Light_beneath_roof(light_obj);
+				gwin->add_light_render(lsx, lsy, radius, tier, under_roof);
 			}
 			// Dim the light once per inside/outside boundary crossing so a
 			// light seen through an opening looks one palette step darker, and

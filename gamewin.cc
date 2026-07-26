@@ -1508,8 +1508,12 @@ void Game_window::build_light_layers() {
 			}
 			const int   r  = lr.radius;
 			const float rf = static_cast<float>(r);
-			// Only an interior light keeps roof pixels dark; an exterior light
-			// (torch outside, street lamp, ...) still lights house roofs.
+			// Only a light that is itself under a roof keeps roof pixels dark
+			// (so it never lights its own roof); an exterior light -- street
+			// lamp, torch, brazier -- still lights house roofs.  lr.mask_roof
+			// is a stable geometric verdict from Light_beneath_roof; the
+			// per-pixel roof mask below then darkens exactly the roof pixels
+			// currently drawn (none when Exult has hidden the roof).
 			const bool  mask_roof = roofpix && lr.mask_roof;
 			int         x0 = lr.sx - r;
 			int         x1 = lr.sx + r;
