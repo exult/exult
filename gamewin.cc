@@ -397,7 +397,7 @@ Game_window::Game_window(
 	allow_enhancements = str == "yes";
 	config->set("config/gameplay/enhancements", allow_enhancements ? "yes" : "no", false);
 	Shape_info::set_allow_enhancements(allow_enhancements);
-	config->value("config/gameplay/natural_light", str, "yes");
+	config->value("config/gameplay/natural_light", str, "no");
 	natural_light = str != "no";
 	config->set("config/gameplay/natural_light", natural_light ? "yes" : "no", false);
 #if defined(SDL_PLATFORM_IOS) || defined(ANDROID)
