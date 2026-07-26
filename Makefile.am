@@ -74,6 +74,8 @@ EXULTSOURCES =	\
 	gamerend.h	\
 	gamewin.cc	\
 	gamewin.h	\
+	naturallight.cc	\
+	naturallight.h	\
 	headers/gamma.h	\
 	hash_utils.h	\
 	headers/ignore_unused_variable_warning.h	\

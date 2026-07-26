@@ -71,11 +71,11 @@
 #include "mouse.h"
 #include "npcnear.h"
 #include "objiter.h"
+#include "palette.h"
 #include "party.h"
 #include "paths.h"
 #include "schedule.h"
 #include "spellbook.h"
-#include "palette.h"
 #include "touchui.h"
 #include "ucmachine.h"
 #include "ucsched.h" /* Only used to flush objects. */
@@ -84,11 +84,11 @@
 #include "version.h"
 #include "virstone.h"
 
+#include <cmath>
 #include <cstdarg>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
-#include <cmath>
 #include <memory>
 #include <sstream>
 
@@ -1324,14 +1324,14 @@ void Game_window::get_shape_location(const Tile_coord& t, int& x, int& y) {
  *  game-area overlay layer: a copy of the just-painted (dark, time-of-day) world
  *  image, drawn through that tier's brighter fixed UI palette and masked by a
  *  per-pixel radial alpha (coverage) that fades smoothly from full at the source
- *  to zero at the radius edge.  Composited over the dark base world this lights
+ *  to zero at the radius edge. Composited over the dark base world this lights
  *  only the area under each source, leaving the global palette untouched.
  */
 
 /*
- *  Prepare the global roof-pixel mask for a world render.  Only active when a
+ *  Prepare the global roof-pixel mask for a world render. Only active when a
  *  night/dawn/dusk palette is in effect (spatial lights only brighten then);
- *  at full day it stays inactive and costs nothing.  The mask mirrors the
+ *  at full day it stays inactive and costs nothing. The mask mirrors the
  *  world ibuf so build_light_layers can test roof coverage per pixel.
  */
 
@@ -1359,10 +1359,10 @@ void Game_window::begin_roof_mask() {
 }
 
 /*
- *  Update the global roof mask as one object is painted.  Objects paint
- *  back-to-front, so the topmost shape at each pixel wins: a roof shape SETS
+ *  Update the global roof mask as one object is painted Objects paint
+ *  back-to-front, so the topmost shape at each pixel wins: a roof shape sets
  *  its pixels (kept dark under lights), and any other shape painted over them
- *  CLEARS them (e.g. a tree overlapping a roof stays lit).  The final mask
+ *  clears them (e.g. a tree overlapping a roof stays lit). The final mask
  *  therefore marks exactly the pixels where the visible shape is a roof.
  */
 
@@ -1389,8 +1389,7 @@ void Game_window::update_roof_mask(Game_object* obj, int sx, int sy) {
 		}
 		return x;
 	}();
-	frame->paint_rle_transformed(
-			roof_light_mask.get(), sx, sy, obj->get_info().is_roof() ? roof_set : roof_clear);
+	frame->paint_rle_transformed(roof_light_mask.get(), sx, sy, obj->get_info().is_roof() ? roof_set : roof_clear);
 }
 
 /*
@@ -1411,9 +1410,8 @@ void Game_window::destroy_light_layers() {
 }
 
 void Game_window::build_light_layers() {
-	static const Image_window::UiLayerKind kinds[3] = {
-			Image_window::UiLayerLightCandle, Image_window::UiLayerLightSingle,
-			Image_window::UiLayerLightMany};
+	static const Image_window::UiLayerKind kinds[3]
+			= {Image_window::UiLayerLightCandle, Image_window::UiLayerLightSingle, Image_window::UiLayerLightMany};
 	// Brighter tiers sit on top (greater z) so they win where lights overlap;
 	// all stay below conversation (z 0) and gump layers.
 	static const int zvals[3] = {-1002, -1001, -1000};
@@ -1423,7 +1421,7 @@ void Game_window::build_light_layers() {
 
 	// If the game area changed size (video settings change), the existing
 	// layers are the wrong size: their coverage would be dropped, leaving a
-	// full-opaque brightened layer covering the whole screen.  Recreate them.
+	// full-opaque brightened layer covering the whole screen. Recreate them.
 	if (W != light_layer_w || H != light_layer_h) {
 		for (int t = 0; t < 3; ++t) {
 			if (light_layer_handles[t] >= 0) {
@@ -1440,9 +1438,8 @@ void Game_window::build_light_layers() {
 	// per-kind configs, which would otherwise drop the brighter fixed palette.
 	// Use the game's own scaler / fill scaler so the lit copy is filtered like
 	// the world; placement is exact via get_game_area_dest (game_to_screen).
-	static const int modes[3] = {
-			Image_window::UiPaletteCandle, Image_window::UiPaletteSingleLight,
-			Image_window::UiPaletteManyLights};
+	static const int modes[3]
+			= {Image_window::UiPaletteCandle, Image_window::UiPaletteSingleLight, Image_window::UiPaletteManyLights};
 	const int gscaler = win->get_scaler();
 	const int gfill   = win->get_fill_scaler();
 	for (int t = 0; t < 3; ++t) {
@@ -1452,17 +1449,17 @@ void Game_window::build_light_layers() {
 
 	// No spatial lighting at full day or mid palette-transition: the fixed UI
 	// palettes are disabled then, so just hide any existing layers.
-	const int  palnum        = pal ? pal->get_palette_number() : PALETTE_DAY;
+	const int palnum = pal ? pal->get_palette_number() : PALETTE_DAY;
 	// Refill the (brightened) fixed palettes only when the palette number
-	// actually changes.  Doing it every frame would overwrite the per-frame
+	// actually changes. Doing it every frame would overwrite the per-frame
 	// colour-cycling rotation that rotate_colors applies to these overrides,
-	// freezing animated flames under a light.  Palette::apply also refills them
+	// freezing animated flames under a light. Palette::apply also refills them
 	// on every real palette change, keeping them in phase with the live palette.
 	if (pal && palnum != light_layer_palnum) {
 		pal->update_ui_layer_palettes();
 		light_layer_palnum = palnum;
 	}
-	const bool lights_active  = palnum != PALETTE_DAY && !light_renders.empty();
+	const bool lights_active = palnum != PALETTE_DAY && !light_renders.empty();
 
 	// A tier only brightens if its fixed palette is actually lighter than the
 	// current world palette; at dawn/dusk the world may already be brighter
@@ -1478,8 +1475,7 @@ void Game_window::build_light_layers() {
 
 	// Global roof-pixel mask: any pixel a drawn roof covers stays dark under
 	// every light so an interior light never lights up the roof over it.
-	const unsigned char* roofpix
-			= (roof_light_mask_active && roof_light_mask) ? roof_light_mask->get_bits() : nullptr;
+	const unsigned char* roofpix = (roof_light_mask_active && roof_light_mask) ? roof_light_mask->get_bits() : nullptr;
 	const int            roof_lw = roofpix ? static_cast<int>(roof_light_mask->get_line_width()) : 0;
 
 	for (int t = 0; t < 3; ++t) {
@@ -1527,15 +1523,15 @@ void Game_window::build_light_layers() {
 			const float rf = static_cast<float>(r);
 			// Only a light that is itself under a roof keeps roof pixels dark
 			// (so it never lights its own roof); an exterior light -- street
-			// lamp, torch, brazier -- still lights house roofs.  lr.mask_roof
+			// lamp, torch, brazier -- still lights house roofs. lr.mask_roof
 			// is a stable geometric verdict from Light_beneath_roof; the
 			// per-pixel roof mask below then darkens exactly the roof pixels
 			// currently drawn (none when Exult has hidden the roof).
-			const bool  mask_roof = roofpix && lr.mask_roof;
-			int         x0 = lr.sx - r;
-			int         x1 = lr.sx + r;
-			int         y0 = lr.sy - r;
-			int         y1 = lr.sy + r;
+			const bool mask_roof = roofpix && lr.mask_roof;
+			int        x0        = lr.sx - r;
+			int        x1        = lr.sx + r;
+			int        y0        = lr.sy - r;
+			int        y1        = lr.sy + r;
 			if (x0 < 0) {
 				x0 = 0;
 			}
@@ -1549,8 +1545,8 @@ void Game_window::build_light_layers() {
 				y1 = H - 1;
 			}
 			for (int y = y0; y <= y1; ++y) {
-				const int   dy  = y - lr.sy;
-				const float dy2 = static_cast<float>(dy) * static_cast<float>(dy);
+				const int            dy      = y - lr.sy;
+				const float          dy2     = static_cast<float>(dy) * static_cast<float>(dy);
 				const unsigned char* roofrow = mask_roof ? roofpix + y * roof_lw : nullptr;
 				for (int x = x0; x <= x1; ++x) {
 					if (roofrow && roofrow[x]) {
@@ -1570,7 +1566,7 @@ void Game_window::build_light_layers() {
 					}
 					const size_t idx = static_cast<size_t>(y) * W + x;
 					if (a > cov[idx]) {
-						cov[idx]                    = static_cast<unsigned char>(a);
+						cov[idx]               = static_cast<unsigned char>(a);
 						dstpix[y * dst_lw + x] = srcpix[y * src_lw + x];
 					}
 				}

@@ -1839,11 +1839,11 @@ void Image_window::set_ui_layer_config(UiLayerKind kind, int width, int height, 
 		&& cfg.fill_scaler == fill_scaler_) {
 		return;    // Unchanged; don't force a needless texture rebuild.
 	}
-	cfg.width          = width;
-	cfg.height         = height;
-	cfg.scaler         = scaler_;
-	cfg.fill_mode      = fmode;
-	cfg.fill_scaler    = fill_scaler_;
+	cfg.width       = width;
+	cfg.height      = height;
+	cfg.scaler      = scaler_;
+	cfg.fill_mode   = fmode;
+	cfg.fill_scaler = fill_scaler_;
 	mark_all_layers_dirty();
 }
 
@@ -1882,8 +1882,7 @@ void Image_window::set_ui_layer_palette_colors(UiLayerKind kind, const unsigned 
 	} else {
 		// Skip the re-upload if the colors are identical (this is re-asserted
 		// every frame by the spatial-light renderer).
-		if (cfg.ui_palette_colors.size() == 768
-			&& memcmp(cfg.ui_palette_colors.data(), colors768, 768) == 0) {
+		if (cfg.ui_palette_colors.size() == 768 && memcmp(cfg.ui_palette_colors.data(), colors768, 768) == 0) {
 			return;
 		}
 		cfg.ui_palette_colors.assign(colors768, colors768 + 768);

@@ -406,7 +406,7 @@ void Shape_info::add_light_passes_info(Light_passes_info& add) {
 }
 
 bool Shape_info::light_passes_through(int frame, int* matched_frame) const {
-	const int want_frame = frame & 31;
+	const int want_frame   = frame & 31;
 	bool      has_explicit = false;
 	bool      explicit_hit = false;
 	bool      wildcard_hit = false;

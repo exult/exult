@@ -146,8 +146,8 @@ void Shapes_vga_file::Write_Shapeinf_text_data_file(Exult_Game game) {
 	using Light_data_writer
 			= Functor_multidata_writer<Shape_info, Vector_writer_functor<Light_info, Shape_info, &Shape_info::lightinf>>;
 	// For entries that allow interior lights to pass outside.
-	using Light_passes_writer = Functor_multidata_writer<
-			Shape_info, Vector_writer_functor<Light_passes_info, Shape_info, &Shape_info::lightpassinf>>;
+	using Light_passes_writer
+			= Functor_multidata_writer<Shape_info, Vector_writer_functor<Light_passes_info, Shape_info, &Shape_info::lightpassinf>>;
 	// For warmth data.
 	using Warmth_data_writer
 			= Functor_multidata_writer<Shape_info, Vector_writer_functor<Warmth_info, Shape_info, &Shape_info::warminf>>;

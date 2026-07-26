@@ -3124,8 +3124,8 @@ static void apply_ui_layer_config() {
 	// get_game_area_dest; build_light_layers() re-asserts this config and their
 	// fixed palettes each frame (some video/UI changes reset per-kind configs).
 	{
-		const int game_scaler = gwin->get_win()->get_scaler();
-		const int game_fill   = gwin->get_win()->get_fill_scaler();
+		const int                       game_scaler = gwin->get_win()->get_scaler();
+		const int                       game_fill   = gwin->get_win()->get_fill_scaler();
 		const Image_window::UiLayerKind light_kinds[3]
 				= {Image_window::UiLayerLightCandle, Image_window::UiLayerLightSingle, Image_window::UiLayerLightMany};
 		const int light_modes[3]

@@ -114,13 +114,14 @@ class Game_window {
 	bool painted;               // true if we updated image buffer.
 	bool ambient_light;         // Permanent version of special_light.
 	bool infravision_active;    // Infravision flag.
+
 	// Spatial light overlays: per-frame list of light sources (in ibuf
 	// game-pixel coords) that the light layers brighten around, plus the three
 	// tier layer handles and a reusable coverage (radial-alpha) scratch buffer.
 	struct Light_render_info {
-		int  sx, sy;    // Center of the light in game-pixel (ibuf) coords.
-		int  radius;    // Radius in game pixels.
-		int  tier;      // 0 = candle, 1 = single light, 2 = many lights.
+		int sx, sy;    // Center of the light in game-pixel (ibuf) coords.
+		int radius;    // Radius in game pixels.
+		int tier;      // 0 = candle, 1 = single light, 2 = many lights.
 		// True if the light is itself under a roof (a stable geometric verdict
 		// from Light_beneath_roof): build_light_layers then keeps roof pixels
 		// dark for it so it never lights its own roof.  False (e.g. the
@@ -176,10 +177,10 @@ class Game_window {
 	bool scroll_with_mouse;       // scroll game view with mousewheel
 	bool alternate_drop;          // don't split stacks, can be inverted with a CTRL
 								  // key modifier
-	bool         allow_autonotes;
-	bool         allow_enhancements;
-	bool         natural_light;       // Use spatial (layered) light instead of
-									  // tinting the whole global palette
+	bool allow_autonotes;
+	bool allow_enhancements;
+	bool natural_light;              // Use spatial (layered) light instead of
+									 // tinting the whole global palette
 	bool         in_exult_menu;      // used for menu options
 	uint8        use_shortcutbar;    // 0 = no, 1 = trans, 2 = yes
 	Pixel_colors outline_color;

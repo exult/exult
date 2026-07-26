@@ -279,8 +279,8 @@ void Shapes_vga_file::Read_Shapeinf_text_data_file(bool editing, Exult_Game game
 	using Light_data_reader
 			= Functor_multidata_reader<Shape_info, Vector_reader_functor<Light_info, Shape_info, &Shape_info::lightinf>>;
 	// For entries that allow interior lights to pass outside.
-	using Light_passes_reader = Functor_multidata_reader<
-			Shape_info, Vector_reader_functor<Light_passes_info, Shape_info, &Shape_info::lightpassinf>>;
+	using Light_passes_reader
+			= Functor_multidata_reader<Shape_info, Vector_reader_functor<Light_passes_info, Shape_info, &Shape_info::lightpassinf>>;
 	// For warmth data.
 	using Warmth_data_reader
 			= Functor_multidata_reader<Shape_info, Vector_reader_functor<Warmth_info, Shape_info, &Shape_info::warminf>>;
@@ -352,12 +352,12 @@ void Shapes_vga_file::Read_Shapeinf_text_data_file(bool editing, Exult_Game game
 			std::make_unique<Monster_food_reader>(info), std::make_unique<Actor_flags_reader>(info),
 			std::make_unique<Effective_hp_reader>(info), std::make_unique<Lightweight_reader>(info),
 			std::make_unique<Light_data_reader>(info), std::make_unique<Light_passes_reader>(info),
-			std::make_unique<Warmth_data_reader>(info),
-			std::make_unique<Quantity_frames_reader>(info), std::make_unique<Locked_containers_reader>(info),
-			std::make_unique<Content_rules_reader>(info), std::make_unique<Explosive_reader>(info),
-			std::make_unique<Frame_names_reader>(info), std::make_unique<Altready_reader>(info),
-			std::make_unique<Barge_type_reader>(info), std::make_unique<Frame_flags_reader>(info),
-			std::make_unique<Jawbone_reader>(info), std::make_unique<Mirror_reader>(info), std::make_unique<On_fire_reader>(info),
+			std::make_unique<Warmth_data_reader>(info), std::make_unique<Quantity_frames_reader>(info),
+			std::make_unique<Locked_containers_reader>(info), std::make_unique<Content_rules_reader>(info),
+			std::make_unique<Explosive_reader>(info), std::make_unique<Frame_names_reader>(info),
+			std::make_unique<Altready_reader>(info), std::make_unique<Barge_type_reader>(info),
+			std::make_unique<Frame_flags_reader>(info), std::make_unique<Jawbone_reader>(info),
+			std::make_unique<Mirror_reader>(info), std::make_unique<On_fire_reader>(info),
 			std::make_unique<Extradimensional_storage_reader>(info), std::make_unique<Field_type_reader>(info),
 			std::make_unique<Frame_usecode_reader>(info), std::make_unique<On_hit_usecode_reader>(info),
 			std::make_unique<Roof_reader>(info));

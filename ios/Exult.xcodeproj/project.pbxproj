@@ -67,6 +67,7 @@
 		8AD4A9311A92B9DB0004762D /* InputOptions_gump.cc in Sources */ = {isa = PBXBuildFile; fileRef = 8AD4A92F1A92B9DB0004762D /* InputOptions_gump.cc */; };
 		8ADA282A2E92E48A00C1012D /* libfluidsynth.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 8ADA28232E92E47D00C1012D /* libfluidsynth.a */; platformFilter = ios; };
 		8ADFFDF625DE791000FC4D3A /* verify.cc in Sources */ = {isa = PBXBuildFile; fileRef = 8ADFFDF425DE791000FC4D3A /* verify.cc */; };
+		8AE3D13B30163EB700BCB1FF /* naturallight.cc in Sources */ = {isa = PBXBuildFile; fileRef = 8AE3D13A30163EB700BCB1FF /* naturallight.cc */; };
 		8AE5D3C21D2A0D9601379947 /* cheat_screen_actors.cc in Sources */ = {isa = PBXBuildFile; fileRef = 8ADFFDF825DE791000FC4D3A /* cheat_screen_actors.cc */; };
 		8AE8B9BE2E400B740094DF3C /* SDL3.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8AE8B9BC2E400B4F0094DF3C /* SDL3.framework */; };
 		8AE8B9BF2E400B740094DF3C /* SDL3.framework in Embedd SDL3 Framework */ = {isa = PBXBuildFile; fileRef = 8AE8B9BC2E400B4F0094DF3C /* SDL3.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
@@ -431,6 +432,8 @@
 		8ADFFDF725DE791000FC4D3A /* cheat_screen_strings.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = cheat_screen_strings.h; path = ../cheat_screen_strings.h; sourceTree = "<group>"; };
 		8ADFFDF825DE791000FC4D3A /* cheat_screen_actors.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = cheat_screen_actors.cc; path = ../cheat_screen_actors.cc; sourceTree = "<group>"; };
 		8AE3D1093001610500BCB1FF /* scene_layer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = scene_layer.h; path = ../scene_layer.h; sourceTree = SOURCE_ROOT; };
+		8AE3D13930163EB700BCB1FF /* naturallight.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = naturallight.h; path = ../naturallight.h; sourceTree = SOURCE_ROOT; };
+		8AE3D13A30163EB700BCB1FF /* naturallight.cc */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = naturallight.cc; path = ../naturallight.cc; sourceTree = SOURCE_ROOT; };
 		8AE8B9BC2E400B4F0094DF3C /* SDL3.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = SDL3.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		8AF2AFD62016707F00696E08 /* joypad-glass-southwest.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "joypad-glass-southwest.png"; sourceTree = "<group>"; };
 		8AF2AFD72016708000696E08 /* joypad-glass-north.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "joypad-glass-north.png"; sourceTree = "<group>"; };
@@ -1173,6 +1176,8 @@
 				E700DC6B1A6E30A7006C8BE4 /* monsters.h */,
 				E700DC6C1A6E30A7006C8BE4 /* mouse.cc */,
 				E700DC6D1A6E30A7006C8BE4 /* mouse.h */,
+				8AE3D13930163EB700BCB1FF /* naturallight.h */,
+				8AE3D13A30163EB700BCB1FF /* naturallight.cc */,
 				E700DC6E1A6E30A7006C8BE4 /* npcnear.cc */,
 				E700DC6F1A6E30A7006C8BE4 /* npcnear.h */,
 				E700DC701A6E30A7006C8BE4 /* npctime.cc */,
@@ -2068,6 +2073,7 @@
 				E700DE841A6E3497006C8BE4 /* File_gump.cc in Sources */,
 				E700DD8F1A6E3161006C8BE4 /* listfiles.cc in Sources */,
 				E700DD5B1A6E3121006C8BE4 /* monstinf.cc in Sources */,
+				8AE3D13B30163EB700BCB1FF /* naturallight.cc in Sources */,
 				E700DC241A6E2CE7006C8BE4 /* RawAudioSample.cc in Sources */,
 				E700DE2B1A6E344D006C8BE4 /* scale_2x.cc in Sources */,
 				E700DF8F1A6E364E006C8BE4 /* Configuration.cc in Sources */,
