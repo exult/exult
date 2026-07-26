@@ -37,6 +37,8 @@
 #include "gamewin.h"
 #include "ignore_unused_variable_warning.h"
 #include "objiter.h"
+#include "path.h"
+#include "paths.h"
 
 #include <algorithm>
 #include <array>
@@ -410,19 +412,111 @@ static bool Chunk_find_light_passes_through(
 	return false;
 }
 
-static bool Is_interior_light_source(const Game_object* obj) {
-	Map_chunk* chunk = obj ? obj->get_chunk() : nullptr;
+// True if the light at interior tile `src` has an unobstructed path to any
+// light_passes_through shape (window / open door / grate) in the chunk.  The
+// chunk-wide "has an opening" test is too coarse: a torch sealed behind an
+// interior wall must not leak out through a window elsewhere in the SAME chunk.
+// Pathfinding from the source to each opening confirms the light can actually
+// reach it.  Fast_pathfinder_client is built to fail fast, so this stays cheap
+// enough for the per-frame light loop.
+static bool Light_reaches_chunk_opening(
+		Map_chunk* chunk, const Tile_coord& src, Game_object* light_obj) {
 	if (chunk == nullptr) {
 		return false;
 	}
-	// Look for a roof above this tile from the floor up, NOT from the light's
-	// own lift.  is_roof() searches from lift+4, so passing an elevated light's
-	// lift (e.g. a candle on a table, a hanging lamp, or any raised z level)
-	// starts the search above the roof and misses it -- making an interior
-	// light read as exterior so it wrongly shines through the roof and walls.
-	// Testing from lift 0 finds the roof regardless of how high the source sits.
-	const int roof = chunk->is_roof(obj->get_tx(), obj->get_ty(), 0);
-	return roof != 255;
+	Object_iterator it(chunk->get_objects());
+	Game_object*    obj;
+	while ((obj = it.get_next()) != nullptr) {
+		int  match_frame  = -2;
+		bool has_explicit = false;
+		bool has_wildcard = false;
+		if (!Shape_light_passes_through_strict(
+					obj->get_info(), obj->get_framenum(), match_frame, has_explicit, has_wildcard)) {
+			continue;
+		}
+		Fast_pathfinder_client client(light_obj, obj, 1);
+		const auto             result = Find_path(src, obj->get_center_tile(), &client);
+		if (result.second) {
+			return true;    // A reachable opening: light can escape through it.
+		}
+	}
+	return false;
+}
+
+namespace {
+inline int Light_tile_norm(int t) {
+	return (t % c_num_tiles + c_num_tiles) % c_num_tiles;
+}
+
+// Is the given absolute tile under a roof (i.e. inside a building)?  Tested
+// from the floor (lift 0), NOT the light's own lift: is_roof() searches from
+// lift+4, so an elevated source (candle on a table, a torch high on a wall, a
+// hanging lamp) would start the search above the roof and miss it -- making an
+// interior light read as exterior so it wrongly shines through roof and walls.
+bool Light_tile_roofed(Game_map* gmap, int tx, int ty) {
+	tx = Light_tile_norm(tx);
+	ty = Light_tile_norm(ty);
+	Map_chunk* const chunk
+			= gmap->get_chunk_safely(tx / c_tiles_per_chunk, ty / c_tiles_per_chunk);
+	if (chunk == nullptr) {
+		return false;
+	}
+	return chunk->is_roof(tx % c_tiles_per_chunk, ty % c_tiles_per_chunk, 0) < 31;
+}
+
+// Is the given absolute tile a full-height wall?  Tested a few tiles above the
+// floor so low furniture (tables, chairs, ...) is not mistaken for a wall.
+bool Light_tile_wall(Game_map* gmap, int tx, int ty) {
+	tx = Light_tile_norm(tx);
+	ty = Light_tile_norm(ty);
+	Map_chunk* const chunk
+			= gmap->get_chunk_safely(tx / c_tiles_per_chunk, ty / c_tiles_per_chunk);
+	if (chunk == nullptr) {
+		return false;
+	}
+	return chunk->is_tile_occupied(tx % c_tiles_per_chunk, ty % c_tiles_per_chunk, 3);
+}
+}    // namespace
+
+// Resolve a light source to a nearby interior tile and report whether it is an
+// interior source.  A wall-mounted torch or sconce sits ON the wall, so its own
+// tile is the wall itself: the roof test above it can miss, and -- crucially --
+// an enclosure flood-fill started there escapes straight out through the wall
+// to the exterior, both making a sealed interior light wrongly read as exterior
+// and shine outside.  Prefer the source's own floor tile; if that is a wall (or
+// has no roof of its own), fall back to an adjacent roofed, non-wall tile: the
+// room the torch faces.  The returned tile is where the enclosure flood begins.
+static Tile_coord Resolve_interior_light_tile(
+		const Tile_coord& src, bool& interior) {
+	Game_window* const gwin = Game_window::get_instance();
+	Game_map* const    gmap = gwin ? gwin->get_map() : nullptr;
+	Tile_coord         base = src;
+	base.tz                 = 0;
+	if (gmap == nullptr) {
+		interior = false;
+		return base;
+	}
+	const bool own_roofed = Light_tile_roofed(gmap, base.tx, base.ty);
+	const bool own_wall   = Light_tile_wall(gmap, base.tx, base.ty);
+	if (own_roofed && !own_wall) {
+		interior = true;
+		return base;
+	}
+	// The source tile is a wall (or roofless): flood from an adjacent interior
+	// floor tile instead, so a wall torch is tested from inside its room.
+	static const int nbrs[8][2]
+			= {{1, 0}, {-1, 0}, {0, 1}, {0, -1}, {1, 1}, {1, -1}, {-1, 1}, {-1, -1}};
+	for (const auto& d : nbrs) {
+		const int nx = base.tx + d[0];
+		const int ny = base.ty + d[1];
+		if (Light_tile_roofed(gmap, nx, ny) && !Light_tile_wall(gmap, nx, ny)) {
+			interior = true;
+			return Tile_coord(Light_tile_norm(nx), Light_tile_norm(ny), 0);
+		}
+	}
+	// No roofed interior neighbour: a genuine exterior source.
+	interior = own_roofed;
+	return base;
 }
 
 // Bounded flood fill from the Avatar's tile.  Returns true if the roofed
@@ -495,6 +589,72 @@ static bool Enclosure_open_to_outside(const Tile_coord& start) {
 		}
 	}
 	return false;    // Fully enclosed within the search radius.
+}
+
+// Bounded flood fill from `start` through non-wall tiles (tested a couple of
+// tiles above the floor so low furniture is not a wall).  Returns true if it
+// reaches `target`.  Used to tell whether a light shares the Avatar's interior
+// space even across a chunk boundary: two candles in one room but in different
+// chunks, or a candle in the Avatar's own sealed room across a chunk edge,
+// would otherwise be treated as "outside light" and blocked, so only one lit.
+static bool Tiles_in_same_enclosure(const Tile_coord& start, const Tile_coord& target) {
+	Game_map* const gmap = Game_window::get_instance()->get_map();
+	if (gmap == nullptr) {
+		return false;
+	}
+	constexpr int R = 12;             // Search radius in tiles.
+	constexpr int W = 2 * R + 1;      // Window width.
+	const int     base_tx  = start.tx - R;
+	const int     base_ty  = start.ty - R;
+	const int     wall_tz  = start.tz + 3;
+	auto          normalize = [](int t) { return (t % c_num_tiles + c_num_tiles) % c_num_tiles; };
+	auto is_wall = [&](int tx, int ty) -> bool {
+		const int  wtx   = normalize(tx);
+		const int  wty   = normalize(ty);
+		Map_chunk* const chunk = gmap->get_chunk_safely(wtx / c_tiles_per_chunk, wty / c_tiles_per_chunk);
+		if (chunk == nullptr) {
+			return true;    // Unknown -> treat as blocking.
+		}
+		return chunk->is_tile_occupied(wtx % c_tiles_per_chunk, wty % c_tiles_per_chunk, wall_tz);
+	};
+	const int tgt_tx = normalize(target.tx);
+	const int tgt_ty = normalize(target.ty);
+	auto is_target = [&](int tx, int ty) -> bool {
+		const int ddx = std::abs(Tile_coord::delta(normalize(tx), tgt_tx));
+		const int ddy = std::abs(Tile_coord::delta(normalize(ty), tgt_ty));
+		return ddx <= 1 && ddy <= 1;
+	};
+	std::array<bool, W * W>                  visited{};
+	std::array<std::pair<int, int>, W * W>   queue{};
+	int                                      qhead = 0;
+	int                                      qtail = 0;
+	auto push = [&](int tx, int ty) {
+		const int lx = tx - base_tx;
+		const int ly = ty - base_ty;
+		if (lx < 0 || lx >= W || ly < 0 || ly >= W) {
+			return;
+		}
+		bool& seen = visited[ly * W + lx];
+		if (seen) {
+			return;
+		}
+		seen             = true;
+		queue[qtail++]   = {tx, ty};
+	};
+	push(start.tx, start.ty);
+	while (qhead < qtail) {
+		const auto [tx, ty] = queue[qhead++];
+		if (is_target(tx, ty)) {
+			return true;    // Reached the Avatar: same interior space.
+		}
+		const int nbrs[4][2] = {{tx + 1, ty}, {tx - 1, ty}, {tx, ty + 1}, {tx, ty - 1}};
+		for (const auto& n : nbrs) {
+			if (!is_wall(n[0], n[1])) {
+				push(n[0], n[1]);
+			}
+		}
+	}
+	return false;    // Not connected within the search radius.
 }
 
 void Game_render::increment_bbox_index() {
@@ -823,7 +983,16 @@ int Game_render::paint_chunk_objects(
 			if (strength <= 0) {
 				continue;
 			}
-			const bool interior_source = Is_interior_light_source(light_obj);
+			// Resolve the source to a nearby interior tile (a wall torch sits
+			// on the wall itself, whose own tile is not a room floor) and learn
+			// whether it is an interior source.  The resolved tile is where the
+			// enclosure flood begins, so a wall-mounted light is tested from
+			// inside its room rather than from the wall (which would let the
+			// flood escape straight out through the wall to the exterior).
+			bool             source_interior = false;
+			const Tile_coord interior_tile
+					= Resolve_interior_light_tile(light_obj->get_tile(), source_interior);
+			const bool interior_source = source_interior;
 			// Can this light source's light escape its OWN enclosure?  An
 			// exterior source always can.  An interior source can only if its
 			// enclosure has a light_passes_through object (window / open door)
@@ -834,17 +1003,15 @@ int Game_render::paint_chunk_objects(
 			bool leaks_through_gap = false;
 			if (!interior_source) {
 				source_can_escape = true;
-			} else if (chunk_has_opening) {
+			} else if (chunk_has_opening
+					   && Light_reaches_chunk_opening(olist, interior_tile, light_obj)) {
+				// A window / open door in the chunk lets light out, but only if
+				// this light can actually reach it.  A torch sealed behind an
+				// interior wall must not leak through a window in a different
+				// part of the same chunk (the chunk-wide test is too coarse).
 				source_can_escape = true;
 			} else {
-				// Test the enclosure from the floor, not the light's own lift.
-				// A raised source (candle on a table, hanging lamp) has an
-				// elevated tz; feeding that in makes the flood test walls and
-				// the roof too high up (above the walls / past the roof) so a
-				// sealed room reads as open and the light leaks through walls.
-				Tile_coord floor_tile = light_obj->get_tile();
-				floor_tile.tz         = 0;
-				source_can_escape = Enclosure_open_to_outside(floor_tile);
+				source_can_escape = Enclosure_open_to_outside(interior_tile);
 				leaks_through_gap = source_can_escape;
 			}
 			bool blocked;
@@ -862,26 +1029,36 @@ int Game_render::paint_chunk_objects(
 				if (interior_source && !same_chunk) {
 					crossings = 1;
 				}
-			} else if (same_chunk) {
-				// The Avatar's own chunk light always applies (open/closed
-				// doors or shutters must not toggle it).
-				blocked = false;
-			} else if (avatar_sealed) {
-				// The Avatar's enclosure is completely light-tight: no outside
-				// light gets in.
-				blocked = true;
 			} else {
-				// The Avatar's room has an opening, so outside light enters --
-				// but a light source sealed inside its OWN building still can't
-				// escape to reach the Avatar (fixes a sealed building leaking
-				// light into a neighbouring open building).
-				blocked = !source_can_escape;
-				// Light enters the Avatar's building (one crossing); if the
-				// source is itself indoors it also left its own building
-				// (a second crossing).
-				crossings = 1;
-				if (interior_source) {
-					crossings += 1;
+				// Viewer inside.  A light in the Avatar's own chunk always
+				// applies; so does one that shares the Avatar's interior space
+				// across a chunk boundary (e.g. two candles in one room but in
+				// different chunks -- otherwise only the candle in the Avatar's
+				// chunk would light while the neighbour is blocked as "outside
+				// light" the moment the Avatar's room reads as sealed).
+				const bool in_avatar_space
+						= same_chunk
+						  || (interior_source
+							  && Tiles_in_same_enclosure(interior_tile, main_actor->get_tile()));
+				if (in_avatar_space) {
+					blocked = false;
+				} else if (avatar_sealed) {
+					// The Avatar's enclosure is completely light-tight: no
+					// outside light gets in.
+					blocked = true;
+				} else {
+					// The Avatar's room has an opening, so outside light enters
+					// -- but a light source sealed inside its OWN building still
+					// can't escape to reach the Avatar (fixes a sealed building
+					// leaking light into a neighbouring open building).
+					blocked = !source_can_escape;
+					// Light enters the Avatar's building (one crossing); if the
+					// source is itself indoors it also left its own building
+					// (a second crossing).
+					crossings = 1;
+					if (interior_source) {
+						crossings += 1;
+					}
 				}
 			}
 
