@@ -363,6 +363,9 @@ public:
 	}
 
 	void set_natural_light(bool s) {
+		if (!s && natural_light) {
+			destroy_light_layers();
+		}
 		natural_light = s;
 	}
 
@@ -515,9 +518,6 @@ public:
 		win->layer_set_coverage(handle, cov, w, h);
 	}
 
-	// Spatial lighting: gamerend collects visible, unblocked light sources here
-	// (screen/ibuf coords + radius + tier) each frame; build_light_layers turns
-	// them into radial brightening overlays over the (dark) base world.
 	void clear_light_renders() {
 		light_renders.clear();
 	}
@@ -527,6 +527,8 @@ public:
 	}
 
 	void build_light_layers();
+
+	void destroy_light_layers();
 
 	// Roof-pixel mask (see roof_light_mask above): begin_roof_mask allocates /
 	// clears the mask at the start of a world render when night lighting is

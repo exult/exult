@@ -1393,6 +1393,23 @@ void Game_window::update_roof_mask(Game_object* obj, int sx, int sy) {
 			roof_light_mask.get(), sx, sy, obj->get_info().is_roof() ? roof_set : roof_clear);
 }
 
+/*
+ *  Destroy the natural-light overlay layers and drop any pending
+ *  per-frame light state.
+ */
+void Game_window::destroy_light_layers() {
+	for (int& handle : light_layer_handles) {
+		if (handle >= 0) {
+			win->destroy_layer(handle);
+			handle = -1;
+		}
+	}
+	light_layer_w      = -1;
+	light_layer_h      = -1;
+	light_layer_palnum = -2;
+	light_renders.clear();
+}
+
 void Game_window::build_light_layers() {
 	static const Image_window::UiLayerKind kinds[3] = {
 			Image_window::UiLayerLightCandle, Image_window::UiLayerLightSingle,
