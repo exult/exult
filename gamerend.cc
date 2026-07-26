@@ -656,8 +656,14 @@ int Game_render::paint_chunk_objects(
 			if (info.get_object_light(light_obj->get_framenum()) <= 0) {
 				continue;
 			}
-			const int strength = get_light_strength(light_obj, main_actor);
-			if (strength <= 0) {
+			const int  strength = get_light_strength(light_obj, main_actor);
+			const bool natural  = gwin->get_natural_light();
+			// The legacy global-palette light count uses a tight distance decay
+			// (get_light_strength falls to 0 well before the screen edge). Natural
+			// (spatial) lights have their own bounded glow radius, so they should
+			// still appear over the whole visible area: only cull far lights when
+			// natural light is off.
+			if (strength <= 0 && !natural) {
 				continue;
 			}
 			// Decide whether this source reaches the viewer, and how many
@@ -688,7 +694,7 @@ int Game_render::paint_chunk_objects(
 			// build_light_layers can brighten the world around it. Radius and
 			// palette tier scale with the light's intrinsic brightness (not the
 			// distance-decayed strength used for the legacy global palette).
-			if (gwin->get_natural_light()) {
+			if (natural) {
 				const int brightness = info.get_object_light(light_obj->get_framenum());
 				int       lsx        = 0;
 				int       lsy        = 0;
@@ -712,15 +718,20 @@ int Game_render::paint_chunk_objects(
 			// always contributes at least enough for the lowest lit palette
 			// (candle) so a room the light reaches never falls back to full
 			// night darkness.
-			int effective = strength;
-			for (int i = 0; i < crossings; ++i) {
-				effective /= light_pass_dim_divisor;
+			// Legacy global-palette contribution keeps the original tight cutoff:
+			// a distance-culled light (strength 0, retained only for its spatial
+			// glow above) must not inflate the global light count.
+			if (strength > 0) {
+				int effective = strength;
+				for (int i = 0; i < crossings; ++i) {
+					effective /= light_pass_dim_divisor;
+				}
+				if (crossings > 0 && effective < light_pass_min_strength) {
+					effective = light_pass_min_strength;
+				}
+				// Count light sources.
+				light_sources += effective;
 			}
-			if (crossings > 0 && effective < light_pass_min_strength) {
-				effective = light_pass_min_strength;
-			}
-			// Count light sources.
-			light_sources += effective;
 		}
 	}
 	skip = gwin->get_render_skip_lift();
