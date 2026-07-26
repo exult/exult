@@ -34,6 +34,7 @@
 #include "shapeinf.h"
 
 #include <array>
+#include <cmath>
 #include <cstdlib>
 #include <iostream>
 #include <utility>
@@ -100,7 +101,7 @@ namespace {
 		return chunk->is_tile_occupied(tx % c_tiles_per_chunk, ty % c_tiles_per_chunk, 3);
 	}
 
-}
+}    // namespace
 
 namespace NaturalLight {
 
@@ -421,4 +422,64 @@ namespace NaturalLight {
 		return false;
 	}
 
-}
+	int Light_radius(int brightness) {
+		return brightness * 3 * c_tilesize;    // ~3 tiles per brightness level.
+	}
+
+	int Light_tier(int brightness) {
+		return brightness <= 2 ? 0 : (brightness <= 4 ? 1 : 2);
+	}
+
+	void Splat_radial_light(
+			unsigned char* cov, unsigned char* dstpix, const unsigned char* srcpix, int W, int H, int dst_lw, int src_lw, int sx,
+			int sy, int radius, const unsigned char* roofpix, int roof_lw) {
+		if (radius <= 0) {
+			return;
+		}
+		const float rf = static_cast<float>(radius);
+		int         x0 = sx - radius;
+		int         x1 = sx + radius;
+		int         y0 = sy - radius;
+		int         y1 = sy + radius;
+		if (x0 < 0) {
+			x0 = 0;
+		}
+		if (y0 < 0) {
+			y0 = 0;
+		}
+		if (x1 >= W) {
+			x1 = W - 1;
+		}
+		if (y1 >= H) {
+			y1 = H - 1;
+		}
+		for (int y = y0; y <= y1; ++y) {
+			const int            dy      = y - sy;
+			const float          dy2     = static_cast<float>(dy) * static_cast<float>(dy);
+			const unsigned char* roofrow = roofpix ? roofpix + y * roof_lw : nullptr;
+			for (int x = x0; x <= x1; ++x) {
+				if (roofrow && roofrow[x]) {
+					continue;    // Roof pixel: keep dark under every light.
+				}
+				const int   dx   = x - sx;
+				const float dist = std::sqrt(static_cast<float>(dx) * static_cast<float>(dx) + dy2);
+				if (dist > rf) {
+					continue;
+				}
+				// Soft (quadratic) falloff: stays bright well into the radius,
+				// then fades gently to the edge, for a wider glow.
+				const float tnorm = dist / rf;
+				const int   a     = static_cast<int>(255.0f * (1.0f - tnorm * tnorm) + 0.5f);
+				if (a <= 0) {
+					continue;
+				}
+				const size_t idx = static_cast<size_t>(y) * W + x;
+				if (a > cov[idx]) {
+					cov[idx]               = static_cast<unsigned char>(a);
+					dstpix[y * dst_lw + x] = srcpix[y * src_lw + x];
+				}
+			}
+		}
+	}
+
+}    // namespace NaturalLight

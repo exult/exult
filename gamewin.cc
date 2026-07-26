@@ -69,6 +69,7 @@
 #include "monsters.h"
 #include "monstinf.h"
 #include "mouse.h"
+#include "naturallight.h"
 #include "npcnear.h"
 #include "objiter.h"
 #include "palette.h"
@@ -1519,58 +1520,15 @@ void Game_window::build_light_layers() {
 			if (lr.tier != t || lr.radius <= 0) {
 				continue;
 			}
-			const int   r  = lr.radius;
-			const float rf = static_cast<float>(r);
 			// Only a light that is itself under a roof keeps roof pixels dark
 			// (so it never lights its own roof); an exterior light -- street
 			// lamp, torch, brazier -- still lights house roofs. lr.mask_roof
 			// is a stable geometric verdict from Light_beneath_roof; the
-			// per-pixel roof mask below then darkens exactly the roof pixels
+			// per-pixel roof mask then darkens exactly the roof pixels
 			// currently drawn (none when Exult has hidden the roof).
 			const bool mask_roof = roofpix && lr.mask_roof;
-			int        x0        = lr.sx - r;
-			int        x1        = lr.sx + r;
-			int        y0        = lr.sy - r;
-			int        y1        = lr.sy + r;
-			if (x0 < 0) {
-				x0 = 0;
-			}
-			if (y0 < 0) {
-				y0 = 0;
-			}
-			if (x1 >= W) {
-				x1 = W - 1;
-			}
-			if (y1 >= H) {
-				y1 = H - 1;
-			}
-			for (int y = y0; y <= y1; ++y) {
-				const int            dy      = y - lr.sy;
-				const float          dy2     = static_cast<float>(dy) * static_cast<float>(dy);
-				const unsigned char* roofrow = mask_roof ? roofpix + y * roof_lw : nullptr;
-				for (int x = x0; x <= x1; ++x) {
-					if (roofrow && roofrow[x]) {
-						continue;    // Roof pixel: keep dark under every light.
-					}
-					const int   dx   = x - lr.sx;
-					const float dist = std::sqrt(static_cast<float>(dx) * static_cast<float>(dx) + dy2);
-					if (dist > rf) {
-						continue;
-					}
-					// Soft (quadratic) falloff: stays bright well into the
-					// radius, then fades gently to the edge, for a wider glow.
-					const float tnorm = dist / rf;
-					const int   a     = static_cast<int>(255.0f * (1.0f - tnorm * tnorm) + 0.5f);
-					if (a <= 0) {
-						continue;
-					}
-					const size_t idx = static_cast<size_t>(y) * W + x;
-					if (a > cov[idx]) {
-						cov[idx]               = static_cast<unsigned char>(a);
-						dstpix[y * dst_lw + x] = srcpix[y * src_lw + x];
-					}
-				}
-			}
+			NaturalLight::Splat_radial_light(
+					cov, dstpix, srcpix, W, H, dst_lw, src_lw, lr.sx, lr.sy, lr.radius, mask_roof ? roofpix : nullptr, roof_lw);
 		}
 		layer_set_coverage(handle, cov, W, H);
 		// Align the overlay with the world's on-screen rectangle.

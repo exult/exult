@@ -58,6 +58,23 @@ namespace NaturalLight {
 	// at is_roof() objects (ignoring the light itself).
 	bool Light_beneath_roof(Game_object* light_obj);
 
+	// Map a light's intrinsic brightness (object_light / carried strength) to the
+	// spatial-light glow radius in game pixels (~3 tiles per brightness level).
+	int Light_radius(int brightness);
+
+	// Map a light's intrinsic brightness to its palette tier:
+	// 0 = candle, 1 = single light, 2 = many lights.
+	int Light_tier(int brightness);
+
+	// Splat one radial light's soft (quadratic) falloff into the coverage buffer,
+	// copying the brightened source pixel wherever this light is the strongest
+	// contributor so far. `cov` is a contiguous W*H buffer (row stride W); `dst`,
+	// `src` and `roof` use their own line widths. When `roofpix` is non-null, any
+	// pixel it marks stays dark so the light never brightens a roof over it.
+	void Splat_radial_light(
+			unsigned char* cov, unsigned char* dstpix, const unsigned char* srcpix, int W, int H, int dst_lw, int src_lw, int sx,
+			int sy, int radius, const unsigned char* roofpix, int roof_lw);
+
 }    // namespace NaturalLight
 
 #endif

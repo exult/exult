@@ -430,8 +430,8 @@ void Game_window::paint(
 				int asx = 0;
 				int asy = 0;
 				get_shape_location(main_actor, asx, asy);
-				const int radius = carried_bright * 3 * c_tilesize;
-				const int tier   = carried_bright <= 2 ? 0 : (carried_bright <= 4 ? 1 : 2);
+				const int radius = NaturalLight::Light_radius(carried_bright);
+				const int tier   = NaturalLight::Light_tier(carried_bright);
 				add_light_render(asx, asy, radius, tier);
 			}
 			// Also check light spell.
@@ -762,8 +762,8 @@ int Game_render::paint_chunk_objects(
 				int       lsx        = 0;
 				int       lsy        = 0;
 				gwin->get_shape_location(light_obj, lsx, lsy);
-				const int radius = brightness * 3 * c_tilesize;    // ~3 tiles/level.
-				const int tier   = brightness <= 2 ? 0 : (brightness <= 4 ? 1 : 2);
+				const int radius = NaturalLight::Light_radius(brightness);
+				const int tier   = NaturalLight::Light_tier(brightness);
 				// Keep roofs dark only for a light that is itself under a roof
 				// (interior candle, hanging lamp): it must not light up its own
 				// roof. A light out in the open -- street lamp, torch, brazier
