@@ -699,6 +699,16 @@ int Game_render::paint_chunk_objects(
 				int       lsx        = 0;
 				int       lsy        = 0;
 				gwin->get_shape_location(light_obj, lsx, lsy);
+				// get_shape_location projects the object's foot at its own
+				// z-level (lift already applied).  A light does not emit from
+				// the floor, though: raise the emit centre by the shape's own
+				// height above the floor so the glow originates from the flame
+				// (top of a torch / lamp / brazier).  Lift shifts a point up-
+				// and-left by c_tilesize/2 px per z-level, so elevation maps the
+				// same way on both axes.
+				const int elevation = (info.get_3d_height() * c_tilesize) / 2;
+				lsx -= elevation;
+				lsy -= elevation;
 				const int radius = NaturalLight::Light_radius(brightness);
 				const int tier   = NaturalLight::Light_tier(brightness);
 				// Keep roofs dark only for a light that is itself under a roof
@@ -709,7 +719,7 @@ int Game_render::paint_chunk_objects(
 				// shape), so the verdict does not flip as the Avatar moves and
 				// Exult hides roofs near it.
 				const bool under_roof = NaturalLight::Light_beneath_roof(light_obj);
-				gwin->add_light_render(lsx, lsy, radius, tier, under_roof);
+				gwin->add_light_render(lsx, lsy, radius, tier, elevation, under_roof);
 			}
 			// Dim the light once per inside/outside boundary crossing so a
 			// light seen through an opening looks one palette step darker, and

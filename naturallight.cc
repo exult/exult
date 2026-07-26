@@ -505,15 +505,25 @@ namespace NaturalLight {
 
 	void Splat_radial_light(
 			unsigned char* cov, unsigned char* dstpix, const unsigned char* srcpix, int W, int H, int dst_lw, int src_lw, int sx,
-			int sy, int radius, const unsigned char* roofpix, int roof_lw) {
+			int sy, int radius, int elevation, const unsigned char* roofpix, int roof_lw) {
 		if (radius <= 0) {
 			return;
 		}
 		const float rf = static_cast<float>(radius);
-		int         x0 = sx - radius;
-		int         x1 = sx + radius;
-		int         y0 = sy - radius;
-		int         y1 = sy + radius;
+		// Model the source as a point `elevation` px above the ground plane that
+		// passes through the splat centre.  A ground pixel at 2D screen distance
+		// d from the centre is at 3D distance sqrt(d^2 + e^2) from the emitter;
+		// normalising by the 3D reach sqrt(r^2 + e^2) keeps the pool's ground
+		// radius at r while lowering and rounding the peak -- a dome rather than
+		// a flat-topped cylinder.  With elevation 0 this is exactly the old
+		// quadratic 1 - (d/r)^2 falloff.
+		const float e   = static_cast<float>(elevation > 0 ? elevation : 0);
+		const float e2  = e * e;
+		const float rf2 = rf * rf + e2;    // Square of the 3D reach (never 0).
+		int         x0  = sx - radius;
+		int         x1  = sx + radius;
+		int         y0  = sy - radius;
+		int         y1  = sy + radius;
 		if (x0 < 0) {
 			x0 = 0;
 		}
@@ -534,15 +544,14 @@ namespace NaturalLight {
 				if (roofrow && roofrow[x]) {
 					continue;    // Roof pixel: keep dark under every light.
 				}
-				const int   dx   = x - sx;
-				const float dist = std::sqrt(static_cast<float>(dx) * static_cast<float>(dx) + dy2);
-				if (dist > rf) {
-					continue;
+				const int   dx    = x - sx;
+				const float dist2 = static_cast<float>(dx) * static_cast<float>(dx) + dy2;
+				if (dist2 > rf * rf) {
+					continue;    // Outside the pool's ground radius.
 				}
-				// Soft (quadratic) falloff: stays bright well into the radius,
-				// then fades gently to the edge, for a wider glow.
-				const float tnorm = dist / rf;
-				const int   a     = static_cast<int>(255.0f * (1.0f - tnorm * tnorm) + 0.5f);
+				// Hemispherical (dome) falloff: 1 - (3D distance / 3D reach)^2.
+				const float dome = 1.0f - (dist2 + e2) / rf2;
+				const int   a    = static_cast<int>(255.0f * dome + 0.5f);
 				if (a <= 0) {
 					continue;
 				}

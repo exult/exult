@@ -1528,7 +1528,8 @@ void Game_window::build_light_layers() {
 			// currently drawn (none when Exult has hidden the roof).
 			const bool mask_roof = roofpix && lr.mask_roof;
 			NaturalLight::Splat_radial_light(
-					cov, dstpix, srcpix, W, H, dst_lw, src_lw, lr.sx, lr.sy, lr.radius, mask_roof ? roofpix : nullptr, roof_lw);
+					cov, dstpix, srcpix, W, H, dst_lw, src_lw, lr.sx, lr.sy, lr.radius, lr.elevation, mask_roof ? roofpix : nullptr,
+					roof_lw);
 		}
 		layer_set_coverage(handle, cov, W, H);
 		// Align the overlay with the world's on-screen rectangle.

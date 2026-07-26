@@ -122,6 +122,11 @@ class Game_window {
 		int sx, sy;    // Center of the light in game-pixel (ibuf) coords.
 		int radius;    // Radius in game pixels.
 		int tier;      // 0 = candle, 1 = single light, 2 = many lights.
+		// Height of the emitter above the floor, in game pixels (the light's
+		// 3d height projected the same way lift is).  Drives the hemispherical
+		// (dome) falloff in Splat_radial_light: a taller source spreads a
+		// rounder, lower-peaked pool of light instead of a flat disc.
+		int elevation = 0;
 		// True if the light is itself under a roof (a stable geometric verdict
 		// from Light_beneath_roof): build_light_layers then keeps roof pixels
 		// dark for it so it never lights its own roof.  False (e.g. the
@@ -523,8 +528,8 @@ public:
 		light_renders.clear();
 	}
 
-	void add_light_render(int sx, int sy, int radius, int tier, bool mask_roof = false) {
-		light_renders.push_back({sx, sy, radius, tier, mask_roof});
+	void add_light_render(int sx, int sy, int radius, int tier, int elevation = 0, bool mask_roof = false) {
+		light_renders.push_back({sx, sy, radius, tier, elevation, mask_roof});
 	}
 
 	void build_light_layers();

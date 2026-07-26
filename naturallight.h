@@ -84,14 +84,18 @@ namespace NaturalLight {
 	// 0 = candle, 1 = single light, 2 = many lights.
 	int Light_tier(int brightness);
 
-	// Splat one radial light's soft (quadratic) falloff into the coverage buffer,
-	// copying the brightened source pixel wherever this light is the strongest
-	// contributor so far. `cov` is a contiguous W*H buffer (row stride W); `dst`,
-	// `src` and `roof` use their own line widths. When `roofpix` is non-null, any
-	// pixel it marks stays dark so the light never brightens a roof over it.
+	// Splat one radial light's soft dome (hemispherical) falloff into the
+	// coverage buffer, copying the brightened source pixel wherever this light
+	// is the strongest contributor so far. `cov` is a contiguous W*H buffer (row
+	// stride W); `dst`, `src` and `roof` use their own line widths. `elevation`
+	// is the emitter's height above the floor in game pixels: it models the
+	// light as a point that height above the ground, so the pool of light domes
+	// (rounded, lower-peaked) instead of reading as a flat disc. When `roofpix`
+	// is non-null, any pixel it marks stays dark so the light never brightens a
+	// roof over it.
 	void Splat_radial_light(
 			unsigned char* cov, unsigned char* dstpix, const unsigned char* srcpix, int W, int H, int dst_lw, int src_lw, int sx,
-			int sy, int radius, const unsigned char* roofpix, int roof_lw);
+			int sy, int radius, int elevation, const unsigned char* roofpix, int roof_lw);
 
 }    // namespace NaturalLight
 
