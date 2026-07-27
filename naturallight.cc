@@ -131,18 +131,22 @@ namespace {
 	}
 
 	// Is the given absolute tile a light-blocking wall for the spatial lights: a
-	// blocking (solid) shape covering the tile that starts BELOW the room's roof
-	// level `roof_z` and reaches up to it -- i.e. an actual wall.  Buildings have
-	// walls taller than the classic z 5, so the level is not hardcoded; it comes
-	// from Map_chunk::is_roof over the light.  Objects sitting at or above the
+	// blocking (solid) shape covering the tile that rises from the floor
+	// (`floor_z`, the storey floor of the light's room) and reaches up to the
+	// room's roof level `roof_z` -- i.e. an actual wall.  Buildings have walls taller than the
+	// classic z 5, so the level is not hardcoded; it comes from
+	// Map_chunk::is_roof over the light.  Objects sitting at or above the
 	// roof level (the roof itself, chimneys, items on the roof) are never walls:
 	// the roof's footprint covers every interior tile, so counting it would seal
-	// off the whole room.  Low furniture stays below the roof and lets light
+	// off the whole room.  Objects hanging ABOVE the floor (a wall decoration at
+	// lift 2 whose top happens to reach the roof) are not walls either: light
+	// passes under them, and their footprint must not punch wall tiles into the
+	// room.  Low furniture stays below the roof and lets light
 	// pass.  Only non-blocking shapes (windows, open doors -- the
 	// light_passes_through list) punch a hole in the mask: they are not solid
 	// walls here, and where they share a wall tile Light_tile_pass_opening turns
 	// it into a spill opening.
-	bool Light_tile_tall_blocker(Game_map* gmap, int tx, int ty, int roof_z) {
+	bool Light_tile_tall_blocker(Game_map* gmap, int tx, int ty, int roof_z, int floor_z) {
 		tx                     = Light_tile_norm(tx);
 		ty                     = Light_tile_norm(ty);
 		Map_chunk* const chunk = gmap->get_chunk_safely(tx / c_tiles_per_chunk, ty / c_tiles_per_chunk);
@@ -169,6 +173,12 @@ namespace {
 			const int lift = obj->get_lift();
 			if (lift >= roof_z) {
 				continue;    // At/above the roof: not part of the room's walls.
+			}
+			if (lift > floor_z) {
+				// Starts above the floor: a hung object (shield, tapestry, sign)
+				// whose top reaches the roof is still not a wall -- light passes
+				// under it.  A real wall rises from the floor.
+				continue;
 			}
 			if (lift + info.get_3d_height() < roof_z) {
 				continue;    // Top below the roof: light passes over it.
@@ -602,11 +612,14 @@ namespace NaturalLight {
 		if (chunk != nullptr) {
 			// Search upward from just above the light (get_lowest_blocked is
 			// inclusive, so +1 skips the light's own level), but from at least
-			// z 4 so a floor-level light does not read low furniture at its own
-			// tile as the "roof".  NOT is_roof(), whose fixed lift+4 start would
-			// overshoot a z 5..7 ceiling for a wall-mounted light at lift 4+ and
-			// fall back to the too-low default of 5.
-			const int from   = lift + 1 > 4 ? lift + 1 : 4;
+			// z 5 -- the classic lowest roof level -- so furniture stacked
+			// below it never reads as the room's ceiling: a lamp on a desk
+			// (tz 3) with a shelf and books occupying lift 4 would otherwise
+			// get roof_z 4, turning that shelf into a floor-to-"roof" wall
+			// that cuts into the mask.  NOT is_roof(), whose fixed lift+4
+			// start would overshoot a z 5..7 ceiling for a wall-mounted light
+			// at lift 4+ and fall back to the too-low default of 5.
+			const int from   = lift + 1 > 5 ? lift + 1 : 5;
 			const int roof_z = chunk->get_lowest_blocked(from, tx % c_tiles_per_chunk, ty % c_tiles_per_chunk);
 			if (roof_z >= 0 && roof_z < 31) {
 				return roof_z;
@@ -632,8 +645,13 @@ namespace NaturalLight {
 		std::vector<unsigned char>       visited(static_cast<size_t>(side) * side, 0);
 		std::vector<std::pair<int, int>> stack;
 		std::vector<std::pair<int, int>> spill_cand;    // Outside-tile grid coords.
-		auto                             tall = [&](int gx, int gy) {
-            return Light_tile_tall_blocker(gmap, lt.tx + gx - rt, lt.ty + gy - rt, roof_z);
+		// The room's floor for the wall test is the STOREY floor (storeys are 5 z
+		// apart), not the light's own z: a lamp standing on a shelf at tz 4 is
+		// still in a ground-floor room whose walls rise from z 0, and the books
+		// beside it at lift 4 must not read as rising "from the floor".
+		const int floor_z = (lt.tz / 5) * 5;
+		auto      tall    = [&](int gx, int gy) {
+            return Light_tile_tall_blocker(gmap, lt.tx + gx - rt, lt.ty + gy - rt, roof_z, floor_z);
 		};
 		auto opening = [&](int gx, int gy) {
 			return Light_tile_pass_opening(gmap, lt.tx + gx - rt, lt.ty + gy - rt);
