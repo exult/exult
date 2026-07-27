@@ -430,9 +430,49 @@ void Game_window::paint(
 				int asx = 0;
 				int asy = 0;
 				get_shape_location(main_actor, asx, asy);
-				const int radius = NaturalLight::Light_radius(carried_bright);
-				const int tier   = NaturalLight::Light_tier(carried_bright);
-				add_light_render(asx, asy, radius, tier);
+				// The carried torch/lamp casts its pool on the floor under the
+				// Avatar -- the Avatar's foot tile -- so keep asx/asy at the foot.
+				// The flame's height only rounds the dome falloff (passed as
+				// `elevation`); shifting the centre up-left would slide the pool
+				// off the room mask it should fill.
+				const int elevation = (main_actor->get_info().get_3d_height() * c_tilesize) / 2;
+				const int radius    = NaturalLight::Light_radius(carried_bright);
+				const int tier      = NaturalLight::Light_tier(carried_bright);
+				// Same tall-wall occlusion as placed lights, centred on the
+				// Avatar so the carried torch is contained by the room's walls.
+				// The +5 is one tile of rounding slack plus four tiles covering
+				// the wall-top anchor shift: the mask stamps are drawn up to
+				// 4*roof_z px up-left of the tiles' floor positions, so without
+				// the slack a fill reaching the grid edge (large open room) ends
+				// short of the dome's south/east fringe, cutting the light off in
+				// two straight edges.
+				const int                  rt    = radius / c_tilesize + 5;
+				const Tile_coord           ltile = main_actor->get_tile();
+				std::vector<unsigned char> lit;
+				std::vector<Tile_coord>    spills;
+				NaturalLight::Build_light_shadow_grid(main_actor, rt, lit, spills);
+				add_light_render(asx, asy, radius, tier, elevation, rt, ltile.tx, ltile.ty, ltile.tz, std::move(lit));
+				// Each window/grate the room fill reached gets its own small soft
+				// glow: the light spilling out of the opening, centred on the tile
+				// just outside it.  Its strength is what remains of the source's
+				// radius at the opening's distance, so a window across the room
+				// barely glows instead of appearing as a second light source; and
+				// it carries its own room mask flooded from that outside tile, so
+				// it lights what the window looks out on -- never back inside.
+				for (const Tile_coord& sp : spills) {
+					const int spill_radius = radius - ltile.distance_2d(sp) * c_tilesize;
+					if (spill_radius <= 0) {
+						continue;
+					}
+					// +5: rounding slack plus the wall-top anchor shift (see rt).
+					const int                  srt = spill_radius / c_tilesize + 5;
+					std::vector<unsigned char> slit;
+					NaturalLight::Build_spill_shadow_grid(sp, srt, slit);
+					int ssx = 0;
+					int ssy = 0;
+					get_shape_location(sp, ssx, ssy);
+					add_light_render(ssx, ssy, spill_radius, tier, 0, srt, sp.tx, sp.ty, sp.tz, std::move(slit), true);
+				}
 			}
 			// Also check light spell.
 			if (special_light && clock->get_total_minutes() > special_light) {
@@ -699,18 +739,16 @@ int Game_render::paint_chunk_objects(
 				int       lsx        = 0;
 				int       lsy        = 0;
 				gwin->get_shape_location(light_obj, lsx, lsy);
-				// get_shape_location projects the object's foot at its own
-				// z-level (lift already applied).  A light does not emit from
-				// the floor, though: raise the emit centre by the shape's own
-				// height above the floor so the glow originates from the flame
-				// (top of a torch / lamp / brazier).  Lift shifts a point up-
-				// and-left by c_tilesize/2 px per z-level, so elevation maps the
-				// same way on both axes.
+				// The pool of light a source casts on the floor is centred on the
+				// tile directly beneath the flame -- the object's foot -- so keep
+				// lsx/lsy at the foot (do NOT shift it up-left to the flame, or the
+				// pool slides off the floor tiles / room mask it should fill).  The
+				// emitter's height only rounds the falloff: it is passed as
+				// `elevation` and drives the hemispherical dome in Splat, without
+				// moving the pool's centre.
 				const int elevation = (info.get_3d_height() * c_tilesize) / 2;
-				lsx -= elevation;
-				lsy -= elevation;
-				const int radius = NaturalLight::Light_radius(brightness);
-				const int tier   = NaturalLight::Light_tier(brightness);
+				const int radius    = NaturalLight::Light_radius(brightness);
+				const int tier      = NaturalLight::Light_tier(brightness);
 				// Keep roofs dark only for a light that is itself under a roof
 				// (interior candle, hanging lamp): it must not light up its own
 				// roof. A light out in the open -- street lamp, torch, brazier
@@ -719,7 +757,42 @@ int Game_render::paint_chunk_objects(
 				// shape), so the verdict does not flip as the Avatar moves and
 				// Exult hides roofs near it.
 				const bool under_roof = NaturalLight::Light_beneath_roof(light_obj);
-				gwin->add_light_render(lsx, lsy, radius, tier, elevation, under_roof);
+				// Tall (z >= 5) walls contain the light within the room.  The +5
+				// is one tile of rounding slack plus four tiles covering the
+				// wall-top anchor shift: the mask stamps are drawn up to 4*roof_z
+				// px up-left of the tiles' floor positions, so without the slack
+				// a fill reaching the grid edge (large open room) ends short of
+				// the dome's south/east fringe, cutting the light off in two
+				// straight edges.
+				const int                  rt    = radius / c_tilesize + 5;
+				const Tile_coord           ltile = light_obj->get_tile();
+				std::vector<unsigned char> lit;
+				std::vector<Tile_coord>    spills;
+				NaturalLight::Build_light_shadow_grid(light_obj, rt, lit, spills);
+				gwin->add_light_render(
+						lsx, lsy, radius, tier, elevation, rt, ltile.tx, ltile.ty, ltile.tz, std::move(lit), under_roof);
+				// Each window/grate the room fill reached gets its own small soft
+				// glow: the light spilling out of the opening, centred on the tile
+				// just outside it, roof-gated so it lands on the ground, not the
+				// roof.  Its strength is what remains of the source's radius at
+				// the opening's distance, so a window across the room barely glows
+				// instead of appearing as a second light source; and it carries
+				// its own room mask flooded from that outside tile, so it lights
+				// what the window looks out on -- never back inside.
+				for (const Tile_coord& sp : spills) {
+					const int spill_radius = radius - ltile.distance_2d(sp) * c_tilesize;
+					if (spill_radius <= 0) {
+						continue;
+					}
+					// +5: rounding slack plus the wall-top anchor shift (see rt).
+					const int                  srt = spill_radius / c_tilesize + 5;
+					std::vector<unsigned char> slit;
+					NaturalLight::Build_spill_shadow_grid(sp, srt, slit);
+					int ssx = 0;
+					int ssy = 0;
+					gwin->get_shape_location(sp, ssx, ssy);
+					gwin->add_light_render(ssx, ssy, spill_radius, tier, 0, srt, sp.tx, sp.ty, sp.tz, std::move(slit), true);
+				}
 			}
 			// Dim the light once per inside/outside boundary crossing so a
 			// light seen through an opening looks one palette step darker, and

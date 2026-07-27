@@ -1361,10 +1361,12 @@ void Game_window::begin_roof_mask() {
 
 /*
  *  Update the global roof mask as one object is painted Objects paint
- *  back-to-front, so the topmost shape at each pixel wins: a roof shape sets
- *  its pixels (kept dark under lights), and any other shape painted over them
- *  clears them (e.g. a tree overlapping a roof stays lit). The final mask
- *  therefore marks exactly the pixels where the visible shape is a roof.
+ *  back-to-front, so the topmost shape at each pixel wins: a roof shape -- or
+ *  anything standing at roof level (lift >= 5), which is just as far above an
+ *  interior light -- sets its pixels (kept dark under lights), and any ground
+ *  shape painted over them clears them (e.g. a tree overlapping a roof stays
+ *  lit). The final mask therefore marks exactly the pixels where the visible
+ *  shape sits at or above the roof.
  */
 
 void Game_window::update_roof_mask(Game_object* obj, int sx, int sy) {
@@ -1390,7 +1392,31 @@ void Game_window::update_roof_mask(Game_object* obj, int sx, int sy) {
 		}
 		return x;
 	}();
-	frame->paint_rle_transformed(roof_light_mask.get(), sx, sy, obj->get_info().is_roof() ? roof_set : roof_clear);
+	// An object standing ON a roof is above any interior light source, so it
+	// must stay as dark as the roof it stands on: mark it into the mask like a
+	// roof shape instead of letting it punch a lit hole.  "On a roof" means at
+	// or above the render-skip level while the Avatar is inside (everything at
+	// that lift or higher is hidden, so whatever visible shape reaches it sits
+	// on a still-drawn LOWER roof -- e.g. a side room's) -- NOT a hardcoded
+	// z 5: in a tall room the skip is the room's own roof height (7+), and its
+	// visible upper wall segments at lift 5..6 are walls, not roofs.  While
+	// inside, an is_roof() shape likewise only counts when it sits ABOVE the
+	// Avatar (a side room's still-drawn lower roof): some interiors use roof
+	// shapes as flooring, and the floor underfoot must stay lit.  While
+	// outside nothing is skipped, so the classic z 5 threshold applies and any
+	// roof shape marks.  Ground objects merely drawn in front of a roof (a
+	// tree before a house) still clear their pixels and stay lit.  Exterior
+	// lights never apply the roof mask, so they keep lighting roofs and
+	// whatever stands on them.
+	const bool inside = is_main_actor_inside();
+	bool       roof_like;
+	if (inside) {
+		const int av_lift = main_actor ? main_actor->get_lift() : 0;
+		roof_like         = (obj->get_info().is_roof() && obj->get_lift() > av_lift) || obj->get_lift() >= get_render_skip_lift();
+	} else {
+		roof_like = obj->get_info().is_roof() || obj->get_lift() >= 5;
+	}
+	frame->paint_rle_transformed(roof_light_mask.get(), sx, sy, roof_like ? roof_set : roof_clear);
 }
 
 /*
@@ -1520,16 +1546,113 @@ void Game_window::build_light_layers() {
 			if (lr.tier != t || lr.radius <= 0) {
 				continue;
 			}
-			// Only a light that is itself under a roof keeps roof pixels dark
-			// (so it never lights its own roof); an exterior light -- street
-			// lamp, torch, brazier -- still lights house roofs. lr.mask_roof
-			// is a stable geometric verdict from Light_beneath_roof; the
-			// per-pixel roof mask then darkens exactly the roof pixels
-			// currently drawn (none when Exult has hidden the roof).
-			const bool mask_roof = roofpix && lr.mask_roof;
+			// While the Avatar is INSIDE (roofs hidden, interiors visible) the
+			// blocking-shape room mask applies to every light, and the roof
+			// mask takes precedence over all of them so nothing spills onto a
+			// still-drawn roof.  While OUTSIDE, the mask still applies to a
+			// light that is itself under a roof (lr.mask_roof, the interior-
+			// light verdict): its walls block the light, and it reaches the
+			// outside only where the room-fill escaped through an opening
+			// (door, window gap) -- instead of lighting up everything around
+			// the building.  An exterior light (street lamp, torch, brazier)
+			// stays unmasked outside and brightens nearby house roofs again.
+			const bool inside = is_main_actor_inside();
+			// TEST: while the Avatar is inside, do NOT apply the roof-pixel
+			// mask at all -- to diagnose why roof pixels are not being
+			// discarded properly in that case.  Original gate, kept for
+			// restoring:
+			// const bool mask_roof = roofpix && (inside || lr.mask_roof);
+			const bool mask_roof = roofpix && !inside && lr.mask_roof;
+			// Build a world-anchored occlusion mask for this light from its
+			// room-fill grid, stamping each lit tile at its own rendered screen
+			// position (get_shape_location).  Because the stamps use the tiles'
+			// real positions -- not a value derived from the light's moving
+			// centre -- the mask stays fixed to the walls as the source moves:
+			// carrying a torch around a closed room does not reshape it.
+			const unsigned char* mask    = nullptr;
+			int                  mask_lw = 0;
+			int                  mask_ox = 0;
+			int                  mask_oy = 0;
+			int                  mask_w  = 0;
+			int                  mask_h  = 0;
+			// The dome (intensity + falloff) emits from the flame up on the
+			// sprite, not the tile foot get_shape_location returns, so raise
+			// only its centre up-and-left by the sprite's height (plus the
+			// foot-corner residual).  The room mask, by contrast, is pure world
+			// geometry -- the walls do not move -- so it is stamped at the
+			// tiles' true screen positions, never shifted by any property of
+			// the light source.
+			const int foot_bias = c_tilesize / 4;
+			const int emit      = lr.elevation + foot_bias;
+			const int csx       = lr.sx - emit;
+			const int csy       = lr.sy - emit;
+			if ((inside || lr.mask_roof) && !lr.lit.empty()) {
+				const int rt   = lr.rt;
+				const int side = 2 * rt + 1;
+				// Cover the whole splat bbox plus a tile of slack so the
+				// outermost ring of stamped tiles is never clipped.
+				mask_ox = csx - lr.radius - c_tilesize;
+				mask_oy = csy - lr.radius - c_tilesize;
+				mask_w  = 2 * lr.radius + 2 * c_tilesize + 1;
+				mask_h  = mask_w;
+				mask_lw = mask_w;
+				light_block_scratch.assign(static_cast<size_t>(mask_w) * mask_h, 0);
+				// Anchor the stamps at the TOP of the blocking walls the room is
+				// made of, not at the floor.  A tall wall is a 3D box: it renders
+				// shifted up-and-left of its tile by 4px per z-level, so the
+				// visible room interior sits at the walls' top edges -- the roof
+				// level over the light's tile (buildings differ in wall height,
+				// so it is not a hardcoded z 5).  That level is a fixed property
+				// of the room -- lr.ltz merely selects the storey the light is on
+				// -- so the mask still never shifts with the light source itself.
+				const int anchor_z = NaturalLight::Light_room_roof_z(map, lr.ltx, lr.lty, lr.ltz);
+				for (int gy = 0; gy < side; ++gy) {
+					for (int gx = 0; gx < side; ++gx) {
+						if (!lr.lit[static_cast<size_t>(gy) * side + gx]) {
+							continue;
+						}
+						int wtx = lr.ltx + gx - rt;
+						int wty = lr.lty + gy - rt;
+						wtx     = ((wtx % c_num_tiles) + c_num_tiles) % c_num_tiles;
+						wty     = ((wty % c_num_tiles) + c_num_tiles) % c_num_tiles;
+						int fx  = 0;
+						int fy  = 0;
+						get_shape_location(Tile_coord(wtx, wty, anchor_z), fx, fy);
+						// Empirically the wall-top anchor lands 1px up-left of
+						// the visible interior; nudge the stamp back.
+						fx += 1;
+						fy += 1;
+						// A tile covers c_tilesize x c_tilesize pixels up-and-left
+						// of its foot; stamp that rectangle (clamped to the mask).
+						int rx0 = fx - c_tilesize + 1 - mask_ox;
+						int rx1 = fx - mask_ox;
+						int ry0 = fy - c_tilesize + 1 - mask_oy;
+						int ry1 = fy - mask_oy;
+						if (rx0 < 0) {
+							rx0 = 0;
+						}
+						if (ry0 < 0) {
+							ry0 = 0;
+						}
+						if (rx1 >= mask_w) {
+							rx1 = mask_w - 1;
+						}
+						if (ry1 >= mask_h) {
+							ry1 = mask_h - 1;
+						}
+						for (int ry = ry0; ry <= ry1; ++ry) {
+							unsigned char* row = light_block_scratch.data() + static_cast<size_t>(ry) * mask_lw;
+							for (int rx = rx0; rx <= rx1; ++rx) {
+								row[rx] = 1;
+							}
+						}
+					}
+				}
+				mask = light_block_scratch.data();
+			}
 			NaturalLight::Splat_radial_light(
-					cov, dstpix, srcpix, W, H, dst_lw, src_lw, lr.sx, lr.sy, lr.radius, lr.elevation, mask_roof ? roofpix : nullptr,
-					roof_lw);
+					cov, dstpix, srcpix, W, H, dst_lw, src_lw, csx, csy, lr.radius, lr.elevation, mask_roof ? roofpix : nullptr,
+					roof_lw, mask, mask_lw, mask_ox, mask_oy, mask_w, mask_h);
 		}
 		layer_set_coverage(handle, cov, W, H);
 		// Align the overlay with the world's on-screen rectangle.

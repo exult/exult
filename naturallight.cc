@@ -101,6 +101,98 @@ namespace {
 		return chunk->is_tile_occupied(tx % c_tiles_per_chunk, ty % c_tiles_per_chunk, 3);
 	}
 
+	// Does a light_passes_through shape cover the given absolute tile, making
+	// it a SPILL opening (window, grate, glass wall)?  Such a tile stops the
+	// room-fill like the wall it sits in, but the escaping light is rendered
+	// as a small glow there.  Doors are explicitly NOT spill openings even
+	// though their open frames are in the light_passes_through list: an open
+	// door leaf is a solid shape beside a doorway the flood already passes
+	// through, so a spill glow on it reads as a phantom second light source
+	// (and a frame mix-up makes some closed doors glow instead).
+	bool Light_tile_has_pass_through(Map_chunk* chunk, int tx, int ty) {
+		Object_iterator it(chunk->get_objects());
+		Game_object*    obj;
+		while ((obj = it.get_next()) != nullptr) {
+			const Shape_info& info = obj->get_info();
+			if (info.is_door()) {
+				continue;
+			}
+			int  match_frame  = -2;
+			bool has_explicit = false;
+			bool has_wildcard = false;
+			if (!Shape_light_passes_through_strict(info, obj->get_framenum(), match_frame, has_explicit, has_wildcard)) {
+				continue;
+			}
+			if (obj->get_footprint().has_world_point(tx, ty)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	// Is the given absolute tile a light-blocking wall for the spatial lights: a
+	// blocking (solid) shape covering the tile that starts BELOW the room's roof
+	// level `roof_z` and reaches up to it -- i.e. an actual wall.  Buildings have
+	// walls taller than the classic z 5, so the level is not hardcoded; it comes
+	// from Map_chunk::is_roof over the light.  Objects sitting at or above the
+	// roof level (the roof itself, chimneys, items on the roof) are never walls:
+	// the roof's footprint covers every interior tile, so counting it would seal
+	// off the whole room.  Low furniture stays below the roof and lets light
+	// pass.  Only non-blocking shapes (windows, open doors -- the
+	// light_passes_through list) punch a hole in the mask: they are not solid
+	// walls here, and where they share a wall tile Light_tile_pass_opening turns
+	// it into a spill opening.
+	bool Light_tile_tall_blocker(Game_map* gmap, int tx, int ty, int roof_z) {
+		tx                     = Light_tile_norm(tx);
+		ty                     = Light_tile_norm(ty);
+		Map_chunk* const chunk = gmap->get_chunk_safely(tx / c_tiles_per_chunk, ty / c_tiles_per_chunk);
+		if (chunk == nullptr) {
+			return false;
+		}
+		// The old test -- anything solid occupying the level just below the
+		// roof -- also counted a pile of stacked furniture as a wall; kept in
+		// case the per-shape test below turns out to miss real walls:
+		// return chunk->is_tile_occupied(
+		// 		tx % c_tiles_per_chunk, ty % c_tiles_per_chunk, roof_z - 1);
+		Object_iterator it(chunk->get_objects());
+		Game_object*    obj;
+		while ((obj = it.get_next()) != nullptr) {
+			if (obj->as_actor() != nullptr) {
+				continue;    // NPCs move around; never count them as walls.
+			}
+			const Shape_info& info = obj->get_info();
+			if (!info.is_solid() || info.is_roof()) {
+				// Only blocking shapes seal the room, and the roof (or its
+				// low-hanging eaves) is not a wall.
+				continue;
+			}
+			const int lift = obj->get_lift();
+			if (lift >= roof_z) {
+				continue;    // At/above the roof: not part of the room's walls.
+			}
+			if (lift + info.get_3d_height() < roof_z) {
+				continue;    // Top below the roof: light passes over it.
+			}
+			if (obj->get_footprint().has_world_point(tx, ty)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	// Is the given absolute tile covered by a light_passes_through shape
+	// (window, open door, grate)?  Such a tile is where light escapes a room
+	// even though the wall stack occupies it to full height.
+	bool Light_tile_pass_opening(Game_map* gmap, int tx, int ty) {
+		tx                     = Light_tile_norm(tx);
+		ty                     = Light_tile_norm(ty);
+		Map_chunk* const chunk = gmap->get_chunk_safely(tx / c_tiles_per_chunk, ty / c_tiles_per_chunk);
+		if (chunk == nullptr) {
+			return false;
+		}
+		return Light_tile_has_pass_through(chunk, tx, ty);
+	}
+
 }    // namespace
 
 namespace NaturalLight {
@@ -503,9 +595,153 @@ namespace NaturalLight {
 		return brightness <= 2 ? 0 : (brightness <= 4 ? 1 : 2);
 	}
 
+	int Light_room_roof_z(Game_map* gmap, int tx, int ty, int lift) {
+		tx                     = Light_tile_norm(tx);
+		ty                     = Light_tile_norm(ty);
+		Map_chunk* const chunk = gmap != nullptr ? gmap->get_chunk_safely(tx / c_tiles_per_chunk, ty / c_tiles_per_chunk) : nullptr;
+		if (chunk != nullptr) {
+			// Search upward from just above the light (get_lowest_blocked is
+			// inclusive, so +1 skips the light's own level), but from at least
+			// z 4 so a floor-level light does not read low furniture at its own
+			// tile as the "roof".  NOT is_roof(), whose fixed lift+4 start would
+			// overshoot a z 5..7 ceiling for a wall-mounted light at lift 4+ and
+			// fall back to the too-low default of 5.
+			const int from   = lift + 1 > 4 ? lift + 1 : 4;
+			const int roof_z = chunk->get_lowest_blocked(from, tx % c_tiles_per_chunk, ty % c_tiles_per_chunk);
+			if (roof_z >= 0 && roof_z < 31) {
+				return roof_z;
+			}
+		}
+		return 5;    // No roof overhead: the classic wall-top threshold.
+	}
+
+	// Shared room flood for the light masks: fill from `start` across passable
+	// (non tall-wall) floor, bounded by the (2*rt+1) grid.  Walls reaching the
+	// room's roof level `roof_z` stop the fill and are lit as a one-tile ring,
+	// so the enclosing walls are illuminated but light does not leak past them.
+	// When `spills` is given, a wall tile covered by a light_passes_through
+	// shape (window, grate) reports the tile just BEYOND it -- where the
+	// escaping light lands on the far side -- unless that tile is a wall too
+	// (a window into another wall spills nowhere).  The reached set depends
+	// only on the room's shape, not on where in it the start tile lies, so a
+	// carried torch keeps a stable mask.
+	static void Flood_room_grid(
+			Game_map* gmap, const Tile_coord& lt, int rt, int roof_z, std::vector<unsigned char>& lit,
+			std::vector<Tile_coord>* spills) {
+		const int                        side = 2 * rt + 1;
+		std::vector<unsigned char>       visited(static_cast<size_t>(side) * side, 0);
+		std::vector<std::pair<int, int>> stack;
+		std::vector<std::pair<int, int>> spill_cand;    // Outside-tile grid coords.
+		auto                             tall = [&](int gx, int gy) {
+            return Light_tile_tall_blocker(gmap, lt.tx + gx - rt, lt.ty + gy - rt, roof_z);
+		};
+		auto opening = [&](int gx, int gy) {
+			return Light_tile_pass_opening(gmap, lt.tx + gx - rt, lt.ty + gy - rt);
+		};
+		stack.emplace_back(rt, rt);    // Start at the grid centre.
+		visited[static_cast<size_t>(rt) * side + rt] = 1;
+		static const int step[4][2]                  = {
+                { 1,  0},
+                {-1,  0},
+                { 0,  1},
+                { 0, -1}
+        };
+		while (!stack.empty()) {
+			const int gx = stack.back().first;
+			const int gy = stack.back().second;
+			stack.pop_back();
+			lit[static_cast<size_t>(gy) * side + gx] = 1;    // Reached floor tile is lit.
+			for (const auto& d : step) {
+				const int nx = gx + d[0];
+				const int ny = gy + d[1];
+				if (nx < 0 || ny < 0 || nx >= side || ny >= side) {
+					continue;
+				}
+				const size_t nidx = static_cast<size_t>(ny) * side + nx;
+				if (visited[nidx]) {
+					continue;
+				}
+				visited[nidx] = 1;
+				if (tall(nx, ny)) {
+					lit[nidx] = 1;    // Light the wall face, but do not flood past it.
+					if (spills != nullptr && opening(nx, ny)) {
+						// Window/grate: the light escapes to the tile on the
+						// FAR side of the opening, continuing in the direction
+						// the fill approached from.  Record it as a candidate;
+						// whether it really points OUTWARD is only known once
+						// the fill is complete (see below).
+						const int ox = nx + d[0];
+						const int oy = ny + d[1];
+						if (ox >= 0 && oy >= 0 && ox < side && oy < side && !tall(ox, oy)) {
+							spill_cand.emplace_back(ox, oy);
+						}
+					}
+					continue;
+				}
+				stack.emplace_back(nx, ny);
+			}
+		}
+		// Emit only the candidates whose outside tile the fill itself never
+		// reached.  The fill is not strictly interior: through an open doorway
+		// or wall gap it escapes and can wrap around the building, touching a
+		// window from its OUTSIDE face -- the "far side" of that approach is
+		// the room interior, and emitting it would spill the window's glow
+		// back INSIDE.  A tile the fill already lit needs no spill glow anyway.
+		if (spills != nullptr) {
+			for (const auto& [ox, oy] : spill_cand) {
+				if (lit[static_cast<size_t>(oy) * side + ox]) {
+					continue;    // Fill got there itself: interior or already lit.
+				}
+				spills->emplace_back(Light_tile_norm(lt.tx + ox - rt), Light_tile_norm(lt.ty + oy - rt), 0);
+			}
+		}
+	}
+
+	void Build_light_shadow_grid(Game_object* light_obj, int rt, std::vector<unsigned char>& lit, std::vector<Tile_coord>& spills) {
+		const int side = 2 * rt + 1;
+		lit.assign(static_cast<size_t>(side) * side, 0);    // Default: unlit; the room fills in.
+		spills.clear();
+		if (rt <= 0 || light_obj == nullptr) {
+			lit.clear();    // No grid -> caller treats as fully lit.
+			return;
+		}
+		Game_window* const gwin = Game_window::get_instance();
+		Game_map* const    gmap = gwin ? gwin->get_map() : nullptr;
+		if (gmap == nullptr) {
+			lit.clear();
+			return;
+		}
+		const Tile_coord lt     = light_obj->get_tile();
+		const int        roof_z = Light_room_roof_z(gmap, lt.tx, lt.ty, lt.tz);
+		Flood_room_grid(gmap, lt, rt, roof_z, lit, &spills);
+	}
+
+	void Build_spill_shadow_grid(const Tile_coord& start, int rt, std::vector<unsigned char>& lit) {
+		const int side = 2 * rt + 1;
+		lit.assign(static_cast<size_t>(side) * side, 0);
+		if (rt <= 0) {
+			lit.clear();    // No grid -> caller treats as fully lit.
+			return;
+		}
+		Game_window* const gwin = Game_window::get_instance();
+		Game_map* const    gmap = gwin ? gwin->get_map() : nullptr;
+		if (gmap == nullptr) {
+			lit.clear();
+			return;
+		}
+		// Flood from the tile just outside the opening: the glow spreads over
+		// whatever the window looks out on and is stopped by the building's
+		// own wall (lit as ring, so the window face glows), so the spilled
+		// light can never come back INSIDE the room it escaped from.  No
+		// spills are collected here: a spill does not spawn further spills.
+		const int roof_z = Light_room_roof_z(gmap, start.tx, start.ty, start.tz);
+		Flood_room_grid(gmap, start, rt, roof_z, lit, nullptr);
+	}
+
 	void Splat_radial_light(
 			unsigned char* cov, unsigned char* dstpix, const unsigned char* srcpix, int W, int H, int dst_lw, int src_lw, int sx,
-			int sy, int radius, int elevation, const unsigned char* roofpix, int roof_lw) {
+			int sy, int radius, int elevation, const unsigned char* roofpix, int roof_lw, const unsigned char* mask, int mask_lw,
+			int mask_ox, int mask_oy, int mask_w, int mask_h) {
 		if (radius <= 0) {
 			return;
 		}
@@ -548,6 +784,17 @@ namespace NaturalLight {
 				const float dist2 = static_cast<float>(dx) * static_cast<float>(dx) + dy2;
 				if (dist2 > rf * rf) {
 					continue;    // Outside the pool's ground radius.
+				}
+				if (mask) {
+					// Gate by the world-anchored occlusion mask.  It is stamped
+					// from the tiles' own rendered screen positions, so this is a
+					// direct screen-pixel lookup -- no light-relative tile maths
+					// that would slide the mask as the source moves.
+					const int mx = x - mask_ox;
+					const int my = y - mask_oy;
+					if (mx < 0 || my < 0 || mx >= mask_w || my >= mask_h || !mask[static_cast<size_t>(my) * mask_lw + mx]) {
+						continue;
+					}
 				}
 				// Hemispherical (dome) falloff: 1 - (3D distance / 3D reach)^2.
 				const float dome = 1.0f - (dist2 + e2) / rf2;

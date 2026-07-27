@@ -33,6 +33,7 @@
 #include <array>
 #include <memory>
 #include <string>    // STL string
+#include <utility>
 #include <vector>
 
 #ifndef ATTR_PRINTF
@@ -127,11 +128,20 @@ class Game_window {
 		// (dome) falloff in Splat_radial_light: a taller source spreads a
 		// rounder, lower-peaked pool of light instead of a flat disc.
 		int elevation = 0;
+		// Radius in tiles (grid half-size); 0 when there is no occlusion grid.
+		int rt = 0;
+		// The light's own tile (world coords).  build_light_layers stamps the
+		// room-fill grid into a world-anchored screen mask from these, so the
+		// mask stays fixed to the walls as the light moves.
+		int ltx = 0, lty = 0, ltz = 0;
 		// True if the light is itself under a roof (a stable geometric verdict
 		// from Light_beneath_roof): build_light_layers then keeps roof pixels
 		// dark for it so it never lights its own roof.  False (e.g. the
 		// Avatar's carried light, or any light out in the open) lights roofs.
 		bool mask_roof = false;
+		// Room-fill grid ((2*rt+1) square) from Build_light_shadow_grid: light
+		// floods the room bounded by tall walls.  Empty = no gating.
+		std::vector<unsigned char> lit;
 	};
 
 	std::vector<Light_render_info> light_renders;
@@ -140,6 +150,9 @@ class Game_window {
 	int                            light_layer_h          = -1;
 	int                            light_layer_palnum     = -2;
 	std::vector<unsigned char>     light_coverage_scratch;
+	// Reused per-light scratch for the world-anchored occlusion mask stamped
+	// from a light's room-fill grid (see build_light_layers).
+	std::vector<unsigned char> light_block_scratch;
 	// Global roof-pixel mask: marks which on-screen pixels belong to a drawn
 	// roof (an occluding overhead object).  Built during the world render and
 	// consumed by build_light_layers to keep those pixels dark under every
@@ -528,8 +541,10 @@ public:
 		light_renders.clear();
 	}
 
-	void add_light_render(int sx, int sy, int radius, int tier, int elevation = 0, bool mask_roof = false) {
-		light_renders.push_back({sx, sy, radius, tier, elevation, mask_roof});
+	void add_light_render(
+			int sx, int sy, int radius, int tier, int elevation, int rt, int ltx, int lty, int ltz, std::vector<unsigned char> lit,
+			bool mask_roof = false) {
+		light_renders.push_back({sx, sy, radius, tier, elevation, rt, ltx, lty, ltz, mask_roof, std::move(lit)});
 	}
 
 	void build_light_layers();

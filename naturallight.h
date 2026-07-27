@@ -23,6 +23,9 @@
 
 #include "tiles.h"
 
+#include <vector>
+
+class Game_map;
 class Game_object;
 class Map_chunk;
 
@@ -84,6 +87,39 @@ namespace NaturalLight {
 	// 0 = candle, 1 = single light, 2 = many lights.
 	int Light_tier(int brightness);
 
+	// The z-level of the roof over the given absolute tile -- the lowest
+	// blocked lift above the light (searched from max(lift+1, 4), so floor
+	// lights skip low furniture and elevated lights skip themselves) -- or 5,
+	// the classic wall-top threshold, when no roof is found.  This is the
+	// height the room's walls reach: the room-fill blocker test and the mask's
+	// wall-top stamp anchor both use it instead of a hardcoded 5, so buildings
+	// with taller walls mask correctly.
+	int Light_room_roof_z(Game_map* gmap, int tx, int ty, int lift);
+
+	// Build the room-fill grid a light casts, honouring tall light-blocking
+	// walls (a solid stack whose top reaches z-level 5).  `rt` is the light's
+	// radius in tiles; `lit` is filled with a (2*rt+1) square grid, index
+	// (dty+rt)*(2*rt+1) + (dtx+rt), where dtx = tile.tx - light.tx (east +) and
+	// dty = tile.ty - light.ty (south +).  A cell is 1 when light can reach that
+	// tile.  The set is a flood-fill from the light's tile across passable floor,
+	// stopped by tall walls (which are themselves lit as a one-tile ring).  Because
+	// the reached set depends only on the enclosing room's shape -- not on where in
+	// the room the light stands -- carrying a torch around a closed room keeps the
+	// same mask.  `lit` is left empty when there is nothing to gate (fully lit).
+	// A wall tile covered by a light_passes_through shape (window, grate) is
+	// reported in `spills` as the tile just OUTSIDE the opening (absolute
+	// coords): the caller renders a small radial glow there -- the light
+	// spilling out of the opening -- instead of the fill crossing the wall.
+	void Build_light_shadow_grid(Game_object* light_obj, int rt, std::vector<unsigned char>& lit, std::vector<Tile_coord>& spills);
+
+	// Build the room-fill grid for a spill glow (same layout as
+	// Build_light_shadow_grid), flooded from `start` -- the tile just outside
+	// the window/grate the light escapes through.  The fill spreads over
+	// whatever the opening looks out on and is stopped by the building's own
+	// wall (the window face is lit as part of the wall ring), so the spilled
+	// light shines AWAY from the room, never back inside it.
+	void Build_spill_shadow_grid(const Tile_coord& start, int rt, std::vector<unsigned char>& lit);
+
 	// Splat one radial light's soft dome (hemispherical) falloff into the
 	// coverage buffer, copying the brightened source pixel wherever this light
 	// is the strongest contributor so far. `cov` is a contiguous W*H buffer (row
@@ -92,10 +128,16 @@ namespace NaturalLight {
 	// light as a point that height above the ground, so the pool of light domes
 	// (rounded, lower-peaked) instead of reading as a flat disc. When `roofpix`
 	// is non-null, any pixel it marks stays dark so the light never brightens a
-	// roof over it.
+	// roof over it.  When `mask` is non-null it is a world-anchored screen-space
+	// occlusion mask (a rectangle `mask_w` x `mask_h` at screen origin
+	// (`mask_ox`,`mask_oy`), row stride `mask_lw`): a pixel is only lit where the
+	// mask is non-zero, so tall walls contain the light within the room.  The mask
+	// is stamped from the tiles' own rendered positions, so it stays fixed to the
+	// world as the light moves.
 	void Splat_radial_light(
 			unsigned char* cov, unsigned char* dstpix, const unsigned char* srcpix, int W, int H, int dst_lw, int src_lw, int sx,
-			int sy, int radius, int elevation, const unsigned char* roofpix, int roof_lw);
+			int sy, int radius, int elevation, const unsigned char* roofpix, int roof_lw, const unsigned char* mask, int mask_lw,
+			int mask_ox, int mask_oy, int mask_w, int mask_h);
 
 }    // namespace NaturalLight
 
