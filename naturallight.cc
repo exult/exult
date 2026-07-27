@@ -699,8 +699,15 @@ namespace NaturalLight {
 		// still in a ground-floor room whose walls rise from z 0, and the books
 		// beside it at lift 4 must not read as rising "from the floor".
 		const int floor_z = (lt.tz / 5) * 5;
-		auto      tall    = [&](int gx, int gy) {
-            return Light_tile_tall_blocker(gmap, lt.tx + gx - rt, lt.ty + gy - rt, roof_z, floor_z);
+		// Memorize the per-shape wall test: each grid tile is asked several
+		// times (ring pass, spill far-side check, diagonal corner pass).
+		std::vector<unsigned char> tallmemo(static_cast<size_t>(side) * side, 0);    // 0 unknown, 1 wall, 2 open.
+		auto                       tall = [&](int gx, int gy) {
+            unsigned char& m = tallmemo[static_cast<size_t>(gy) * side + gx];
+            if (m == 0) {
+                m = Light_tile_tall_blocker(gmap, lt.tx + gx - rt, lt.ty + gy - rt, roof_z, floor_z) ? 1 : 2;
+            }
+            return m == 1;
 		};
 		auto opening = [&](int gx, int gy) {
 			return Light_tile_pass_opening(gmap, lt.tx + gx - rt, lt.ty + gy - rt);
@@ -712,6 +719,12 @@ namespace NaturalLight {
                 {-1,  0},
                 { 0,  1},
                 { 0, -1}
+        };
+		static const int diag[4][2] = {
+				{ 1,  1},
+                { 1, -1},
+                {-1,  1},
+                {-1, -1}
         };
 		while (!stack.empty()) {
 			const int gx = stack.back().first;
@@ -746,6 +759,22 @@ namespace NaturalLight {
 					continue;
 				}
 				stack.emplace_back(nx, ny);
+			}
+			// Room corners: the corner wall post touches the interior floor
+			// only DIAGONALLY, so the orthogonal ring pass above never lights
+			// it and the mask gets a jagged notch at every corner.  Light
+			// diagonal WALL neighbours too -- walls only, never flooding
+			// diagonally, and without marking them visited, so window/spill
+			// detection (orthogonal approach) is unaffected.
+			for (const auto& d : diag) {
+				const int nx = gx + d[0];
+				const int ny = gy + d[1];
+				if (nx < 0 || ny < 0 || nx >= side || ny >= side) {
+					continue;
+				}
+				if (tall(nx, ny)) {
+					lit[static_cast<size_t>(ny) * side + nx] = 1;
+				}
 			}
 		}
 		// Emit only the candidates whose outside tile the fill itself never
