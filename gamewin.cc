@@ -1413,8 +1413,32 @@ void Game_window::update_roof_mask(Game_object* obj, int sx, int sy) {
 	if (inside) {
 		const int av_lift = main_actor ? main_actor->get_lift() : 0;
 		roof_like         = (obj->get_info().is_roof() && obj->get_lift() > av_lift) || obj->get_lift() >= get_render_skip_lift();
+		const int top     = obj->get_lift() + obj->get_info().get_3d_height();
+		if (!roof_like && top > get_render_skip_lift()) {
+			// A grounded shape rising ABOVE the room's ceiling can only be an
+			// EXTERIOR one (an outside tree next to the building): interior
+			// walls stop at the skip level.  Its canopy overlaps the room's
+			// screen area, so without a mark the interior light paints it
+			// bright.  Confirm it really stands under open sky (nothing
+			// blocked above its top) so nothing indoors is ever caught here.
+			const Tile_coord t     = obj->get_tile();
+			Map_chunk* const chunk = map->get_chunk_safely(t.tx / c_tiles_per_chunk, t.ty / c_tiles_per_chunk);
+			if (chunk != nullptr && chunk->get_lowest_blocked(top, t.tx % c_tiles_per_chunk, t.ty % c_tiles_per_chunk) < 0) {
+				roof_like = true;
+			}
+		}
 	} else {
 		roof_like = obj->get_info().is_roof() || obj->get_lift() >= 5;
+		if (!roof_like && obj->get_lift() + obj->get_info().get_3d_height() >= 5) {
+			// A grounded shape TALL enough to reach roof level (a tree whose
+			// canopy hangs over a neighbouring roof): its upper pixels are as
+			// high up as the roof they overlap, so they must not punch a lit
+			// hole into the mask -- but marking them would darken the same
+			// tree standing in open ground.  Leave the mask exactly as the
+			// shapes beneath painted it: over a roof the canopy stays dark,
+			// over grass it stays lit.
+			return;
+		}
 	}
 	frame->paint_rle_transformed(roof_light_mask.get(), sx, sy, roof_like ? roof_set : roof_clear);
 }
@@ -1557,12 +1581,12 @@ void Game_window::build_light_layers() {
 			// the building.  An exterior light (street lamp, torch, brazier)
 			// stays unmasked outside and brightens nearby house roofs again.
 			const bool inside = is_main_actor_inside();
-			// TEST: while the Avatar is inside, do NOT apply the roof-pixel
-			// mask at all -- to diagnose why roof pixels are not being
-			// discarded properly in that case.  Original gate, kept for
-			// restoring:
-			// const bool mask_roof = roofpix && (inside || lr.mask_roof);
-			const bool mask_roof = roofpix && !inside && lr.mask_roof;
+			// Apply the roof-pixel mask while inside (roof-like and tall
+			// EXTERIOR pixels stay dark under interior lights -- an outside
+			// tree's canopy overlapping the room must not light up) and for
+			// spill glows, which are roof-masked by design.
+
+			const bool mask_roof = roofpix && (inside || lr.mask_roof);
 			// Build a world-anchored occlusion mask for this light from its
 			// room-fill grid, stamping each lit tile at its own rendered screen
 			// position (get_shape_location).  Because the stamps use the tiles'
