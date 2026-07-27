@@ -440,13 +440,13 @@ void Game_window::paint(
 				const int tier      = NaturalLight::Light_tier(carried_bright);
 				// Same tall-wall occlusion as placed lights, centred on the
 				// Avatar so the carried torch is contained by the room's walls.
-				// The +5 is one tile of rounding slack plus four tiles covering
+				// The +7 is one tile of rounding slack plus six tiles covering
 				// the wall-top anchor shift: the mask stamps are drawn up to
-				// 4*roof_z px up-left of the tiles' floor positions, so without
-				// the slack a fill reaching the grid edge (large open room) ends
-				// short of the dome's south/east fringe, cutting the light off in
-				// two straight edges.
-				const int                  rt    = radius / c_tilesize + 5;
+				// 4*roof_z px up-left of the tiles' floor positions (5.5 tiles
+				// at a z 11 ceiling), so without the slack a fill reaching the
+				// grid edge (large open room) ends short of the dome's
+				// south/east fringe, cutting the light off in two straight edges.
+				const int                  rt    = radius / c_tilesize + 7;
 				const Tile_coord           ltile = main_actor->get_tile();
 				std::vector<unsigned char> lit;
 				std::vector<Tile_coord>    spills;
@@ -464,8 +464,8 @@ void Game_window::paint(
 					if (spill_radius <= 0) {
 						continue;
 					}
-					// +5: rounding slack plus the wall-top anchor shift (see rt).
-					const int                  srt = spill_radius / c_tilesize + 5;
+					// +7: rounding slack plus the wall-top anchor shift (see rt).
+					const int                  srt = spill_radius / c_tilesize + 7;
 					std::vector<unsigned char> slit;
 					NaturalLight::Build_spill_shadow_grid(sp, srt, slit);
 					int ssx = 0;
@@ -757,14 +757,14 @@ int Game_render::paint_chunk_objects(
 				// shape), so the verdict does not flip as the Avatar moves and
 				// Exult hides roofs near it.
 				const bool under_roof = NaturalLight::Light_beneath_roof(light_obj);
-				// Tall (z >= 5) walls contain the light within the room.  The +5
-				// is one tile of rounding slack plus four tiles covering the
+				// Tall (z >= 5) walls contain the light within the room.  The +7
+				// is one tile of rounding slack plus six tiles covering the
 				// wall-top anchor shift: the mask stamps are drawn up to 4*roof_z
-				// px up-left of the tiles' floor positions, so without the slack
-				// a fill reaching the grid edge (large open room) ends short of
-				// the dome's south/east fringe, cutting the light off in two
-				// straight edges.
-				const int                  rt    = radius / c_tilesize + 5;
+				// px up-left of the tiles' floor positions (5.5 tiles at a z 11
+				// ceiling), so without the slack a fill reaching the grid edge
+				// (large open room) ends short of the dome's south/east fringe,
+				// cutting the light off in two straight edges.
+				const int                  rt    = radius / c_tilesize + 7;
 				const Tile_coord           ltile = light_obj->get_tile();
 				std::vector<unsigned char> lit;
 				std::vector<Tile_coord>    spills;
@@ -784,8 +784,8 @@ int Game_render::paint_chunk_objects(
 					if (spill_radius <= 0) {
 						continue;
 					}
-					// +5: rounding slack plus the wall-top anchor shift (see rt).
-					const int                  srt = spill_radius / c_tilesize + 5;
+					// +7: rounding slack plus the wall-top anchor shift (see rt).
+					const int                  srt = spill_radius / c_tilesize + 7;
 					std::vector<unsigned char> slit;
 					NaturalLight::Build_spill_shadow_grid(sp, srt, slit);
 					int ssx = 0;

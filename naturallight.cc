@@ -655,26 +655,62 @@ namespace NaturalLight {
 	}
 
 	int Light_room_roof_z(Game_map* gmap, int tx, int ty, int lift) {
-		tx                     = Light_tile_norm(tx);
-		ty                     = Light_tile_norm(ty);
-		Map_chunk* const chunk = gmap != nullptr ? gmap->get_chunk_safely(tx / c_tiles_per_chunk, ty / c_tiles_per_chunk) : nullptr;
-		if (chunk != nullptr) {
-			// Search upward from just above the light (get_lowest_blocked is
-			// inclusive, so +1 skips the light's own level), but from at least
-			// z 5 -- the classic lowest roof level -- so furniture stacked
-			// below it never reads as the room's ceiling: a lamp on a desk
-			// (tz 3) with a shelf and books occupying lift 4 would otherwise
-			// get roof_z 4, turning that shelf into a floor-to-"roof" wall
-			// that cuts into the mask.  NOT is_roof(), whose fixed lift+4
-			// start would overshoot a z 5..7 ceiling for a wall-mounted light
-			// at lift 4+ and fall back to the too-low default of 5.
-			const int from   = lift + 1 > 5 ? lift + 1 : 5;
-			const int roof_z = chunk->get_lowest_blocked(from, tx % c_tiles_per_chunk, ty % c_tiles_per_chunk);
-			if (roof_z >= 0 && roof_z < 31) {
-				return roof_z;
+		tx = Light_tile_norm(tx);
+		ty = Light_tile_norm(ty);
+		// Search upward from just above the light, but from at least the
+		// current STOREY's lowest possible ceiling (storey floor + 5) so
+		// nothing below it ever reads as the room's roof: a lamp on a desk
+		// (tz 3) with a shelf and books occupying lift 4 would otherwise get
+		// roof_z 4, turning that shelf into a floor-to-"roof" wall that cuts
+		// into the mask -- and a torch carried onto a podest (tz 5) must not
+		// read the podest plates at z 6 as a ceiling under a z 11 roof.
+		const int floor_z = (lift / 5) * 5;
+		const int from    = lift + 1 > floor_z + 5 ? lift + 1 : floor_z + 5;
+		// Per-shape scan instead of Chunk_cache::get_lowest_blocked: the
+		// blocked bitmask includes ACTORS, so the torch-bearer's own body
+		// (occupying the levels just above the light) would read as a "roof"
+		// one z above the flame, collapsing roof_z to 6 on a walkway under a
+		// z 11 ceiling and turning every floor plate and railing up there
+		// into a floor-to-"roof" wall.  Scan the 3x3 neighbouring chunks (a
+		// roof or upper floor covering this tile can be anchored in another
+		// chunk) for the lowest solid, non-actor, non-carryable shape at or
+		// above `from` whose footprint covers the tile.
+		if (gmap == nullptr) {
+			return floor_z + 5;
+		}
+		int       roof_z = -1;
+		const int lcx    = tx / c_tiles_per_chunk;
+		const int lcy    = ty / c_tiles_per_chunk;
+		for (int dcy = -1; dcy <= 1; ++dcy) {
+			for (int dcx = -1; dcx <= 1; ++dcx) {
+				Map_chunk* const chunk = gmap->get_chunk_safely(lcx + dcx, lcy + dcy);
+				if (chunk == nullptr) {
+					continue;
+				}
+				Object_iterator it(chunk->get_objects());
+				Game_object*    obj;
+				while ((obj = it.get_next()) != nullptr) {
+					if (obj->as_actor() != nullptr || obj->is_dragable()) {
+						continue;    // Bodies and loose items are not ceilings.
+					}
+					const int ol = obj->get_lift();
+					if (ol < from || (roof_z >= 0 && ol >= roof_z)) {
+						continue;
+					}
+					if (!obj->get_info().is_solid()) {
+						continue;
+					}
+					if (obj->get_footprint().has_world_point(tx, ty)) {
+						roof_z = ol;
+					}
+				}
 			}
 		}
-		return 5;    // No roof overhead: the classic wall-top threshold.
+		if (roof_z >= 0 && roof_z < 31) {
+			return roof_z;
+		}
+		// No roof overhead: the storey's classic wall-top threshold.
+		return floor_z + 5;
 	}
 
 	// Shared room flood for the light masks: fill from `start` across passable
