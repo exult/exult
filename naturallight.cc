@@ -37,6 +37,7 @@
 #include <cmath>
 #include <cstdlib>
 #include <iostream>
+#include <set>
 #include <utility>
 
 namespace {
@@ -158,34 +159,82 @@ namespace {
 		// case the per-shape test below turns out to miss real walls:
 		// return chunk->is_tile_occupied(
 		// 		tx % c_tiles_per_chunk, ty % c_tiles_per_chunk, roof_z - 1);
+		// Temporary diagnostics: EXULT_DEBUG_LIGHT_MASK=1 prints every shape
+		// covering a tested tile and why it was (not) counted as a wall,
+		// deduplicated per shape/reason so the flood does not flood stderr.
+		const bool dbg    = std::getenv("EXULT_DEBUG_LIGHT_MASK") != nullptr;
+		auto       report = [&](Game_object* o, const Shape_info& si, const char* why) {
+            if (!dbg) {
+                return;
+            }
+            static std::set<std::pair<int, const char*>> seen;
+            if (!seen.emplace(o->get_shapenum(), why).second) {
+                return;
+            }
+            std::cerr << "[light-mask] shape=" << o->get_shapenum() << '/' << o->get_framenum() << " at(" << tx << ',' << ty
+                      << ") lift=" << o->get_lift() << " h=" << si.get_3d_height()
+                      << " class=" << static_cast<int>(si.get_shape_class()) << " solid=" << si.is_solid()
+                      << " roofflag=" << si.is_roof() << " roof_z=" << roof_z << " floor_z=" << floor_z << " -> " << why
+                      << std::endl;
+		};
 		Object_iterator it(chunk->get_objects());
 		Game_object*    obj;
 		while ((obj = it.get_next()) != nullptr) {
 			if (obj->as_actor() != nullptr) {
 				continue;    // NPCs move around; never count them as walls.
 			}
+			if (!obj->get_footprint().has_world_point(tx, ty)) {
+				continue;    // Not covering this tile.
+			}
 			const Shape_info& info = obj->get_info();
+			if (obj->is_dragable()) {
+				// A loose, carryable item (a book on top of a full-height
+				// shelf) is never a wall, even where the pile beneath it is
+				// solid up to the roof.  Real wall segments -- including
+				// shutters sitting on half walls -- are immovable (weight 0
+				// or static map fixtures), so they are not skipped here.
+				report(obj, info, "skip: dragable item");
+				continue;
+			}
 			if (!info.is_solid() || info.is_roof()) {
 				// Only blocking shapes seal the room, and the roof (or its
 				// low-hanging eaves) is not a wall.
+				report(obj, info, "skip: not solid or roof-flagged");
 				continue;
 			}
 			const int lift = obj->get_lift();
 			if (lift >= roof_z) {
+				report(obj, info, "skip: at/above roof");
 				continue;    // At/above the roof: not part of the room's walls.
 			}
 			if (lift > floor_z) {
-				// Starts above the floor: a hung object (shield, tapestry, sign)
-				// whose top reaches the roof is still not a wall -- light passes
-				// under it.  A real wall rises from the floor.
-				continue;
+				// Starts above the floor.  A hung object (shield, tapestry,
+				// sign) has open space beneath it and light passes under; but
+				// a shutter sitting on a half-height wall piece is a real wall
+				// segment even though it starts at lift 2.  Shape class cannot
+				// tell them apart (both are typically 'has_hp', and far from
+				// all wall segments carry the 'building' class), so test the
+				// geometry directly: it only blocks light if the space below
+				// it at THIS tile is solidly filled all the way down to the
+				// floor -- no gap for light to squeeze under.
+				bool gap = false;
+				for (int z = floor_z; z < lift; ++z) {
+					if (!chunk->is_tile_occupied(tx % c_tiles_per_chunk, ty % c_tiles_per_chunk, z)) {
+						gap = true;
+						break;
+					}
+				}
+				if (gap) {
+					report(obj, info, "skip: hung above floor with gap below");
+					continue;
+				}
 			}
 			if (lift + info.get_3d_height() < roof_z) {
+				report(obj, info, "skip: top below roof");
 				continue;    // Top below the roof: light passes over it.
 			}
-			if (obj->get_footprint().has_world_point(tx, ty)) {
-				return true;
-			}
+			report(obj, info, "WALL");
+			return true;
 		}
 		return false;
 	}
@@ -731,6 +780,14 @@ namespace NaturalLight {
 		}
 		const Tile_coord lt     = light_obj->get_tile();
 		const int        roof_z = Light_room_roof_z(gmap, lt.tx, lt.ty, lt.tz);
+		if (std::getenv("EXULT_DEBUG_LIGHT_MASK") != nullptr) {
+			static Tile_coord last(-1, -1, -1);
+			if (lt.tx != last.tx || lt.ty != last.ty || lt.tz != last.tz) {
+				last = lt;
+				std::cerr << "[light-mask] === light shape=" << light_obj->get_shapenum() << " tile=(" << lt.tx << ',' << lt.ty
+						  << ',' << lt.tz << ") roof_z=" << roof_z << " floor_z=" << (lt.tz / 5) * 5 << " rt=" << rt << std::endl;
+			}
+		}
 		Flood_room_grid(gmap, lt, rt, roof_z, lit, &spills);
 	}
 
