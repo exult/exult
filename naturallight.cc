@@ -720,9 +720,14 @@ namespace NaturalLight {
 	// When `spills` is given, a wall tile covered by a light_passes_through
 	// shape (window, grate) reports the tile just BEYOND it -- where the
 	// escaping light lands on the far side -- unless that tile is a wall too
-	// (a window into another wall spills nowhere).  The reached set depends
-	// only on the room's shape, not on where in it the start tile lies, so a
-	// carried torch keeps a stable mask.
+	// (a window into another wall spills nowhere).  Likewise, when the fill
+	// itself flows out from UNDER the roof into the open (an open doorway, a
+	// wall gap, past a porch roof's edge), the first unroofed tile is a spill
+	// point too: the ground there is already lit by the source's own gated
+	// splat, but only a SPILL light (exterior semantics) can pick up marked
+	// tall shapes -- trees, lampposts -- standing in that escaped light.  The
+	// reached set depends only on the room's shape, not on where in it the
+	// start tile lies, so a carried torch keeps a stable mask.
 	static void Flood_room_grid(
 			Game_map* gmap, const Tile_coord& lt, int rt, int roof_z, std::vector<unsigned char>& lit,
 			std::vector<Tile_coord>* spills) {
@@ -730,6 +735,7 @@ namespace NaturalLight {
 		std::vector<unsigned char>       visited(static_cast<size_t>(side) * side, 0);
 		std::vector<std::pair<int, int>> stack;
 		std::vector<std::pair<int, int>> spill_cand;    // Outside-tile grid coords.
+		std::vector<std::pair<int, int>> door_cand;     // Roofed->open exit tiles.
 		// The room's floor for the wall test is the STOREY floor (storeys are 5 z
 		// apart), not the light's own z: a lamp standing on a shelf at tz 4 is
 		// still in a ground-floor room whose walls rise from z 0, and the books
@@ -748,6 +754,20 @@ namespace NaturalLight {
 		auto opening = [&](int gx, int gy) {
 			return Light_tile_pass_opening(gmap, lt.tx + gx - rt, lt.ty + gy - rt);
 		};
+		// Memoized per-tile roof test for the doorway-spill detection: a spill
+		// is where the fill crosses from a roofed tile to an unroofed one.
+		// Only an under-roof source spills through doors; an outdoor lamp's
+		// fill may pass beneath a porch roof and out again, but its light is
+		// exterior already and needs no continuation bubble.
+		std::vector<unsigned char> roofmemo(static_cast<size_t>(side) * side, 0);    // 0 unknown, 1 roofed, 2 open.
+		auto                       roofed = [&](int gx, int gy) {
+            unsigned char& m = roofmemo[static_cast<size_t>(gy) * side + gx];
+            if (m == 0) {
+                m = Light_tile_roofed(gmap, lt.tx + gx - rt, lt.ty + gy - rt) ? 1 : 2;
+            }
+            return m == 1;
+		};
+		const bool start_roofed = spills != nullptr && roofed(rt, rt);
 		stack.emplace_back(rt, rt);    // Start at the grid centre.
 		visited[static_cast<size_t>(rt) * side + rt] = 1;
 		static const int step[4][2]                  = {
@@ -794,6 +814,12 @@ namespace NaturalLight {
 					}
 					continue;
 				}
+				if (start_roofed && roofed(gx, gy) && !roofed(nx, ny)) {
+					// The fill steps out from under the roof into the open:
+					// a doorway, a wall gap, the edge of a porch roof.  That
+					// first open-sky tile carries the bubble's continuation.
+					door_cand.emplace_back(nx, ny);
+				}
 				stack.emplace_back(nx, ny);
 			}
 			// Room corners: the corner wall post touches the interior floor
@@ -821,9 +847,37 @@ namespace NaturalLight {
 		// back INSIDE.  A tile the fill already lit needs no spill glow anyway.
 		if (spills != nullptr) {
 			for (const auto& [ox, oy] : spill_cand) {
-				if (lit[static_cast<size_t>(oy) * side + ox]) {
-					continue;    // Fill got there itself: interior or already lit.
+				// Emit only if the far-side tile is under OPEN SKY.  A window
+				// the fill touched from its OUTSIDE face (after escaping through
+				// a door and wrapping around the building) has the room interior
+				// as its far side -- roofed -- and emitting it would spill the
+				// glow back INSIDE.  (Testing `lit` instead is wrong: the fill
+				// wrapping around outside also reaches a window's legitimate
+				// outside tile, which must NOT cancel that window's spill.)
+				if (Light_tile_roofed(gmap, lt.tx + ox - rt, lt.ty + oy - rt)) {
+					continue;    // Far side is interior (or under another roof).
 				}
+				spills->emplace_back(Light_tile_norm(lt.tx + ox - rt), Light_tile_norm(lt.ty + oy - rt), 0);
+			}
+			// Doorway/roof-edge spills.  Neighbouring exit tiles along a wide
+			// opening would each spawn a near-identical continuation bubble
+			// (same centre give or take a tile, same continued falloff), so
+			// thin them out: skip a candidate within two tiles of one already
+			// emitted.  Overlapping bubbles combine by max coverage, so the
+			// survivors still reproduce the source's dome seamlessly.
+			std::vector<std::pair<int, int>> emitted;
+			for (const auto& [ox, oy] : door_cand) {
+				bool near_prev = false;
+				for (const auto& [ex, ey] : emitted) {
+					if (std::abs(ox - ex) <= 2 && std::abs(oy - ey) <= 2) {
+						near_prev = true;
+						break;
+					}
+				}
+				if (near_prev) {
+					continue;
+				}
+				emitted.emplace_back(ox, oy);
 				spills->emplace_back(Light_tile_norm(lt.tx + ox - rt), Light_tile_norm(lt.ty + oy - rt), 0);
 			}
 		}
@@ -880,8 +934,8 @@ namespace NaturalLight {
 
 	void Splat_radial_light(
 			unsigned char* cov, unsigned char* dstpix, const unsigned char* srcpix, int W, int H, int dst_lw, int src_lw, int sx,
-			int sy, int radius, int elevation, const unsigned char* roofpix, int roof_lw, const unsigned char* mask, int mask_lw,
-			int mask_ox, int mask_oy, int mask_w, int mask_h) {
+			int sy, int radius, int elevation, int dist_bias, const unsigned char* roofpix, int roof_lw, bool veto_roof,
+			bool is_spill, const unsigned char* mask, int mask_lw, int mask_ox, int mask_oy, int mask_w, int mask_h) {
 		if (radius <= 0) {
 			return;
 		}
@@ -893,13 +947,20 @@ namespace NaturalLight {
 		// radius at r while lowering and rounding the peak -- a dome rather than
 		// a flat-topped cylinder.  With elevation 0 this is exactly the old
 		// quadratic 1 - (d/r)^2 falloff.
-		const float e   = static_cast<float>(elevation > 0 ? elevation : 0);
-		const float e2  = e * e;
-		const float rf2 = rf * rf + e2;    // Square of the 3D reach (never 0).
-		int         x0  = sx - radius;
-		int         x1  = sx + radius;
-		int         y0  = sy - radius;
-		int         y1  = sy + radius;
+		// `dist_bias` continues another bubble's falloff: a pixel at distance d
+		// from the splat centre is treated as at d + bias from the ORIGINAL
+		// source, and the reach is bias + radius -- so a spill glow starts at
+		// exactly the brightness the source's dome had at the opening and keeps
+		// fading on the same curve, instead of peaking like a second lamp.
+		const float e    = static_cast<float>(elevation > 0 ? elevation : 0);
+		const float e2   = e * e;
+		const float bias = static_cast<float>(dist_bias > 0 ? dist_bias : 0);
+		const float full = rf + bias;           // Ground reach of the original bubble.
+		const float rf2  = full * full + e2;    // Square of its 3D reach (never 0).
+		int         x0   = sx - radius;
+		int         x1   = sx + radius;
+		int         y0   = sy - radius;
+		int         y1   = sy + radius;
 		if (x0 < 0) {
 			x0 = 0;
 		}
@@ -917,15 +978,31 @@ namespace NaturalLight {
 			const float          dy2     = static_cast<float>(dy) * static_cast<float>(dy);
 			const unsigned char* roofrow = roofpix ? roofpix + y * roof_lw : nullptr;
 			for (int x = x0; x <= x1; ++x) {
+				// Marked pixel: 255 is a real roof (or an object standing on
+				// one), 128 a tall EXTERIOR shape (tree canopy, lamppost).  An
+				// under-roof light keeps both dark.  A SPILL glow -- the bubble
+				// already outside the opening -- lights tall shapes as whole
+				// units (bypassing the tile mask below: the sprite's elevated
+				// pixels span far more screen than its stamped ground tiles, so
+				// gating them by the fill would cut the shape into lit and dark
+				// patches) but must never light a real roof.  A true EXTERIOR
+				// light (street lamp, torch in the open) lights both.
+				bool bypass_mask = false;
 				if (roofrow && roofrow[x]) {
-					continue;    // Roof pixel: keep dark under every light.
+					if (veto_roof) {
+						continue;    // Keep dark under every interior light.
+					}
+					if (is_spill && roofrow[x] == 255) {
+						continue;    // A spill never lights a real roof.
+					}
+					bypass_mask = true;
 				}
 				const int   dx    = x - sx;
 				const float dist2 = static_cast<float>(dx) * static_cast<float>(dx) + dy2;
 				if (dist2 > rf * rf) {
 					continue;    // Outside the pool's ground radius.
 				}
-				if (mask) {
+				if (mask && !bypass_mask) {
 					// Gate by the world-anchored occlusion mask.  It is stamped
 					// from the tiles' own rendered screen positions, so this is a
 					// direct screen-pixel lookup -- no light-relative tile maths
@@ -936,8 +1013,14 @@ namespace NaturalLight {
 						continue;
 					}
 				}
-				// Hemispherical (dome) falloff: 1 - (3D distance / 3D reach)^2.
-				const float dome = 1.0f - (dist2 + e2) / rf2;
+				// Hemispherical (dome) falloff: 1 - (3D distance / 3D reach)^2,
+				// with the travelled distance continued past `bias` for spills.
+				float total2 = dist2;
+				if (bias > 0.0f) {
+					const float tot = std::sqrt(dist2) + bias;
+					total2          = tot * tot;
+				}
+				const float dome = 1.0f - (total2 + e2) / rf2;
 				const int   a    = static_cast<int>(255.0f * dome + 0.5f);
 				if (a <= 0) {
 					continue;

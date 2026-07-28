@@ -139,6 +139,18 @@ class Game_window {
 		// dark for it so it never lights its own roof.  False (e.g. the
 		// Avatar's carried light, or any light out in the open) lights roofs.
 		bool mask_roof = false;
+		// For spill glows: the distance (in game px) the source's light has
+		// already travelled to reach the spill point.  The splat continues the
+		// source's falloff from there -- the spill is the same bubble poking
+		// through the opening, not a new light -- so its brightness at the
+		// window equals the source's at that distance and keeps fading on the
+		// same curve.  0 for real sources.
+		int dist_bias = 0;
+		// True for a spill glow: it behaves like an EXTERIOR light (no roof-
+		// pixel veto, so tall shapes and roofs in its reach light up whole),
+		// but its room-fill grid always gates it so it never lights back
+		// inside or around corners.
+		bool is_spill = false;
 		// Room-fill grid ((2*rt+1) square) from Build_light_shadow_grid: light
 		// floods the room bounded by tall walls.  Empty = no gating.
 		std::vector<unsigned char> lit;
@@ -543,8 +555,9 @@ public:
 
 	void add_light_render(
 			int sx, int sy, int radius, int tier, int elevation, int rt, int ltx, int lty, int ltz, std::vector<unsigned char> lit,
-			bool mask_roof = false) {
-		light_renders.push_back({sx, sy, radius, tier, elevation, rt, ltx, lty, ltz, mask_roof, std::move(lit)});
+			bool mask_roof = false, int dist_bias = 0, bool is_spill = false) {
+		light_renders.push_back(
+				{sx, sy, radius, tier, elevation, rt, ltx, lty, ltz, mask_roof, dist_bias, is_spill, std::move(lit)});
 	}
 
 	void build_light_layers();

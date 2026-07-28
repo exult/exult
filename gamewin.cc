@@ -90,7 +90,9 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
+#include <iostream>
 #include <memory>
+#include <set>
 #include <sstream>
 
 #ifdef USE_EXULTSTUDIO
@@ -1377,11 +1379,22 @@ void Game_window::update_roof_mask(Game_object* obj, int sx, int sy) {
 	if (!frame || !frame->is_rle()) {
 		return;
 	}
-	// A roof marks its pixels (255); anything painted over them clears (0).
+	// A roof marks its pixels (255); a tall EXTERIOR shape (tree canopy,
+	// lamppost) marks 128; anything painted over them clears (0).  The two
+	// mark values differ under a SPILL glow: it lights tall shapes standing
+	// in its reach as whole units but must never light a real roof -- only a
+	// true exterior light does that.
 	static const Xform_palette roof_set = [] {
 		Xform_palette x;
 		for (int i = 0; i < 256; ++i) {
 			x.colors[i] = 255;
+		}
+		return x;
+	}();
+	static const Xform_palette roof_tall = [] {
+		Xform_palette x;
+		for (int i = 0; i < 256; ++i) {
+			x.colors[i] = 128;
 		}
 		return x;
 	}();
@@ -1409,8 +1422,30 @@ void Game_window::update_roof_mask(Game_object* obj, int sx, int sy) {
 	// lights never apply the roof mask, so they keep lighting roofs and
 	// whatever stands on them.
 	const bool inside = is_main_actor_inside();
-	bool       roof_like;
-	if (inside) {
+	// Debug (EXULT_DEBUG_LIGHT_MASK=1): report the mask verdict once per
+	// shape/frame/verdict for TALL shapes only -- the canopy/lamppost cases.
+	const bool dbg    = std::getenv("EXULT_DEBUG_LIGHT_MASK") != nullptr;
+	auto       report = [&](const char* verdict) {
+        if (!dbg) {
+            return;
+        }
+        static std::set<std::pair<int, const char*>> seen;
+        const int                                    key = (obj->get_shapenum() << 8) | obj->get_framenum();
+        if (!seen.insert({key, verdict}).second) {
+            return;
+        }
+        const Tile_coord t = obj->get_tile();
+        std::cerr << "[roof-mask] shape=" << obj->get_shapenum() << "/" << obj->get_framenum() << " at(" << t.tx << "," << t.ty
+                  << ") lift=" << obj->get_lift() << " h=" << obj->get_info().get_3d_height() << " skip=" << get_render_skip_lift()
+                  << " inside=" << inside << " -> " << verdict << std::endl;
+	};
+	bool roof_like;
+	bool tall_exterior = false;
+	if (obj->as_actor() != nullptr) {
+		// Actors are tall enough to qualify below but are never roof-like:
+		// an NPC standing in a spill glow must light up, not silhouette.
+		roof_like = false;
+	} else if (inside) {
 		const int av_lift = main_actor ? main_actor->get_lift() : 0;
 		roof_like         = (obj->get_info().is_roof() && obj->get_lift() > av_lift) || obj->get_lift() >= get_render_skip_lift();
 		const int top     = obj->get_lift() + obj->get_info().get_3d_height();
@@ -1424,23 +1459,40 @@ void Game_window::update_roof_mask(Game_object* obj, int sx, int sy) {
 			const Tile_coord t     = obj->get_tile();
 			Map_chunk* const chunk = map->get_chunk_safely(t.tx / c_tiles_per_chunk, t.ty / c_tiles_per_chunk);
 			if (chunk != nullptr && chunk->get_lowest_blocked(top, t.tx % c_tiles_per_chunk, t.ty % c_tiles_per_chunk) < 0) {
-				roof_like = true;
+				tall_exterior = true;
+				report("MARK exterior-tall (open sky)");
+			} else {
+				report("clear: tall but blocked above top");
 			}
+		} else if (!roof_like && top >= 5) {
+			report("clear: tall but top <= skip");
 		}
 	} else {
 		roof_like = obj->get_info().is_roof() || obj->get_lift() >= 5;
 		if (!roof_like && obj->get_lift() + obj->get_info().get_3d_height() >= 5) {
-			// A grounded shape TALL enough to reach roof level (a tree whose
-			// canopy hangs over a neighbouring roof): its upper pixels are as
-			// high up as the roof they overlap, so they must not punch a lit
-			// hole into the mask -- but marking them would darken the same
-			// tree standing in open ground.  Leave the mask exactly as the
-			// shapes beneath painted it: over a roof the canopy stays dark,
-			// over grass it stays lit.
-			return;
+			// A grounded shape TALL enough to reach roof level (an outside
+			// tree, a lamppost).  Give it the same whole-shape verdict as
+			// the inside branch: standing under open sky it is marked as a
+			// unit, so a masked light (an interior light reaching it through
+			// a door, or a spill glow) treats the entire canopy the same --
+			// leaving the mask as-painted instead lit exactly the pixels not
+			// over the roof, cutting the canopy into lit and dark patches.
+			// Exterior lights never consult the mask, so they still light
+			// the whole shape.  If something sits above its top it is under
+			// cover; leave the mask as the shapes beneath painted it.
+			const int        top   = obj->get_lift() + obj->get_info().get_3d_height();
+			const Tile_coord t     = obj->get_tile();
+			Map_chunk* const chunk = map->get_chunk_safely(t.tx / c_tiles_per_chunk, t.ty / c_tiles_per_chunk);
+			if (chunk != nullptr && chunk->get_lowest_blocked(top, t.tx % c_tiles_per_chunk, t.ty % c_tiles_per_chunk) < 0) {
+				tall_exterior = true;
+				report("MARK exterior-tall (open sky, outside)");
+			} else {
+				report("leave-as-painted (outside tall, covered)");
+				return;
+			}
 		}
 	}
-	frame->paint_rle_transformed(roof_light_mask.get(), sx, sy, roof_like ? roof_set : roof_clear);
+	frame->paint_rle_transformed(roof_light_mask.get(), sx, sy, tall_exterior ? roof_tall : (roof_like ? roof_set : roof_clear));
 }
 
 /*
@@ -1581,12 +1633,22 @@ void Game_window::build_light_layers() {
 			// the building.  An exterior light (street lamp, torch, brazier)
 			// stays unmasked outside and brightens nearby house roofs again.
 			const bool inside = is_main_actor_inside();
-			// Apply the roof-pixel mask while inside (roof-like and tall
-			// EXTERIOR pixels stay dark under interior lights -- an outside
-			// tree's canopy overlapping the room must not light up) and for
-			// spill glows, which are roof-masked by design.
-
-			const bool mask_roof = roofpix && (inside || lr.mask_roof);
+			// Roof-pixel semantics per light (veto_roof in Splat_radial_light):
+			// a light that is itself under a roof (lr.mask_roof) keeps every
+			// marked pixel dark -- roof-like (255) and tall EXTERIOR (128)
+			// pixels (an outside tree's canopy overlapping the room) never
+			// light up under it.  An EXTERIOR light -- a street lamp, a torch
+			// in the open -- instead lights marked pixels as whole shapes,
+			// bypassing its tile-based room mask there: the canopy sprite
+			// spans far more screen than its stamped tile, so gating it by
+			// the ground fill would cut it into lit and dark patches.  This
+			// also keeps street lamps brightening nearby house roofs whether
+			// the Avatar is inside or out.  A SPILL GLOW (the interior bubble
+			// already outside the opening) sits between the two: it lights
+			// tall exterior shapes (128) whole, but never a real roof (255)
+			// -- it emerges right beside the building and would set the
+			// building's own roof aglow.
+			const bool mask_roof = roofpix && lr.mask_roof;
 			// Build a world-anchored occlusion mask for this light from its
 			// room-fill grid, stamping each lit tile at its own rendered screen
 			// position (get_shape_location).  Because the stamps use the tiles'
@@ -1602,15 +1664,17 @@ void Game_window::build_light_layers() {
 			// The dome (intensity + falloff) emits from the flame up on the
 			// sprite, not the tile foot get_shape_location returns, so raise
 			// only its centre up-and-left by the sprite's height (plus the
-			// foot-corner residual).  The room mask, by contrast, is pure world
-			// geometry -- the walls do not move -- so it is stamped at the
-			// tiles' true screen positions, never shifted by any property of
-			// the light source.
+			// foot-corner residual).  A SPILL's centre stays at the opening's
+			// outside tile -- its elevation only shapes the continued falloff
+			// -- so it is not shifted.  The room mask, by contrast, is pure
+			// world geometry -- the walls do not move -- so it is stamped at
+			// the tiles' true screen positions, never shifted by any property
+			// of the light source.
 			const int foot_bias = c_tilesize / 4;
-			const int emit      = lr.elevation + foot_bias;
+			const int emit      = (lr.is_spill ? 0 : lr.elevation) + foot_bias;
 			const int csx       = lr.sx - emit;
 			const int csy       = lr.sy - emit;
-			if ((inside || lr.mask_roof) && !lr.lit.empty()) {
+			if ((inside || lr.mask_roof || lr.is_spill) && !lr.lit.empty()) {
 				const int rt   = lr.rt;
 				const int side = 2 * rt + 1;
 				// Cover the whole splat bbox plus a tile of slack so the
@@ -1675,8 +1739,8 @@ void Game_window::build_light_layers() {
 				mask = light_block_scratch.data();
 			}
 			NaturalLight::Splat_radial_light(
-					cov, dstpix, srcpix, W, H, dst_lw, src_lw, csx, csy, lr.radius, lr.elevation, mask_roof ? roofpix : nullptr,
-					roof_lw, mask, mask_lw, mask_ox, mask_oy, mask_w, mask_h);
+					cov, dstpix, srcpix, W, H, dst_lw, src_lw, csx, csy, lr.radius, lr.elevation, lr.dist_bias, roofpix, roof_lw,
+					mask_roof, lr.is_spill, mask, mask_lw, mask_ox, mask_oy, mask_w, mask_h);
 		}
 		layer_set_coverage(handle, cov, W, H);
 		// Align the overlay with the world's on-screen rectangle.

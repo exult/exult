@@ -126,18 +126,32 @@ namespace NaturalLight {
 	// stride W); `dst`, `src` and `roof` use their own line widths. `elevation`
 	// is the emitter's height above the floor in game pixels: it models the
 	// light as a point that height above the ground, so the pool of light domes
-	// (rounded, lower-peaked) instead of reading as a flat disc. When `roofpix`
-	// is non-null, any pixel it marks stays dark so the light never brightens a
-	// roof over it.  When `mask` is non-null it is a world-anchored screen-space
-	// occlusion mask (a rectangle `mask_w` x `mask_h` at screen origin
-	// (`mask_ox`,`mask_oy`), row stride `mask_lw`): a pixel is only lit where the
-	// mask is non-zero, so tall walls contain the light within the room.  The mask
-	// is stamped from the tiles' own rendered positions, so it stays fixed to the
-	// world as the light moves.
+	// (rounded, lower-peaked) instead of reading as a flat disc. `roofpix` marks
+	// the pixels of roofs (255, incl. objects standing on one) and tall exterior
+	// shapes (128: tree canopies, lampposts).  When `veto_roof` is true (a light
+	// that is itself under a roof) every marked pixel stays dark, so the light
+	// never brightens the roof or canopy over it.  When false, marked pixels
+	// instead BYPASS the tile mask below: they belong to elevated surfaces a
+	// ground-level room fill cannot represent -- a canopy sprite spans many more
+	// screen pixels than its single stamped tile -- so they are lit by pure
+	// radial falloff, treating the whole shape as a unit (and letting street
+	// lamps brighten nearby house roofs).  `is_spill` narrows that: a spill glow
+	// (the interior bubble already outside its opening) lights tall shapes (128)
+	// whole but never a real roof (255) -- only a true exterior light does that.
+	// `dist_bias` (game px) continues another source's
+	// falloff: the dome fades as if the light had already travelled that far
+	// before reaching the splat centre -- used for spill glows, which are the
+	// source's own bubble poking through an opening, not a new light
+	// (`radius` stays the REMAINING reach).  When `mask` is non-null it is a
+	// world-anchored screen-space occlusion mask (a rectangle `mask_w` x
+	// `mask_h` at screen origin (`mask_ox`,`mask_oy`), row stride `mask_lw`):
+	// a pixel is only lit where the mask is non-zero, so tall walls contain
+	// the light within the room.  The mask is stamped from the tiles' own
+	// rendered positions, so it stays fixed to the world as the light moves.
 	void Splat_radial_light(
 			unsigned char* cov, unsigned char* dstpix, const unsigned char* srcpix, int W, int H, int dst_lw, int src_lw, int sx,
-			int sy, int radius, int elevation, const unsigned char* roofpix, int roof_lw, const unsigned char* mask, int mask_lw,
-			int mask_ox, int mask_oy, int mask_w, int mask_h);
+			int sy, int radius, int elevation, int dist_bias, const unsigned char* roofpix, int roof_lw, bool veto_roof,
+			bool is_spill, const unsigned char* mask, int mask_lw, int mask_ox, int mask_oy, int mask_w, int mask_h);
 
 }    // namespace NaturalLight
 

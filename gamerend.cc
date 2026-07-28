@@ -451,16 +451,26 @@ void Game_window::paint(
 				std::vector<unsigned char> lit;
 				std::vector<Tile_coord>    spills;
 				NaturalLight::Build_light_shadow_grid(main_actor, rt, lit, spills);
-				add_light_render(asx, asy, radius, tier, elevation, rt, ltile.tx, ltile.ty, ltile.tz, std::move(lit));
-				// Each window/grate the room fill reached gets its own small soft
-				// glow: the light spilling out of the opening, centred on the tile
-				// just outside it.  Its strength is what remains of the source's
-				// radius at the opening's distance, so a window across the room
-				// barely glows instead of appearing as a second light source; and
-				// it carries its own room mask flooded from that outside tile, so
-				// it lights what the window looks out on -- never back inside.
+				// Same under-roof verdict as placed lights: a carried torch under
+				// a roof keeps roof pixels dark (it must not light the canopy of
+				// an outside tree overlapping the room); out in the open it
+				// brightens nearby roofs and tall shapes like any street lamp.
+				const bool under_roof = NaturalLight::Light_beneath_roof(main_actor);
+				add_light_render(asx, asy, radius, tier, elevation, rt, ltile.tx, ltile.ty, ltile.tz, std::move(lit), under_roof);
+				// Each window/grate the room fill reached gets its own soft glow:
+				// the source's own bubble poking through the opening, NOT a new
+				// light.  Its reach is what remains of the source's radius at the
+				// opening's distance, and the splat continues the source's falloff
+				// from there (dist_bias + the source's elevation), so brightness is
+				// seamless across the opening instead of peaking like a second
+				// lamp.  Outside the opening it behaves like an EXTERIOR light
+				// (mask_roof false: tall shapes and roofs in its reach light up
+				// whole), while its own room mask flooded from the outside tile
+				// (is_spill) still gates it so it lights what the window looks out
+				// on -- never back inside.
 				for (const Tile_coord& sp : spills) {
-					const int spill_radius = radius - ltile.distance_2d(sp) * c_tilesize;
+					const int spill_dist   = ltile.distance_2d(sp) * c_tilesize;
+					const int spill_radius = radius - spill_dist;
 					if (spill_radius <= 0) {
 						continue;
 					}
@@ -471,7 +481,9 @@ void Game_window::paint(
 					int ssx = 0;
 					int ssy = 0;
 					get_shape_location(sp, ssx, ssy);
-					add_light_render(ssx, ssy, spill_radius, tier, 0, srt, sp.tx, sp.ty, sp.tz, std::move(slit), true);
+					add_light_render(
+							ssx, ssy, spill_radius, tier, elevation, srt, sp.tx, sp.ty, sp.tz, std::move(slit), false, spill_dist,
+							true);
 				}
 			}
 			// Also check light spell.
@@ -771,16 +783,16 @@ int Game_render::paint_chunk_objects(
 				NaturalLight::Build_light_shadow_grid(light_obj, rt, lit, spills);
 				gwin->add_light_render(
 						lsx, lsy, radius, tier, elevation, rt, ltile.tx, ltile.ty, ltile.tz, std::move(lit), under_roof);
-				// Each window/grate the room fill reached gets its own small soft
-				// glow: the light spilling out of the opening, centred on the tile
-				// just outside it, roof-gated so it lands on the ground, not the
-				// roof.  Its strength is what remains of the source's radius at
-				// the opening's distance, so a window across the room barely glows
-				// instead of appearing as a second light source; and it carries
-				// its own room mask flooded from that outside tile, so it lights
-				// what the window looks out on -- never back inside.
+				// Each window/grate the room fill reached gets its own soft glow:
+				// the source's own bubble poking through the opening, NOT a new
+				// light (see the carried-light spills above for the full story).
+				// Continues the source's falloff (dist_bias + elevation), behaves
+				// like an exterior light outside the opening (mask_roof false),
+				// and is gated by its own room mask flooded from the outside tile
+				// (is_spill) so it never lights back inside.
 				for (const Tile_coord& sp : spills) {
-					const int spill_radius = radius - ltile.distance_2d(sp) * c_tilesize;
+					const int spill_dist   = ltile.distance_2d(sp) * c_tilesize;
+					const int spill_radius = radius - spill_dist;
 					if (spill_radius <= 0) {
 						continue;
 					}
@@ -791,7 +803,9 @@ int Game_render::paint_chunk_objects(
 					int ssx = 0;
 					int ssy = 0;
 					gwin->get_shape_location(sp, ssx, ssy);
-					gwin->add_light_render(ssx, ssy, spill_radius, tier, 0, srt, sp.tx, sp.ty, sp.tz, std::move(slit), true);
+					gwin->add_light_render(
+							ssx, ssy, spill_radius, tier, elevation, srt, sp.tx, sp.ty, sp.tz, std::move(slit), false, spill_dist,
+							true);
 				}
 			}
 			// Dim the light once per inside/outside boundary crossing so a
