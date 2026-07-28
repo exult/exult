@@ -196,6 +196,23 @@ namespace {
 				report(obj, info, "skip: dragable item");
 				continue;
 			}
+			{
+				// A light_passes_through shape/frame (iron-bar prison door,
+				// grate, open door leaf) is never a wall by itself: light
+				// passes through it even though it is solid to movement.  A
+				// WINDOW tile still reads as a wall -- the wall pieces the
+				// window is embedded in qualify on their own -- and then
+				// Light_tile_pass_opening turns it into a spill opening; but
+				// a freestanding barred door must let the fill flow through
+				// instead of sealing the cell.
+				int  match_frame  = -2;
+				bool has_explicit = false;
+				bool has_wildcard = false;
+				if (Shape_light_passes_through_strict(info, obj->get_framenum(), match_frame, has_explicit, has_wildcard)) {
+					report(obj, info, "skip: light_passes_through");
+					continue;
+				}
+			}
 			if (!info.is_solid() || info.is_roof()) {
 				// Only blocking shapes seal the room, and the roof (or its
 				// low-hanging eaves) is not a wall.
