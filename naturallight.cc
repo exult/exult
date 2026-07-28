@@ -213,6 +213,18 @@ namespace {
 					continue;
 				}
 			}
+			if (info.is_door() && !obj->is_closed_door()) {
+				// A door whose open/closed frames are not (all) covered by the
+				// light_passes_through list.  Frame numbering differs between
+				// door shapes, so ask the geometry instead: is_closed_door()
+				// checks whether the tiles on both sides of the leaf are
+				// blocked (a closed door plugs its doorway).  An OPEN door
+				// leaf is a solid box standing beside a walkable doorway --
+				// light passes through the doorway, so the room is open and
+				// the leaf must not read as a wall sealing it.
+				report(obj, info, "skip: open door");
+				continue;
+			}
 			if (!info.is_solid() || info.is_roof()) {
 				// Only blocking shapes seal the room, and the roof (or its
 				// low-hanging eaves) is not a wall.
