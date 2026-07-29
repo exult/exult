@@ -854,11 +854,17 @@ namespace NaturalLight {
 					continue;
 				}
 				const size_t nidx = static_cast<size_t>(ny) * side + nx;
-				if (visited[nidx]) {
-					continue;
-				}
-				visited[nidx] = 1;
 				if (tall(nx, ny)) {
+					// Wall tiles never enter the stack, so handle them on
+					// EVERY approach instead of only the first: once the fill
+					// escapes through one opening and wraps around the
+					// building, it can reach a window's wall tile from its
+					// OUTSIDE face first -- that approach's far side is the
+					// interior (recording nothing), and gating on `visited`
+					// would then silently drop the window's real outward
+					// spill when the inside face is reached later.  Repeat
+					// work is bounded (once per adjacent floor tile) and the
+					// wall test is memoized.
 					lit[nidx] = 1;    // Light the wall face, but do not flood past it.
 					if (spills != nullptr) {
 						const int pct = opening(nx, ny);
@@ -871,7 +877,16 @@ namespace NaturalLight {
 							const int ox = nx + d[0];
 							const int oy = ny + d[1];
 							if (ox >= 0 && oy >= 0 && ox < side && oy < side && !tall(ox, oy)) {
-								spill_cand.emplace_back(ox, oy, pct);
+								bool dup = false;
+								for (const auto& [px, py, ppct] : spill_cand) {
+									if (px == ox && py == oy) {
+										dup = true;
+										break;
+									}
+								}
+								if (!dup) {
+									spill_cand.emplace_back(ox, oy, pct);
+								}
 							}
 						}
 					}
@@ -881,8 +896,17 @@ namespace NaturalLight {
 					// The fill steps out from under the roof into the open:
 					// a doorway, a wall gap, the edge of a porch roof.  That
 					// first open-sky tile carries the bubble's continuation.
+					// Checked BEFORE the visited gate for the same reason as
+					// walls above: the wrap-around fill can visit the exit
+					// tile from the open side first (no transition there),
+					// which must not swallow the real roofed->open crossing.
+					// Duplicates are thinned at emission.
 					door_cand.emplace_back(nx, ny);
 				}
+				if (visited[nidx]) {
+					continue;
+				}
+				visited[nidx] = 1;
 				stack.emplace_back(nx, ny);
 			}
 			// Room corners: the corner wall post touches the interior floor
