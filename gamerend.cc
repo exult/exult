@@ -358,6 +358,26 @@ void Game_window::paint(
 	if (!win->ready()) {
 		return;
 	}
+	// The spatial-light layers hold a brightened COPY of the world image and
+	// are only rebuilt on a COMPLETE repaint (see the "Complete repaint?"
+	// block below).  A partial paint -- the strip repaints of view_left/right/
+	// up/down and paint_dirty's rects, the normal path when smooth scrolling
+	// is off -- would move the world under stale layers, leaving a displaced
+	// faint ghost of every light pool (and freezing flames/NPCs inside them).
+	// So while any light layer is visible, promote the paint to the full
+	// window, matching what smooth scrolling gets from its per-frame full
+	// paint_lerped.
+	if (natural_light && main_actor && (x > 0 || y > 0 || w < get_width() || h < get_height())) {
+		for (int handle : light_layer_handles) {
+			if (handle >= 0 && win->layer_is_visible(handle)) {
+				x = 0;
+				y = 0;
+				w = get_width();
+				h = get_height();
+				break;
+			}
+		}
+	}
 	// This will adjust and clip the rectangle as appropriate, it may end up
 	// bigger or smaller
 	win->BeginPaintIntoGuardBand(&x, &y, &w, &h);
