@@ -1052,8 +1052,7 @@ namespace NaturalLight {
 	void Splat_radial_light(
 			unsigned char* cov, unsigned char* dstpix, const unsigned char* srcpix, int W, int H, int dst_lw, int src_lw, int sx,
 			int sy, int radius, int elevation, int dist_bias, int intensity_pct, const unsigned char* roofpix, int roof_lw,
-			bool veto_roof, bool is_spill, const unsigned char* mask, int mask_lw, int mask_ox, int mask_oy, int mask_w,
-			int mask_h) {
+			bool veto_roof, bool is_spill, const unsigned char* grid, int grid_rt, int grid_fx, int grid_fy) {
 		if (radius <= 0 || intensity_pct <= 0) {
 			return;
 		}
@@ -1078,10 +1077,55 @@ namespace NaturalLight {
 		const float bias = static_cast<float>(dist_bias > 0 ? dist_bias : 0);
 		const float full = rf + bias;           // Ground reach of the original bubble.
 		const float rf2  = full * full + e2;    // Square of its 3D reach (never 0).
-		int         x0   = sx - radius;
-		int         x1   = sx + radius;
-		int         y0   = sy - radius;
-		int         y1   = sy + radius;
+		// PROPAGATED LIGHT FIELD (no occlusion mask): when the room-fill grid
+		// is given, the light is rendered directly from it.  Each reached tile
+		// gets the dome brightness at its travelled distance -- the LONGER of
+		// the straight line and the flood path, so the field agrees with the
+		// free dome in the open (the path metric is Chebyshev, always <= the
+		// straight line there) but fades out along the path where the light
+		// had to go around walls, instead of shining through them.  Unreached
+		// tiles are simply dark: containment is not a gate applied to a dome,
+		// it is the absence of propagated light.
+		const int          side = grid != nullptr ? 2 * grid_rt + 1 : 0;
+		std::vector<float> field;
+		if (grid != nullptr) {
+			field.assign(static_cast<size_t>(side) * side, 0.0f);
+			for (int gy = 0; gy < side; ++gy) {
+				for (int gx = 0; gx < side; ++gx) {
+					const unsigned char m = grid[static_cast<size_t>(gy) * side + gx];
+					if (!m) {
+						continue;    // Light never reaches this tile.
+					}
+					const float path_px = static_cast<float>((m - 1) * c_tilesize);
+					const float ddx     = static_cast<float>((gx - grid_rt) * c_tilesize);
+					const float ddy     = static_cast<float>((gy - grid_rt) * c_tilesize);
+					float       travel  = std::sqrt(ddx * ddx + ddy * ddy);
+					if (path_px > travel) {
+						travel = path_px;
+					}
+					const float tot  = travel + bias;
+					const float dome = 1.0f - (tot * tot + e2) / rf2;
+					if (dome > 0.0f) {
+						field[static_cast<size_t>(gy) * side + gx] = 255.0f * dome * inten;
+					}
+				}
+			}
+		}
+		// Tiles at one z-level form a uniform c_tilesize lattice on screen, so
+		// the whole field is pinned by ONE reference: the foot position of the
+		// light's own tile (grid centre) at the wall-top anchor level.  That
+		// reference is quantized to the light's TILE, so the field stays fixed
+		// to the walls as the source moves within its tile -- the same world
+		// anchoring the stamped mask had.  A tile covers c_tilesize pixels
+		// up-and-left of its foot; its centre is half a tile up-left of it.
+		const float cell   = static_cast<float>(c_tilesize);
+		const float half   = 0.5f * (cell - 1.0f);
+		const float grid_u = static_cast<float>(grid_fx) - half - static_cast<float>(grid_rt) * cell;
+		const float grid_v = static_cast<float>(grid_fy) - half - static_cast<float>(grid_rt) * cell;
+		int         x0     = sx - radius;
+		int         x1     = sx + radius;
+		int         y0     = sy - radius;
+		int         y1     = sy + radius;
 		if (x0 < 0) {
 			x0 = 0;
 		}
@@ -1103,12 +1147,12 @@ namespace NaturalLight {
 				// one), 128 a tall EXTERIOR shape (tree canopy, lamppost).  An
 				// under-roof light keeps both dark.  A SPILL glow -- the bubble
 				// already outside the opening -- lights tall shapes as whole
-				// units (bypassing the tile mask below: the sprite's elevated
-				// pixels span far more screen than its stamped ground tiles, so
-				// gating them by the fill would cut the shape into lit and dark
+				// units (bypassing the propagated field below: the sprite's
+				// elevated pixels span far more screen than its ground tiles, so
+				// sampling the field there would cut the shape into lit and dark
 				// patches) but must never light a real roof.  A true EXTERIOR
 				// light (street lamp, torch in the open) lights both.
-				bool bypass_mask = false;
+				bool bypass_field = false;
 				if (roofrow && roofrow[x]) {
 					if (veto_roof) {
 						continue;    // Keep dark under every interior light.
@@ -1116,53 +1160,56 @@ namespace NaturalLight {
 					if (is_spill && roofrow[x] == 255) {
 						continue;    // A spill never lights a real roof.
 					}
-					bypass_mask = true;
+					bypass_field = true;
 				}
 				const int   dx    = x - sx;
 				const float dist2 = static_cast<float>(dx) * static_cast<float>(dx) + dy2;
 				if (dist2 > rf * rf) {
 					continue;    // Outside the pool's ground radius.
 				}
-				int path_px = 0;
-				if (mask && !bypass_mask) {
-					// Gate by the world-anchored occlusion mask.  It is stamped
-					// from the tiles' own rendered screen positions, so this is a
-					// direct screen-pixel lookup -- no light-relative tile maths
-					// that would slide the mask as the source moves.  The mask
-					// value is the tile's flood PATH distance + 1: how far the
-					// light actually travels to reach the tile, around walls.
-					const int mx = x - mask_ox;
-					const int my = y - mask_oy;
-					if (mx < 0 || my < 0 || mx >= mask_w || my >= mask_h) {
-						continue;
+				int a;
+				if (grid != nullptr && !bypass_field) {
+					// Sample the propagated field, interpolating between the
+					// four surrounding tile centres so the brightness stays a
+					// smooth gradient instead of 8px steps.
+					float u = (static_cast<float>(x) - grid_u) / cell;
+					float v = (static_cast<float>(y) - grid_v) / cell;
+					if (u < 0.0f) {
+						u = 0.0f;
+					} else if (u > static_cast<float>(side - 1)) {
+						u = static_cast<float>(side - 1);
 					}
-					const unsigned char m = mask[static_cast<size_t>(my) * mask_lw + mx];
-					if (!m) {
-						continue;
+					if (v < 0.0f) {
+						v = 0.0f;
+					} else if (v > static_cast<float>(side - 1)) {
+						v = static_cast<float>(side - 1);
 					}
-					path_px = (m - 1) * c_tilesize;
-				}
-				// Hemispherical (dome) falloff: 1 - (3D distance / 3D reach)^2.
-				// The travelled distance is the LONGER of the straight line and
-				// the flood path: in the open they agree (the path metric is
-				// Chebyshev), but where the fill had to go around a wall the
-				// path is longer, so the light fades out around corners instead
-				// of shining through as if the wall were not solid.  `bias`
-				// continues the source's own travel for spill glows.
-				float total2 = dist2;
-				if (bias > 0.0f || path_px > 0) {
-					float travel = std::sqrt(dist2);
-					if (static_cast<float>(path_px) > travel) {
-						travel = static_cast<float>(path_px);
+					int g0 = static_cast<int>(u);
+					int h0 = static_cast<int>(v);
+					if (g0 > side - 2) {
+						g0 = side - 2;
 					}
-					const float tot = travel + bias;
-					total2          = tot * tot;
+					if (h0 > side - 2) {
+						h0 = side - 2;
+					}
+					const float  tu  = u - static_cast<float>(g0);
+					const float  tv  = v - static_cast<float>(h0);
+					const float* row = field.data() + static_cast<size_t>(h0) * side + g0;
+					const float  top = row[0] + (row[1] - row[0]) * tu;
+					const float  bot = row[side] + (row[side + 1] - row[side]) * tu;
+					a                = static_cast<int>(top + (bot - top) * tv + 0.5f);
+				} else {
+					// Free dome (exterior lights, and marked tall shapes /
+					// roofs lit as whole units): pure radial falloff, with
+					// the travelled distance continued past `bias` for spills.
+					float total2 = dist2;
+					if (bias > 0.0f) {
+						const float tot = std::sqrt(dist2) + bias;
+						total2          = tot * tot;
+					}
+					const float dome = 1.0f - (total2 + e2) / rf2;
+					a                = static_cast<int>(255.0f * dome * inten + 0.5f);
 				}
-				if (total2 > full * full) {
-					continue;    // The path exhausted the bubble's reach.
-				}
-				const float dome = 1.0f - (total2 + e2) / rf2;
-				const int   a    = static_cast<int>(255.0f * dome * inten + 0.5f);
 				if (a <= 0) {
 					continue;
 				}

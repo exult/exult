@@ -162,21 +162,23 @@ namespace NaturalLight {
 	// (`radius` stays the REMAINING reach).  `intensity_pct` (1..100) scales
 	// the whole dome's brightness: a spill through a dim opening (dirty glass)
 	// transmits only that fraction of the light; real sources pass 100.
-	// When `mask` is non-null it is a
-	// world-anchored screen-space occlusion mask (a rectangle `mask_w` x
-	// `mask_h` at screen origin (`mask_ox`,`mask_oy`), row stride `mask_lw`):
-	// a pixel is only lit where the mask is non-zero, so tall walls contain
-	// the light within the room.  The mask value is the tile's flood path
-	// distance + 1; the dome fades by the LONGER of that path and the
-	// straight-line distance, so the light dies out around corners instead of
-	// shining through walls it had to go around.  The mask is stamped from the
-	// tiles' own rendered positions, so it stays fixed to the world as the
-	// light moves.
+	// When `grid` is non-null it is the light's room-fill grid (a (2*grid_rt+1)
+	// square of flood path distances + 1, 0 = unreached) and the light is
+	// rendered as a PROPAGATED FIELD instead of a free dome: each reached tile
+	// gets the dome brightness at its travelled distance -- the longer of the
+	// straight line and the flood path -- and pixels sample the field with
+	// bilinear interpolation between tile centres.  Containment is not a mask
+	// gating a dome; unreached tiles simply hold no light.  The field is
+	// pinned to the screen by (`grid_fx`,`grid_fy`), the rendered foot
+	// position of the light's own tile (the grid centre) at the room's
+	// wall-top anchor level: tiles at one z form a uniform c_tilesize lattice
+	// on screen, and the reference is quantized to the light's TILE, so the
+	// field stays fixed to the walls while the source moves.  Null `grid`
+	// (exterior, ungated lights) renders the free dome everywhere.
 	void Splat_radial_light(
 			unsigned char* cov, unsigned char* dstpix, const unsigned char* srcpix, int W, int H, int dst_lw, int src_lw, int sx,
 			int sy, int radius, int elevation, int dist_bias, int intensity_pct, const unsigned char* roofpix, int roof_lw,
-			bool veto_roof, bool is_spill, const unsigned char* mask, int mask_lw, int mask_ox, int mask_oy, int mask_w,
-			int mask_h);
+			bool veto_roof, bool is_spill, const unsigned char* grid, int grid_rt, int grid_fx, int grid_fy);
 
 }    // namespace NaturalLight
 

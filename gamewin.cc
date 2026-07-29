@@ -1649,103 +1649,48 @@ void Game_window::build_light_layers() {
 			// -- it emerges right beside the building and would set the
 			// building's own roof aglow.
 			const bool mask_roof = roofpix && lr.mask_roof;
-			// Build a world-anchored occlusion mask for this light from its
-			// room-fill grid, stamping each lit tile at its own rendered screen
-			// position (get_shape_location).  Because the stamps use the tiles'
-			// real positions -- not a value derived from the light's moving
-			// centre -- the mask stays fixed to the walls as the source moves:
-			// carrying a torch around a closed room does not reshape it.
-			const unsigned char* mask    = nullptr;
-			int                  mask_lw = 0;
-			int                  mask_ox = 0;
-			int                  mask_oy = 0;
-			int                  mask_w  = 0;
-			int                  mask_h  = 0;
 			// The dome (intensity + falloff) emits from the flame up on the
 			// sprite, not the tile foot get_shape_location returns, so raise
 			// only its centre up-and-left by the sprite's height (plus the
 			// foot-corner residual).  A SPILL's centre stays at the opening's
 			// outside tile -- its elevation only shapes the continued falloff
-			// -- so it is not shifted.  The room mask, by contrast, is pure
-			// world geometry -- the walls do not move -- so it is stamped at
-			// the tiles' true screen positions, never shifted by any property
-			// of the light source.
+			// -- so it is not shifted.
 			const int foot_bias = c_tilesize / 4;
 			const int emit      = (lr.is_spill ? 0 : lr.elevation) + foot_bias;
 			const int csx       = lr.sx - emit;
 			const int csy       = lr.sy - emit;
+			// Gated lights are rendered as a PROPAGATED FIELD straight from the
+			// room-fill grid -- no stamped occlusion mask.  The splat needs one
+			// world-anchored reference to pin the grid to the screen: the foot
+			// position of the light's own tile, anchored at the TOP of the
+			// blocking walls the room is made of.  A tall wall is a 3D box: it
+			// renders shifted up-and-left of its tile by 4px per z-level, so
+			// the visible room interior sits at the walls' top edges -- the
+			// roof level over the light's tile (buildings differ in wall
+			// height, so it is not a hardcoded z 5).  Both the anchor level and
+			// the reference tile are fixed properties of the room and the tile
+			// grid -- never of the light's moving pixel position -- so the
+			// field stays pinned to the walls as the source moves: carrying a
+			// torch around a closed room does not reshape it.
+			const unsigned char* grid    = nullptr;
+			int                  grid_rt = 0;
+			int                  grid_fx = 0;
+			int                  grid_fy = 0;
 			if ((inside || lr.mask_roof || lr.is_spill) && !lr.lit.empty()) {
-				const int rt   = lr.rt;
-				const int side = 2 * rt + 1;
-				// Cover the whole splat bbox plus a tile of slack so the
-				// outermost ring of stamped tiles is never clipped.
-				mask_ox = csx - lr.radius - c_tilesize;
-				mask_oy = csy - lr.radius - c_tilesize;
-				mask_w  = 2 * lr.radius + 2 * c_tilesize + 1;
-				mask_h  = mask_w;
-				mask_lw = mask_w;
-				light_block_scratch.assign(static_cast<size_t>(mask_w) * mask_h, 0);
-				// Anchor the stamps at the TOP of the blocking walls the room is
-				// made of, not at the floor.  A tall wall is a 3D box: it renders
-				// shifted up-and-left of its tile by 4px per z-level, so the
-				// visible room interior sits at the walls' top edges -- the roof
-				// level over the light's tile (buildings differ in wall height,
-				// so it is not a hardcoded z 5).  That level is a fixed property
-				// of the room -- lr.ltz merely selects the storey the light is on
-				// -- so the mask still never shifts with the light source itself.
+				grid               = lr.lit.data();
+				grid_rt            = lr.rt;
 				const int anchor_z = NaturalLight::Light_room_roof_z(map, lr.ltx, lr.lty, lr.ltz);
-				for (int gy = 0; gy < side; ++gy) {
-					for (int gx = 0; gx < side; ++gx) {
-						// The grid stores each tile's flood PATH distance + 1
-						// (0 = unreached); stamp the value itself so the splat
-						// can fade the light by the distance it actually
-						// travelled around walls, not just the straight line.
-						const unsigned char pathv = lr.lit[static_cast<size_t>(gy) * side + gx];
-						if (!pathv) {
-							continue;
-						}
-						int wtx = lr.ltx + gx - rt;
-						int wty = lr.lty + gy - rt;
-						wtx     = ((wtx % c_num_tiles) + c_num_tiles) % c_num_tiles;
-						wty     = ((wty % c_num_tiles) + c_num_tiles) % c_num_tiles;
-						int fx  = 0;
-						int fy  = 0;
-						get_shape_location(Tile_coord(wtx, wty, anchor_z), fx, fy);
-						// Empirically the wall-top anchor lands 1px up-left of
-						// the visible interior; nudge the stamp back.
-						fx += 1;
-						fy += 1;
-						// A tile covers c_tilesize x c_tilesize pixels up-and-left
-						// of its foot; stamp that rectangle (clamped to the mask).
-						int rx0 = fx - c_tilesize + 1 - mask_ox;
-						int rx1 = fx - mask_ox;
-						int ry0 = fy - c_tilesize + 1 - mask_oy;
-						int ry1 = fy - mask_oy;
-						if (rx0 < 0) {
-							rx0 = 0;
-						}
-						if (ry0 < 0) {
-							ry0 = 0;
-						}
-						if (rx1 >= mask_w) {
-							rx1 = mask_w - 1;
-						}
-						if (ry1 >= mask_h) {
-							ry1 = mask_h - 1;
-						}
-						for (int ry = ry0; ry <= ry1; ++ry) {
-							unsigned char* row = light_block_scratch.data() + static_cast<size_t>(ry) * mask_lw;
-							for (int rx = rx0; rx <= rx1; ++rx) {
-								row[rx] = pathv;
-							}
-						}
-					}
-				}
-				mask = light_block_scratch.data();
+				const int wtx      = ((lr.ltx % c_num_tiles) + c_num_tiles) % c_num_tiles;
+				const int wty      = ((lr.lty % c_num_tiles) + c_num_tiles) % c_num_tiles;
+				get_shape_location(Tile_coord(wtx, wty, anchor_z), grid_fx, grid_fy);
+				// Empirically the wall-top anchor lands 1px up-left of the
+				// visible interior; nudge the reference back.
+				grid_fx += 1;
+				grid_fy += 1;
 			}
 			NaturalLight::Splat_radial_light(
 					cov, dstpix, srcpix, W, H, dst_lw, src_lw, csx, csy, lr.radius, lr.elevation, lr.dist_bias, lr.spill_percent,
-					roofpix, roof_lw, mask_roof, lr.is_spill, mask, mask_lw, mask_ox, mask_oy, mask_w, mask_h);
+					roofpix, roof_lw, mask_roof, lr.is_spill, grid, grid_rt, grid_fx, grid_fy);
 		}
 		layer_set_coverage(handle, cov, W, H);
 		// Align the overlay with the world's on-screen rectangle.
