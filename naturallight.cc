@@ -33,6 +33,7 @@
 #include "paths.h"
 #include "shapeinf.h"
 
+#include <algorithm>
 #include <array>
 #include <cmath>
 #include <cstdlib>
@@ -1122,10 +1123,21 @@ namespace NaturalLight {
 		const float half   = 0.5f * (cell - 1.0f);
 		const float grid_u = static_cast<float>(grid_fx) - half - static_cast<float>(grid_rt) * cell;
 		const float grid_v = static_cast<float>(grid_fy) - half - static_cast<float>(grid_rt) * cell;
-		int         x0     = sx - radius;
-		int         x1     = sx + radius;
-		int         y0     = sy - radius;
-		int         y1     = sy + radius;
+		// The free dome is bounded by `radius` around the splat centre; the
+		// propagated field by `radius` around the GRID centre (cells beyond it
+		// go dark in the per-tile dome) plus a tile of bilinear support.  The
+		// two centres differ (elevation shift vs. anchor level), so the bbox
+		// must cover both or the field gets cut off on one side.
+		int x0 = sx - radius;
+		int x1 = sx + radius;
+		int y0 = sy - radius;
+		int y1 = sy + radius;
+		if (grid != nullptr) {
+			x0 = std::min(x0, grid_fx - radius - c_tilesize);
+			x1 = std::max(x1, grid_fx + radius + c_tilesize);
+			y0 = std::min(y0, grid_fy - radius - c_tilesize);
+			y1 = std::max(y1, grid_fy + radius + c_tilesize);
+		}
 		if (x0 < 0) {
 			x0 = 0;
 		}
@@ -1162,13 +1174,13 @@ namespace NaturalLight {
 					}
 					bypass_field = true;
 				}
-				const int   dx    = x - sx;
-				const float dist2 = static_cast<float>(dx) * static_cast<float>(dx) + dy2;
-				if (dist2 > rf * rf) {
-					continue;    // Outside the pool's ground radius.
-				}
 				int a;
 				if (grid != nullptr && !bypass_field) {
+					// The field bounds itself (cells beyond the pool are dark),
+					// so no screen-circle clip here: the circle is centred on
+					// the elevation-shifted splat centre while the field sits on
+					// the anchor lattice, and clipping the field by it would cut
+					// a sharp edge into the pool's up-left arc.
 					// Sample the propagated field, interpolating between the
 					// four surrounding tile centres so the brightness stays a
 					// smooth gradient instead of 8px steps.
@@ -1202,6 +1214,11 @@ namespace NaturalLight {
 					// Free dome (exterior lights, and marked tall shapes /
 					// roofs lit as whole units): pure radial falloff, with
 					// the travelled distance continued past `bias` for spills.
+					const int   dx    = x - sx;
+					const float dist2 = static_cast<float>(dx) * static_cast<float>(dx) + dy2;
+					if (dist2 > rf * rf) {
+						continue;    // Outside the pool's ground radius.
+					}
 					float total2 = dist2;
 					if (bias > 0.0f) {
 						const float tot = std::sqrt(dist2) + bias;

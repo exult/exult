@@ -1677,9 +1677,16 @@ void Game_window::build_light_layers() {
 			int                  grid_fx = 0;
 			int                  grid_fy = 0;
 			if ((inside || lr.mask_roof || lr.is_spill) && !lr.lit.empty()) {
-				grid               = lr.lit.data();
-				grid_rt            = lr.rt;
-				const int anchor_z = NaturalLight::Light_room_roof_z(map, lr.ltx, lr.lty, lr.ltz);
+				grid    = lr.lit.data();
+				grid_rt = lr.rt;
+				// The wall-top anchor is a ROOM concept: it only applies to a
+				// light that is actually under a roof.  A light that is NOT --
+				// an exterior lamp gated here only because the Avatar is
+				// inside, or a spill glow on open ground -- lights terrain
+				// drawn at its own storey floor with no wall-top shift;
+				// anchoring it at Light_room_roof_z's floor+5 fallback would
+				// slide its whole field 4px per z up-left off the source.
+				const int anchor_z = lr.mask_roof ? NaturalLight::Light_room_roof_z(map, lr.ltx, lr.lty, lr.ltz) : (lr.ltz / 5) * 5;
 				const int wtx      = ((lr.ltx % c_num_tiles) + c_num_tiles) % c_num_tiles;
 				const int wty      = ((lr.lty % c_num_tiles) + c_num_tiles) % c_num_tiles;
 				get_shape_location(Tile_coord(wtx, wty, anchor_z), grid_fx, grid_fy);
