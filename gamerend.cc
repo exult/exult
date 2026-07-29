@@ -446,10 +446,10 @@ void Game_window::paint(
 				// at a z 11 ceiling), so without the slack a fill reaching the
 				// grid edge (large open room) ends short of the dome's
 				// south/east fringe, cutting the light off in two straight edges.
-				const int                  rt    = radius / c_tilesize + 7;
-				const Tile_coord           ltile = main_actor->get_tile();
-				std::vector<unsigned char> lit;
-				std::vector<Tile_coord>    spills;
+				const int                              rt    = radius / c_tilesize + 7;
+				const Tile_coord                       ltile = main_actor->get_tile();
+				std::vector<unsigned char>             lit;
+				std::vector<NaturalLight::Light_spill> spills;
 				NaturalLight::Build_light_shadow_grid(main_actor, rt, lit, spills);
 				// Same under-roof verdict as placed lights: a carried torch under
 				// a roof keeps roof pixels dark (it must not light the canopy of
@@ -467,10 +467,13 @@ void Game_window::paint(
 				// (mask_roof false: tall shapes and roofs in its reach light up
 				// whole), while its own room mask flooded from the outside tile
 				// (is_spill) still gates it so it lights what the window looks out
-				// on -- never back inside.
-				for (const Tile_coord& sp : spills) {
-					const int spill_dist   = ltile.distance_2d(sp) * c_tilesize;
-					const int spill_radius = radius - spill_dist;
+				// on -- never back inside.  The opening's transmission percent
+				// (from the light_passes_through data) dims the spill: dirty
+				// glass passes less light than iron bars or an open doorway.
+				for (const NaturalLight::Light_spill& spill : spills) {
+					const Tile_coord& sp           = spill.tile;
+					const int         spill_dist   = ltile.distance_2d(sp) * c_tilesize;
+					const int         spill_radius = radius - spill_dist;
 					if (spill_radius <= 0) {
 						continue;
 					}
@@ -483,7 +486,7 @@ void Game_window::paint(
 					get_shape_location(sp, ssx, ssy);
 					add_light_render(
 							ssx, ssy, spill_radius, tier, elevation, srt, sp.tx, sp.ty, sp.tz, std::move(slit), false, spill_dist,
-							true);
+							true, spill.percent);
 				}
 			}
 			// Also check light spell.
@@ -776,10 +779,10 @@ int Game_render::paint_chunk_objects(
 				// ceiling), so without the slack a fill reaching the grid edge
 				// (large open room) ends short of the dome's south/east fringe,
 				// cutting the light off in two straight edges.
-				const int                  rt    = radius / c_tilesize + 7;
-				const Tile_coord           ltile = light_obj->get_tile();
-				std::vector<unsigned char> lit;
-				std::vector<Tile_coord>    spills;
+				const int                              rt    = radius / c_tilesize + 7;
+				const Tile_coord                       ltile = light_obj->get_tile();
+				std::vector<unsigned char>             lit;
+				std::vector<NaturalLight::Light_spill> spills;
 				NaturalLight::Build_light_shadow_grid(light_obj, rt, lit, spills);
 				gwin->add_light_render(
 						lsx, lsy, radius, tier, elevation, rt, ltile.tx, ltile.ty, ltile.tz, std::move(lit), under_roof);
@@ -789,10 +792,12 @@ int Game_render::paint_chunk_objects(
 				// Continues the source's falloff (dist_bias + elevation), behaves
 				// like an exterior light outside the opening (mask_roof false),
 				// and is gated by its own room mask flooded from the outside tile
-				// (is_spill) so it never lights back inside.
-				for (const Tile_coord& sp : spills) {
-					const int spill_dist   = ltile.distance_2d(sp) * c_tilesize;
-					const int spill_radius = radius - spill_dist;
+				// (is_spill) so it never lights back inside.  The opening's
+				// transmission percent dims the spill (dirty glass < iron bars).
+				for (const NaturalLight::Light_spill& spill : spills) {
+					const Tile_coord& sp           = spill.tile;
+					const int         spill_dist   = ltile.distance_2d(sp) * c_tilesize;
+					const int         spill_radius = radius - spill_dist;
 					if (spill_radius <= 0) {
 						continue;
 					}
@@ -805,7 +810,7 @@ int Game_render::paint_chunk_objects(
 					gwin->get_shape_location(sp, ssx, ssy);
 					gwin->add_light_render(
 							ssx, ssy, spill_radius, tier, elevation, srt, sp.tx, sp.ty, sp.tz, std::move(slit), false, spill_dist,
-							true);
+							true, spill.percent);
 				}
 			}
 			// Dim the light once per inside/outside boundary crossing so a

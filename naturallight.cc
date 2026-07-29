@@ -38,18 +38,26 @@
 #include <cstdlib>
 #include <iostream>
 #include <set>
+#include <tuple>
 #include <utility>
 
 namespace {
 
 	// Does the given shape/frame let light pass through (window, open door,
 	// grate, ...)?  Explicit per-frame entries take precedence over a wildcard.
+	// On a hit, `percent` is the matched entry's transmission (1..100): how much
+	// of the light the opening lets through.  An entry with 0% blocks light
+	// entirely -- the shape is treated as if it were not listed at all (returns
+	// false), so it stays a wall and never becomes a spill opening.
 	bool Shape_light_passes_through_strict(
-			const Shape_info& info, int frame, int& match_frame, bool& has_explicit, bool& has_wildcard) {
+			const Shape_info& info, int frame, int& match_frame, bool& has_explicit, bool& has_wildcard, int& percent) {
 		const int want_frame = frame & 31;
 		has_explicit         = false;
 		has_wildcard         = false;
+		percent              = 100;
 		bool explicit_hit    = false;
+		int  explicit_pct    = 100;
+		int  wildcard_pct    = 100;
 
 		for (const auto& ent : info.get_light_passes_info()) {
 			if (ent.is_invalid()) {
@@ -60,14 +68,24 @@ namespace {
 				has_explicit = true;
 				if (ent_frame == want_frame) {
 					explicit_hit = true;
+					explicit_pct = ent.get_percent();
 				}
 			} else if (ent_frame == -1) {
 				has_wildcard = true;
+				wildcard_pct = ent.get_percent();
 			}
 		}
 
 		const bool hit = has_explicit ? explicit_hit : has_wildcard;
 		match_frame    = hit ? (has_explicit ? want_frame : -1) : -2;
+		if (hit) {
+			percent = has_explicit ? explicit_pct : wildcard_pct;
+			if (percent <= 0) {
+				// 0%: the entry says this shape blocks light entirely.
+				match_frame = -2;
+				return false;
+			}
+		}
 		return hit;
 	}
 
@@ -109,8 +127,10 @@ namespace {
 	// though their open frames are in the light_passes_through list: an open
 	// door leaf is a solid shape beside a doorway the flood already passes
 	// through, so a spill glow on it reads as a phantom second light source
-	// (and a frame mix-up makes some closed doors glow instead).
-	bool Light_tile_has_pass_through(Map_chunk* chunk, int tx, int ty) {
+	// (and a frame mix-up makes some closed doors glow instead).  Returns the
+	// opening's transmission percent (1..100), or 0 when no pass-through shape
+	// covers the tile.
+	int Light_tile_has_pass_through(Map_chunk* chunk, int tx, int ty) {
 		Object_iterator it(chunk->get_objects());
 		Game_object*    obj;
 		while ((obj = it.get_next()) != nullptr) {
@@ -121,14 +141,15 @@ namespace {
 			int  match_frame  = -2;
 			bool has_explicit = false;
 			bool has_wildcard = false;
-			if (!Shape_light_passes_through_strict(info, obj->get_framenum(), match_frame, has_explicit, has_wildcard)) {
+			int  percent      = 100;
+			if (!Shape_light_passes_through_strict(info, obj->get_framenum(), match_frame, has_explicit, has_wildcard, percent)) {
 				continue;
 			}
 			if (obj->get_footprint().has_world_point(tx, ty)) {
-				return true;
+				return percent;
 			}
 		}
-		return false;
+		return 0;
 	}
 
 	// Is the given absolute tile a light-blocking wall for the spatial lights: a
@@ -204,11 +225,15 @@ namespace {
 				// window is embedded in qualify on their own -- and then
 				// Light_tile_pass_opening turns it into a spill opening; but
 				// a freestanding barred door must let the fill flow through
-				// instead of sealing the cell.
+				// instead of sealing the cell.  (A 0% entry blocks light
+				// entirely: the strict test returns false for it, so the
+				// shape falls through to the normal wall tests below.)
 				int  match_frame  = -2;
 				bool has_explicit = false;
 				bool has_wildcard = false;
-				if (Shape_light_passes_through_strict(info, obj->get_framenum(), match_frame, has_explicit, has_wildcard)) {
+				int  percent      = 100;
+				if (Shape_light_passes_through_strict(
+							info, obj->get_framenum(), match_frame, has_explicit, has_wildcard, percent)) {
 					report(obj, info, "skip: light_passes_through");
 					continue;
 				}
@@ -270,13 +295,14 @@ namespace {
 
 	// Is the given absolute tile covered by a light_passes_through shape
 	// (window, open door, grate)?  Such a tile is where light escapes a room
-	// even though the wall stack occupies it to full height.
-	bool Light_tile_pass_opening(Game_map* gmap, int tx, int ty) {
+	// even though the wall stack occupies it to full height.  Returns the
+	// opening's transmission percent (1..100), or 0 when there is no opening.
+	int Light_tile_pass_opening(Game_map* gmap, int tx, int ty) {
 		tx                     = Light_tile_norm(tx);
 		ty                     = Light_tile_norm(ty);
 		Map_chunk* const chunk = gmap->get_chunk_safely(tx / c_tiles_per_chunk, ty / c_tiles_per_chunk);
 		if (chunk == nullptr) {
-			return false;
+			return 0;
 		}
 		return Light_tile_has_pass_through(chunk, tx, ty);
 	}
@@ -302,7 +328,9 @@ namespace NaturalLight {
 			int  match_frame  = -2;
 			bool has_explicit = false;
 			bool has_wildcard = false;
-			if (Shape_light_passes_through_strict(obj->get_info(), obj->get_framenum(), match_frame, has_explicit, has_wildcard)) {
+			int  percent      = 100;
+			if (Shape_light_passes_through_strict(
+						obj->get_info(), obj->get_framenum(), match_frame, has_explicit, has_wildcard, percent)) {
 				if (match_frame == -1 && std::getenv("EXULT_DEBUG_LIGHT_PASS")) {
 					std::cerr << "[light-pass-debug] wildcard-hit shape=" << obj->get_shapenum() << '/' << obj->get_framenum()
 							  << " explicit=" << (has_explicit ? 1 : 0) << " wildcard=" << (has_wildcard ? 1 : 0) << " frames=";
@@ -346,7 +374,9 @@ namespace NaturalLight {
 			int  match_frame  = -2;
 			bool has_explicit = false;
 			bool has_wildcard = false;
-			if (!Shape_light_passes_through_strict(obj->get_info(), obj->get_framenum(), match_frame, has_explicit, has_wildcard)) {
+			int  percent      = 100;
+			if (!Shape_light_passes_through_strict(
+						obj->get_info(), obj->get_framenum(), match_frame, has_explicit, has_wildcard, percent)) {
 				continue;
 			}
 			Fast_pathfinder_client client(light_obj, obj, 1);
@@ -759,12 +789,13 @@ namespace NaturalLight {
 	// start tile lies, so a carried torch keeps a stable mask.
 	static void Flood_room_grid(
 			Game_map* gmap, const Tile_coord& lt, int rt, int roof_z, std::vector<unsigned char>& lit,
-			std::vector<Tile_coord>* spills) {
+			std::vector<Light_spill>* spills) {
 		const int                        side = 2 * rt + 1;
 		std::vector<unsigned char>       visited(static_cast<size_t>(side) * side, 0);
 		std::vector<std::pair<int, int>> stack;
-		std::vector<std::pair<int, int>> spill_cand;    // Outside-tile grid coords.
-		std::vector<std::pair<int, int>> door_cand;     // Roofed->open exit tiles.
+		// Outside-tile grid coords + the opening's transmission percent.
+		std::vector<std::tuple<int, int, int>> spill_cand;
+		std::vector<std::pair<int, int>>       door_cand;    // Roofed->open exit tiles.
 		// The room's floor for the wall test is the STOREY floor (storeys are 5 z
 		// apart), not the light's own z: a lamp standing on a shelf at tz 4 is
 		// still in a ground-floor room whose walls rise from z 0, and the books
@@ -829,16 +860,19 @@ namespace NaturalLight {
 				visited[nidx] = 1;
 				if (tall(nx, ny)) {
 					lit[nidx] = 1;    // Light the wall face, but do not flood past it.
-					if (spills != nullptr && opening(nx, ny)) {
-						// Window/grate: the light escapes to the tile on the
-						// FAR side of the opening, continuing in the direction
-						// the fill approached from.  Record it as a candidate;
-						// whether it really points OUTWARD is only known once
-						// the fill is complete (see below).
-						const int ox = nx + d[0];
-						const int oy = ny + d[1];
-						if (ox >= 0 && oy >= 0 && ox < side && oy < side && !tall(ox, oy)) {
-							spill_cand.emplace_back(ox, oy);
+					if (spills != nullptr) {
+						const int pct = opening(nx, ny);
+						if (pct > 0) {
+							// Window/grate: the light escapes to the tile on the
+							// FAR side of the opening, continuing in the direction
+							// the fill approached from.  Record it as a candidate;
+							// whether it really points OUTWARD is only known once
+							// the fill is complete (see below).
+							const int ox = nx + d[0];
+							const int oy = ny + d[1];
+							if (ox >= 0 && oy >= 0 && ox < side && oy < side && !tall(ox, oy)) {
+								spill_cand.emplace_back(ox, oy, pct);
+							}
 						}
 					}
 					continue;
@@ -875,7 +909,7 @@ namespace NaturalLight {
 		// the room interior, and emitting it would spill the window's glow
 		// back INSIDE.  A tile the fill already lit needs no spill glow anyway.
 		if (spills != nullptr) {
-			for (const auto& [ox, oy] : spill_cand) {
+			for (const auto& [ox, oy, pct] : spill_cand) {
 				// Emit only if the far-side tile is under OPEN SKY.  A window
 				// the fill touched from its OUTSIDE face (after escaping through
 				// a door and wrapping around the building) has the room interior
@@ -886,7 +920,7 @@ namespace NaturalLight {
 				if (Light_tile_roofed(gmap, lt.tx + ox - rt, lt.ty + oy - rt)) {
 					continue;    // Far side is interior (or under another roof).
 				}
-				spills->emplace_back(Light_tile_norm(lt.tx + ox - rt), Light_tile_norm(lt.ty + oy - rt), 0);
+				spills->push_back({Tile_coord(Light_tile_norm(lt.tx + ox - rt), Light_tile_norm(lt.ty + oy - rt), 0), pct});
 			}
 			// Doorway/roof-edge spills.  Neighbouring exit tiles along a wide
 			// opening would each spawn a near-identical continuation bubble
@@ -907,12 +941,14 @@ namespace NaturalLight {
 					continue;
 				}
 				emitted.emplace_back(ox, oy);
-				spills->emplace_back(Light_tile_norm(lt.tx + ox - rt), Light_tile_norm(lt.ty + oy - rt), 0);
+				// A doorway / roof-edge exit is open air: full transmission.
+				spills->push_back({Tile_coord(Light_tile_norm(lt.tx + ox - rt), Light_tile_norm(lt.ty + oy - rt), 0), 100});
 			}
 		}
 	}
 
-	void Build_light_shadow_grid(Game_object* light_obj, int rt, std::vector<unsigned char>& lit, std::vector<Tile_coord>& spills) {
+	void Build_light_shadow_grid(
+			Game_object* light_obj, int rt, std::vector<unsigned char>& lit, std::vector<Light_spill>& spills) {
 		const int side = 2 * rt + 1;
 		lit.assign(static_cast<size_t>(side) * side, 0);    // Default: unlit; the room fills in.
 		spills.clear();
@@ -963,12 +999,16 @@ namespace NaturalLight {
 
 	void Splat_radial_light(
 			unsigned char* cov, unsigned char* dstpix, const unsigned char* srcpix, int W, int H, int dst_lw, int src_lw, int sx,
-			int sy, int radius, int elevation, int dist_bias, const unsigned char* roofpix, int roof_lw, bool veto_roof,
-			bool is_spill, const unsigned char* mask, int mask_lw, int mask_ox, int mask_oy, int mask_w, int mask_h) {
-		if (radius <= 0) {
+			int sy, int radius, int elevation, int dist_bias, int intensity_pct, const unsigned char* roofpix, int roof_lw,
+			bool veto_roof, bool is_spill, const unsigned char* mask, int mask_lw, int mask_ox, int mask_oy, int mask_w,
+			int mask_h) {
+		if (radius <= 0 || intensity_pct <= 0) {
 			return;
 		}
-		const float rf = static_cast<float>(radius);
+		// Transmission of the opening this light came through (spill glows):
+		// scales the whole dome's brightness.  Real sources pass 100.
+		const float inten = intensity_pct >= 100 ? 1.0f : static_cast<float>(intensity_pct) / 100.0f;
+		const float rf    = static_cast<float>(radius);
 		// Model the source as a point `elevation` px above the ground plane that
 		// passes through the splat centre.  A ground pixel at 2D screen distance
 		// d from the centre is at 3D distance sqrt(d^2 + e^2) from the emitter;
@@ -1050,7 +1090,7 @@ namespace NaturalLight {
 					total2          = tot * tot;
 				}
 				const float dome = 1.0f - (total2 + e2) / rf2;
-				const int   a    = static_cast<int>(255.0f * dome + 0.5f);
+				const int   a    = static_cast<int>(255.0f * dome * inten + 0.5f);
 				if (a <= 0) {
 					continue;
 				}

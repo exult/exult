@@ -68,16 +68,21 @@ bool Light_passes_info::read(std::istream& in, int version, Exult_Game game) {
 	} else {
 		frame &= 0xff;
 	}
+	// Optional transmission percentage (0..100); omitted means 100 (light
+	// passes freely).  0 blocks light entirely.
+	int pct = ReadInt(in, 100);
+	if (pct < 0) {
+		pct = 0;
+	} else if (pct > 100) {
+		pct = 100;
+	}
+	percent = static_cast<short>(pct);
 	return true;
 }
 
 void Light_passes_info::write(std::ostream& out, int shapenum, Exult_Game game) {
 	ignore_unused_variable_warning(game);
-	out << ':' << shapenum;
-	if (frame >= 0) {
-		out << '/' << frame;
-	}
-	out << std::endl;
+	out << ':' << shapenum << '/' << frame << '/' << percent << std::endl;
 }
 
 bool Shape_info::allow_enhancements = false;

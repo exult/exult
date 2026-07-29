@@ -151,6 +151,11 @@ class Game_window {
 		// but its room-fill grid always gates it so it never lights back
 		// inside or around corners.
 		bool is_spill = false;
+		// For spill glows: how much of the light the opening transmits
+		// (1..100 percent, from the light_passes_through data).  Scales the
+		// spill's brightness -- dirty glass passes less light than iron bars.
+		// Real sources are always 100.
+		int spill_percent = 100;
 		// Room-fill grid ((2*rt+1) square) from Build_light_shadow_grid: light
 		// floods the room bounded by tall walls.  Empty = no gating.
 		std::vector<unsigned char> lit;
@@ -555,9 +560,10 @@ public:
 
 	void add_light_render(
 			int sx, int sy, int radius, int tier, int elevation, int rt, int ltx, int lty, int ltz, std::vector<unsigned char> lit,
-			bool mask_roof = false, int dist_bias = 0, bool is_spill = false) {
+			bool mask_roof = false, int dist_bias = 0, bool is_spill = false, int spill_percent = 100) {
 		light_renders.push_back(
-				{sx, sy, radius, tier, elevation, rt, ltx, lty, ltz, mask_roof, dist_bias, is_spill, std::move(lit)});
+				{sx, sy, radius, tier, elevation, rt, ltx, lty, ltz, mask_roof, dist_bias, is_spill, spill_percent,
+				 std::move(lit)});
 	}
 
 	void build_light_layers();

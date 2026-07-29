@@ -1739,8 +1739,8 @@ void Game_window::build_light_layers() {
 				mask = light_block_scratch.data();
 			}
 			NaturalLight::Splat_radial_light(
-					cov, dstpix, srcpix, W, H, dst_lw, src_lw, csx, csy, lr.radius, lr.elevation, lr.dist_bias, roofpix, roof_lw,
-					mask_roof, lr.is_spill, mask, mask_lw, mask_ox, mask_oy, mask_w, mask_h);
+					cov, dstpix, srcpix, W, H, dst_lw, src_lw, csx, csy, lr.radius, lr.elevation, lr.dist_bias, lr.spill_percent,
+					roofpix, roof_lw, mask_roof, lr.is_spill, mask, mask_lw, mask_ox, mask_oy, mask_w, mask_h);
 		}
 		layer_set_coverage(handle, cov, W, H);
 		// Align the overlay with the world's on-screen rectangle.

@@ -96,6 +96,15 @@ namespace NaturalLight {
 	// with taller walls mask correctly.
 	int Light_room_roof_z(Game_map* gmap, int tx, int ty, int lift);
 
+	// One spill opening found by Build_light_shadow_grid: the tile just
+	// outside the opening the light escapes through, and how much of the
+	// light the opening transmits (1..100 percent, from the
+	// light_passes_through data; doorways are open air and carry 100).
+	struct Light_spill {
+		Tile_coord tile;
+		int        percent;
+	};
+
 	// Build the room-fill grid a light casts, honouring tall light-blocking
 	// walls (a solid stack whose top reaches z-level 5).  `rt` is the light's
 	// radius in tiles; `lit` is filled with a (2*rt+1) square grid, index
@@ -110,7 +119,10 @@ namespace NaturalLight {
 	// reported in `spills` as the tile just OUTSIDE the opening (absolute
 	// coords): the caller renders a small radial glow there -- the light
 	// spilling out of the opening -- instead of the fill crossing the wall.
-	void Build_light_shadow_grid(Game_object* light_obj, int rt, std::vector<unsigned char>& lit, std::vector<Tile_coord>& spills);
+	// Each spill carries the opening's transmission percent (1..100, from the
+	// light_passes_through data): dirty glass passes less light than iron
+	// bars.  Doorway/roof-edge exits are open air and always carry 100.
+	void Build_light_shadow_grid(Game_object* light_obj, int rt, std::vector<unsigned char>& lit, std::vector<Light_spill>& spills);
 
 	// Build the room-fill grid for a spill glow (same layout as
 	// Build_light_shadow_grid), flooded from `start` -- the tile just outside
@@ -142,7 +154,10 @@ namespace NaturalLight {
 	// falloff: the dome fades as if the light had already travelled that far
 	// before reaching the splat centre -- used for spill glows, which are the
 	// source's own bubble poking through an opening, not a new light
-	// (`radius` stays the REMAINING reach).  When `mask` is non-null it is a
+	// (`radius` stays the REMAINING reach).  `intensity_pct` (1..100) scales
+	// the whole dome's brightness: a spill through a dim opening (dirty glass)
+	// transmits only that fraction of the light; real sources pass 100.
+	// When `mask` is non-null it is a
 	// world-anchored screen-space occlusion mask (a rectangle `mask_w` x
 	// `mask_h` at screen origin (`mask_ox`,`mask_oy`), row stride `mask_lw`):
 	// a pixel is only lit where the mask is non-zero, so tall walls contain
@@ -150,8 +165,9 @@ namespace NaturalLight {
 	// rendered positions, so it stays fixed to the world as the light moves.
 	void Splat_radial_light(
 			unsigned char* cov, unsigned char* dstpix, const unsigned char* srcpix, int W, int H, int dst_lw, int src_lw, int sx,
-			int sy, int radius, int elevation, int dist_bias, const unsigned char* roofpix, int roof_lw, bool veto_roof,
-			bool is_spill, const unsigned char* mask, int mask_lw, int mask_ox, int mask_oy, int mask_w, int mask_h);
+			int sy, int radius, int elevation, int dist_bias, int intensity_pct, const unsigned char* roofpix, int roof_lw,
+			bool veto_roof, bool is_spill, const unsigned char* mask, int mask_lw, int mask_ox, int mask_oy, int mask_w,
+			int mask_h);
 
 }    // namespace NaturalLight
 

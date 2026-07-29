@@ -102,10 +102,14 @@ class Readytype_writer_functor;
 
 /*
  *  Shape/frame entries that allow interior light to pass outside.
- *  Frame -1 means all frames.
+ *  Frame -1 means all frames.  `percent` is how much of the light the
+ *  opening transmits (0..100): 100 = passes freely (iron bars, broken
+ *  wall), lower = dimmed spill (dirty glass), 0 = blocks light entirely
+ *  (the entry is then treated as if the shape were not listed).
  */
 class Light_passes_info : public Base_info {
 	short frame;
+	short percent = 100;
 
 public:
 	friend class Shape_info;
@@ -114,7 +118,7 @@ public:
 	Light_passes_info(short f, bool p = false, bool m = false, bool s = false, bool inv = false)
 			: Base_info(m, p, inv, s), frame(f) {}
 
-	Light_passes_info(const Light_passes_info& other) : Base_info(other), frame(other.frame) {
+	Light_passes_info(const Light_passes_info& other) : Base_info(other), frame(other.frame), percent(other.percent) {
 		info_flags = other.info_flags;
 	}
 
@@ -137,6 +141,17 @@ public:
 		}
 	}
 
+	int get_percent() const {
+		return percent;
+	}
+
+	void set_percent(int p) {
+		if (percent != p) {
+			set_modified(true);
+			percent = p;
+		}
+	}
+
 	bool operator<(const Light_passes_info& other) const noexcept {
 		return static_cast<unsigned short>(frame) < static_cast<unsigned short>(other.frame);
 	}
@@ -152,6 +167,7 @@ public:
 	Light_passes_info& operator=(const Light_passes_info& other) {
 		if (this != &other) {
 			frame      = other.frame;
+			percent    = other.percent;
 			info_flags = other.info_flags;
 		}
 		return *this;
@@ -161,6 +177,7 @@ public:
 		set_patch(other.from_patch());
 		set_invalid(other.is_invalid());
 		set_frame(other.frame);
+		set_percent(other.percent);
 	}
 
 	enum {
