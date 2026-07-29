@@ -790,9 +790,14 @@ namespace NaturalLight {
 	static void Flood_room_grid(
 			Game_map* gmap, const Tile_coord& lt, int rt, int roof_z, std::vector<unsigned char>& lit,
 			std::vector<Light_spill>* spills) {
-		const int                        side = 2 * rt + 1;
-		std::vector<unsigned char>       visited(static_cast<size_t>(side) * side, 0);
-		std::vector<std::pair<int, int>> stack;
+		const int                  side = 2 * rt + 1;
+		std::vector<unsigned char> visited(static_cast<size_t>(side) * side, 0);
+		// Breadth-first queue: the fill records each tile's PATH distance from
+		// the start (in tiles, stored as distance+1 in `lit`; 0 = unreached),
+		// so the splat can fade the light by the distance it actually
+		// TRAVELS around walls, not just the straight-line distance.
+		std::vector<std::pair<int, int>> queue;
+		size_t                           qhead = 0;
 		// Outside-tile grid coords + the opening's transmission percent.
 		std::vector<std::tuple<int, int, int>> spill_cand;
 		std::vector<std::pair<int, int>>       door_cand;    // Roofed->open exit tiles.
@@ -828,10 +833,19 @@ namespace NaturalLight {
             return m == 1;
 		};
 		const bool start_roofed = spills != nullptr && roofed(rt, rt);
-		stack.emplace_back(rt, rt);    // Start at the grid centre.
+		queue.emplace_back(rt, rt);    // Start at the grid centre.
 		visited[static_cast<size_t>(rt) * side + rt] = 1;
-		static const int step[4][2]                  = {
-                { 1,  0},
+		lit[static_cast<size_t>(rt) * side + rt]     = 1;    // Distance 0.
+		// Record a tile's path distance (+1), keeping the smallest when a wall
+		// face is reached again from another direction.
+		auto set_dist = [&](size_t idx, int dist) {
+			const int v = (dist < 254 ? dist : 254) + 1;
+			if (lit[idx] == 0 || lit[idx] > v) {
+				lit[idx] = static_cast<unsigned char>(v);
+			}
+		};
+		static const int step[4][2] = {
+				{ 1,  0},
                 {-1,  0},
                 { 0,  1},
                 { 0, -1}
@@ -842,11 +856,11 @@ namespace NaturalLight {
                 {-1,  1},
                 {-1, -1}
         };
-		while (!stack.empty()) {
-			const int gx = stack.back().first;
-			const int gy = stack.back().second;
-			stack.pop_back();
-			lit[static_cast<size_t>(gy) * side + gx] = 1;    // Reached floor tile is lit.
+		while (qhead < queue.size()) {
+			const int gx = queue[qhead].first;
+			const int gy = queue[qhead].second;
+			++qhead;
+			const int gdist = lit[static_cast<size_t>(gy) * side + gx] - 1;
 			for (const auto& d : step) {
 				const int nx = gx + d[0];
 				const int ny = gy + d[1];
@@ -865,7 +879,8 @@ namespace NaturalLight {
 					// spill when the inside face is reached later.  Repeat
 					// work is bounded (once per adjacent floor tile) and the
 					// wall test is memoized.
-					lit[nidx] = 1;    // Light the wall face, but do not flood past it.
+					// Light the wall face, but do not flood past it.
+					set_dist(nidx, gdist + 1);
 					if (spills != nullptr) {
 						const int pct = opening(nx, ny);
 						if (pct > 0) {
@@ -907,23 +922,36 @@ namespace NaturalLight {
 					continue;
 				}
 				visited[nidx] = 1;
-				stack.emplace_back(nx, ny);
+				set_dist(nidx, gdist + 1);
+				queue.emplace_back(nx, ny);
 			}
-			// Room corners: the corner wall post touches the interior floor
-			// only DIAGONALLY, so the orthogonal ring pass above never lights
-			// it and the mask gets a jagged notch at every corner.  Light
-			// diagonal WALL neighbours too -- walls only, never flooding
-			// diagonally, and without marking them visited, so window/spill
-			// detection (orthogonal approach) is unaffected.
+			// Diagonal floor steps keep the path metric Chebyshev-like: without
+			// them a diagonal walk costs its Manhattan length and the dome would
+			// darken into a diamond even in an open room.  Never cut a corner:
+			// a diagonal step is only allowed when BOTH orthogonal in-between
+			// tiles are open, so two walls meeting corner-to-corner still seal
+			// the room (the reached set stays exactly the orthogonal one).
+			// Diagonal WALL neighbours are lit too (corner posts touch the room
+			// only diagonally; without this the mask gets a notch at every
+			// corner) but never flooded past, and spill/door detection stays
+			// orthogonal-only.
 			for (const auto& d : diag) {
 				const int nx = gx + d[0];
 				const int ny = gy + d[1];
 				if (nx < 0 || ny < 0 || nx >= side || ny >= side) {
 					continue;
 				}
+				const size_t nidx = static_cast<size_t>(ny) * side + nx;
 				if (tall(nx, ny)) {
-					lit[static_cast<size_t>(ny) * side + nx] = 1;
+					set_dist(nidx, gdist + 1);
+					continue;
 				}
+				if (visited[nidx] || tall(gx + d[0], gy) || tall(gx, gy + d[1])) {
+					continue;
+				}
+				visited[nidx] = 1;
+				set_dist(nidx, gdist + 1);
+				queue.emplace_back(nx, ny);
 			}
 		}
 		// Emit only the candidates whose outside tile the fill itself never
@@ -1095,23 +1123,43 @@ namespace NaturalLight {
 				if (dist2 > rf * rf) {
 					continue;    // Outside the pool's ground radius.
 				}
+				int path_px = 0;
 				if (mask && !bypass_mask) {
 					// Gate by the world-anchored occlusion mask.  It is stamped
 					// from the tiles' own rendered screen positions, so this is a
 					// direct screen-pixel lookup -- no light-relative tile maths
-					// that would slide the mask as the source moves.
+					// that would slide the mask as the source moves.  The mask
+					// value is the tile's flood PATH distance + 1: how far the
+					// light actually travels to reach the tile, around walls.
 					const int mx = x - mask_ox;
 					const int my = y - mask_oy;
-					if (mx < 0 || my < 0 || mx >= mask_w || my >= mask_h || !mask[static_cast<size_t>(my) * mask_lw + mx]) {
+					if (mx < 0 || my < 0 || mx >= mask_w || my >= mask_h) {
 						continue;
 					}
+					const unsigned char m = mask[static_cast<size_t>(my) * mask_lw + mx];
+					if (!m) {
+						continue;
+					}
+					path_px = (m - 1) * c_tilesize;
 				}
-				// Hemispherical (dome) falloff: 1 - (3D distance / 3D reach)^2,
-				// with the travelled distance continued past `bias` for spills.
+				// Hemispherical (dome) falloff: 1 - (3D distance / 3D reach)^2.
+				// The travelled distance is the LONGER of the straight line and
+				// the flood path: in the open they agree (the path metric is
+				// Chebyshev), but where the fill had to go around a wall the
+				// path is longer, so the light fades out around corners instead
+				// of shining through as if the wall were not solid.  `bias`
+				// continues the source's own travel for spill glows.
 				float total2 = dist2;
-				if (bias > 0.0f) {
-					const float tot = std::sqrt(dist2) + bias;
+				if (bias > 0.0f || path_px > 0) {
+					float travel = std::sqrt(dist2);
+					if (static_cast<float>(path_px) > travel) {
+						travel = static_cast<float>(path_px);
+					}
+					const float tot = travel + bias;
 					total2          = tot * tot;
+				}
+				if (total2 > full * full) {
+					continue;    // The path exhausted the bubble's reach.
 				}
 				const float dome = 1.0f - (total2 + e2) / rf2;
 				const int   a    = static_cast<int>(255.0f * dome * inten + 0.5f);

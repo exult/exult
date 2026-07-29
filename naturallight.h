@@ -109,8 +109,13 @@ namespace NaturalLight {
 	// walls (a solid stack whose top reaches z-level 5).  `rt` is the light's
 	// radius in tiles; `lit` is filled with a (2*rt+1) square grid, index
 	// (dty+rt)*(2*rt+1) + (dtx+rt), where dtx = tile.tx - light.tx (east +) and
-	// dty = tile.ty - light.ty (south +).  A cell is 1 when light can reach that
-	// tile.  The set is a flood-fill from the light's tile across passable floor,
+	// dty = tile.ty - light.ty (south +).  A cell is 0 when light cannot reach
+	// that tile; otherwise it holds the tile's flood PATH distance + 1 (in
+	// tiles, Chebyshev metric): how far the light actually travels -- around
+	// walls -- to get there.  The splat fades by the longer of this path and
+	// the straight-line distance, so light spilling out of one opening no
+	// longer wraps around the building at full strength.  The set is a
+	// flood-fill from the light's tile across passable floor,
 	// stopped by tall walls (which are themselves lit as a one-tile ring).  Because
 	// the reached set depends only on the enclosing room's shape -- not on where in
 	// the room the light stands -- carrying a torch around a closed room keeps the
@@ -161,8 +166,12 @@ namespace NaturalLight {
 	// world-anchored screen-space occlusion mask (a rectangle `mask_w` x
 	// `mask_h` at screen origin (`mask_ox`,`mask_oy`), row stride `mask_lw`):
 	// a pixel is only lit where the mask is non-zero, so tall walls contain
-	// the light within the room.  The mask is stamped from the tiles' own
-	// rendered positions, so it stays fixed to the world as the light moves.
+	// the light within the room.  The mask value is the tile's flood path
+	// distance + 1; the dome fades by the LONGER of that path and the
+	// straight-line distance, so the light dies out around corners instead of
+	// shining through walls it had to go around.  The mask is stamped from the
+	// tiles' own rendered positions, so it stays fixed to the world as the
+	// light moves.
 	void Splat_radial_light(
 			unsigned char* cov, unsigned char* dstpix, const unsigned char* srcpix, int W, int H, int dst_lw, int src_lw, int sx,
 			int sy, int radius, int elevation, int dist_bias, int intensity_pct, const unsigned char* roofpix, int roof_lw,

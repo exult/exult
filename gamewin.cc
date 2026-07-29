@@ -1696,7 +1696,12 @@ void Game_window::build_light_layers() {
 				const int anchor_z = NaturalLight::Light_room_roof_z(map, lr.ltx, lr.lty, lr.ltz);
 				for (int gy = 0; gy < side; ++gy) {
 					for (int gx = 0; gx < side; ++gx) {
-						if (!lr.lit[static_cast<size_t>(gy) * side + gx]) {
+						// The grid stores each tile's flood PATH distance + 1
+						// (0 = unreached); stamp the value itself so the splat
+						// can fade the light by the distance it actually
+						// travelled around walls, not just the straight line.
+						const unsigned char pathv = lr.lit[static_cast<size_t>(gy) * side + gx];
+						if (!pathv) {
 							continue;
 						}
 						int wtx = lr.ltx + gx - rt;
@@ -1731,7 +1736,7 @@ void Game_window::build_light_layers() {
 						for (int ry = ry0; ry <= ry1; ++ry) {
 							unsigned char* row = light_block_scratch.data() + static_cast<size_t>(ry) * mask_lw;
 							for (int rx = rx0; rx <= rx1; ++rx) {
-								row[rx] = 1;
+								row[rx] = pathv;
 							}
 						}
 					}
