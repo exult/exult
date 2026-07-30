@@ -156,6 +156,11 @@ class Game_window {
 		// spill's brightness -- dirty glass passes less light than iron bars.
 		// Real sources are always 100.
 		int spill_percent = 100;
+		// For spill glows: the storey (source tz / 5) the spill came from.  A
+		// spill lights a tall/deck shape (roof mask value 128 + storey) only at
+		// or below its own storey, so a ground-floor window's glow never reaches
+		// a floor-roof deck one storey up.
+		int spill_floor = 0;
 		// Room-fill grid ((2*rt+1) square) from Build_light_shadow_grid: light
 		// floods the room bounded by tall walls.  Empty = no gating.
 		std::vector<unsigned char> lit;
@@ -560,9 +565,9 @@ public:
 
 	void add_light_render(
 			int sx, int sy, int radius, int tier, int elevation, int rt, int ltx, int lty, int ltz, std::vector<unsigned char> lit,
-			bool mask_roof = false, int dist_bias = 0, bool is_spill = false, int spill_percent = 100) {
+			bool mask_roof = false, int dist_bias = 0, bool is_spill = false, int spill_percent = 100, int spill_floor = 0) {
 		light_renders.push_back(
-				{sx, sy, radius, tier, elevation, rt, ltx, lty, ltz, mask_roof, dist_bias, is_spill, spill_percent,
+				{sx, sy, radius, tier, elevation, rt, ltx, lty, ltz, mask_roof, dist_bias, is_spill, spill_percent, spill_floor,
 				 std::move(lit)});
 	}
 

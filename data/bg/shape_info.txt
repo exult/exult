@@ -1500,3 +1500,16 @@
 :966
 
 %%endsection
+
+%%section floor_shapes
+:193
+:367
+:368
+:369
+:370
+:441
+:829
+:1014
+:1016
+
+%%endsection

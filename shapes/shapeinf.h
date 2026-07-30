@@ -208,6 +208,7 @@ enum Data_flag_bits {
 	tf_extradimensional_storage_flag,
 	tf_on_hit_usecode_flag,
 	tf_roof_flag,
+	tf_floor_flag,
 };
 
 enum Data_flag_names {
@@ -231,6 +232,7 @@ enum Data_flag_names {
 	extradimensional_storage_flag = (1U << tf_extradimensional_storage_flag),
 	on_hit_usecode_flag           = (1U << tf_on_hit_usecode_flag),
 	roof_flag                     = (1U << tf_roof_flag),
+	floor_flag                    = (1U << tf_floor_flag),
 };
 
 /*
@@ -324,6 +326,7 @@ public:
 		on_fire,
 		extradimensional_storage,
 		roof,
+		floor,
 	};
 
 	enum Mountain_tops {
@@ -793,6 +796,14 @@ public:
 	// lights up its own roof).
 	bool is_roof() const {
 		return get_shape_flag(roof);
+	}
+
+	// Flagged in shape_info.txt %%section floor_shapes: a floor slab used as
+	// the roof of the storey below.  It contains that storey's light like a
+	// roof, but only its top surface is masked (not its full 3d thickness),
+	// and objects standing on top of it are still lit by window/opening spill.
+	bool is_floor() const {
+		return get_shape_flag(floor);
 	}
 
 	unsigned char get_actor_flags() const {

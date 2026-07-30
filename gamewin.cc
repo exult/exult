@@ -1439,26 +1439,48 @@ void Game_window::update_roof_mask(Game_object* obj, int sx, int sy) {
                   << ") lift=" << obj->get_lift() << " h=" << obj->get_info().get_3d_height() << " skip=" << get_render_skip_lift()
                   << " inside=" << inside << " -> " << verdict << std::endl;
 	};
+	// True when nothing is drawn above this object's top -- it stands under
+	// open sky, so a spill / exterior light may treat it as a whole unit.
+	auto open_sky_above = [&](int top) {
+		const Tile_coord t     = obj->get_tile();
+		Map_chunk* const chunk = map->get_chunk_safely(t.tx / c_tiles_per_chunk, t.ty / c_tiles_per_chunk);
+		return chunk != nullptr && chunk->get_lowest_blocked(top, t.tx % c_tiles_per_chunk, t.ty % c_tiles_per_chunk) < 0;
+	};
 	bool roof_like;
 	bool tall_exterior = false;
 	if (obj->as_actor() != nullptr) {
-		// Actors are tall enough to qualify below but are never roof-like:
-		// an NPC standing in a spill glow must light up, not silhouette.
+		// Actors are never silhouetted as a roof: leave their pixels clear so
+		// they are lit normally by whatever light reaches them.
 		roof_like = false;
+	} else if (obj->get_info().is_floor()) {
+		// A floor slab used as the roof of the storey below (%%section
+		// floor_shapes).  Keep it dark under that storey's interior lights
+		// like a roof, but mark it 128 (not 255) so a window/opening SPILL on
+		// the deck ABOVE still lights its top surface, and objects standing on
+		// the deck are lit as whole units instead of silhouetted.
+		roof_like     = true;
+		tall_exterior = true;
 	} else if (inside) {
-		const int av_lift = main_actor ? main_actor->get_lift() : 0;
-		roof_like         = (obj->get_info().is_roof() && obj->get_lift() > av_lift) || obj->get_lift() >= get_render_skip_lift();
-		const int top     = obj->get_lift() + obj->get_info().get_3d_height();
-		if (!roof_like && top > get_render_skip_lift()) {
+		const int  av_lift       = main_actor ? main_actor->get_lift() : 0;
+		const bool is_roof_shape = obj->get_info().is_roof() && obj->get_lift() > av_lift;
+		roof_like                = is_roof_shape || obj->get_lift() >= get_render_skip_lift();
+		const int top            = obj->get_lift() + obj->get_info().get_3d_height();
+		if (roof_like && !is_roof_shape && open_sky_above(top)) {
+			// At roof level but not a flagged roof: an object standing on an
+			// exposed deck / floor-roof (battlements on a castle top).  Under
+			// open sky it is exterior-exposed, so mark it 128 -- a window/
+			// opening spill can then light it -- instead of 255, which a spill
+			// must never touch.
+			tall_exterior = true;
+			report("MARK deck-object (open sky, inside)");
+		} else if (!roof_like && top > get_render_skip_lift()) {
 			// A grounded shape rising ABOVE the room's ceiling can only be an
 			// EXTERIOR one (an outside tree next to the building): interior
 			// walls stop at the skip level.  Its canopy overlaps the room's
 			// screen area, so without a mark the interior light paints it
 			// bright.  Confirm it really stands under open sky (nothing
 			// blocked above its top) so nothing indoors is ever caught here.
-			const Tile_coord t     = obj->get_tile();
-			Map_chunk* const chunk = map->get_chunk_safely(t.tx / c_tiles_per_chunk, t.ty / c_tiles_per_chunk);
-			if (chunk != nullptr && chunk->get_lowest_blocked(top, t.tx % c_tiles_per_chunk, t.ty % c_tiles_per_chunk) < 0) {
+			if (open_sky_above(top)) {
 				tall_exterior = true;
 				report("MARK exterior-tall (open sky)");
 			} else {
@@ -1468,8 +1490,17 @@ void Game_window::update_roof_mask(Game_object* obj, int sx, int sy) {
 			report("clear: tall but top <= skip");
 		}
 	} else {
-		roof_like = obj->get_info().is_roof() || obj->get_lift() >= 5;
-		if (!roof_like && obj->get_lift() + obj->get_info().get_3d_height() >= 5) {
+		const bool is_roof_shape = obj->get_info().is_roof();
+		roof_like                = is_roof_shape || obj->get_lift() >= 5;
+		const int top            = obj->get_lift() + obj->get_info().get_3d_height();
+		if (roof_like && !is_roof_shape && open_sky_above(top)) {
+			// At roof level but not a flagged roof: an object standing on an
+			// exposed deck / floor-roof (castle battlements).  Under open sky
+			// it is exterior-exposed, so mark it 128 so a window/opening spill
+			// can light it, not 255 which a spill must never touch.
+			tall_exterior = true;
+			report("MARK deck-object (open sky, outside)");
+		} else if (!roof_like && top >= 5) {
 			// A grounded shape TALL enough to reach roof level (an outside
 			// tree, a lamppost).  Give it the same whole-shape verdict as
 			// the inside branch: standing under open sky it is marked as a
@@ -1480,10 +1511,7 @@ void Game_window::update_roof_mask(Game_object* obj, int sx, int sy) {
 			// Exterior lights never consult the mask, so they still light
 			// the whole shape.  If something sits above its top it is under
 			// cover; leave the mask as the shapes beneath painted it.
-			const int        top   = obj->get_lift() + obj->get_info().get_3d_height();
-			const Tile_coord t     = obj->get_tile();
-			Map_chunk* const chunk = map->get_chunk_safely(t.tx / c_tiles_per_chunk, t.ty / c_tiles_per_chunk);
-			if (chunk != nullptr && chunk->get_lowest_blocked(top, t.tx % c_tiles_per_chunk, t.ty % c_tiles_per_chunk) < 0) {
+			if (open_sky_above(top)) {
 				tall_exterior = true;
 				report("MARK exterior-tall (open sky, outside)");
 			} else {

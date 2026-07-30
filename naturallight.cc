@@ -616,12 +616,21 @@ namespace NaturalLight {
 				Object_iterator it(chunk->get_objects());
 				Game_object*    obj;
 				while ((obj = it.get_next()) != nullptr) {
-					if (obj == light_obj || !obj->get_info().is_roof()) {
+					if (obj == light_obj) {
 						continue;
 					}
-					// The roof must be at or above the light (a roof the light sits
-					// on top of does not cover it).
-					if (obj->get_lift() < lt.tz) {
+					const Shape_info& info     = obj->get_info();
+					const bool        is_roof  = info.is_roof();
+					const bool        is_floor = info.is_floor();
+					if (!is_roof && !is_floor) {
+						continue;
+					}
+					// The cover must be ABOVE the light.  A roof the light sits
+					// directly under counts (roof lift >= light tz).  A floor slab
+					// used as the storey's ceiling counts only when STRICTLY above:
+					// a light standing ON the deck must stay exterior (lit by the
+					// open sky), not be roofed by the very slab it stands on.
+					if (is_roof ? (obj->get_lift() < lt.tz) : (obj->get_lift() <= lt.tz)) {
 						continue;
 					}
 					if (obj->get_footprint().has_world_point(lt.tx, lt.ty)) {
@@ -790,7 +799,7 @@ namespace NaturalLight {
 	// start tile lies, so a carried torch keeps a stable mask.
 	static void Flood_room_grid(
 			Game_map* gmap, const Tile_coord& lt, int rt, int roof_z, std::vector<unsigned char>& lit,
-			std::vector<Light_spill>* spills) {
+			std::vector<Light_spill>* spills, bool light_walls = true) {
 		const int                  side = 2 * rt + 1;
 		std::vector<unsigned char> visited(static_cast<size_t>(side) * side, 0);
 		// Breadth-first queue: the fill records each tile's PATH distance from
@@ -910,8 +919,15 @@ namespace NaturalLight {
 					// spill when the inside face is reached later.  Repeat
 					// work is bounded (once per adjacent floor tile) and the
 					// wall test is memoized.
-					// Light the wall face, but do not flood past it.
-					set_dist(nidx, gdist + 1);
+					// Light the wall face, but do not flood past it -- unless
+					// light_walls is off (an interior light seen from OUTSIDE):
+					// then the wall ring is left dark so the one-tile ring does
+					// not show as a bright seam beam between a wall top and an
+					// adjoining floor-roof deck.  Spill detection still runs, so
+					// the window/opening glow is unaffected.
+					if (light_walls) {
+						set_dist(nidx, gdist + 1);
+					}
 					if (spills != nullptr) {
 						const int pct = opening(nx, ny);
 						if (pct > 0) {
@@ -974,7 +990,9 @@ namespace NaturalLight {
 				}
 				const size_t nidx = static_cast<size_t>(ny) * side + nx;
 				if (tall(nx, ny)) {
-					set_dist(nidx, gdist + 1);
+					if (light_walls) {
+						set_dist(nidx, gdist + 1);
+					}
 					continue;
 				}
 				if (visited[nidx] || tall(gx + d[0], gy) || tall(gx, gy + d[1])) {
@@ -1031,7 +1049,7 @@ namespace NaturalLight {
 	}
 
 	void Build_light_shadow_grid(
-			Game_object* light_obj, int rt, std::vector<unsigned char>& lit, std::vector<Light_spill>& spills) {
+			Game_object* light_obj, int rt, std::vector<unsigned char>& lit, std::vector<Light_spill>& spills, bool light_walls) {
 		const int side = 2 * rt + 1;
 		lit.assign(static_cast<size_t>(side) * side, 0);    // Default: unlit; the room fills in.
 		spills.clear();
@@ -1055,7 +1073,7 @@ namespace NaturalLight {
 						  << ',' << lt.tz << ") roof_z=" << roof_z << " floor_z=" << (lt.tz / 5) * 5 << " rt=" << rt << std::endl;
 			}
 		}
-		Flood_room_grid(gmap, lt, rt, roof_z, lit, &spills);
+		Flood_room_grid(gmap, lt, rt, roof_z, lit, &spills, light_walls);
 	}
 
 	void Build_spill_shadow_grid(const Tile_coord& start, int rt, std::vector<unsigned char>& lit) {

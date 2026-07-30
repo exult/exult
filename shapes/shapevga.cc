@@ -244,7 +244,8 @@ void Shapes_vga_file::Read_Shapeinf_text_data_file(bool editing, Exult_Game game
 			"field_type"sv,
 			"frame_usecode"sv,
 			"on_hit_usecode"sv,
-			"roof_shapes"sv};
+			"roof_shapes"sv,
+			"floor_shapes"sv};
 	// For explosions.
 	using Explosion_reader
 			= Functor_multidata_reader<Shape_info, Class_reader_functor<Explosion_info, Shape_info, &Shape_info::explosion>>;
@@ -345,6 +346,10 @@ void Shapes_vga_file::Read_Shapeinf_text_data_file(bool editing, Exult_Game game
 	using Roof_reader = Functor_multidata_reader<
 			Shape_info, Bit_text_reader_functor<unsigned short, Shape_info, &Shape_info::shape_flags, Shape_info::roof>,
 			Patch_flags_functor<roof_flag, Shape_info>>;
+	// For floor slabs used as the roof of the storey below.
+	using Floor_reader = Functor_multidata_reader<
+			Shape_info, Bit_text_reader_functor<unsigned short, Shape_info, &Shape_info::shape_flags, Shape_info::floor>,
+			Patch_flags_functor<floor_flag, Shape_info>>;
 
 	std::array readers = make_unique_array<Base_reader>(
 			std::make_unique<Explosion_reader>(info), std::make_unique<SFX_reader>(info), std::make_unique<Animation_reader>(info),
@@ -360,7 +365,7 @@ void Shapes_vga_file::Read_Shapeinf_text_data_file(bool editing, Exult_Game game
 			std::make_unique<Mirror_reader>(info), std::make_unique<On_fire_reader>(info),
 			std::make_unique<Extradimensional_storage_reader>(info), std::make_unique<Field_type_reader>(info),
 			std::make_unique<Frame_usecode_reader>(info), std::make_unique<On_hit_usecode_reader>(info),
-			std::make_unique<Roof_reader>(info));
+			std::make_unique<Roof_reader>(info), std::make_unique<Floor_reader>(info));
 	static_assert(sections.size() == readers.size());
 	const int flxres = game_type == BLACK_GATE ? EXULT_BG_FLX_SHAPE_INFO_TXT : EXULT_SI_FLX_SHAPE_INFO_TXT;
 

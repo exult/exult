@@ -127,7 +127,13 @@ namespace NaturalLight {
 	// Each spill carries the opening's transmission percent (1..100, from the
 	// light_passes_through data): dirty glass passes less light than iron
 	// bars.  Doorway/roof-edge exits are open air and always carry 100.
-	void Build_light_shadow_grid(Game_object* light_obj, int rt, std::vector<unsigned char>& lit, std::vector<Light_spill>& spills);
+	// `light_walls` lights the room's one-tile wall ring (so window faces
+	// glow).  Turn it OFF for an interior light viewed from OUTSIDE: the ring
+	// otherwise shows as a bright seam beam between a wall top and an adjoining
+	// floor-roof deck.  Spill detection is unaffected either way.
+	void Build_light_shadow_grid(
+			Game_object* light_obj, int rt, std::vector<unsigned char>& lit, std::vector<Light_spill>& spills,
+			bool light_walls = true);
 
 	// Build the room-fill grid for a spill glow (same layout as
 	// Build_light_shadow_grid), flooded from `start` -- the tile just outside

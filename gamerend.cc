@@ -470,12 +470,18 @@ void Game_window::paint(
 				const Tile_coord                       ltile = main_actor->get_tile();
 				std::vector<unsigned char>             lit;
 				std::vector<NaturalLight::Light_spill> spills;
-				NaturalLight::Build_light_shadow_grid(main_actor, rt, lit, spills);
 				// Same under-roof verdict as placed lights: a carried torch under
 				// a roof keeps roof pixels dark (it must not light the canopy of
 				// an outside tree overlapping the room); out in the open it
 				// brightens nearby roofs and tall shapes like any street lamp.
 				const bool under_roof = NaturalLight::Light_beneath_roof(main_actor);
+				// Suppress the interior wall ring only when the light is under a
+				// roof AND the Avatar views from outside: then the one-tile wall
+				// ring must not show as a bright seam between a wall top and an
+				// adjoining floor-roof deck.  Inside, or for an open-air light,
+				// keep the ring so window faces still glow.
+				const bool light_walls = is_main_actor_inside() || !under_roof;
+				NaturalLight::Build_light_shadow_grid(main_actor, rt, lit, spills, light_walls);
 				add_light_render(asx, asy, radius, tier, elevation, rt, ltile.tx, ltile.ty, ltile.tz, std::move(lit), under_roof);
 				// Each window/grate the room fill reached gets its own soft glow:
 				// the source's own bubble poking through the opening, NOT a new
@@ -803,7 +809,11 @@ int Game_render::paint_chunk_objects(
 				const Tile_coord                       ltile = light_obj->get_tile();
 				std::vector<unsigned char>             lit;
 				std::vector<NaturalLight::Light_spill> spills;
-				NaturalLight::Build_light_shadow_grid(light_obj, rt, lit, spills);
+				// Suppress the interior wall ring when the light is under a roof
+				// and the Avatar views from outside (see carried-light above),
+				// so the wall/floor-roof seam shows no stray beam.
+				const bool light_walls = gwin->is_main_actor_inside() || !under_roof;
+				NaturalLight::Build_light_shadow_grid(light_obj, rt, lit, spills, light_walls);
 				gwin->add_light_render(
 						lsx, lsy, radius, tier, elevation, rt, ltile.tx, ltile.ty, ltile.tz, std::move(lit), under_roof);
 				// Each window/grate the room fill reached gets its own soft glow:
