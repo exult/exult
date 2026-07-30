@@ -834,9 +834,6 @@ namespace NaturalLight {
             return m == 1;
 		};
 		const bool start_roofed = spills != nullptr && roofed(rt, rt);
-		queue.emplace_back(rt, rt);    // Start at the grid centre.
-		visited[static_cast<size_t>(rt) * side + rt] = 1;
-		lit[static_cast<size_t>(rt) * side + rt]     = 1;    // Distance 0.
 		// Record a tile's path distance (+1), keeping the smallest when a wall
 		// face is reached again from another direction.
 		auto set_dist = [&](size_t idx, int dist) {
@@ -857,6 +854,39 @@ namespace NaturalLight {
                 {-1,  1},
                 {-1, -1}
         };
+		// The light's own tile is always lit -- the flame is visible there.
+		lit[static_cast<size_t>(rt) * side + rt] = 1;    // Distance 0.
+		if (!tall(rt, rt)) {
+			// The light stands on open floor: flood outward from it.
+			visited[static_cast<size_t>(rt) * side + rt] = 1;
+			queue.emplace_back(rt, rt);
+		} else {
+			// A wall-mounted torch sits ON the wall tile itself.  Flooding
+			// outward from it would spread to BOTH faces of the wall and light
+			// the far side as if the wall were not there.  Instead seed the
+			// fill from the room the torch faces -- the orthogonally adjacent
+			// non-wall tiles that are ROOFED (interior).  The wall tile stays
+			// lit but is never flooded past, so the exterior side stays dark.
+			bool seeded = false;
+			for (const auto& d : step) {
+				const int nx = rt + d[0];
+				const int ny = rt + d[1];
+				if (nx < 0 || ny < 0 || nx >= side || ny >= side || tall(nx, ny) || !roofed(nx, ny)) {
+					continue;
+				}
+				const size_t nidx = static_cast<size_t>(ny) * side + nx;
+				visited[nidx]     = 1;
+				set_dist(nidx, 1);
+				queue.emplace_back(nx, ny);
+				seeded = true;
+			}
+			if (!seeded) {
+				// No roofed interior neighbour (a freestanding or fully exposed
+				// wall): fall back to flooding from the wall tile itself.
+				visited[static_cast<size_t>(rt) * side + rt] = 1;
+				queue.emplace_back(rt, rt);
+			}
+		}
 		while (qhead < queue.size()) {
 			const int gx = queue[qhead].first;
 			const int gy = queue[qhead].second;
