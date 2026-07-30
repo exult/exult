@@ -173,8 +173,11 @@ namespace NaturalLight {
 	// position of the light's own tile (the grid centre) at the room's
 	// wall-top anchor level: tiles at one z form a uniform c_tilesize lattice
 	// on screen, and the reference is quantized to the light's TILE, so the
-	// field stays fixed to the walls while the source moves.  Null `grid`
-	// (exterior, ungated lights) renders the free dome everywhere.
+	// reached set stays fixed to the walls while the source moves.  The
+	// brightness PEAK, however, is measured from the splat centre (`sx`,`sy`)
+	// itself -- the lattice pinning only bounds the light; the pool's centre
+	// always sits on the source, whatever the room's wall height.  Null
+	// `grid` (exterior, ungated lights) renders the free dome everywhere.
 	void Splat_radial_light(
 			unsigned char* cov, unsigned char* dstpix, const unsigned char* srcpix, int W, int H, int dst_lw, int src_lw, int sx,
 			int sy, int radius, int elevation, int dist_bias, int intensity_pct, const unsigned char* roofpix, int roof_lw,

@@ -1087,9 +1087,45 @@ namespace NaturalLight {
 		// had to go around walls, instead of shining through them.  Unreached
 		// tiles are simply dark: containment is not a gate applied to a dome,
 		// it is the absence of propagated light.
-		const int          side = grid != nullptr ? 2 * grid_rt + 1 : 0;
+		//
+		// Tiles at one z-level form a uniform c_tilesize lattice on screen,
+		// pinned by ONE reference: the foot position of the light's own tile
+		// (grid centre) at the wall-top anchor level.  That reference is
+		// quantized to the light's TILE, so the REACHED SET -- the containment
+		// boundary along the walls -- stays fixed as the source moves within
+		// its tile.  A tile covers c_tilesize pixels up-and-left of its foot;
+		// its centre is half a tile up-left of it.
+		const int          side   = grid != nullptr ? 2 * grid_rt + 1 : 0;
+		const float        cell   = static_cast<float>(c_tilesize);
+		const float        half   = 0.5f * (cell - 1.0f);
+		const float        grid_u = static_cast<float>(grid_fx) - half - static_cast<float>(grid_rt) * cell;
+		const float        grid_v = static_cast<float>(grid_fy) - half - static_cast<float>(grid_rt) * cell;
 		std::vector<float> field;
 		if (grid != nullptr) {
+			// The wall-top anchor pins the lattice up-and-left of the tiles'
+			// floor positions (4px per z of wall height), so the grid CENTRE
+			// renders up-left of the light itself.  The brightness peak,
+			// however, belongs at the light's true screen position: measure
+			// the per-tile straight-line distance from the SPLAT CENTRE
+			// expressed in lattice coordinates, not from the grid centre --
+			// otherwise the whole pool sits diagonally up-left of the source
+			// by the anchor shift (more for taller walls, none for ungated
+			// lights: the old "light centre shifted up-left" bug).  The peak
+			// thus follows the light continuously (as the free dome always
+			// did) while the reached set stays tile-quantized.
+			const float uc = (static_cast<float>(sx) - grid_u) / cell;
+			const float vc = (static_cast<float>(sy) - grid_v) / cell;
+			// The flood path is 0 at the light's TILE (the grid centre), which
+			// again renders up-left of the true centre: the lattice cell under
+			// the splat centre already carries a path of a tile or two, and
+			// max(euclid, path) would dim the pool right at the source.
+			// Rebase the path so it is zero at that cell.
+			int cgx                     = static_cast<int>(std::lround(uc));
+			int cgy                     = static_cast<int>(std::lround(vc));
+			cgx                         = std::min(std::max(cgx, 0), side - 1);
+			cgy                         = std::min(std::max(cgy, 0), side - 1);
+			const unsigned char mbase   = grid[static_cast<size_t>(cgy) * side + cgx];
+			const float         base_px = mbase > 0 ? static_cast<float>((mbase - 1) * c_tilesize) : 0.0f;
 			field.assign(static_cast<size_t>(side) * side, 0.0f);
 			for (int gy = 0; gy < side; ++gy) {
 				for (int gx = 0; gx < side; ++gx) {
@@ -1097,10 +1133,13 @@ namespace NaturalLight {
 					if (!m) {
 						continue;    // Light never reaches this tile.
 					}
-					const float path_px = static_cast<float>((m - 1) * c_tilesize);
-					const float ddx     = static_cast<float>((gx - grid_rt) * c_tilesize);
-					const float ddy     = static_cast<float>((gy - grid_rt) * c_tilesize);
-					float       travel  = std::sqrt(ddx * ddx + ddy * ddy);
+					float path_px = static_cast<float>((m - 1) * c_tilesize) - base_px;
+					if (path_px < 0.0f) {
+						path_px = 0.0f;
+					}
+					const float ddx    = (static_cast<float>(gx) - uc) * cell;
+					const float ddy    = (static_cast<float>(gy) - vc) * cell;
+					float       travel = std::sqrt(ddx * ddx + ddy * ddy);
 					if (path_px > travel) {
 						travel = path_px;
 					}
@@ -1112,17 +1151,6 @@ namespace NaturalLight {
 				}
 			}
 		}
-		// Tiles at one z-level form a uniform c_tilesize lattice on screen, so
-		// the whole field is pinned by ONE reference: the foot position of the
-		// light's own tile (grid centre) at the wall-top anchor level.  That
-		// reference is quantized to the light's TILE, so the field stays fixed
-		// to the walls as the source moves within its tile -- the same world
-		// anchoring the stamped mask had.  A tile covers c_tilesize pixels
-		// up-and-left of its foot; its centre is half a tile up-left of it.
-		const float cell   = static_cast<float>(c_tilesize);
-		const float half   = 0.5f * (cell - 1.0f);
-		const float grid_u = static_cast<float>(grid_fx) - half - static_cast<float>(grid_rt) * cell;
-		const float grid_v = static_cast<float>(grid_fy) - half - static_cast<float>(grid_rt) * cell;
 		// The free dome is bounded by `radius` around the splat centre; the
 		// propagated field by `radius` around the GRID centre (cells beyond it
 		// go dark in the per-tile dome) plus a tile of bilinear support.  The
