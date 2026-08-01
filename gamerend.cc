@@ -811,8 +811,15 @@ int Game_render::paint_chunk_objects(
 				std::vector<NaturalLight::Light_spill> spills;
 				// Suppress the interior wall ring when the light is under a roof
 				// and the Avatar views from outside (see carried-light above),
-				// so the wall/floor-roof seam shows no stray beam.
-				const bool light_walls = gwin->is_main_actor_inside() || !under_roof;
+				// so the wall/floor-roof seam shows no stray beam.  "Outside"
+				// is per STOREY, not just per building: from the second floor,
+				// the ground-floor room below is as invisible as from the
+				// street, and its light's ring on the ground walls' faces --
+				// peeking out under the upper floor's slab edge -- would show
+				// as a stray glow.  The ring only applies when the Avatar is
+				// inside on that light's own storey.
+				const bool light_walls
+						= (gwin->is_main_actor_inside() && gwin->get_main_actor()->get_lift() / 5 == ltile.tz / 5) || !under_roof;
 				NaturalLight::Build_light_shadow_grid(light_obj, rt, lit, spills, light_walls);
 				gwin->add_light_render(
 						lsx, lsy, radius, tier, elevation, rt, ltile.tx, ltile.ty, ltile.tz, std::move(lit), under_roof);

@@ -171,11 +171,16 @@ namespace NaturalLight {
 	// window's glow never brightens a floor-roof deck one storey up, while an
 	// upper-storey window's glow still lights the deck and its battlements.
 	// Interior (veto) and exterior lights ignore the storey; only spills gate --
-	// EXCEPT that a veto (under-roof) light may light a floor-slab TOP (129+)
-	// through the propagated field when its own room roof rises above the slab
+	// EXCEPT that a veto (under-roof) light may light an upper-storey mark
+	// (129+: a floor-slab top, an upper wall or furnishing) through the
+	// propagated field when its own room roof rises above that storey
 	// (`light_top_storey`, the room roof z / 5): light through a window high in
 	// the wall genuinely reaches the adjoining deck, while the light of the room
-	// UNDER the deck (roof storey == slab storey) stays dark.
+	// UNDER the deck (roof storey == slab storey) stays dark.  For a SPILL,
+	// `light_top_storey` instead carries the bubble's RENDER storey (its tile
+	// z / 5): an elevated bubble (a stairwell continuation on an upper floor)
+	// skips clear pixels entirely -- those are ground-level surfaces below it,
+	// and its z-blind field hanging over them would show as a bright beam.
 	// `dist_bias` (game px) continues another source's
 	// falloff: the dome fades as if the light had already travelled that far
 	// before reaching the splat centre -- used for spill glows, which are the

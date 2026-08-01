@@ -1474,6 +1474,16 @@ void Game_window::update_roof_mask(Game_object* obj, int sx, int sy) {
 			roof_like     = true;
 			tall_exterior = true;
 			report("MARK deck-actor (open sky)");
+		} else if (inside && obj->get_lift() >= 5) {
+			// An actor on an UPPER storey below the render skip (an NPC on
+			// the second floor while the Avatar is up there too).  Like the
+			// upper walls and furniture, left clear the ground floor's
+			// z-blind light field would paint it bright; mark 128 + storey
+			// so only its own storey's lights and spills reach it.
+			roof_like     = true;
+			tall_exterior = true;
+			tall_storey   = storey_of(obj->get_lift());
+			report("MARK upper-storey actor");
 		} else {
 			roof_like = false;
 		}
@@ -1489,10 +1499,18 @@ void Game_window::update_roof_mask(Game_object* obj, int sx, int sy) {
 		// marking it would draw a dark seam along the wall it adjoins inside
 		// the neighbouring room -- so leave it as the shapes beneath painted
 		// it and the room's own light brushes it like the wall face.  Painted
-		// via a clip rect, so return early.
-		const int                  zs         = obj->get_info().get_3d_height();
-		const int                  top_storey = storey_of(obj->get_lift() + zs);
-		const int                  strip      = 4 * zs;
+		// via a clip rect, so return early.  That is the INSIDE view.  From
+		// OUTSIDE, the room's light is a masked veto light whose z-blind
+		// field cells sit up-screen exactly where the thickness strip hangs:
+		// left clear it shows as a bright beam between the ground walls and
+		// the storey above, so the whole sprite keeps a plain 128 face mark
+		// under the top's 128 + storey (the pre-top-only two-pass paint).
+		const int zs         = obj->get_info().get_3d_height();
+		const int top_storey = storey_of(obj->get_lift() + zs);
+		const int strip      = 4 * zs;
+		if (!inside) {
+			frame->paint_rle_transformed(roof_light_mask.get(), sx, sy, roof_tall[0]);
+		}
 		Image_buffer::ClipRectSave clipsave(roof_light_mask.get());
 		const TileRect             top_rect(
                 sx - frame->get_xleft(), sy - frame->get_yabove(), frame->get_width() - strip, frame->get_height() - strip);
@@ -1501,7 +1519,7 @@ void Game_window::update_roof_mask(Game_object* obj, int sx, int sy) {
 			roof_light_mask->set_clip(r.x, r.y, r.w, r.h);
 			frame->paint_rle_transformed(roof_light_mask.get(), sx, sy, roof_tall[top_storey]);
 		}
-		report("MARK floor-slab (top only)");
+		report(inside ? "MARK floor-slab (top only)" : "MARK floor-slab (top/face)");
 		return;
 	} else if (inside) {
 		const int  av_lift       = main_actor ? main_actor->get_lift() : 0;
@@ -1529,9 +1547,28 @@ void Game_window::update_roof_mask(Game_object* obj, int sx, int sy) {
 			if (open_sky_above(top)) {
 				tall_exterior = true;
 				report("MARK exterior-tall (open sky)");
+			} else if (obj->get_lift() >= 5) {
+				// Blocked above and starting at an upper storey: a
+				// second-storey wall segment or upstairs furniture.
+				tall_exterior = true;
+				tall_storey   = storey_of(obj->get_lift());
+				report("MARK upper-storey (tall, inside)");
 			} else {
 				report("clear: tall but blocked above top");
 			}
+		} else if (!roof_like && obj->get_lift() >= 5) {
+			// An UPPER-STOREY shape below the render skip: the walls and
+			// furnishings of the second floor while the Avatar stands up
+			// there.  Left clear, the GROUND floor's interior light field
+			// and any ground window's spill dome -- both unaware of z --
+			// would paint them bright: an exterior second-storey wall lit
+			// by the lamp in the room below it.  Mark 128 + storey so the
+			// storey gates keep lights from LOWER floors off them, while
+			// the upper room's own light (its roof rises above this
+			// storey) still lights them through the veto field exception.
+			tall_exterior = true;
+			tall_storey   = storey_of(obj->get_lift());
+			report("MARK upper-storey (inside)");
 		} else if (!roof_like && top >= 5) {
 			report("clear: tall but top <= skip");
 		}
@@ -1549,6 +1586,17 @@ void Game_window::update_roof_mask(Game_object* obj, int sx, int sy) {
 			// storey-gated (see the is_floor branch).
 			tall_exterior = true;
 			report("MARK deck-object (open sky, outside)");
+		} else if (roof_like && !is_roof_shape) {
+			// Covered and at an upper storey but not a roof shape: a second
+			// storey's wall (or furnishing) seen from OUTSIDE.  Marked 255 it
+			// could never light up; left clear the ground floor's z-blind
+			// light field would paint it.  Mark 128 + storey so only lights
+			// and spills of its own storey or above reach it: the stairwell
+			// bubble on the second floor lights the second floor's walls, a
+			// ground lamp does not.
+			tall_exterior = true;
+			tall_storey   = storey_of(obj->get_lift());
+			report("MARK upper-storey (outside)");
 		} else if (!roof_like && top >= 5) {
 			// A grounded shape TALL enough to reach roof level (an outside
 			// tree, a lamppost).  Give it the same whole-shape verdict as
@@ -1756,6 +1804,11 @@ void Game_window::build_light_layers() {
 			int                  grid_fy = 0;
 			// Storey the light's own room roof reaches (roof z / 5): a veto
 			// light may light a floor-slab top through the field only below it.
+			// For a SPILL it instead carries the bubble's RENDER storey
+			// (its tile z / 5): a bubble sitting on an upper floor (stairwell
+			// continuation) must never light clear ground-level pixels below
+			// it -- its z-blind field cells sit up-screen exactly over the
+			// ground walls' faces, which would show as a bright beam.
 			int light_top_storey = 0;
 			if ((inside || lr.mask_roof || lr.is_spill) && !lr.lit.empty()) {
 				grid    = lr.lit.data();
@@ -1770,6 +1823,8 @@ void Game_window::build_light_layers() {
 				const int anchor_z = lr.mask_roof ? NaturalLight::Light_room_roof_z(map, lr.ltx, lr.lty, lr.ltz) : (lr.ltz / 5) * 5;
 				if (lr.mask_roof) {
 					light_top_storey = anchor_z / 5;
+				} else if (lr.is_spill) {
+					light_top_storey = lr.ltz / 5;
 				}
 				const int wtx = ((lr.ltx % c_num_tiles) + c_num_tiles) % c_num_tiles;
 				const int wty = ((lr.lty % c_num_tiles) + c_num_tiles) % c_num_tiles;
