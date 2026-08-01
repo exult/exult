@@ -38,6 +38,7 @@
 #include <cmath>
 #include <cstdlib>
 #include <iostream>
+#include <map>
 #include <set>
 #include <tuple>
 #include <utility>
@@ -399,50 +400,6 @@ namespace {
 			return 0;
 		}
 		return Light_tile_has_pass_through(chunk, tx, ty, floor_z, roof_z, top_z);
-	}
-
-	// Is the room's ceiling MISSING directly over the given absolute tile -- a
-	// stairwell / ladder well?  True when no floor or solid shape covers the
-	// tile in the ceiling band [roof_z, roof_z+4): the room's light continues
-	// UP through the well onto the storey above.  The ceiling of a lower
-	// storey is usually the upper storey's FLOOR slabs -- height-0/1 flats
-	// that never set the chunk's blocked flags -- so this scans shapes like
-	// Light_tile_overlooked_deck: an object covering the tile can be anchored
-	// up to 7 tiles east/south, in the east/south/southeast neighbour chunk.
-	// (A tile with no cover at ANY level is the open-sky doorway case, handled
-	// by the flood's roofed->open transition instead.)
-	bool Light_tile_ceiling_open(Game_map* gmap, int tx, int ty, int roof_z) {
-		tx            = Light_tile_norm(tx);
-		ty            = Light_tile_norm(ty);
-		const int lcx = tx / c_tiles_per_chunk;
-		const int lcy = ty / c_tiles_per_chunk;
-		for (int dcy = 0; dcy < 2; ++dcy) {
-			for (int dcx = 0; dcx < 2; ++dcx) {
-				Map_chunk* const chunk = gmap->get_chunk_safely((lcx + dcx) % c_num_chunks, (lcy + dcy) % c_num_chunks);
-				if (chunk == nullptr) {
-					continue;
-				}
-				Object_iterator it(chunk->get_objects());
-				Game_object*    obj;
-				while ((obj = it.get_next()) != nullptr) {
-					if (obj->as_actor() != nullptr || obj->is_dragable()) {
-						continue;    // Bodies and loose items are not ceilings.
-					}
-					const Shape_info& info = obj->get_info();
-					if (!info.is_solid() && !info.is_floor()) {
-						continue;
-					}
-					const int ol = obj->get_lift();
-					if (ol < roof_z || ol >= roof_z + 4) {
-						continue;    // Not in the ceiling band.
-					}
-					if (obj->get_footprint().has_world_point(tx, ty)) {
-						return false;    // Ceiling piece found: no well here.
-					}
-				}
-			}
-		}
-		return true;
 	}
 
 }    // namespace
@@ -965,12 +922,86 @@ namespace NaturalLight {
             }
             return m == 1;
 		};
-		auto opening = [&](int gx, int gy, int* top_z = nullptr) {
-			return Light_tile_pass_opening(gmap, lt.tx + gx - rt, lt.ty + gy - rt, floor_z, roof_z, top_z);
+		// Memoized opening test: wall tiles are handled on EVERY approach (see
+		// the wall branch below, needed for wrap-around fills), but the
+		// chunk-object scan behind the opening test must still run only ONCE
+		// per tile -- unmemoized it slowed a running player to a walk.
+		std::vector<short> openmemo(static_cast<size_t>(side) * side, 0);    // 0 unknown, -1 none, else pct.
+		std::vector<int>   opentop(static_cast<size_t>(side) * side, 0);
+		auto               opening = [&](int gx, int gy, int* top_z = nullptr) -> int {
+            short& m = openmemo[static_cast<size_t>(gy) * side + gx];
+            if (m == 0) {
+                int       top = 0;
+                const int pct = Light_tile_pass_opening(gmap, lt.tx + gx - rt, lt.ty + gy - rt, floor_z, roof_z, &top);
+                m                                            = pct > 0 ? static_cast<short>(pct) : -1;
+                opentop[static_cast<size_t>(gy) * side + gx] = top;
+            }
+            if (top_z != nullptr) {
+                *top_z = opentop[static_cast<size_t>(gy) * side + gx];
+            }
+            return m > 0 ? m : 0;
 		};
 		// Ceiling-well spill candidates (stairwell / ladder openings): interior
 		// roofed tiles whose own ceiling band is missing right above them.
 		std::vector<std::pair<int, int>> well_cand;
+		// Ceiling-cover map for the well test: which grid tiles have a ceiling
+		// piece (floor slab or solid shape, band [roof_z, roof_z+4)) above them.
+		// Built lazily ONCE per flood by scanning each covered chunk's object
+		// list a single time -- a per-tile probe rescanning 4 chunks for every
+		// interior tile slowed a running player to a walk.  Ceilings are
+		// usually the upper storey's FLOOR slabs: height-0/1 flats that never
+		// set the chunk's blocked flags, hence the shape scan.  An object
+		// anchors at its south-east corner with the footprint extending
+		// up-left, so scan one extra chunk row/col east and south of the grid.
+		std::vector<unsigned char> ceilcover;
+		auto                       ceil_open = [&](int gx, int gy) -> bool {
+            if (ceilcover.empty()) {
+                ceilcover.assign(static_cast<size_t>(side) * side, 0);
+                const int tx0 = Light_tile_norm(lt.tx - rt);
+                const int ty0 = Light_tile_norm(lt.ty - rt);
+                const int ncx = (tx0 % c_tiles_per_chunk + side - 1) / c_tiles_per_chunk + 1;
+                const int ncy = (ty0 % c_tiles_per_chunk + side - 1) / c_tiles_per_chunk + 1;
+                for (int icy = 0; icy <= ncy; ++icy) {
+                    for (int icx = 0; icx <= ncx; ++icx) {
+                        Map_chunk* const ch = gmap->get_chunk_safely(
+                                (tx0 / c_tiles_per_chunk + icx) % c_num_chunks, (ty0 / c_tiles_per_chunk + icy) % c_num_chunks);
+                        if (ch == nullptr) {
+                            continue;
+                        }
+                        Object_iterator it(ch->get_objects());
+                        Game_object*    obj;
+                        while ((obj = it.get_next()) != nullptr) {
+                            if (obj->as_actor() != nullptr || obj->is_dragable()) {
+                                continue;    // Bodies and loose items are not ceilings.
+                            }
+                            const Shape_info& info = obj->get_info();
+                            if (!info.is_solid() && !info.is_floor()) {
+                                continue;
+                            }
+                            const int ol = obj->get_lift();
+                            if (ol < roof_z || ol >= roof_z + 4) {
+                                continue;    // Not in the ceiling band.
+                            }
+                            const TileRect fp = obj->get_footprint();
+                            for (int fty = fp.y; fty < fp.y + fp.h; ++fty) {
+                                const int dgy = Light_tile_norm(fty - ty0);
+                                if (dgy >= side) {
+                                    continue;
+                                }
+                                for (int ftx = fp.x; ftx < fp.x + fp.w; ++ftx) {
+                                    const int dgx = Light_tile_norm(ftx - tx0);
+                                    if (dgx >= side) {
+                                        continue;
+                                    }
+                                    ceilcover[static_cast<size_t>(dgy) * side + dgx] = 1;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            return ceilcover[static_cast<size_t>(gy) * side + gx] == 0;
+		};
 		// Memoized per-tile roof test for the doorway-spill detection: a spill
 		// is where the fill crosses from a roofed tile to an unroofed one.
 		// Only an under-roof source spills through doors; an outdoor lamp's
@@ -1043,8 +1074,7 @@ namespace NaturalLight {
 			const int gy = queue[qhead].second;
 			++qhead;
 			const int gdist = lit[static_cast<size_t>(gy) * side + gx] - 1;
-			if (spills != nullptr && start_roofed && roofed(gx, gy)
-				&& Light_tile_ceiling_open(gmap, lt.tx + gx - rt, lt.ty + gy - rt, roof_z)) {
+			if (spills != nullptr && start_roofed && roofed(gx, gy) && ceil_open(gx, gy)) {
 				// The room's own ceiling is missing right above this interior
 				// tile while a higher storey still covers it: a stairwell /
 				// ladder well.  The light continues UP through it onto the
@@ -1255,11 +1285,13 @@ namespace NaturalLight {
 			// candidates within two tiles of one emitted.
 			auto has_landing = [&](int gx, int gy) {
 				for (const auto& d : step) {
-					const int ntx = Light_tile_norm(lt.tx + gx + d[0] - rt);
-					const int nty = Light_tile_norm(lt.ty + gy + d[1] - rt);
-					if (Light_tile_ceiling_open(gmap, ntx, nty, roof_z)) {
-						continue;    // No upper floor over this neighbour.
+					const int nx = gx + d[0];
+					const int ny = gy + d[1];
+					if (nx < 0 || ny < 0 || nx >= side || ny >= side || ceil_open(nx, ny)) {
+						continue;    // Off-grid, or no upper floor over this neighbour.
 					}
+					const int        ntx = Light_tile_norm(lt.tx + nx - rt);
+					const int        nty = Light_tile_norm(lt.ty + ny - rt);
 					Map_chunk* const nch = gmap->get_chunk_safely(ntx / c_tiles_per_chunk, nty / c_tiles_per_chunk);
 					if (nch != nullptr && roof_z >= 2
 						&& !nch->is_tile_occupied(ntx % c_tiles_per_chunk, nty % c_tiles_per_chunk, roof_z - 2)) {
@@ -1291,6 +1323,46 @@ namespace NaturalLight {
 		}
 	}
 
+	// Cross-frame cache for room-fill floods.  A flood depends only on its
+	// start tile and the static geometry (walls, doors, ceilings -- actors are
+	// ignored), yet it rescans chunk object lists tile by tile; with several
+	// lights and their window/door/well spills in view, re-flooding ALL of
+	// them every frame slowed a running player to a walk.  Results are reused
+	// for a short time-to-live, so a door opening or closing still updates the
+	// nearby lights within a fraction of a second.
+	namespace {
+		struct Flood_cache_entry {
+			std::vector<unsigned char> lit;
+			std::vector<Light_spill>   spills;
+			Uint64                     stamp = 0;
+		};
+
+		// Key: tile x/y/z, grid radius, flavour (0 = spill flood, 1 = room
+		// flood with wall ring, 2 = room flood without).
+		using Flood_cache_key = std::tuple<int, int, int, int, int>;
+		std::map<Flood_cache_key, Flood_cache_entry> flood_cache;
+		constexpr Uint64                             flood_cache_ttl = 250;    // ms.
+
+		Flood_cache_entry* Flood_cache_find(const Flood_cache_key& key, Uint64 now) {
+			auto it = flood_cache.find(key);
+			if (it != flood_cache.end() && now - it->second.stamp < flood_cache_ttl) {
+				return &it->second;
+			}
+			if (flood_cache.size() > 128) {
+				// Sweep expired entries so the cache cannot grow unbounded
+				// (carried lights change tile every step).
+				for (auto sw = flood_cache.begin(); sw != flood_cache.end();) {
+					if (now - sw->second.stamp >= flood_cache_ttl) {
+						sw = flood_cache.erase(sw);
+					} else {
+						++sw;
+					}
+				}
+			}
+			return nullptr;
+		}
+	}    // namespace
+
 	void Build_light_shadow_grid(
 			Game_object* light_obj, int rt, std::vector<unsigned char>& lit, std::vector<Light_spill>& spills, bool light_walls) {
 		const int side = 2 * rt + 1;
@@ -1306,8 +1378,15 @@ namespace NaturalLight {
 			lit.clear();
 			return;
 		}
-		const Tile_coord lt     = light_obj->get_tile();
-		const int        roof_z = Light_room_roof_z(gmap, lt.tx, lt.ty, lt.tz);
+		const Tile_coord      lt  = light_obj->get_tile();
+		const Uint64          now = SDL_GetTicks();
+		const Flood_cache_key key{lt.tx, lt.ty, lt.tz, rt, light_walls ? 1 : 2};
+		if (Flood_cache_entry* hit = Flood_cache_find(key, now)) {
+			lit    = hit->lit;
+			spills = hit->spills;
+			return;
+		}
+		const int roof_z = Light_room_roof_z(gmap, lt.tx, lt.ty, lt.tz);
 		if (std::getenv("EXULT_DEBUG_LIGHT_MASK") != nullptr) {
 			static Tile_coord last(-1, -1, -1);
 			if (lt.tx != last.tx || lt.ty != last.ty || lt.tz != last.tz) {
@@ -1317,6 +1396,10 @@ namespace NaturalLight {
 			}
 		}
 		Flood_room_grid(gmap, lt, rt, roof_z, lit, &spills, light_walls);
+		Flood_cache_entry& entry = flood_cache[key];
+		entry.lit                = lit;
+		entry.spills             = spills;
+		entry.stamp              = now;
 	}
 
 	void Build_spill_shadow_grid(const Tile_coord& start, int rt, std::vector<unsigned char>& lit) {
@@ -1337,8 +1420,18 @@ namespace NaturalLight {
 		// own wall (lit as ring, so the window face glows), so the spilled
 		// light can never come back INSIDE the room it escaped from.  No
 		// spills are collected here: a spill does not spawn further spills.
+		const Uint64          now = SDL_GetTicks();
+		const Flood_cache_key key{start.tx, start.ty, start.tz, rt, 0};
+		if (Flood_cache_entry* hit = Flood_cache_find(key, now)) {
+			lit = hit->lit;
+			return;
+		}
 		const int roof_z = Light_room_roof_z(gmap, start.tx, start.ty, start.tz);
 		Flood_room_grid(gmap, start, rt, roof_z, lit, nullptr);
+		Flood_cache_entry& entry = flood_cache[key];
+		entry.lit                = lit;
+		entry.spills.clear();
+		entry.stamp = now;
 	}
 
 	void Splat_radial_light(
