@@ -512,7 +512,7 @@ void Game_window::paint(
 					get_shape_location(sp, ssx, ssy);
 					add_light_render(
 							ssx, ssy, spill_radius, tier, elevation, srt, sp.tx, sp.ty, sp.tz, std::move(slit), false, spill_dist,
-							true, spill.percent);
+							true, spill.percent, spill.floor);
 				}
 			}
 			// Also check light spell.
@@ -828,6 +828,10 @@ int Game_render::paint_chunk_objects(
 					const Tile_coord& sp           = spill.tile;
 					const int         spill_dist   = ltile.distance_2d(sp) * c_tilesize;
 					const int         spill_radius = radius - spill_dist;
+					if (std::getenv("EXULT_DEBUG_LIGHT_MASK") != nullptr) {
+						std::cerr << "[light-mask] spill-render(placed) tile=(" << sp.tx << ',' << sp.ty << ',' << sp.tz
+								  << ") dist=" << spill_dist << " radius=" << spill_radius << " floor=" << spill.floor << std::endl;
+					}
 					if (spill_radius <= 0) {
 						continue;
 					}
@@ -840,7 +844,7 @@ int Game_render::paint_chunk_objects(
 					gwin->get_shape_location(sp, ssx, ssy);
 					gwin->add_light_render(
 							ssx, ssy, spill_radius, tier, elevation, srt, sp.tx, sp.ty, sp.tz, std::move(slit), false, spill_dist,
-							true, spill.percent);
+							true, spill.percent, spill.floor);
 				}
 			}
 			// Dim the light once per inside/outside boundary crossing so a

@@ -85,6 +85,7 @@
 #include "version.h"
 #include "virstone.h"
 
+#include <array>
 #include <cmath>
 #include <cstdarg>
 #include <cstdio>
@@ -1380,10 +1381,11 @@ void Game_window::update_roof_mask(Game_object* obj, int sx, int sy) {
 		return;
 	}
 	// A roof marks its pixels (255); a tall EXTERIOR shape (tree canopy,
-	// lamppost) marks 128; anything painted over them clears (0).  The two
-	// mark values differ under a SPILL glow: it lights tall shapes standing
-	// in its reach as whole units but must never light a real roof -- only a
-	// true exterior light does that.
+	// lamppost, deck object) marks 128 + its STOREY (lift / 5).  Anything
+	// painted over them clears (0).  The values differ under a SPILL glow: it
+	// lights tall shapes standing in its reach as whole units -- but only at
+	// or below the spill source's own storey -- and must never light a real
+	// roof.  A true exterior light lights everything regardless of value.
 	static const Xform_palette roof_set = [] {
 		Xform_palette x;
 		for (int i = 0; i < 256; ++i) {
@@ -1391,12 +1393,14 @@ void Game_window::update_roof_mask(Game_object* obj, int sx, int sy) {
 		}
 		return x;
 	}();
-	static const Xform_palette roof_tall = [] {
-		Xform_palette x;
-		for (int i = 0; i < 256; ++i) {
-			x.colors[i] = 128;
+	static const std::array<Xform_palette, 4> roof_tall = [] {
+		std::array<Xform_palette, 4> xs{};
+		for (int s = 0; s < 4; ++s) {
+			for (int i = 0; i < 256; ++i) {
+				xs[s].colors[i] = static_cast<unsigned char>(128 + s);
+			}
 		}
-		return x;
+		return xs;
 	}();
 	static const Xform_palette roof_clear = [] {
 		Xform_palette x;
@@ -1448,18 +1452,60 @@ void Game_window::update_roof_mask(Game_object* obj, int sx, int sy) {
 	};
 	bool roof_like;
 	bool tall_exterior = false;
+	// Storey a tall-exterior mark belongs to (mask value 128 + storey): a
+	// spill lights it only from the same or a higher storey.
+	auto storey_of = [](int lift) {
+		const int s = lift / 5;
+		return s < 0 ? 0 : (s > 3 ? 3 : s);
+	};
+	int tall_storey = 0;
 	if (obj->as_actor() != nullptr) {
-		// Actors are never silhouetted as a roof: leave their pixels clear so
-		// they are lit normally by whatever light reaches them.
-		roof_like = false;
+		// Actors are never silhouetted as a real roof (255).  But an actor
+		// standing on an OPEN-SKY deck (a floor-roof / battlement top) must not
+		// be lit by the room BELOW's interior light leaking up through the
+		// deck: mark it 128 like the deck objects around it, so a spill, an
+		// exterior light, or its own carried light still light it whole, while
+		// the under-deck interior (veto) light keeps it dark.  An actor on an
+		// interior upper floor (a roof above it) or at ground level stays clear
+		// (0) and is lit normally by its room's light.
+		const int top         = obj->get_lift() + obj->get_info().get_3d_height();
+		const int floor_level = inside ? get_render_skip_lift() : 5;
+		if (obj->get_lift() >= floor_level && open_sky_above(top)) {
+			roof_like     = true;
+			tall_exterior = true;
+			report("MARK deck-actor (open sky)");
+		} else {
+			roof_like = false;
+		}
 	} else if (obj->get_info().is_floor()) {
 		// A floor slab used as the roof of the storey below (%%section
 		// floor_shapes).  Keep it dark under that storey's interior lights
-		// like a roof, but mark it 128 (not 255) so a window/opening SPILL on
-		// the deck ABOVE still lights its top surface, and objects standing on
-		// the deck are lit as whole units instead of silhouetted.
-		roof_like     = true;
-		tall_exterior = true;
+		// like a roof, but mark it 128 + storey (not 255) so a window/opening
+		// SPILL at deck level still lights its top surface, while a GROUND
+		// window's glow -- whose screen radius overlaps the elevated deck --
+		// is gated off by the storey.  The slab's front-facing THICKNESS
+		// (the bottom / right 4px-per-z strip of the sprite) faces the storey
+		// BELOW, so it keeps that storey's value and a ground-level spill
+		// right outside the wall still brushes it.  Painted here in two
+		// passes (full stamp at the below-storey value, then the top region
+		// re-stamped at the deck storey via a clip rect), so return early.
+		const int zs          = obj->get_info().get_3d_height();
+		const int top_storey  = storey_of(obj->get_lift() + zs);
+		const int face_storey = top_storey > 0 ? top_storey - 1 : 0;
+		frame->paint_rle_transformed(roof_light_mask.get(), sx, sy, roof_tall[face_storey]);
+		if (top_storey > face_storey && zs > 0) {
+			const int                  strip = 4 * zs;
+			Image_buffer::ClipRectSave clipsave(roof_light_mask.get());
+			const TileRect             top_rect(
+                    sx - frame->get_xleft(), sy - frame->get_yabove(), frame->get_width() - strip, frame->get_height() - strip);
+			const TileRect r = top_rect.intersect(clipsave.Rect());
+			if (r.w > 0 && r.h > 0) {
+				roof_light_mask->set_clip(r.x, r.y, r.w, r.h);
+				frame->paint_rle_transformed(roof_light_mask.get(), sx, sy, roof_tall[top_storey]);
+			}
+		}
+		report("MARK floor-slab (storey top/face)");
+		return;
 	} else if (inside) {
 		const int  av_lift       = main_actor ? main_actor->get_lift() : 0;
 		const bool is_roof_shape = obj->get_info().is_roof() && obj->get_lift() > av_lift;
@@ -1468,9 +1514,12 @@ void Game_window::update_roof_mask(Game_object* obj, int sx, int sy) {
 		if (roof_like && !is_roof_shape && open_sky_above(top)) {
 			// At roof level but not a flagged roof: an object standing on an
 			// exposed deck / floor-roof (battlements on a castle top).  Under
-			// open sky it is exterior-exposed, so mark it 128 -- a window/
-			// opening spill can then light it -- instead of 255, which a spill
-			// must never touch.
+			// open sky it is exterior-exposed, so mark it plain 128 -- a
+			// window/opening spill from ANY storey can then light it, the way
+			// a ground window's glow brushes the walls above it -- instead of
+			// 255, which a spill must never touch.  Only the flat slab TOP is
+			// storey-gated (see the is_floor branch): a standing object's face
+			// is visible to a glow from below, a horizontal deck surface not.
 			tall_exterior = true;
 			report("MARK deck-object (open sky, inside)");
 		} else if (!roof_like && top > get_render_skip_lift()) {
@@ -1496,8 +1545,11 @@ void Game_window::update_roof_mask(Game_object* obj, int sx, int sy) {
 		if (roof_like && !is_roof_shape && open_sky_above(top)) {
 			// At roof level but not a flagged roof: an object standing on an
 			// exposed deck / floor-roof (castle battlements).  Under open sky
-			// it is exterior-exposed, so mark it 128 so a window/opening spill
-			// can light it, not 255 which a spill must never touch.
+			// it is exterior-exposed, so mark it plain 128 so a window/opening
+			// spill from ANY storey can light it (a ground window's glow
+			// brushes the battlements above it just like the walls), not 255
+			// which a spill must never touch.  Only the flat slab TOP is
+			// storey-gated (see the is_floor branch).
 			tall_exterior = true;
 			report("MARK deck-object (open sky, outside)");
 		} else if (!roof_like && top >= 5) {
@@ -1520,7 +1572,8 @@ void Game_window::update_roof_mask(Game_object* obj, int sx, int sy) {
 			}
 		}
 	}
-	frame->paint_rle_transformed(roof_light_mask.get(), sx, sy, tall_exterior ? roof_tall : (roof_like ? roof_set : roof_clear));
+	frame->paint_rle_transformed(
+			roof_light_mask.get(), sx, sy, tall_exterior ? roof_tall[tall_storey] : (roof_like ? roof_set : roof_clear));
 }
 
 /*
@@ -1704,6 +1757,9 @@ void Game_window::build_light_layers() {
 			int                  grid_rt = 0;
 			int                  grid_fx = 0;
 			int                  grid_fy = 0;
+			// Storey the light's own room roof reaches (roof z / 5): a veto
+			// light may light a floor-slab top through the field only below it.
+			int light_top_storey = 0;
 			if ((inside || lr.mask_roof || lr.is_spill) && !lr.lit.empty()) {
 				grid    = lr.lit.data();
 				grid_rt = lr.rt;
@@ -1715,8 +1771,11 @@ void Game_window::build_light_layers() {
 				// anchoring it at Light_room_roof_z's floor+5 fallback would
 				// slide its whole field 4px per z up-left off the source.
 				const int anchor_z = lr.mask_roof ? NaturalLight::Light_room_roof_z(map, lr.ltx, lr.lty, lr.ltz) : (lr.ltz / 5) * 5;
-				const int wtx      = ((lr.ltx % c_num_tiles) + c_num_tiles) % c_num_tiles;
-				const int wty      = ((lr.lty % c_num_tiles) + c_num_tiles) % c_num_tiles;
+				if (lr.mask_roof) {
+					light_top_storey = anchor_z / 5;
+				}
+				const int wtx = ((lr.ltx % c_num_tiles) + c_num_tiles) % c_num_tiles;
+				const int wty = ((lr.lty % c_num_tiles) + c_num_tiles) % c_num_tiles;
 				get_shape_location(Tile_coord(wtx, wty, anchor_z), grid_fx, grid_fy);
 				// Empirically the wall-top anchor lands 1px up-left of the
 				// visible interior; nudge the reference back.
@@ -1725,7 +1784,7 @@ void Game_window::build_light_layers() {
 			}
 			NaturalLight::Splat_radial_light(
 					cov, dstpix, srcpix, W, H, dst_lw, src_lw, csx, csy, lr.radius, lr.elevation, lr.dist_bias, lr.spill_percent,
-					roofpix, roof_lw, mask_roof, lr.is_spill, grid, grid_rt, grid_fx, grid_fy);
+					roofpix, roof_lw, mask_roof, lr.is_spill, lr.spill_floor, light_top_storey, grid, grid_rt, grid_fx, grid_fy);
 		}
 		layer_set_coverage(handle, cov, W, H);
 		// Align the overlay with the world's on-screen rectangle.

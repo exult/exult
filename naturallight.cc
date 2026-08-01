@@ -109,6 +109,79 @@ namespace {
 		return chunk->is_roof(tx % c_tiles_per_chunk, ty % c_tiles_per_chunk, 0) < 31;
 	}
 
+	// When the given absolute tile's only cover is a walkable floor-roof deck
+	// -- a storey slab whose top is at or below `max_z`, with open sky above
+	// it -- return the deck's top z-level.  Returns -1 when the tile is open
+	// ground or genuinely roofed (covered again higher up).  Used by the spill
+	// emission: a window high in a tall wall looks out OVER the neighbouring
+	// one-storey room's floor-roof, and its glow lands ON that deck; it must
+	// not be dropped as "interior" just because the deck registers as a roof
+	// from the ground.
+	int Light_tile_overlooked_deck(Game_map* gmap, int tx, int ty, int max_z) {
+		tx                     = Light_tile_norm(tx);
+		ty                     = Light_tile_norm(ty);
+		Map_chunk* const chunk = gmap->get_chunk_safely(tx / c_tiles_per_chunk, ty / c_tiles_per_chunk);
+		if (chunk == nullptr) {
+			return -1;
+		}
+		// The deck is a FLOOR shape (tf_floor_flag), and those are height-0
+		// flats: they never set the chunk's blocked flags, so the blocked-column
+		// probes cannot see them (the only blocked z over a deck tile is the
+		// tall room's own eave at roof level).  Scan for a floor object
+		// covering this tile instead.  An object lives in the chunk of its
+		// ANCHOR (bottom-right corner) while its footprint extends up-left,
+		// so a slab covering this tile can be anchored up to 7 tiles east or
+		// south -- in the east/south/southeast neighbour chunk; scan the 2x2
+		// chunk block.  The landing surface lies STRICTLY below the opening's
+		// top (light exits below the window's top edge and passes under the
+		// eave); take the highest such floor so multi-storey decks resolve to
+		// the one the window overlooks.
+		int       deck_top = -1;
+		const int cx       = tx / c_tiles_per_chunk;
+		const int cy       = ty / c_tiles_per_chunk;
+		for (int dcy = 0; dcy < 2; ++dcy) {
+			for (int dcx = 0; dcx < 2; ++dcx) {
+				Map_chunk* const ch = gmap->get_chunk_safely((cx + dcx) % c_num_chunks, (cy + dcy) % c_num_chunks);
+				if (ch == nullptr) {
+					continue;
+				}
+				Object_iterator it(ch->get_objects());
+				Game_object*    obj;
+				while ((obj = it.get_next()) != nullptr) {
+					const Shape_info& info = obj->get_info();
+					if (!info.is_floor()) {
+						continue;
+					}
+					if (!obj->get_footprint().has_world_point(tx, ty)) {
+						continue;
+					}
+					const int top = obj->get_lift() + info.get_3d_height();
+					if (top < max_z && top > deck_top) {
+						deck_top = top;
+					}
+				}
+			}
+		}
+		const int above
+				= deck_top >= 0 ? chunk->get_lowest_blocked(deck_top + 1, tx % c_tiles_per_chunk, ty % c_tiles_per_chunk) : -1;
+		if (std::getenv("EXULT_DEBUG_LIGHT_MASK") != nullptr) {
+			std::cerr << "[light-mask] deck? tile=(" << tx << ',' << ty << ") max_z=" << max_z << " deck_top=" << deck_top
+					  << " above=" << above << std::endl;
+		}
+		if (deck_top < 5) {
+			return -1;    // No storey-level floor: ground pavement is not a deck.
+		}
+		if (above >= 0 && above < max_z) {
+			// Solidly covered again BELOW the window top: another storey -- the
+			// far side is interior.  Cover at or above the window top is only
+			// the tall room's eave sticking out over the deck: the light passes
+			// under it, and the eave is painted as a real roof (mask 255) that
+			// clips the glow's overlapping pixels.
+			return -1;
+		}
+		return deck_top;
+	}
+
 	// Is the given absolute tile a full-height wall?  Tested a few tiles above the
 	// floor so low furniture (tables, chairs, ...) is not mistaken for a wall.
 	bool Light_tile_wall(Game_map* gmap, int tx, int ty) {
@@ -130,8 +203,11 @@ namespace {
 	// through, so a spill glow on it reads as a phantom second light source
 	// (and a frame mix-up makes some closed doors glow instead).  Returns the
 	// opening's transmission percent (1..100), or 0 when no pass-through shape
-	// covers the tile.
-	int Light_tile_has_pass_through(Map_chunk* chunk, int tx, int ty) {
+	// covers the tile.  `top_z` (when found) receives the opening's TOP
+	// z-level (lift + 3d height): a window mounted high in a wall pokes above
+	// an adjoining floor-roof deck, and its spill glow must then be drawn over
+	// the deck's surface instead of being storey-gated off it.
+	int Light_tile_has_pass_through(Map_chunk* chunk, int tx, int ty, int* top_z = nullptr) {
 		Object_iterator it(chunk->get_objects());
 		Game_object*    obj;
 		while ((obj = it.get_next()) != nullptr) {
@@ -147,6 +223,9 @@ namespace {
 				continue;
 			}
 			if (obj->get_footprint().has_world_point(tx, ty)) {
+				if (top_z != nullptr) {
+					*top_z = obj->get_lift() + info.get_3d_height();
+				}
 				return percent;
 			}
 		}
@@ -220,15 +299,19 @@ namespace {
 			}
 			{
 				// A light_passes_through shape/frame (iron-bar prison door,
-				// grate, open door leaf) is never a wall by itself: light
-				// passes through it even though it is solid to movement.  A
-				// WINDOW tile still reads as a wall -- the wall pieces the
-				// window is embedded in qualify on their own -- and then
-				// Light_tile_pass_opening turns it into a spill opening; but
-				// a freestanding barred door must let the fill flow through
-				// instead of sealing the cell.  (A 0% entry blocks light
-				// entirely: the strict test returns false for it, so the
-				// shape falls through to the normal wall tests below.)
+				// grate, open door leaf, window glass) is never a wall by
+				// itself: light passes through it even though it is solid to
+				// movement.  A window tile often still reads as a wall via the
+				// wall pieces it is embedded in, and Light_tile_pass_opening
+				// then turns it into a spill opening; but where the window
+				// itself is the wall's top section (castle halls with stained
+				// glass high in the wall) the fill flows THROUGH the glass out
+				// onto whatever lies beyond -- e.g. an adjoining floor-roof
+				// deck, which the light genuinely reaches from above.  The
+				// storey-gated roof mask keeps under-deck lights dark there, so
+				// the through-flow lights only what it should.  (A 0% entry
+				// blocks light entirely: the strict test returns false for it,
+				// so the shape falls through to the normal wall tests below.)
 				int  match_frame  = -2;
 				bool has_explicit = false;
 				bool has_wildcard = false;
@@ -298,14 +381,15 @@ namespace {
 	// (window, open door, grate)?  Such a tile is where light escapes a room
 	// even though the wall stack occupies it to full height.  Returns the
 	// opening's transmission percent (1..100), or 0 when there is no opening.
-	int Light_tile_pass_opening(Game_map* gmap, int tx, int ty) {
+	// `top_z` (when found) receives the opening's top z-level.
+	int Light_tile_pass_opening(Game_map* gmap, int tx, int ty, int* top_z = nullptr) {
 		tx                     = Light_tile_norm(tx);
 		ty                     = Light_tile_norm(ty);
 		Map_chunk* const chunk = gmap->get_chunk_safely(tx / c_tiles_per_chunk, ty / c_tiles_per_chunk);
 		if (chunk == nullptr) {
 			return 0;
 		}
-		return Light_tile_has_pass_through(chunk, tx, ty);
+		return Light_tile_has_pass_through(chunk, tx, ty, top_z);
 	}
 
 }    // namespace
@@ -808,9 +892,11 @@ namespace NaturalLight {
 		// TRAVELS around walls, not just the straight-line distance.
 		std::vector<std::pair<int, int>> queue;
 		size_t                           qhead = 0;
-		// Outside-tile grid coords + the opening's transmission percent.
-		std::vector<std::tuple<int, int, int>> spill_cand;
-		std::vector<std::pair<int, int>>       door_cand;    // Roofed->open exit tiles.
+		// Outside-tile grid coords + the opening's transmission percent + the
+		// opening's TOP z-level (0 for none): a window mounted high enough to
+		// rise above an adjoining floor-roof deck spills OVER the deck surface.
+		std::vector<std::tuple<int, int, int, int>> spill_cand;
+		std::vector<std::pair<int, int>>            door_cand;    // Roofed->open exit tiles.
 		// The room's floor for the wall test is the STOREY floor (storeys are 5 z
 		// apart), not the light's own z: a lamp standing on a shelf at tz 4 is
 		// still in a ground-floor room whose walls rise from z 0, and the books
@@ -826,8 +912,8 @@ namespace NaturalLight {
             }
             return m == 1;
 		};
-		auto opening = [&](int gx, int gy) {
-			return Light_tile_pass_opening(gmap, lt.tx + gx - rt, lt.ty + gy - rt);
+		auto opening = [&](int gx, int gy, int* top_z = nullptr) {
+			return Light_tile_pass_opening(gmap, lt.tx + gx - rt, lt.ty + gy - rt, top_z);
 		};
 		// Memoized per-tile roof test for the doorway-spill detection: a spill
 		// is where the fill crosses from a roofed tile to an unroofed one.
@@ -929,25 +1015,33 @@ namespace NaturalLight {
 						set_dist(nidx, gdist + 1);
 					}
 					if (spills != nullptr) {
-						const int pct = opening(nx, ny);
+						int       open_top = 0;
+						const int pct      = opening(nx, ny, &open_top);
 						if (pct > 0) {
 							// Window/grate: the light escapes to the tile on the
 							// FAR side of the opening, continuing in the direction
 							// the fill approached from.  Record it as a candidate;
 							// whether it really points OUTWARD is only known once
 							// the fill is complete (see below).
-							const int ox = nx + d[0];
-							const int oy = ny + d[1];
-							if (ox >= 0 && oy >= 0 && ox < side && oy < side && !tall(ox, oy)) {
+							const int  ox      = nx + d[0];
+							const int  oy      = ny + d[1];
+							const bool in_grid = ox >= 0 && oy >= 0 && ox < side && oy < side;
+							if (std::getenv("EXULT_DEBUG_LIGHT_MASK") != nullptr) {
+								std::cerr << "[light-mask] opening at=(" << lt.tx + nx - rt << ',' << lt.ty + ny - rt
+										  << ") pct=" << pct << " open_top=" << open_top << " far=(" << lt.tx + ox - rt << ','
+										  << lt.ty + oy - rt << ") in_grid=" << in_grid
+										  << " far_tall=" << (in_grid ? (tall(ox, oy) ? 1 : 0) : -1) << std::endl;
+							}
+							if (in_grid && !tall(ox, oy)) {
 								bool dup = false;
-								for (const auto& [px, py, ppct] : spill_cand) {
+								for (const auto& [px, py, ppct, ptop] : spill_cand) {
 									if (px == ox && py == oy) {
 										dup = true;
 										break;
 									}
 								}
 								if (!dup) {
-									spill_cand.emplace_back(ox, oy, pct);
+									spill_cand.emplace_back(ox, oy, pct, open_top);
 								}
 							}
 						}
@@ -1010,7 +1104,8 @@ namespace NaturalLight {
 		// the room interior, and emitting it would spill the window's glow
 		// back INSIDE.  A tile the fill already lit needs no spill glow anyway.
 		if (spills != nullptr) {
-			for (const auto& [ox, oy, pct] : spill_cand) {
+			const bool dbg_spill = std::getenv("EXULT_DEBUG_LIGHT_MASK") != nullptr;
+			for (const auto& [ox, oy, pct, open_top] : spill_cand) {
 				// Emit only if the far-side tile is under OPEN SKY.  A window
 				// the fill touched from its OUTSIDE face (after escaping through
 				// a door and wrapping around the building) has the room interior
@@ -1018,10 +1113,42 @@ namespace NaturalLight {
 				// glow back INSIDE.  (Testing `lit` instead is wrong: the fill
 				// wrapping around outside also reaches a window's legitimate
 				// outside tile, which must NOT cancel that window's spill.)
-				if (Light_tile_roofed(gmap, lt.tx + ox - rt, lt.ty + oy - rt)) {
-					continue;    // Far side is interior (or under another roof).
+				const int fx = lt.tx + ox - rt;
+				const int fy = lt.ty + oy - rt;
+				// The spill's storey gates it off higher-storey deck surfaces
+				// (roof mask 128 + storey).  Take the HIGHER of the light's own
+				// storey and the opening's top: a window mounted high in a wall
+				// (top z at or above the next storey) pokes above an adjoining
+				// floor-roof deck, so its glow is drawn OVER the deck surface.
+				int        floor   = std::max(lt.tz / 5, open_top / 5);
+				int        sp_tz   = 0;
+				const bool covered = Light_tile_roofed(gmap, fx, fy);
+				if (dbg_spill) {
+					std::cerr << "[light-mask] spill-cand far=(" << fx << ',' << fy << ") pct=" << pct << " open_top=" << open_top
+							  << " roofed=" << covered << std::endl;
 				}
-				spills->push_back({Tile_coord(Light_tile_norm(lt.tx + ox - rt), Light_tile_norm(lt.ty + oy - rt), 0), pct});
+				if (covered) {
+					// Covered -- but when the cover is only a floor-roof deck
+					// the window overlooks (its top at or below the opening's
+					// top, open sky above), the far side is OUTSIDE after all:
+					// the glow lands ON the deck.  Place the spill at the deck's
+					// storey floor so it renders at deck height and its storey
+					// lets it light the deck's top surface.
+					const int deck_top = Light_tile_overlooked_deck(gmap, fx, fy, open_top);
+					if (deck_top < 0) {
+						if (dbg_spill) {
+							std::cerr << "[light-mask] spill-cand DROPPED (interior/roofed)" << std::endl;
+						}
+						continue;    // Far side is interior (or under another roof).
+					}
+					sp_tz = (deck_top / 5) * 5;
+					floor = std::max(floor, deck_top / 5);
+				}
+				if (dbg_spill) {
+					std::cerr << "[light-mask] spill EMIT tile=(" << Light_tile_norm(fx) << ',' << Light_tile_norm(fy) << ','
+							  << sp_tz << ") pct=" << pct << " floor=" << floor << std::endl;
+				}
+				spills->push_back({Tile_coord(Light_tile_norm(fx), Light_tile_norm(fy), sp_tz), pct, floor});
 			}
 			// Doorway/roof-edge spills.  Neighbouring exit tiles along a wide
 			// opening would each spawn a near-identical continuation bubble
@@ -1043,7 +1170,8 @@ namespace NaturalLight {
 				}
 				emitted.emplace_back(ox, oy);
 				// A doorway / roof-edge exit is open air: full transmission.
-				spills->push_back({Tile_coord(Light_tile_norm(lt.tx + ox - rt), Light_tile_norm(lt.ty + oy - rt), 0), 100});
+				spills->push_back(
+						{Tile_coord(Light_tile_norm(lt.tx + ox - rt), Light_tile_norm(lt.ty + oy - rt), 0), 100, lt.tz / 5});
 			}
 		}
 	}
@@ -1101,7 +1229,8 @@ namespace NaturalLight {
 	void Splat_radial_light(
 			unsigned char* cov, unsigned char* dstpix, const unsigned char* srcpix, int W, int H, int dst_lw, int src_lw, int sx,
 			int sy, int radius, int elevation, int dist_bias, int intensity_pct, const unsigned char* roofpix, int roof_lw,
-			bool veto_roof, bool is_spill, const unsigned char* grid, int grid_rt, int grid_fx, int grid_fy) {
+			bool veto_roof, bool is_spill, int spill_floor, int light_top_storey, const unsigned char* grid, int grid_rt,
+			int grid_fx, int grid_fy) {
 		if (radius <= 0 || intensity_pct <= 0) {
 			return;
 		}
@@ -1149,6 +1278,8 @@ namespace NaturalLight {
 		const float        grid_u = static_cast<float>(grid_fx) - half - static_cast<float>(grid_rt) * cell;
 		const float        grid_v = static_cast<float>(grid_fy) - half - static_cast<float>(grid_rt) * cell;
 		std::vector<float> field;
+		int                dbg_field_cells = 0;       // Nonzero flood cells.
+		float              dbg_field_max   = 0.0f;    // Peak field brightness.
 		if (grid != nullptr) {
 			// The wall-top anchor pins the lattice up-and-left of the tiles'
 			// floor positions (4px per z of wall height), so the grid CENTRE
@@ -1194,7 +1325,12 @@ namespace NaturalLight {
 					const float tot  = travel + bias;
 					const float dome = 1.0f - (tot * tot + e2) / rf2;
 					if (dome > 0.0f) {
-						field[static_cast<size_t>(gy) * side + gx] = 255.0f * dome * inten;
+						const float fv                             = 255.0f * dome * inten;
+						field[static_cast<size_t>(gy) * side + gx] = fv;
+						++dbg_field_cells;
+						if (fv > dbg_field_max) {
+							dbg_field_max = fv;
+						}
 					}
 				}
 			}
@@ -1226,12 +1362,21 @@ namespace NaturalLight {
 		if (y1 >= H) {
 			y1 = H - 1;
 		}
+		// Diagnostics: per-spill histogram of mask values / outcomes under the
+		// splat (EXULT_DEBUG_LIGHT_MASK).
+		const bool dbg_splat      = is_spill && std::getenv("EXULT_DEBUG_LIGHT_MASK") != nullptr;
+		size_t     dbg_clear      = 0;    // Unmarked pixels considered.
+		size_t     dbg_roof       = 0;    // Skipped: real roof 255.
+		size_t     dbg_gate       = 0;    // Skipped: storey gate.
+		size_t     dbg_tall       = 0;    // Marked, passed gate (bypass_field).
+		size_t     dbg_drawn      = 0;    // Pixels actually brightened.
+		int        dbg_maxa_tall  = 0;    // Peak alpha computed on marked pixels.
+		int        dbg_maxa_clear = 0;    // Peak alpha computed on clear pixels.
 		for (int y = y0; y <= y1; ++y) {
 			const int            dy      = y - sy;
 			const float          dy2     = static_cast<float>(dy) * static_cast<float>(dy);
 			const unsigned char* roofrow = roofpix ? roofpix + y * roof_lw : nullptr;
 			for (int x = x0; x <= x1; ++x) {
-				// Marked pixel: 255 is a real roof (or an object standing on
 				// one), 128 a tall EXTERIOR shape (tree canopy, lamppost).  An
 				// under-roof light keeps both dark.  A SPILL glow -- the bubble
 				// already outside the opening -- lights tall shapes as whole
@@ -1243,12 +1388,49 @@ namespace NaturalLight {
 				bool bypass_field = false;
 				if (roofrow && roofrow[x]) {
 					if (veto_roof) {
-						continue;    // Keep dark under every interior light.
+						// An under-roof light keeps marked pixels dark: real
+						// roofs (255) and whole-unit tall marks (128 -- tree
+						// canopies, deck objects, slab faces) never light up
+						// under it.  EXCEPTION: a floor-slab TOP one or more
+						// storeys up (129+) is a walking surface the light's
+						// fill can genuinely reach -- through a window rising
+						// above the adjoining deck -- so it samples the
+						// propagated field like clear ground, but only when the
+						// light's own room roof rises ABOVE the slab
+						// (light_top_storey): the light of the room UNDER the
+						// deck (its roof IS the slab) must never brighten it
+						// from underneath.  Where the fill never reached, the
+						// field is 0 and the pixel stays dark anyway.
+						if (roofrow[x] < 129 || roofrow[x] - 128 >= light_top_storey) {
+							continue;    // Keep dark under this interior light.
+						}
+					} else if (is_spill) {
+						if (roofrow[x] == 255) {
+							++dbg_roof;
+							continue;    // A spill never lights a real roof.
+						}
+						if (roofrow[x] - 128 > spill_floor) {
+							// The marked surface sits on a HIGHER storey than
+							// the spill's source: a ground-floor window's glow
+							// must not brighten a floor-roof deck above it.
+							++dbg_gate;
+							continue;
+						}
+						// A floor-slab TOP (mask 128 + storey, storey >= 1) is a
+						// horizontal walking surface sitting on the tile lattice,
+						// exactly like clear ground: keep sampling the propagated
+						// field so the spill pools across the deck bounded by its
+						// walls (the pre-floor-roofs rendering).  Only plain 128
+						// marks -- standing deck objects, slab faces, canopies,
+						// whose sprites span far more screen than their tiles --
+						// take the whole-unit free-dome bypass.
+						bypass_field = roofrow[x] < 129;
+					} else {
+						bypass_field = true;
 					}
-					if (is_spill && roofrow[x] == 255) {
-						continue;    // A spill never lights a real roof.
-					}
-					bypass_field = true;
+					++dbg_tall;
+				} else {
+					++dbg_clear;
 				}
 				int a;
 				if (grid != nullptr && !bypass_field) {
@@ -1306,12 +1488,30 @@ namespace NaturalLight {
 				if (a <= 0) {
 					continue;
 				}
+				if (dbg_splat) {
+					if (bypass_field) {
+						if (a > dbg_maxa_tall) {
+							dbg_maxa_tall = a;
+						}
+					} else if (a > dbg_maxa_clear) {
+						dbg_maxa_clear = a;
+					}
+				}
 				const size_t idx = static_cast<size_t>(y) * W + x;
 				if (a > cov[idx]) {
 					cov[idx]               = static_cast<unsigned char>(a);
 					dstpix[y * dst_lw + x] = srcpix[y * src_lw + x];
+					++dbg_drawn;
 				}
 			}
+		}
+		if (dbg_splat) {
+			std::cerr << "[light-mask] spill-splat at=(" << sx << ',' << sy << ") r=" << radius << " floor=" << spill_floor
+					  << " px clear=" << dbg_clear << " roof255=" << dbg_roof << " gated=" << dbg_gate << " tall=" << dbg_tall
+					  << " drawn=" << dbg_drawn << " maxa_tall=" << dbg_maxa_tall << " maxa_clear=" << dbg_maxa_clear
+					  << " bias=" << dist_bias << " elev=" << elevation << " pct=" << intensity_pct << " grid=" << (grid ? side : 0)
+					  << " fcells=" << dbg_field_cells << " fmax=" << static_cast<int>(dbg_field_max) << " ganchor=(" << grid_fx
+					  << ',' << grid_fy << ")" << std::endl;
 		}
 	}
 

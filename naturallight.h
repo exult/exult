@@ -97,12 +97,16 @@ namespace NaturalLight {
 	int Light_room_roof_z(Game_map* gmap, int tx, int ty, int lift);
 
 	// One spill opening found by Build_light_shadow_grid: the tile just
-	// outside the opening the light escapes through, and how much of the
+	// outside the opening the light escapes through, how much of the
 	// light the opening transmits (1..100 percent, from the
-	// light_passes_through data; doorways are open air and carry 100).
+	// light_passes_through data; doorways are open air and carry 100), and
+	// the STOREY the source light stands on (tz / 5).  The splat uses the
+	// storey to keep a ground-floor window's glow off surfaces one storey
+	// up (a floor-roof deck) while an upper-storey window still lights them.
 	struct Light_spill {
 		Tile_coord tile;
 		int        percent;
+		int        floor;
 	};
 
 	// Build the room-fill grid a light casts, honouring tall light-blocking
@@ -161,6 +165,17 @@ namespace NaturalLight {
 	// lamps brighten nearby house roofs).  `is_spill` narrows that: a spill glow
 	// (the interior bubble already outside its opening) lights tall shapes (128)
 	// whole but never a real roof (255) -- only a true exterior light does that.
+	// Tall/deck mask values additionally encode the surface's STOREY as
+	// 128 + storey: a spill lights such a pixel only when `spill_floor` (the
+	// source light's storey, tz / 5) is at least that storey, so a ground-floor
+	// window's glow never brightens a floor-roof deck one storey up, while an
+	// upper-storey window's glow still lights the deck and its battlements.
+	// Interior (veto) and exterior lights ignore the storey; only spills gate --
+	// EXCEPT that a veto (under-roof) light may light a floor-slab TOP (129+)
+	// through the propagated field when its own room roof rises above the slab
+	// (`light_top_storey`, the room roof z / 5): light through a window high in
+	// the wall genuinely reaches the adjoining deck, while the light of the room
+	// UNDER the deck (roof storey == slab storey) stays dark.
 	// `dist_bias` (game px) continues another source's
 	// falloff: the dome fades as if the light had already travelled that far
 	// before reaching the splat centre -- used for spill glows, which are the
@@ -187,7 +202,8 @@ namespace NaturalLight {
 	void Splat_radial_light(
 			unsigned char* cov, unsigned char* dstpix, const unsigned char* srcpix, int W, int H, int dst_lw, int src_lw, int sx,
 			int sy, int radius, int elevation, int dist_bias, int intensity_pct, const unsigned char* roofpix, int roof_lw,
-			bool veto_roof, bool is_spill, const unsigned char* grid, int grid_rt, int grid_fx, int grid_fy);
+			bool veto_roof, bool is_spill, int spill_floor, int light_top_storey, const unsigned char* grid, int grid_rt,
+			int grid_fx, int grid_fy);
 
 }    // namespace NaturalLight
 
