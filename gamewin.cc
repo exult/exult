@@ -1483,28 +1483,25 @@ void Game_window::update_roof_mask(Game_object* obj, int sx, int sy) {
 		// like a roof, but mark it 128 + storey (not 255) so a window/opening
 		// SPILL at deck level still lights its top surface, while a GROUND
 		// window's glow -- whose screen radius overlaps the elevated deck --
-		// is gated off by the storey.  The slab's front-facing THICKNESS
-		// (the bottom / right 4px-per-z strip of the sprite) faces the storey
-		// BELOW, so it keeps that storey's value and a ground-level spill
-		// right outside the wall still brushes it.  Painted here in two
-		// passes (full stamp at the below-storey value, then the top region
-		// re-stamped at the deck storey via a clip rect), so return early.
-		const int zs          = obj->get_info().get_3d_height();
-		const int top_storey  = storey_of(obj->get_lift() + zs);
-		const int face_storey = top_storey > 0 ? top_storey - 1 : 0;
-		frame->paint_rle_transformed(roof_light_mask.get(), sx, sy, roof_tall[face_storey]);
-		if (top_storey > face_storey && zs > 0) {
-			const int                  strip = 4 * zs;
-			Image_buffer::ClipRectSave clipsave(roof_light_mask.get());
-			const TileRect             top_rect(
-                    sx - frame->get_xleft(), sy - frame->get_yabove(), frame->get_width() - strip, frame->get_height() - strip);
-			const TileRect r = top_rect.intersect(clipsave.Rect());
-			if (r.w > 0 && r.h > 0) {
-				roof_light_mask->set_clip(r.x, r.y, r.w, r.h);
-				frame->paint_rle_transformed(roof_light_mask.get(), sx, sy, roof_tall[top_storey]);
-			}
+		// is gated off by the storey.  Only the flat TOP surface is marked:
+		// the slab's front-facing THICKNESS (the bottom / right 4px-per-z
+		// strip of the sprite) is a vertical edge facing the storey below --
+		// marking it would draw a dark seam along the wall it adjoins inside
+		// the neighbouring room -- so leave it as the shapes beneath painted
+		// it and the room's own light brushes it like the wall face.  Painted
+		// via a clip rect, so return early.
+		const int                  zs         = obj->get_info().get_3d_height();
+		const int                  top_storey = storey_of(obj->get_lift() + zs);
+		const int                  strip      = 4 * zs;
+		Image_buffer::ClipRectSave clipsave(roof_light_mask.get());
+		const TileRect             top_rect(
+                sx - frame->get_xleft(), sy - frame->get_yabove(), frame->get_width() - strip, frame->get_height() - strip);
+		const TileRect r = top_rect.intersect(clipsave.Rect());
+		if (r.w > 0 && r.h > 0) {
+			roof_light_mask->set_clip(r.x, r.y, r.w, r.h);
+			frame->paint_rle_transformed(roof_light_mask.get(), sx, sy, roof_tall[top_storey]);
 		}
-		report("MARK floor-slab (storey top/face)");
+		report("MARK floor-slab (top only)");
 		return;
 	} else if (inside) {
 		const int  av_lift       = main_actor ? main_actor->get_lift() : 0;
