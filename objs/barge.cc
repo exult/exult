@@ -43,6 +43,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "ignore_unused_variable_warning.h"
 #include "objiter.h"
 #include "shapeinf.h"
+#include "spectron_bridge.h"
 #include "ucsched.h"
 
 #ifdef USE_EXULTSTUDIO
@@ -882,6 +883,16 @@ bool Barge_object::step(
 	// Near an egg?
 	Map_chunk* nlist = gmap->get_chunk(get_cx(), get_cy());
 	nlist->activate_eggs(gwin->get_main_actor(), t.tx, t.ty, t.tz, cur.tx, cur.ty);
+	// Spectron: only while the Avatar is operating this barge.
+	if (gwin->get_moving_barge() == this) {
+		const char* mode = "cart";
+		if (get_lift() > 0) {
+			mode = "carpet";
+		} else if (boat == 1) {
+			mode = "ship";
+		}
+		Spectron_bridge::barge_step(cur, t, mode);
+	}
 	return true;    // Add back to queue for next time.
 }
 

@@ -39,6 +39,7 @@
 #include "citerate.h"
 #include "combat.h"
 #include "conversation.h"
+#include "spectron_bridge.h"
 #include "effects.h"
 #include "egg.h"
 #include "exult.h"
@@ -75,11 +76,13 @@
 #include "virstone.h"
 
 #include <array>
+#include <cctype>
 #include <cmath>
 #include <limits>
 #include <map>
 #include <memory>
 #include <string_view>
+#include <vector>
 
 using std::cerr;
 using std::cout;
@@ -413,7 +416,7 @@ USECODE_INTRINSIC(add_to_party) {
 	}
 	npc->set_schedule_type(Schedule::follow_avatar);
 	npc->set_alignment(Actor::good);
-	// cout << "NPC " << npc->get_npc_num() << " added to party." << endl;
+	Spectron_bridge::companion_changed(npc, true);
 	return no_ret;
 }
 
@@ -422,6 +425,7 @@ USECODE_INTRINSIC(remove_from_party) {
 	Actor* npc = as_actor(get_item(parms[0]));
 	if (partyman->remove_from_party(npc)) {
 		npc->set_alignment(Actor::neutral);
+		Spectron_bridge::companion_changed(npc, false);
 	}
 	return no_ret;
 }
@@ -1025,7 +1029,12 @@ USECODE_INTRINSIC(display_runes) {
 		cnt = 1;    // Try with 1 element.
 	}
 	{
-		Sign_gump sign(parms[0].get_int_value(), cnt);
+		const int        shapenum = parms[0].get_int_value();
+		Sign_gump        sign(shapenum, cnt);
+		std::vector<std::string> raw_lines;
+		std::vector<std::string> latin_lines;
+		raw_lines.reserve(cnt);
+		latin_lines.reserve(cnt);
 		for (int i = 0; i < cnt; i++) {
 			// Paint each line.
 			const Usecode_value& lval = !i ? parms[1].get_elem0() : parms[1].get_elem(i);
@@ -1033,11 +1042,84 @@ USECODE_INTRINSIC(display_runes) {
 			if (str) {
 				std::string translated(str);
 				translate_usecode_text(translated);
+				raw_lines.push_back(translated);
+				// Same ligature expansion Sign_gump uses when the Avatar can
+				// read: always produce a Latin form for Spectron.
+				std::string latin;
+				latin.reserve(translated.size());
+				for (const unsigned char ch : translated) {
+					if (ch == '(') {
+						latin += "TH";
+					} else if (ch == ')') {
+						latin += "EE";
+					} else if (ch == '*') {
+						latin += "NG";
+					} else if (ch == '+') {
+						latin += "EA";
+					} else if (ch == ',') {
+						latin += "ST";
+					} else if (ch == '|') {
+						latin += ' ';
+					} else {
+						latin += static_cast<char>(std::toupper(ch));
+					}
+				}
+				latin_lines.push_back(latin);
 				sign.add_text(i, translated.c_str());
 			} else {
+				raw_lines.emplace_back();
+				latin_lines.emplace_back();
 				sign.add_text(i, std::string());
 			}
 		}
+		// Script style from gump art: traditional Britannian signs use rune
+		// fonts; Fellowship gold signs use Latin embossing.
+		const char* gump_kind = "other";
+		const char* script    = "unknown";
+		if (shapenum == game->get_shape("gumps/woodsign")) {
+			gump_kind = "woodsign";
+			script    = "runic";
+		} else if (shapenum == game->get_shape("gumps/tombstone")) {
+			gump_kind = "tombstone";
+			script    = "runic";
+		} else if (shapenum == game->get_shape("gumps/goldsign")) {
+			gump_kind = "goldsign";
+			script    = "latin";    // Fellowship-style embossed Latin
+		} else if (shapenum == game->get_shape("gumps/scroll")) {
+			gump_kind = "scroll";
+			script    = "latin";
+		}
+		// SI unread serpentine override (Sign_gump may rewrite goldsign).
+		if (Game::get_game_type() == SERPENT_ISLE && shapenum == 49) {
+			Main_actor* avatar = gwin->get_main_actor();
+			if (avatar && !avatar->get_flag(Obj_flags::read)) {
+				script = "serpentine";
+			}
+		}
+		// Some Fellowship street plaques reuse the woodsign gump but pass
+		// already-uppercase Latin (no rune ligatures). Tag those as latin so
+		// Spectron does not invent "runic" for AVENUE OF THE FELLOWSHIP & co.
+		if (std::strcmp(script, "runic") == 0) {
+			bool has_ligature = false;
+			bool has_lower    = false;
+			bool has_upper    = false;
+			for (const auto& line : raw_lines) {
+				for (const unsigned char ch : line) {
+					if (ch == '(' || ch == ')' || ch == '*' || ch == '+' || ch == ','
+						|| ch == '|') {
+						has_ligature = true;
+					} else if (std::islower(ch)) {
+						has_lower = true;
+					} else if (std::isupper(ch)) {
+						has_upper = true;
+					}
+				}
+			}
+			if (has_upper && !has_lower && !has_ligature) {
+				script = "latin";
+			}
+		}
+		Spectron_bridge::sign_read(gump_kind, script, raw_lines, latin_lines);
 		int x;
 		int y;    // Paint it, and wait for click.
 		Get_click(x, y, Mouse::hand, nullptr, false, &sign);
@@ -1268,8 +1350,13 @@ USECODE_INTRINSIC(move_object) {
 		return no_ret;
 	}
 	const Tile_coord oldpos = obj->get_tile();
+	Actor*           act    = as_actor(obj);
+	const bool       avatar_jump
+			= act && act == ava && (oldpos.distance(tile) > 8 || map != -1);
+	if (avatar_jump) {
+		Spectron_bridge::flush_travel_before_relocate();
+	}
 	obj->move(tile.tx, tile.ty, tile.tz, map);
-	Actor* act = as_actor(obj);
 	if (act) {
 		act->set_action(nullptr);
 		if (act == ava) {
@@ -1280,6 +1367,11 @@ USECODE_INTRINSIC(move_object) {
 			}
 			gwin->center_view(tile);
 			Map_chunk::try_all_eggs(ava, tile.tx, tile.ty, tile.tz, oldpos.tx, oldpos.ty);
+			// Party moves use teleport_party above; Avatar-only usecode jumps
+			// (some jail / cutscene scripts) land here instead.
+			if (avatar_jump) {
+				Spectron_bridge::party_relocated(oldpos, tile);
+			}
 		}
 		// Close?  Add to 'nearby' list.
 		else if (ava->distance(act) < gwin->get_game_width() / c_tilesize) {
@@ -1557,6 +1649,15 @@ USECODE_INTRINSIC(display_map) {
 	Usecode_value v_359(-359);
 	const long    sextants = count_objects(v_357, v650, v_359, v_359).get_int_value();
 	const bool    loc      = !gwin->is_main_actor_inside() && (sextants > 0);
+	if (loc) {
+		if (Actor* avatar = gwin->get_main_actor()) {
+			const Tile_coord t     = avatar->get_tile();
+			const int        longi = (t.tx - 0x3A5) / 10;
+			const int        lati  = (t.ty - 0x46E) / 10;
+			Spectron_bridge::sextant_reading(
+					abs(lati), lati < 0 ? "N" : "S", abs(longi), longi < 0 ? "W" : "E");
+		}
+	}
 	// Display map.
 	if (touchui != nullptr) {
 		touchui->hideGameControls();
@@ -1658,6 +1759,15 @@ USECODE_INTRINSIC(si_display_map) {
 USECODE_INTRINSIC(display_map_ex) {
 	const int  map_shp = parms[0].get_int_value();
 	const bool loc     = parms[1].get_int_value() != 0;
+	if (loc) {
+		if (Actor* avatar = gwin->get_main_actor()) {
+			const Tile_coord t     = avatar->get_tile();
+			const int        longi = (t.tx - 0x3A5) / 10;
+			const int        lati  = (t.ty - 0x46E) / 10;
+			Spectron_bridge::sextant_reading(
+					abs(lati), lati < 0 ? "N" : "S", abs(longi), longi < 0 ? "W" : "E");
+		}
+	}
 
 	// Display map.
 	if (touchui != nullptr) {
@@ -3449,6 +3559,9 @@ USECODE_INTRINSIC(remove_npc_face0) {
 	ignore_unused_variable_warning(parms);
 	show_pending_text();
 	conv->remove_slot_face(0);
+	if (conv->get_num_faces_on_screen() == 0) {
+		Spectron_bridge::talk_end();
+	}
 	return no_ret;
 }
 
@@ -3456,6 +3569,9 @@ USECODE_INTRINSIC(remove_npc_face1) {
 	ignore_unused_variable_warning(parms);
 	show_pending_text();
 	conv->remove_slot_face(1);
+	if (conv->get_num_faces_on_screen() == 0) {
+		Spectron_bridge::talk_end();
+	}
 	return no_ret;
 }
 
@@ -3496,6 +3612,7 @@ USECODE_INTRINSIC(end_conversation) {
 	show_pending_text();    // Wait for click if needed.
 	conv->init_faces();     // Removes faces from screen.
 	gwin->set_all_dirty();
+	Spectron_bridge::talk_end();
 	return no_ret;
 }
 

@@ -30,6 +30,8 @@ libusecode_la_SOURCES += \
 	useval.h	\
 	conversation.cc \
 	conversation.h	\
+	spectron_bridge.cc \
+	spectron_bridge.h \
 	keyring.cc	\
 	keyring.h	\
 	ucdisasm.cc	\

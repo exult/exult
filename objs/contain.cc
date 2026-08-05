@@ -38,6 +38,7 @@
 #include "ignore_unused_variable_warning.h"
 #include "keyring.h"
 #include "objiter.h"
+#include "spectron_bridge.h"
 #include "ready.h"
 #include "ucmachine.h"
 #include "ucsched.h"
@@ -417,11 +418,13 @@ bool Container_game_object::show_gump(int event) {
 	} else if ((gump = inf.get_gump_shape()) >= 0) {
 		Gump_manager* gump_man = gumpman;
 		gump_man->add_gump(this, gump);
+		Spectron_bridge::container_opened(this);
 		return true;
 	} else if (inf.is_container_locked() && cheat.in_pickpocket()) {
 		// Container is locked, showing first gump.
 		Gump_manager* gump_man = gumpman;
 		gump_man->add_gump(this, 1);
+		Spectron_bridge::container_opened(this);
 		return true;
 	}
 	return false;

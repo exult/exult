@@ -63,6 +63,7 @@
 #include "palette.h"
 #include "party.h"
 #include "ready.h"
+#include "spectron_bridge.h"
 #include "spellbook.h"
 #include "ucmachine.h"
 #include "ucsched.h"
@@ -1941,6 +1942,14 @@ void Actor::set_schedule_type(
 	// Set AFTER creating new schedule.
 	schedule_type = new_schedule_type;
 
+	if (npc_num == 0) {
+		const bool was_sleep = old_schedule == Schedule::sleep;
+		const bool now_sleep = new_schedule_type == Schedule::sleep;
+		if (was_sleep != now_sleep) {
+			Spectron_bridge::sleep_changed(now_sleep);
+		}
+	}
+
 	// Reset Next Schedule
 	schedule_loc  = Tile_coord(0, 0, 0);
 	next_schedule = 255;
@@ -3102,6 +3111,10 @@ int Actor::reduce_health(
 	} else if (val <= 0 && !get_flag(Obj_flags::asleep)) {
 		Combat_schedule::stop_attacking_npc(this);
 		set_flag(Obj_flags::asleep);
+		// HP ≤ 0 but above the dying threshold: lie down / recover if left alone.
+		if (this == gwin->get_main_actor() || in_party) {
+			Spectron_bridge::party_knocked_out(this);
+		}
 	} else if (npc && !target.lock() && !in_party) {
 		set_target(npc, npc->get_schedule_type() != Schedule::duel);
 		set_oppressor(npc->get_npc_num());
@@ -4312,12 +4325,17 @@ void Actor::die(Game_object* attacker) {
 	if (is_dead()) {
 		return;
 	}
+	// Capture party status before flags / party list update.
+	const bool was_party = is_in_party();
 	set_action(nullptr);
 	schedule.reset();
 	gwin->get_tqueue()->remove(this);    // Remove from time queue.
 	Actor::set_flag(Obj_flags::dead);    // IMPORTANT:  Set this before moving
 	clear_type_flag(Actor::tf_bleeding);
 	//   objs. so Usecode(eventid=6) isn't called.
+	if (was_party && this != gwin->get_main_actor() && get_npc_num() != 0) {
+		Spectron_bridge::companion_died(this);
+	}
 	int shnum = get_shapenum();
 	// Special case:  Hook, Dracothraxus.
 	if (((shnum == 0x1fa || (shnum == 0x1f8 && Is_draco(this))) && Game::get_game_type() == BLACK_GATE)) {
@@ -4731,6 +4749,7 @@ bool Main_actor::step(
 	// Get old chunk, old tile.
 	Map_chunk*       olist   = get_chunk();
 	const Tile_coord oldtile = get_tile();
+	const unsigned int was_dungeon = gwin->is_in_dungeon();
 	// Unhatch any nearby eggs in old location
 	olist->unhatch_eggs(this, t.tx, t.ty, t.tz, oldtile.tx, oldtile.ty);
 
@@ -4749,6 +4768,11 @@ bool Main_actor::step(
 	} else if (roof_height < 31 && gwin->set_in_dungeon(nlist->has_dungeon() ? nlist->is_dungeon(tx, ty) : 0)) {
 		gwin->set_all_dirty();
 	}
+	const unsigned int now_dungeon = gwin->is_in_dungeon();
+	if ((was_dungeon != 0) != (now_dungeon != 0)) {
+		Spectron_bridge::dungeon_changed(now_dungeon != 0);
+	}
+	Spectron_bridge::avatar_step(oldtile, t);
 	// Near an egg?  (Do this last, since
 	//   it may teleport.)
 	nlist->activate_eggs(this, t.tx, t.ty, t.tz, oldtile.tx, oldtile.ty);
@@ -4848,6 +4872,7 @@ void Main_actor::die(Game_object* /* attacker */
 		party[i]->clear_type_flag(Actor::tf_bleeding);
 	}
 	gumpman->close_all_gumps();    // Obviously.
+	Spectron_bridge::avatar_died();
 	// Special function for dying:
 	Usecode_function_data* info = Shapeinfo_lookup::GetAvUsecode(0);
 	ucmachine->call_usecode(info->fun_id, this, static_cast<Usecode_machine::Usecode_events>(info->event_id));

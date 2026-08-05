@@ -49,6 +49,7 @@
 #include "gamewin.h"
 #include "ios_state.hpp"
 #include "items.h"
+#include "spectron_bridge.h"
 #include "keyring.h"
 #include "miscinf.h"
 #include "monsters.h"
@@ -586,6 +587,7 @@ void Usecode_internal::show_book() {
 	std::string translated(str);
 	translate_usecode_text(translated);
 	book->add_text(translated.c_str());
+	Spectron_bridge::book_append(translated.c_str());
 	delete[] String;
 	String = nullptr;
 }
@@ -614,11 +616,13 @@ void Usecode_internal::say_string() {
 		char* eol = strchr(str, '~');
 		if (!eol) {    // Not found?
 			conv->show_npc_message(str);
+			Spectron_bridge::talk_line(nullptr, str);
 			click_to_continue();
 			break;
 		}
 		*eol = 0;
 		conv->show_npc_message(str);
+		Spectron_bridge::talk_line(nullptr, str);
 		click_to_continue();
 		str = eol + 1;
 		if (*str == '~') {
@@ -718,6 +722,13 @@ void Usecode_internal::show_npc_face(
 	}
 	gwin->paint_dirty();
 	conv->show_face(shape, frame, slot);
+	Actor* talk_npc = npc;
+	if (!talk_npc && this->frame && this->frame->caller_item) {
+		talk_npc = this->frame->caller_item->as_actor();
+	}
+	// Pass face shape too: BG often calls show_npc_face with a shape int
+	// that get_item cannot resolve to an Actor*.
+	Spectron_bridge::talk_start(talk_npc, shape);
 	//	user_choice = 0;     // Seems like a good idea.
 	// Also seems to create a conversation bug in Test of Love :-(
 }
@@ -736,6 +747,10 @@ void Usecode_internal::remove_npc_face(
 		return;
 	}
 	conv->remove_face(shape);
+	// Black Gate has no end_conversation intrinsic; last face-clear ends the talk.
+	if (conv->get_num_faces_on_screen() == 0) {
+		Spectron_bridge::talk_end();
+	}
 }
 
 /*
@@ -904,6 +919,7 @@ void Usecode_internal::item_say(Usecode_value& objval, Usecode_value& strval) {
 		std::string translated(str);
 		translate_usecode_text(translated);
 		eman->add_text(translated.c_str(), obj);
+		Spectron_bridge::time_reading(obj, translated.c_str());
 	}
 }
 
@@ -1656,6 +1672,9 @@ void Usecode_internal::set_book(
 	}
 	delete book;
 	book = b;
+	if (!b) {
+		Spectron_bridge::book_close();
+	}
 }
 
 /*
@@ -1717,6 +1736,7 @@ int Usecode_internal::get_user_choice_num() {
 	conv->clear_avatar_choices();
 	// Store ->answer string.
 	user_choice = newstrdup(conv->get_answer(choice_num));
+	Spectron_bridge::talk_choice(user_choice);
 	return choice_num;    // Return choice #.
 }
 
@@ -3019,6 +3039,7 @@ int Usecode_internal::call_usecode(
 	if (conv->get_num_faces_on_screen() > 0) {
 		conv->init_faces();       // Remove them.
 		gwin->set_all_dirty();    // Force repaint.
+		Spectron_bridge::talk_end();
 	}
 	if (modified_map) {
 		// On a barge, and we changed the map.

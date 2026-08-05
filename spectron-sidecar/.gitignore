@@ -1,0 +1,8 @@
+/target/
+.env
+*.log
+__pycache__/
+*.pyc
+
+# Opaque local-only bucket (pads, drafts, private demos)
+local/

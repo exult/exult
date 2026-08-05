@@ -27,6 +27,7 @@
 
 #include "conversation.h"
 #include "keyring.h"
+#include "spectron_bridge.h"
 
 #include <cstring>
 
@@ -48,6 +49,8 @@ Usecode_machine::~Usecode_machine() {
 
 void Usecode_machine::init_conversation() {
 	conv->init_faces();
+	// BG path: clearing faces without SI's end_conversation still ends the talk.
+	Spectron_bridge::talk_end();
 }
 
 int Usecode_machine::get_num_faces_on_screen() const {

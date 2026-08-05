@@ -75,6 +75,7 @@
 #include "paths.h"
 #include "schedule.h"
 #include "spellbook.h"
+#include "spectron_bridge.h"
 #include "touchui.h"
 #include "ucmachine.h"
 #include "ucsched.h" /* Only used to flush objects. */
@@ -821,6 +822,7 @@ void Game_window::toggle_combat() {
 	if (g_shortcutBar) {
 		g_shortcutBar->set_changed();
 	}
+	Spectron_bridge::combat_changed(combat);
 }
 
 /*
@@ -1971,6 +1973,8 @@ void Game_window::teleport_party(
 		int               newmap,       // New map #, or -1 for same map.
 		bool              no_status_check) {
 	const Tile_coord oldpos = main_actor->get_tile();
+	// Spectron: close any foot/barge stretch at the old place before the jump.
+	Spectron_bridge::flush_travel_before_relocate();
 	main_actor->set_action(nullptr);    // Definitely need this, or you may
 	//   step back to where you came from.
 	moving_barge  = nullptr;    // Calling 'done()' could be risky...
@@ -2006,6 +2010,8 @@ void Game_window::teleport_party(
 	if (!skip_eggs) {    // Check all eggs around new spot.
 		Map_chunk::try_all_eggs(main_actor, t.tx, t.ty, t.tz, oldpos.tx, oldpos.ty);
 	}
+	// Spectron: sudden arrival glance (moongate, jail usecode, virtue stone, …).
+	Spectron_bridge::party_relocated(oldpos, t);
 	//	teleported = 1;
 }
 
@@ -2234,6 +2240,7 @@ void Game_window::show_items(
 		const std::string namestr = Get_object_name(obj);
 		snprintf(str, sizeof(str), "(%i) %s", npc->get_npc_num(), namestr.c_str());
 		effects->add_text(str, obj);
+		Spectron_bridge::examine(obj, str);
 	} else if (obj) {
 		// Show name.  If clicking empty space in a gump with a custom name,
 		// use that instead of the container object's name.
@@ -2254,6 +2261,7 @@ void Game_window::show_items(
 			namestr += buf;
 		}
 		effects->add_text(namestr.c_str(), obj);
+		Spectron_bridge::examine(obj, namestr.c_str());
 	} else if (cheat.in_map_editor() && skip_lift > 0) {
 		// Show flat, but not when editing ter.
 		const ShapeID id = get_flat(x, y);
