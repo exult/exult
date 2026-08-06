@@ -1387,9 +1387,8 @@ void Game_window::update_roof_mask(Game_object* obj, int sx, int sy) {
 	// paint is skipped.  A newly appearing light or a view jump self-corrects
 	// on the next frame.
 	{
-		const TileRect box(
-				sx - frame->get_xleft(), sy - frame->get_yabove(), frame->get_width(), frame->get_height());
-		bool touched = false;
+		const TileRect box(sx - frame->get_xleft(), sy - frame->get_yabove(), frame->get_width(), frame->get_height());
+		bool           touched = false;
 		for (const TileRect& r : light_mask_rects) {
 			if (box.intersects(r)) {
 				touched = true;
@@ -1780,21 +1779,21 @@ void Game_window::build_light_layers() {
 			if (lr.tier < 0 || lr.tier > 2) {
 				continue;
 			}
-			uint64_t h = tier_sig[lr.tier];
-			h          = mix(h, lr.sx);
-			h          = mix(h, lr.sy);
-			h          = mix(h, lr.radius);
-			h          = mix(h, lr.elevation);
-			h          = mix(h, lr.rt);
-			h          = mix(h, lr.ltx);
-			h          = mix(h, lr.lty);
-			h          = mix(h, lr.ltz);
-			h          = mix(h, lr.mask_roof);
-			h          = mix(h, lr.dist_bias);
-			h          = mix(h, lr.is_spill);
-			h          = mix(h, lr.spill_percent);
-			h          = mix(h, lr.spill_floor);
-			h          = mix(h, static_cast<int64_t>(lr.lit.size()));
+			uint64_t h        = tier_sig[lr.tier];
+			h                 = mix(h, lr.sx);
+			h                 = mix(h, lr.sy);
+			h                 = mix(h, lr.radius);
+			h                 = mix(h, lr.elevation);
+			h                 = mix(h, lr.rt);
+			h                 = mix(h, lr.ltx);
+			h                 = mix(h, lr.lty);
+			h                 = mix(h, lr.ltz);
+			h                 = mix(h, lr.mask_roof);
+			h                 = mix(h, lr.dist_bias);
+			h                 = mix(h, lr.is_spill);
+			h                 = mix(h, lr.spill_percent);
+			h                 = mix(h, lr.spill_floor);
+			h                 = mix(h, static_cast<int64_t>(lr.lit.size()));
 			tier_sig[lr.tier] = h;
 		}
 	}
@@ -1844,8 +1843,7 @@ void Game_window::build_light_layers() {
 		}
 		unsigned char* cov    = covbuf.data();
 		const uint64_t now_ms = SDL_GetTicks();
-		const bool     reuse  = light_tier_sig[t] != 0 && tier_sig[t] == light_tier_sig[t]
-						   && now_ms - light_tier_stamp[t] < 250;
+		const bool     reuse  = light_tier_sig[t] != 0 && tier_sig[t] == light_tier_sig[t] && now_ms - light_tier_stamp[t] < 250;
 
 		{
 			if (reuse) {
@@ -1855,12 +1853,11 @@ void Game_window::build_light_layers() {
 				for (const TileRect& r : light_tier_rects[t]) {
 					for (int y = r.y; y < r.y + r.h; ++y) {
 						std::memcpy(
-								dstpix + static_cast<size_t>(y) * dst_lw + r.x,
-								srcpix + static_cast<size_t>(y) * src_lw + r.x, static_cast<size_t>(r.w));
+								dstpix + static_cast<size_t>(y) * dst_lw + r.x, srcpix + static_cast<size_t>(y) * src_lw + r.x,
+								static_cast<size_t>(r.w));
 					}
 				}
-				light_mask_rects.insert(
-						light_mask_rects.end(), light_tier_mask_rects[t].begin(), light_tier_mask_rects[t].end());
+				light_mask_rects.insert(light_mask_rects.end(), light_tier_mask_rects[t].begin(), light_tier_mask_rects[t].end());
 			} else {
 				// Restore the all-zero coverage invariant before rebuilding.
 				for (const TileRect& r : light_tier_rects[t]) {
@@ -1872,127 +1869,128 @@ void Game_window::build_light_layers() {
 				light_tier_mask_rects[t].clear();
 			}
 			for (const auto& lr : light_renders) {
-			if (reuse || lr.tier != t || lr.radius <= 0) {
-				continue;
-			}
-			// While the Avatar is INSIDE (roofs hidden, interiors visible) the
-			// blocking-shape room mask applies to every light, and the roof
-			// mask takes precedence over all of them so nothing spills onto a
-			// still-drawn roof.  While OUTSIDE, the mask still applies to a
-			// light that is itself under a roof (lr.mask_roof, the interior-
-			// light verdict): its walls block the light, and it reaches the
-			// outside only where the room-fill escaped through an opening
-			// (door, window gap) -- instead of lighting up everything around
-			// the building.  An exterior light (street lamp, torch, brazier)
-			// stays unmasked outside and brightens nearby house roofs again.
-			// Roof-pixel semantics per light (veto_roof in Splat_radial_light):
-			// a light that is itself under a roof (lr.mask_roof) keeps every
-			// marked pixel dark -- roof-like (255) and tall EXTERIOR (128)
-			// pixels (an outside tree's canopy overlapping the room) never
-			// light up under it.  An EXTERIOR light -- a street lamp, a torch
-			// in the open -- instead lights marked pixels as whole shapes,
-			// bypassing its tile-based room mask there: the canopy sprite
-			// spans far more screen than its stamped tile, so gating it by
-			// the ground fill would cut it into lit and dark patches.  This
-			// also keeps street lamps brightening nearby house roofs whether
-			// the Avatar is inside or out.  A SPILL GLOW (the interior bubble
-			// already outside the opening) sits between the two: it lights
-			// tall exterior shapes (128) whole, but never a real roof (255)
-			// -- it emerges right beside the building and would set the
-			// building's own roof aglow.
-			const bool mask_roof = roofpix && lr.mask_roof;
-			// The dome (intensity + falloff) emits from the flame up on the
-			// sprite, not the tile foot get_shape_location returns, so raise
-			// only its centre up-and-left by the sprite's height (plus the
-			// foot-corner residual).  A SPILL's centre stays at the opening's
-			// outside tile -- its elevation only shapes the continued falloff
-			// -- so it is not shifted.
-			const int foot_bias = c_tilesize / 4;
-			const int emit      = (lr.is_spill ? 0 : lr.elevation) + foot_bias;
-			const int csx       = lr.sx - emit;
-			const int csy       = lr.sy - emit;
-			// Gated lights are rendered as a PROPAGATED FIELD straight from the
-			// room-fill grid -- no stamped occlusion mask.  The splat needs one
-			// world-anchored reference to pin the grid to the screen: the foot
-			// position of the light's own tile, anchored at the TOP of the
-			// blocking walls the room is made of.  A tall wall is a 3D box: it
-			// renders shifted up-and-left of its tile by 4px per z-level, so
-			// the visible room interior sits at the walls' top edges -- the
-			// roof level over the light's tile (buildings differ in wall
-			// height, so it is not a hardcoded z 5).  Both the anchor level and
-			// the reference tile are fixed properties of the room and the tile
-			// grid -- never of the light's moving pixel position -- so the
-			// field stays pinned to the walls as the source moves: carrying a
-			// torch around a closed room does not reshape it.
-			const unsigned char* grid    = nullptr;
-			int                  grid_rt = 0;
-			int                  grid_fx = 0;
-			int                  grid_fy = 0;
-			// Storey the light's own room roof reaches (roof z / 5): a veto
-			// light may light a floor-slab top through the field only below it.
-			// For a SPILL it instead carries the bubble's RENDER storey
-			// (its tile z / 5): a bubble sitting on an upper floor (stairwell
-			// continuation) must never light clear ground-level pixels below
-			// it -- its z-blind field cells sit up-screen exactly over the
-			// ground walls' faces, which would show as a bright beam.
-			int light_top_storey = 0;
-			if ((inside || lr.mask_roof || lr.is_spill) && !lr.lit.empty()) {
-				grid    = lr.lit.data();
-				grid_rt = lr.rt;
-				// The wall-top anchor is a ROOM concept: it applies when the
-				// light actually has a ceiling overhead.  That is not the same
-				// as lr.mask_roof: a dungeon torch sits under solid rock (no
-				// roof/floor-flagged shape, so mask_roof is false) yet its
-				// walls need the wall-top lattice or their faces fall outside
-				// the field and go dark.  Only a light with NO real ceiling --
-				// an exterior lamp gated here because the Avatar is inside, or
-				// a spill glow on open ground -- anchors at its own storey
-				// floor: anchoring it at Light_room_roof_z's floor+5 fallback
-				// would slide its whole field 4px per z up-left off the source.
-				bool      ceiling  = false;
-				const int roof_z   = NaturalLight::Light_room_roof_z(map, lr.ltx, lr.lty, lr.ltz, &ceiling);
-				const int anchor_z = (lr.mask_roof || ceiling) ? roof_z : (lr.ltz / 5) * 5;
-				if (lr.mask_roof) {
-					light_top_storey = anchor_z / 5;
-				} else if (lr.is_spill) {
-					light_top_storey = lr.ltz / 5;
+				if (reuse || lr.tier != t || lr.radius <= 0) {
+					continue;
 				}
-				const int wtx = ((lr.ltx % c_num_tiles) + c_num_tiles) % c_num_tiles;
-				const int wty = ((lr.lty % c_num_tiles) + c_num_tiles) % c_num_tiles;
-				get_shape_location(Tile_coord(wtx, wty, anchor_z), grid_fx, grid_fy);
-				// Empirically the wall-top anchor lands 1px up-left of the
-				// visible interior; nudge the reference back.
-				grid_fx += 1;
-				grid_fy += 1;
-			}
-			NaturalLight::Splat_radial_light(
-					cov, dstpix, srcpix, W, H, dst_lw, src_lw, csx, csy, lr.radius, lr.elevation, lr.dist_bias, lr.spill_percent,
-					roofpix, roof_lw, mask_roof, lr.is_spill, lr.spill_floor, light_top_storey, grid, grid_rt, grid_fx, grid_fy);
-			// The splat's screen bounds (same union Splat_radial_light uses:
-			// the free dome around the centre plus the field's lattice around
-			// the anchor).  Unclamped + margin -> next frame's roof-mask clip;
-			// clamped -> the coverage rows to zero again after the upload.
-			int bx0 = csx - lr.radius;
-			int bx1 = csx + lr.radius;
-			int by0 = csy - lr.radius;
-			int by1 = csy + lr.radius;
-			if (grid != nullptr) {
-				bx0 = std::min(bx0, grid_fx - lr.radius - c_tilesize);
-				bx1 = std::max(bx1, grid_fx + lr.radius + c_tilesize);
-				by0 = std::min(by0, grid_fy - lr.radius - c_tilesize);
-				by1 = std::max(by1, grid_fy + lr.radius + c_tilesize);
-			}
-			TileRect bounds(bx0, by0, bx1 - bx0 + 1, by1 - by0 + 1);
-			const TileRect clip = bounds.enlarge(24);
-			light_tier_mask_rects[t].push_back(clip);
-			light_mask_rects.push_back(clip);
-			bx0 = std::max(bx0, 0);
-			by0 = std::max(by0, 0);
-			bx1 = std::min(bx1, W - 1);
-			by1 = std::min(by1, H - 1);
-			if (bx0 <= bx1 && by0 <= by1) {
-				light_tier_rects[t].emplace_back(bx0, by0, bx1 - bx0 + 1, by1 - by0 + 1);
-			}
+				// While the Avatar is INSIDE (roofs hidden, interiors visible) the
+				// blocking-shape room mask applies to every light, and the roof
+				// mask takes precedence over all of them so nothing spills onto a
+				// still-drawn roof.  While OUTSIDE, the mask still applies to a
+				// light that is itself under a roof (lr.mask_roof, the interior-
+				// light verdict): its walls block the light, and it reaches the
+				// outside only where the room-fill escaped through an opening
+				// (door, window gap) -- instead of lighting up everything around
+				// the building.  An exterior light (street lamp, torch, brazier)
+				// stays unmasked outside and brightens nearby house roofs again.
+				// Roof-pixel semantics per light (veto_roof in Splat_radial_light):
+				// a light that is itself under a roof (lr.mask_roof) keeps every
+				// marked pixel dark -- roof-like (255) and tall EXTERIOR (128)
+				// pixels (an outside tree's canopy overlapping the room) never
+				// light up under it.  An EXTERIOR light -- a street lamp, a torch
+				// in the open -- instead lights marked pixels as whole shapes,
+				// bypassing its tile-based room mask there: the canopy sprite
+				// spans far more screen than its stamped tile, so gating it by
+				// the ground fill would cut it into lit and dark patches.  This
+				// also keeps street lamps brightening nearby house roofs whether
+				// the Avatar is inside or out.  A SPILL GLOW (the interior bubble
+				// already outside the opening) sits between the two: it lights
+				// tall exterior shapes (128) whole, but never a real roof (255)
+				// -- it emerges right beside the building and would set the
+				// building's own roof aglow.
+				const bool mask_roof = roofpix && lr.mask_roof;
+				// The dome (intensity + falloff) emits from the flame up on the
+				// sprite, not the tile foot get_shape_location returns, so raise
+				// only its centre up-and-left by the sprite's height (plus the
+				// foot-corner residual).  A SPILL's centre stays at the opening's
+				// outside tile -- its elevation only shapes the continued falloff
+				// -- so it is not shifted.
+				const int foot_bias = c_tilesize / 4;
+				const int emit      = (lr.is_spill ? 0 : lr.elevation) + foot_bias;
+				const int csx       = lr.sx - emit;
+				const int csy       = lr.sy - emit;
+				// Gated lights are rendered as a PROPAGATED FIELD straight from the
+				// room-fill grid -- no stamped occlusion mask.  The splat needs one
+				// world-anchored reference to pin the grid to the screen: the foot
+				// position of the light's own tile, anchored at the TOP of the
+				// blocking walls the room is made of.  A tall wall is a 3D box: it
+				// renders shifted up-and-left of its tile by 4px per z-level, so
+				// the visible room interior sits at the walls' top edges -- the
+				// roof level over the light's tile (buildings differ in wall
+				// height, so it is not a hardcoded z 5).  Both the anchor level and
+				// the reference tile are fixed properties of the room and the tile
+				// grid -- never of the light's moving pixel position -- so the
+				// field stays pinned to the walls as the source moves: carrying a
+				// torch around a closed room does not reshape it.
+				const unsigned char* grid    = nullptr;
+				int                  grid_rt = 0;
+				int                  grid_fx = 0;
+				int                  grid_fy = 0;
+				// Storey the light's own room roof reaches (roof z / 5): a veto
+				// light may light a floor-slab top through the field only below it.
+				// For a SPILL it instead carries the bubble's RENDER storey
+				// (its tile z / 5): a bubble sitting on an upper floor (stairwell
+				// continuation) must never light clear ground-level pixels below
+				// it -- its z-blind field cells sit up-screen exactly over the
+				// ground walls' faces, which would show as a bright beam.
+				int light_top_storey = 0;
+				if ((inside || lr.mask_roof || lr.is_spill) && !lr.lit.empty()) {
+					grid    = lr.lit.data();
+					grid_rt = lr.rt;
+					// The wall-top anchor is a ROOM concept: it applies when the
+					// light actually has a ceiling overhead.  That is not the same
+					// as lr.mask_roof: a dungeon torch sits under solid rock (no
+					// roof/floor-flagged shape, so mask_roof is false) yet its
+					// walls need the wall-top lattice or their faces fall outside
+					// the field and go dark.  Only a light with NO real ceiling --
+					// an exterior lamp gated here because the Avatar is inside, or
+					// a spill glow on open ground -- anchors at its own storey
+					// floor: anchoring it at Light_room_roof_z's floor+5 fallback
+					// would slide its whole field 4px per z up-left off the source.
+					bool      ceiling  = false;
+					const int roof_z   = NaturalLight::Light_room_roof_z(map, lr.ltx, lr.lty, lr.ltz, &ceiling);
+					const int anchor_z = (lr.mask_roof || ceiling) ? roof_z : (lr.ltz / 5) * 5;
+					if (lr.mask_roof) {
+						light_top_storey = anchor_z / 5;
+					} else if (lr.is_spill) {
+						light_top_storey = lr.ltz / 5;
+					}
+					const int wtx = ((lr.ltx % c_num_tiles) + c_num_tiles) % c_num_tiles;
+					const int wty = ((lr.lty % c_num_tiles) + c_num_tiles) % c_num_tiles;
+					get_shape_location(Tile_coord(wtx, wty, anchor_z), grid_fx, grid_fy);
+					// Empirically the wall-top anchor lands 1px up-left of the
+					// visible interior; nudge the reference back.
+					grid_fx += 1;
+					grid_fy += 1;
+				}
+				NaturalLight::Splat_radial_light(
+						cov, dstpix, srcpix, W, H, dst_lw, src_lw, csx, csy, lr.radius, lr.elevation, lr.dist_bias,
+						lr.spill_percent, roofpix, roof_lw, mask_roof, lr.is_spill, lr.spill_floor, light_top_storey, grid, grid_rt,
+						grid_fx, grid_fy);
+				// The splat's screen bounds (same union Splat_radial_light uses:
+				// the free dome around the centre plus the field's lattice around
+				// the anchor).  Unclamped + margin -> next frame's roof-mask clip;
+				// clamped -> the coverage rows to zero again after the upload.
+				int bx0 = csx - lr.radius;
+				int bx1 = csx + lr.radius;
+				int by0 = csy - lr.radius;
+				int by1 = csy + lr.radius;
+				if (grid != nullptr) {
+					bx0 = std::min(bx0, grid_fx - lr.radius - c_tilesize);
+					bx1 = std::max(bx1, grid_fx + lr.radius + c_tilesize);
+					by0 = std::min(by0, grid_fy - lr.radius - c_tilesize);
+					by1 = std::max(by1, grid_fy + lr.radius + c_tilesize);
+				}
+				TileRect       bounds(bx0, by0, bx1 - bx0 + 1, by1 - by0 + 1);
+				const TileRect clip = bounds.enlarge(24);
+				light_tier_mask_rects[t].push_back(clip);
+				light_mask_rects.push_back(clip);
+				bx0 = std::max(bx0, 0);
+				by0 = std::max(by0, 0);
+				bx1 = std::min(bx1, W - 1);
+				by1 = std::min(by1, H - 1);
+				if (bx0 <= bx1 && by0 <= by1) {
+					light_tier_rects[t].emplace_back(bx0, by0, bx1 - bx0 + 1, by1 - by0 + 1);
+				}
 			}
 			if (!reuse) {
 				light_tier_sig[t]   = tier_sig[t];

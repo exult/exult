@@ -283,8 +283,8 @@ namespace {
                 return;
             }
             const Tile_coord ot = o->get_tile();
-            std::cerr << "[light-mask] shape=" << o->get_shapenum() << '/' << o->get_framenum() << " at(" << ot.tx << ','
-                      << ot.ty << ") lift=" << o->get_lift() << " h=" << si.get_3d_height()
+            std::cerr << "[light-mask] shape=" << o->get_shapenum() << '/' << o->get_framenum() << " at(" << ot.tx << ',' << ot.ty
+                      << ") lift=" << o->get_lift() << " h=" << si.get_3d_height()
                       << " class=" << static_cast<int>(si.get_shape_class()) << " solid=" << si.is_solid()
                       << " roofflag=" << si.is_roof() << " roof_z=" << roof_z << " floor_z=" << floor_z << " -> " << why
                       << std::endl;
@@ -872,15 +872,15 @@ namespace NaturalLight {
 		// The enclosure floods behind it are the expensive part.  Strictly
 		// gated on natural light: the legacy palette path also calls this and
 		// must keep its exact per-frame behaviour.
-		Game_window* const gwin = Game_window::get_instance();
+		Game_window* const gwin      = Game_window::get_instance();
 		const bool         use_cache = gwin != nullptr && gwin->get_natural_light() && main_actor != nullptr;
 		const Uint64       now       = SDL_GetTicks();
 		std::tuple<int, int, int, int, int, int, int> key;
 		if (use_cache) {
-			const Tile_coord lt    = light_obj->get_tile();
-			const Tile_coord at    = main_actor->get_tile();
-			const int        flags = (viewer_outside ? 1 : 0) | (same_chunk ? 2 : 0) | (avatar_sealed ? 4 : 0)
-								   | (chunk_has_opening ? 8 : 0);
+			const Tile_coord lt = light_obj->get_tile();
+			const Tile_coord at = main_actor->get_tile();
+			const int        flags
+					= (viewer_outside ? 1 : 0) | (same_chunk ? 2 : 0) | (avatar_sealed ? 4 : 0) | (chunk_has_opening ? 8 : 0);
 			key = {lt.tx, lt.ty, lt.tz, at.tx, at.ty, at.tz, flags};
 			if (const LightVisibility* hit = visibility_cache.find(key, now)) {
 				return *hit;
@@ -1689,16 +1689,16 @@ namespace NaturalLight {
 		// boundary along the walls -- stays fixed as the source moves within
 		// its tile.  A tile covers c_tilesize pixels up-and-left of its foot;
 		// its centre is half a tile up-left of it.
-		const int                 side     = grid != nullptr ? 2 * grid_rt + 1 : 0;
-		const float               cell     = static_cast<float>(c_tilesize);
-		const float               inv_cell = 1.0f / cell;
-		const float               half     = 0.5f * (cell - 1.0f);
-		const float               grid_u   = static_cast<float>(grid_fx) - half - static_cast<float>(grid_rt) * cell;
-		const float               grid_v   = static_cast<float>(grid_fy) - half - static_cast<float>(grid_rt) * cell;
-		std::vector<float>        field_local;
-		const Field_template*     ftmpl           = nullptr;
-		int                       dbg_field_cells = 0;       // Nonzero flood cells.
-		float                     dbg_field_max   = 0.0f;    // Peak field brightness.
+		const int             side     = grid != nullptr ? 2 * grid_rt + 1 : 0;
+		const float           cell     = static_cast<float>(c_tilesize);
+		const float           inv_cell = 1.0f / cell;
+		const float           half     = 0.5f * (cell - 1.0f);
+		const float           grid_u   = static_cast<float>(grid_fx) - half - static_cast<float>(grid_rt) * cell;
+		const float           grid_v   = static_cast<float>(grid_fy) - half - static_cast<float>(grid_rt) * cell;
+		std::vector<float>    field_local;
+		const Field_template* ftmpl           = nullptr;
+		int                   dbg_field_cells = 0;       // Nonzero flood cells.
+		float                 dbg_field_max   = 0.0f;    // Peak field brightness.
 		if (grid != nullptr) {
 			// Reuse a recently computed field: FNV-1a over the grid content
 			// (the flood cache above already hands back the identical grid for
@@ -1712,107 +1712,107 @@ namespace NaturalLight {
 			const Uint64    fnow = SDL_GetTicks();
 			ftmpl                = field_cache.find(fkey, fnow);
 			if (ftmpl == nullptr) {
-			// The wall-top anchor pins the lattice up-and-left of the tiles'
-			// floor positions (4px per z of wall height), so the grid CENTRE
-			// renders up-left of the light itself.  The brightness peak,
-			// however, belongs at the light's true screen position: measure
-			// the per-tile straight-line distance from the SPLAT CENTRE
-			// expressed in lattice coordinates, not from the grid centre --
-			// otherwise the whole pool sits diagonally up-left of the source
-			// by the anchor shift (more for taller walls, none for ungated
-			// lights: the old "light centre shifted up-left" bug).  The peak
-			// thus follows the light continuously (as the free dome always
-			// did) while the reached set stays tile-quantized.
-			const float uc = (static_cast<float>(sx) - grid_u) / cell;
-			const float vc = (static_cast<float>(sy) - grid_v) / cell;
-			// The flood path is 0 at the light's TILE (the grid centre), which
-			// again renders up-left of the true centre: the lattice cell under
-			// the splat centre already carries a path of a tile or two, and
-			// max(euclid, path) would dim the pool right at the source.
-			// Rebase the path so it is zero at that cell.
-			int cgx                     = static_cast<int>(std::lround(uc));
-			int cgy                     = static_cast<int>(std::lround(vc));
-			cgx                         = std::min(std::max(cgx, 0), side - 1);
-			cgy                         = std::min(std::max(cgy, 0), side - 1);
-			const unsigned char mbase   = grid[static_cast<size_t>(cgy) * side + cgx];
-			const float         base_px = mbase > 0 ? static_cast<float>((mbase - 1) * c_tilesize) : 0.0f;
-			field_local.assign(static_cast<size_t>(side) * side, 0.0f);
-			for (int gy = 0; gy < side; ++gy) {
-				for (int gx = 0; gx < side; ++gx) {
-					const unsigned char m = grid[static_cast<size_t>(gy) * side + gx];
-					if (!m) {
-						continue;    // Light never reaches this tile.
-					}
-					float path_px = static_cast<float>((m - 1) * c_tilesize) - base_px;
-					if (path_px < 0.0f) {
-						path_px = 0.0f;
-					}
-					const float ddx    = (static_cast<float>(gx) - uc) * cell;
-					const float ddy    = (static_cast<float>(gy) - vc) * cell;
-					float       travel = std::sqrt(ddx * ddx + ddy * ddy);
-					if (path_px > travel) {
-						travel = path_px;
-					}
-					const float tot  = travel + bias;
-					const float dome = 1.0f - (tot * tot + e2) / rf2;
-					if (dome > 0.0f) {
-						const float fv                                   = 255.0f * dome * inten;
-						field_local[static_cast<size_t>(gy) * side + gx] = fv;
-						++dbg_field_cells;
-						if (fv > dbg_field_max) {
-							dbg_field_max = fv;
+				// The wall-top anchor pins the lattice up-and-left of the tiles'
+				// floor positions (4px per z of wall height), so the grid CENTRE
+				// renders up-left of the light itself.  The brightness peak,
+				// however, belongs at the light's true screen position: measure
+				// the per-tile straight-line distance from the SPLAT CENTRE
+				// expressed in lattice coordinates, not from the grid centre --
+				// otherwise the whole pool sits diagonally up-left of the source
+				// by the anchor shift (more for taller walls, none for ungated
+				// lights: the old "light centre shifted up-left" bug).  The peak
+				// thus follows the light continuously (as the free dome always
+				// did) while the reached set stays tile-quantized.
+				const float uc = (static_cast<float>(sx) - grid_u) / cell;
+				const float vc = (static_cast<float>(sy) - grid_v) / cell;
+				// The flood path is 0 at the light's TILE (the grid centre), which
+				// again renders up-left of the true centre: the lattice cell under
+				// the splat centre already carries a path of a tile or two, and
+				// max(euclid, path) would dim the pool right at the source.
+				// Rebase the path so it is zero at that cell.
+				int cgx                     = static_cast<int>(std::lround(uc));
+				int cgy                     = static_cast<int>(std::lround(vc));
+				cgx                         = std::min(std::max(cgx, 0), side - 1);
+				cgy                         = std::min(std::max(cgy, 0), side - 1);
+				const unsigned char mbase   = grid[static_cast<size_t>(cgy) * side + cgx];
+				const float         base_px = mbase > 0 ? static_cast<float>((mbase - 1) * c_tilesize) : 0.0f;
+				field_local.assign(static_cast<size_t>(side) * side, 0.0f);
+				for (int gy = 0; gy < side; ++gy) {
+					for (int gx = 0; gx < side; ++gx) {
+						const unsigned char m = grid[static_cast<size_t>(gy) * side + gx];
+						if (!m) {
+							continue;    // Light never reaches this tile.
+						}
+						float path_px = static_cast<float>((m - 1) * c_tilesize) - base_px;
+						if (path_px < 0.0f) {
+							path_px = 0.0f;
+						}
+						const float ddx    = (static_cast<float>(gx) - uc) * cell;
+						const float ddy    = (static_cast<float>(gy) - vc) * cell;
+						float       travel = std::sqrt(ddx * ddx + ddy * ddy);
+						if (path_px > travel) {
+							travel = path_px;
+						}
+						const float tot  = travel + bias;
+						const float dome = 1.0f - (tot * tot + e2) / rf2;
+						if (dome > 0.0f) {
+							const float fv                                   = 255.0f * dome * inten;
+							field_local[static_cast<size_t>(gy) * side + gx] = fv;
+							++dbg_field_cells;
+							if (fv > dbg_field_max) {
+								dbg_field_max = fv;
+							}
 						}
 					}
 				}
-			}
-			// Rasterize the field into the byte template over the splat's full
-			// (unclipped) extent -- the same extent as the bbox below, relative
-			// to the splat centre -- with the identical bilinear sampling the
-			// pixel loop used to do per frame.
-			Field_template t;
-			t.x0 = std::min(-radius, grid_fx - sx - radius - c_tilesize);
-			t.y0 = std::min(-radius, grid_fy - sy - radius - c_tilesize);
-			t.w  = std::max(radius, grid_fx - sx + radius + c_tilesize) - t.x0 + 1;
-			t.h  = std::max(radius, grid_fy - sy + radius + c_tilesize) - t.y0 + 1;
-			t.alpha.assign(static_cast<size_t>(t.w) * t.h, 0);
-			for (int py = 0; py < t.h; ++py) {
-				float v = (static_cast<float>(sy + t.y0 + py) - grid_v) * inv_cell;
-				if (v < 0.0f) {
-					v = 0.0f;
-				} else if (v > static_cast<float>(side - 1)) {
-					v = static_cast<float>(side - 1);
-				}
-				int h0 = static_cast<int>(v);
-				if (h0 > side - 2) {
-					h0 = side - 2;
-				}
-				const float    tv   = v - static_cast<float>(h0);
-				const float*   row0 = field_local.data() + static_cast<size_t>(h0) * side;
-				unsigned char* out  = t.alpha.data() + static_cast<size_t>(py) * t.w;
-				for (int px = 0; px < t.w; ++px) {
-					float u = (static_cast<float>(sx + t.x0 + px) - grid_u) * inv_cell;
-					if (u < 0.0f) {
-						u = 0.0f;
-					} else if (u > static_cast<float>(side - 1)) {
-						u = static_cast<float>(side - 1);
+				// Rasterize the field into the byte template over the splat's full
+				// (unclipped) extent -- the same extent as the bbox below, relative
+				// to the splat centre -- with the identical bilinear sampling the
+				// pixel loop used to do per frame.
+				Field_template t;
+				t.x0 = std::min(-radius, grid_fx - sx - radius - c_tilesize);
+				t.y0 = std::min(-radius, grid_fy - sy - radius - c_tilesize);
+				t.w  = std::max(radius, grid_fx - sx + radius + c_tilesize) - t.x0 + 1;
+				t.h  = std::max(radius, grid_fy - sy + radius + c_tilesize) - t.y0 + 1;
+				t.alpha.assign(static_cast<size_t>(t.w) * t.h, 0);
+				for (int py = 0; py < t.h; ++py) {
+					float v = (static_cast<float>(sy + t.y0 + py) - grid_v) * inv_cell;
+					if (v < 0.0f) {
+						v = 0.0f;
+					} else if (v > static_cast<float>(side - 1)) {
+						v = static_cast<float>(side - 1);
 					}
-					int g0 = static_cast<int>(u);
-					if (g0 > side - 2) {
-						g0 = side - 2;
+					int h0 = static_cast<int>(v);
+					if (h0 > side - 2) {
+						h0 = side - 2;
 					}
-					const float  tu  = u - static_cast<float>(g0);
-					const float* r   = row0 + g0;
-					const float  top = r[0] + (r[1] - r[0]) * tu;
-					const float  bot = r[side] + (r[side + 1] - r[side]) * tu;
-					const int    a   = static_cast<int>(top + (bot - top) * tv + 0.5f);
-					if (a > 0) {
-						out[px] = static_cast<unsigned char>(a > 255 ? 255 : a);
+					const float    tv   = v - static_cast<float>(h0);
+					const float*   row0 = field_local.data() + static_cast<size_t>(h0) * side;
+					unsigned char* out  = t.alpha.data() + static_cast<size_t>(py) * t.w;
+					for (int px = 0; px < t.w; ++px) {
+						float u = (static_cast<float>(sx + t.x0 + px) - grid_u) * inv_cell;
+						if (u < 0.0f) {
+							u = 0.0f;
+						} else if (u > static_cast<float>(side - 1)) {
+							u = static_cast<float>(side - 1);
+						}
+						int g0 = static_cast<int>(u);
+						if (g0 > side - 2) {
+							g0 = side - 2;
+						}
+						const float  tu  = u - static_cast<float>(g0);
+						const float* r   = row0 + g0;
+						const float  top = r[0] + (r[1] - r[0]) * tu;
+						const float  bot = r[side] + (r[side + 1] - r[side]) * tu;
+						const int    a   = static_cast<int>(top + (bot - top) * tv + 0.5f);
+						if (a > 0) {
+							out[px] = static_cast<unsigned char>(a > 255 ? 255 : a);
+						}
 					}
 				}
-			}
-			Field_template& stored = field_cache.store(fkey, fnow);
-			stored                 = std::move(t);
-			ftmpl                  = &stored;
+				Field_template& stored = field_cache.store(fkey, fnow);
+				stored                 = std::move(t);
+				ftmpl                  = &stored;
 			}
 		}
 		// The free dome is bounded by `radius` around the splat centre; the
