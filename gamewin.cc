@@ -1813,14 +1813,19 @@ void Game_window::build_light_layers() {
 			if ((inside || lr.mask_roof || lr.is_spill) && !lr.lit.empty()) {
 				grid    = lr.lit.data();
 				grid_rt = lr.rt;
-				// The wall-top anchor is a ROOM concept: it only applies to a
-				// light that is actually under a roof.  A light that is NOT --
-				// an exterior lamp gated here only because the Avatar is
-				// inside, or a spill glow on open ground -- lights terrain
-				// drawn at its own storey floor with no wall-top shift;
-				// anchoring it at Light_room_roof_z's floor+5 fallback would
-				// slide its whole field 4px per z up-left off the source.
-				const int anchor_z = lr.mask_roof ? NaturalLight::Light_room_roof_z(map, lr.ltx, lr.lty, lr.ltz) : (lr.ltz / 5) * 5;
+				// The wall-top anchor is a ROOM concept: it applies when the
+				// light actually has a ceiling overhead.  That is not the same
+				// as lr.mask_roof: a dungeon torch sits under solid rock (no
+				// roof/floor-flagged shape, so mask_roof is false) yet its
+				// walls need the wall-top lattice or their faces fall outside
+				// the field and go dark.  Only a light with NO real ceiling --
+				// an exterior lamp gated here because the Avatar is inside, or
+				// a spill glow on open ground -- anchors at its own storey
+				// floor: anchoring it at Light_room_roof_z's floor+5 fallback
+				// would slide its whole field 4px per z up-left off the source.
+				bool      ceiling  = false;
+				const int roof_z   = NaturalLight::Light_room_roof_z(map, lr.ltx, lr.lty, lr.ltz, &ceiling);
+				const int anchor_z = (lr.mask_roof || ceiling) ? roof_z : (lr.ltz / 5) * 5;
 				if (lr.mask_roof) {
 					light_top_storey = anchor_z / 5;
 				} else if (lr.is_spill) {

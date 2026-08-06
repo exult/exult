@@ -93,8 +93,12 @@ namespace NaturalLight {
 	// the classic wall-top threshold, when no roof is found.  This is the
 	// height the room's walls reach: the room-fill blocker test and the mask's
 	// wall-top stamp anchor both use it instead of a hardcoded 5, so buildings
-	// with taller walls mask correctly.
-	int Light_room_roof_z(Game_map* gmap, int tx, int ty, int lift);
+	// with taller walls mask correctly.  `found` (optional) reports whether an
+	// actual ceiling shape was found, as opposed to the floor+5 fallback: a
+	// dungeon's rock ceiling is a plain solid (not roof/floor flagged), so a
+	// light can have a real ceiling here while not counting as "beneath a
+	// roof" for the mask verdict.
+	int Light_room_roof_z(Game_map* gmap, int tx, int ty, int lift, bool* found = nullptr);
 
 	// One spill opening found by Build_light_shadow_grid: the tile just
 	// outside the opening the light escapes through, how much of the

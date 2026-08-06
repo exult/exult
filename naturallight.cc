@@ -817,7 +817,10 @@ namespace NaturalLight {
 		return brightness <= 2 ? 0 : (brightness <= 4 ? 1 : 2);
 	}
 
-	int Light_room_roof_z(Game_map* gmap, int tx, int ty, int lift) {
+	int Light_room_roof_z(Game_map* gmap, int tx, int ty, int lift, bool* found) {
+		if (found != nullptr) {
+			*found = false;
+		}
 		tx = Light_tile_norm(tx);
 		ty = Light_tile_norm(ty);
 		// Search upward from just above the light, but from at least the
@@ -870,6 +873,9 @@ namespace NaturalLight {
 			}
 		}
 		if (roof_z >= 0 && roof_z < 31) {
+			if (found != nullptr) {
+				*found = true;
+			}
 			return roof_z;
 		}
 		// No roof overhead: the storey's classic wall-top threshold.
