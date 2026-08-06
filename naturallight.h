@@ -23,6 +23,7 @@
 
 #include "tiles.h"
 
+#include <cstdint>
 #include <vector>
 
 class Game_map;
@@ -112,6 +113,10 @@ namespace NaturalLight {
 		int        percent;
 		int        floor;
 	};
+
+	// Call once per world render, before the chunks are painted: replenishes
+	// the flood cache's per-frame refresh budget (see Build_light_shadow_grid).
+	void Flood_cache_frame_begin();
 
 	// Build the room-fill grid a light casts, honouring tall light-blocking
 	// walls (a solid stack whose top reaches z-level 5).  `rt` is the light's

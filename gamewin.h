@@ -171,7 +171,15 @@ class Game_window {
 	int                            light_layer_w          = -1;
 	int                            light_layer_h          = -1;
 	int                            light_layer_palnum     = -2;
-	std::vector<unsigned char>     light_coverage_scratch;
+	// Per-tier splat reuse (build_light_layers): while a tier's light set is
+	// unchanged its coverage mask is bit-identical frame to frame -- only the
+	// world pixels beneath it animate -- so the mask, its written rectangles
+	// and its roof-mask clip rects persist and the splat pass is skipped.
+	std::vector<unsigned char> light_tier_cov[3];
+	std::vector<TileRect>      light_tier_rects[3];         // Coverage rows written.
+	std::vector<TileRect>      light_tier_mask_rects[3];    // Next-frame roof-mask clips.
+	uint64_t                   light_tier_sig[3]   = {0, 0, 0};
+	uint64_t                   light_tier_stamp[3] = {0, 0, 0};
 	// Reused per-light scratch for the world-anchored occlusion mask stamped
 	// from a light's room-fill grid (see build_light_layers).
 	std::vector<unsigned char> light_block_scratch;
@@ -182,6 +190,12 @@ class Game_window {
 	// pixel geometry as the world ibuf (win->get_ib8()).
 	std::unique_ptr<Image_buffer8> roof_light_mask;
 	bool                           roof_light_mask_active = false;
+	// Screen rectangles (ibuf coords) the light splats sampled the roof mask
+	// in LAST frame, grown by a small margin.  update_roof_mask skips any
+	// object whose sprite touches none of them: pixels outside the rects are
+	// never sampled, so painting the mask there is wasted work.  A light
+	// appearing (or the view jumping) corrects itself on the next frame.
+	std::vector<TileRect> light_mask_rects;
 	// Game state values:
 	int           skip_above_actor;      // Level above actor to skip rendering.
 	unsigned int  in_dungeon;            // true if inside a dungeon.

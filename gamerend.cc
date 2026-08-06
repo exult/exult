@@ -446,7 +446,7 @@ void Game_window::paint(
 			for (int i = 0; i < cnt; i++) {
 				carried_bright += party[i]->get_light_source();
 			}
-			if (carried_bright > 0) {
+			if (carried_bright > 0 && pal && pal->get_palette_number() != PALETTE_DAY) {
 				int asx = 0;
 				int asy = 0;
 				get_shape_location(main_actor, asx, asy);
@@ -704,6 +704,9 @@ int Game_render::paint_chunk_objects(
 		const auto& lights         = gwin->is_in_dungeon() ? olist->get_dungeon_lights() : olist->get_non_dungeon_lights();
 		const bool  viewer_outside = !gwin->is_main_actor_inside();
 		const bool  dbg_light_pass = std::getenv("EXULT_DEBUG_LIGHT_PASS") != nullptr;
+		// The spatial light layers are hidden at full day, so all the grid /
+		// spill building below would be wasted work then.
+		const bool day_palette = gwin->get_pal()->get_palette_number() == PALETTE_DAY;
 		// All lights in this loop live in the chunk being painted (cx, cy).
 		// Treat the Avatar's own chunk as "the building you are in".
 		const bool same_chunk          = (cx == main_actor->get_cx() && cy == main_actor->get_cy());
@@ -775,7 +778,7 @@ int Game_render::paint_chunk_objects(
 			// build_light_layers can brighten the world around it. Radius and
 			// palette tier scale with the light's intrinsic brightness (not the
 			// distance-decayed strength used for the legacy global palette).
-			if (natural) {
+			if (natural && !day_palette) {
 				const int brightness = info.get_object_light(light_obj->get_framenum());
 				int       lsx        = 0;
 				int       lsy        = 0;
