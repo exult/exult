@@ -37,25 +37,20 @@ namespace NaturalLight {
 	bool Chunk_find_light_passes_through(
 			Map_chunk* chunk, int& pass_shape, int& pass_frame, int& pass_match_frame, int& pass_tx, int& pass_ty, int& pass_lift);
 
-	// True if the light at interior tile `src` has an unobstructed (pathfound)
-	// route to any light_passes_through shape (window / open door / grate) in the
-	// chunk -- so a torch sealed behind an interior wall does not leak out through
-	// a window elsewhere in the same chunk.
+	// True if the light at interior tile `src` has a pathfound route to a
+	// light_passes_through opening (window / open door / grate) in the chunk.
 	bool Light_reaches_chunk_opening(Map_chunk* chunk, const Tile_coord& src, Game_object* light_obj);
 
-	// Resolve a light source to a nearby interior tile and report whether it is an
-	// interior source. A wall-mounted torch's own tile is the wall itself, so we
-	// prefer the source's floor tile, else an adjacent roofed non-wall tile.
+	// Resolve a light source to a nearby interior tile (a wall torch's own
+	// tile is the wall itself) and report whether it is an interior source.
 	Tile_coord Resolve_interior_light_tile(const Tile_coord& src, bool& interior);
 
-	// Bounded flood fill from `start`: true if the roofed enclosure it stands in
-	// has a passable gap in its walls leading outside (e.g. a doorway with no door
-	// object, which has no light_passes_through shape to detect).
+	// Bounded flood fill from `start`: true if the roofed enclosure it stands
+	// in has a passable gap in its walls leading outside.
 	bool Enclosure_open_to_outside(const Tile_coord& start);
 
-	// Bounded flood fill from `start` through non-wall tiles: true if it reaches
-	// `target`. Tells whether a light shares the Avatar's interior space even
-	// across a chunk boundary.
+	// Bounded flood fill through non-wall tiles: true if `start` and `target`
+	// share one interior space (even across a chunk boundary).
 	bool Tiles_in_same_enclosure(const Tile_coord& start, const Tile_coord& target);
 
 	// True if an actual roof shape covers the light's tile from above. Looks only
@@ -72,42 +67,29 @@ namespace NaturalLight {
 	};
 
 	// Decide whether the light living in `olist` (the chunk being painted)
-	// reaches the viewer, by composing the enclosure/opening tests above.
-	// `viewer_outside`, `same_chunk`, `avatar_sealed` and `chunk_has_opening` are
-	// the per-frame / per-chunk facts the caller already computed; `main_actor`
-	// is the viewer whose enclosure the light must reach.
+	// reaches the viewer, composing the enclosure/opening tests above.  The
+	// flags are per-frame / per-chunk facts the caller already computed.
 	LightVisibility Evaluate_light_visibility(
 			Game_object* light_obj, Map_chunk* olist, Game_object* main_actor, bool viewer_outside, bool same_chunk,
 			bool avatar_sealed, bool chunk_has_opening);
 
-	// Map a light's intrinsic brightness (object_light / carried strength) to the
-	// spatial-light glow radius in game pixels (~3 tiles per brightness level).
+	// Spatial-light glow radius in game pixels for an intrinsic brightness.
 	int Light_radius(int brightness);
 
-	// Map a light's intrinsic brightness to its palette tier:
-	// 0 = candle, 1 = single light, 2 = many lights.
+	// Palette tier for a brightness: 0 = candle, 1 = single light, 2 = many.
 	int Light_tier(int brightness);
 
-	// The z-level of the roof over the given absolute tile -- the lowest
-	// blocked lift above the light (searched from max(lift+1, 4), so floor
-	// lights skip low furniture and elevated lights skip themselves) -- or 5,
-	// the classic wall-top threshold, when no roof is found.  This is the
-	// height the room's walls reach: the room-fill blocker test and the mask's
-	// wall-top stamp anchor both use it instead of a hardcoded 5, so buildings
-	// with taller walls mask correctly.  `found` (optional) reports whether an
-	// actual ceiling shape was found, as opposed to the floor+5 fallback: a
-	// dungeon's rock ceiling is a plain solid (not roof/floor flagged), so a
-	// light can have a real ceiling here while not counting as "beneath a
-	// roof" for the mask verdict.
+	// The z-level of the roof over the given absolute tile -- the lowest solid
+	// cover above the light -- or floor + 5, the classic wall-top threshold,
+	// when none is found.  `found` (optional) reports whether an actual ceiling
+	// shape was seen, as opposed to the floor + 5 fallback (a dungeon's rock
+	// ceiling is a plain solid, not a roof shape).
 	int Light_room_roof_z(Game_map* gmap, int tx, int ty, int lift, bool* found = nullptr);
 
-	// One spill opening found by Build_light_shadow_grid: the tile just
-	// outside the opening the light escapes through, how much of the
-	// light the opening transmits (1..100 percent, from the
-	// light_passes_through data; doorways are open air and carry 100), and
-	// the STOREY the source light stands on (tz / 5).  The splat uses the
-	// storey to keep a ground-floor window's glow off surfaces one storey
-	// up (a floor-roof deck) while an upper-storey window still lights them.
+	// One spill opening found by Build_light_shadow_grid: the tile just outside
+	// the opening the light escapes through, the opening's transmission percent
+	// (1..100; doorways are open air and carry 100), and the storey the source
+	// light stands on (tz / 5).
 	struct Light_spill {
 		Tile_coord tile;
 		int        percent;
@@ -118,101 +100,33 @@ namespace NaturalLight {
 	// the flood cache's per-frame refresh budget (see Build_light_shadow_grid).
 	void Flood_cache_frame_begin();
 
-	// Build the room-fill grid a light casts, honouring tall light-blocking
-	// walls (a solid stack whose top reaches z-level 5).  `rt` is the light's
-	// radius in tiles; `lit` is filled with a (2*rt+1) square grid, index
-	// (dty+rt)*(2*rt+1) + (dtx+rt), where dtx = tile.tx - light.tx (east +) and
-	// dty = tile.ty - light.ty (south +).  A cell is 0 when light cannot reach
-	// that tile; otherwise it holds the tile's flood PATH distance + 1 (in
-	// tiles, Chebyshev metric): how far the light actually travels -- around
-	// walls -- to get there.  The splat fades by the longer of this path and
-	// the straight-line distance, so light spilling out of one opening no
-	// longer wraps around the building at full strength.  The set is a
-	// flood-fill from the light's tile across passable floor,
-	// stopped by tall walls (which are themselves lit as a one-tile ring).  Because
-	// the reached set depends only on the enclosing room's shape -- not on where in
-	// the room the light stands -- carrying a torch around a closed room keeps the
-	// same mask.  `lit` is left empty when there is nothing to gate (fully lit).
-	// A wall tile covered by a light_passes_through shape (window, grate) is
-	// reported in `spills` as the tile just OUTSIDE the opening (absolute
-	// coords): the caller renders a small radial glow there -- the light
-	// spilling out of the opening -- instead of the fill crossing the wall.
-	// Each spill carries the opening's transmission percent (1..100, from the
-	// light_passes_through data): dirty glass passes less light than iron
-	// bars.  Doorway/roof-edge exits are open air and always carry 100.
-	// `light_walls` lights the room's one-tile wall ring (so window faces
-	// glow).  Turn it OFF for an interior light viewed from OUTSIDE: the ring
-	// otherwise shows as a bright seam beam between a wall top and an adjoining
-	// floor-roof deck.  Spill detection is unaffected either way.
+	// Build the room-fill grid a light casts.  `lit` becomes a (2*rt+1)^2 grid
+	// centred on the light's tile; each cell is 0 (light cannot reach that
+	// tile) or the flood PATH distance + 1 in tiles.  An empty `lit` means
+	// nothing to gate (fully lit).  Openings the fill reaches are reported in
+	// `spills`; `light_walls` lights the room's one-tile wall ring.  Details at
+	// the definition.
 	void Build_light_shadow_grid(
 			Game_object* light_obj, int rt, std::vector<unsigned char>& lit, std::vector<Light_spill>& spills,
 			bool light_walls = true);
 
-	// Build the room-fill grid for a spill glow (same layout as
-	// Build_light_shadow_grid), flooded from `start` -- the tile just outside
-	// the window/grate the light escapes through.  The fill spreads over
-	// whatever the opening looks out on and is stopped by the building's own
-	// wall (the window face is lit as part of the wall ring), so the spilled
-	// light shines AWAY from the room, never back inside it.
+	// Build the room-fill grid for a spill glow (same layout), flooded from
+	// `start` -- the tile just outside the opening the light escapes through.
 	void Build_spill_shadow_grid(const Tile_coord& start, int rt, std::vector<unsigned char>& lit);
 
-	// Splat one radial light's soft dome (hemispherical) falloff into the
-	// coverage buffer, copying the brightened source pixel wherever this light
-	// is the strongest contributor so far. `cov` is a contiguous W*H buffer (row
-	// stride W); `dst`, `src` and `roof` use their own line widths. `elevation`
-	// is the emitter's height above the floor in game pixels: it models the
-	// light as a point that height above the ground, so the pool of light domes
-	// (rounded, lower-peaked) instead of reading as a flat disc. `roofpix` marks
-	// the pixels of roofs (255, incl. objects standing on one) and tall exterior
-	// shapes (128: tree canopies, lampposts).  When `veto_roof` is true (a light
-	// that is itself under a roof) every marked pixel stays dark, so the light
-	// never brightens the roof or canopy over it.  When false, marked pixels
-	// instead BYPASS the tile mask below: they belong to elevated surfaces a
-	// ground-level room fill cannot represent -- a canopy sprite spans many more
-	// screen pixels than its single stamped tile -- so they are lit by pure
-	// radial falloff, treating the whole shape as a unit (and letting street
-	// lamps brighten nearby house roofs).  `is_spill` narrows that: a spill glow
-	// (the interior bubble already outside its opening) lights tall shapes (128)
-	// whole but never a real roof (255) -- only a true exterior light does that.
-	// Tall/deck mask values additionally encode the surface's STOREY as
-	// 128 + storey: a spill lights such a pixel only when `spill_floor` (the
-	// source light's storey, tz / 5) is at least that storey, so a ground-floor
-	// window's glow never brightens a floor-roof deck one storey up, while an
-	// upper-storey window's glow still lights the deck and its battlements.
-	// Interior (veto) and exterior lights ignore the storey; only spills gate --
-	// EXCEPT that a veto (under-roof) light may light an upper-storey mark
-	// (129+: a floor-slab top, an upper wall or furnishing) through the
-	// propagated field when its own room roof rises above that storey
-	// (`light_top_storey`, the room roof z / 5): light through a window high in
-	// the wall genuinely reaches the adjoining deck, while the light of the room
-	// UNDER the deck (roof storey == slab storey) stays dark.  For a SPILL,
-	// `light_top_storey` instead carries the bubble's RENDER storey (its tile
-	// z / 5): an elevated bubble (a stairwell continuation on an upper floor)
-	// skips clear pixels entirely -- those are ground-level surfaces below it,
-	// and its z-blind field hanging over them would show as a bright beam.
-	// `dist_bias` (game px) continues another source's
-	// falloff: the dome fades as if the light had already travelled that far
-	// before reaching the splat centre -- used for spill glows, which are the
-	// source's own bubble poking through an opening, not a new light
-	// (`radius` stays the REMAINING reach).  `intensity_pct` (1..100) scales
-	// the whole dome's brightness: a spill through a dim opening (dirty glass)
-	// transmits only that fraction of the light; real sources pass 100.
-	// When `grid` is non-null it is the light's room-fill grid (a (2*grid_rt+1)
-	// square of flood path distances + 1, 0 = unreached) and the light is
-	// rendered as a PROPAGATED FIELD instead of a free dome: each reached tile
-	// gets the dome brightness at its travelled distance -- the longer of the
-	// straight line and the flood path -- and pixels sample the field with
-	// bilinear interpolation between tile centres.  Containment is not a mask
-	// gating a dome; unreached tiles simply hold no light.  The field is
-	// pinned to the screen by (`grid_fx`,`grid_fy`), the rendered foot
-	// position of the light's own tile (the grid centre) at the room's
-	// wall-top anchor level: tiles at one z form a uniform c_tilesize lattice
-	// on screen, and the reference is quantized to the light's TILE, so the
-	// reached set stays fixed to the walls while the source moves.  The
-	// brightness PEAK, however, is measured from the splat centre (`sx`,`sy`)
-	// itself -- the lattice pinning only bounds the light; the pool's centre
-	// always sits on the source, whatever the room's wall height.  Null
-	// `grid` (exterior, ungated lights) renders the free dome everywhere.
+	// Splat one radial light's soft dome falloff into the coverage buffer,
+	// copying the brightened source pixel wherever this light is the strongest
+	// contributor so far.  `cov` is a contiguous W*H buffer (row stride W);
+	// `dst`, `src` and `roof` use their own line widths.  `elevation` (game px)
+	// rounds the dome; `dist_bias` continues another source's falloff (spill
+	// glows); `intensity_pct` (1..100) scales the whole dome (the opening's
+	// transmission).  `roofpix` marks roofs (255) and tall / upper-storey
+	// surfaces (128 + storey): `veto_roof` keeps marked pixels dark under an
+	// interior light, while `is_spill` with `spill_floor` / `light_top_storey`
+	// gates what a spill or under-roof light may still reach (see the pixel
+	// loop in the definition).  When `grid` is non-null it is the light's
+	// room-fill grid and the light renders as a propagated field pinned to the
+	// tile lattice at (`grid_fx`,`grid_fy`) instead of a free dome.
 	void Splat_radial_light(
 			unsigned char* cov, unsigned char* dstpix, const unsigned char* srcpix, int W, int H, int dst_lw, int src_lw, int sx,
 			int sy, int radius, int elevation, int dist_bias, int intensity_pct, const unsigned char* roofpix, int roof_lw,

@@ -123,43 +123,26 @@ class Game_window {
 		int sx, sy;    // Center of the light in game-pixel (ibuf) coords.
 		int radius;    // Radius in game pixels.
 		int tier;      // 0 = candle, 1 = single light, 2 = many lights.
-		// Height of the emitter above the floor, in game pixels (the light's
-		// 3d height projected the same way lift is).  Drives the hemispherical
-		// (dome) falloff in Splat_radial_light: a taller source spreads a
-		// rounder, lower-peaked pool of light instead of a flat disc.
+		// Emitter height above the floor in game px; rounds the dome falloff
+		// in Splat_radial_light.
 		int elevation = 0;
 		// Radius in tiles (grid half-size); 0 when there is no occlusion grid.
 		int rt = 0;
-		// The light's own tile (world coords).  build_light_layers stamps the
-		// room-fill grid into a world-anchored screen mask from these, so the
-		// mask stays fixed to the walls as the light moves.
+		// The light's own tile (world coords): anchors the room-fill grid on
+		// screen so the mask stays fixed to the walls as the light moves.
 		int ltx = 0, lty = 0, ltz = 0;
-		// True if the light is itself under a roof (a stable geometric verdict
-		// from Light_beneath_roof): build_light_layers then keeps roof pixels
-		// dark for it so it never lights its own roof.  False (e.g. the
-		// Avatar's carried light, or any light out in the open) lights roofs.
+		// True if the light is itself under a roof (Light_beneath_roof): roof
+		// pixels stay dark for it.
 		bool mask_roof = false;
-		// For spill glows: the distance (in game px) the source's light has
-		// already travelled to reach the spill point.  The splat continues the
-		// source's falloff from there -- the spill is the same bubble poking
-		// through the opening, not a new light -- so its brightness at the
-		// window equals the source's at that distance and keeps fading on the
-		// same curve.  0 for real sources.
+		// Spill glows: distance (game px) already travelled to the spill
+		// point; the splat continues the source's falloff.  0 for real sources.
 		int dist_bias = 0;
-		// True for a spill glow: it behaves like an EXTERIOR light (no roof-
-		// pixel veto, so tall shapes and roofs in its reach light up whole),
-		// but its room-fill grid always gates it so it never lights back
-		// inside or around corners.
+		// True for a spill glow (semantics in Splat_radial_light).
 		bool is_spill = false;
-		// For spill glows: how much of the light the opening transmits
-		// (1..100 percent, from the light_passes_through data).  Scales the
-		// spill's brightness -- dirty glass passes less light than iron bars.
-		// Real sources are always 100.
+		// The opening's transmission percent (1..100); real sources pass 100.
 		int spill_percent = 100;
-		// For spill glows: the storey (source tz / 5) the spill came from.  A
-		// spill lights a tall/deck shape (roof mask value 128 + storey) only at
-		// or below its own storey, so a ground-floor window's glow never reaches
-		// a floor-roof deck one storey up.
+		// Spill glows: the source's storey (tz / 5), gating 128 + storey roof
+		// mask pixels in Splat_radial_light.
 		int spill_floor = 0;
 		// Room-fill grid ((2*rt+1) square) from Build_light_shadow_grid: light
 		// floods the room bounded by tall walls.  Empty = no gating.
@@ -180,21 +163,13 @@ class Game_window {
 	std::vector<TileRect>      light_tier_mask_rects[3];    // Next-frame roof-mask clips.
 	uint64_t                   light_tier_sig[3]   = {0, 0, 0};
 	uint64_t                   light_tier_stamp[3] = {0, 0, 0};
-	// Reused per-light scratch for the world-anchored occlusion mask stamped
-	// from a light's room-fill grid (see build_light_layers).
-	std::vector<unsigned char> light_block_scratch;
-	// Global roof-pixel mask: marks which on-screen pixels belong to a drawn
-	// roof (an occluding overhead object).  Built during the world render and
-	// consumed by build_light_layers to keep those pixels dark under every
-	// light, so an interior light never lights up the roof over it.  Same
-	// pixel geometry as the world ibuf (win->get_ib8()).
+	// Global roof-pixel mask, same pixel geometry as the world ibuf: built
+	// during the world render (update_roof_mask), consumed by
+	// build_light_layers / Splat_radial_light.
 	std::unique_ptr<Image_buffer8> roof_light_mask;
 	bool                           roof_light_mask_active = false;
-	// Screen rectangles (ibuf coords) the light splats sampled the roof mask
-	// in LAST frame, grown by a small margin.  update_roof_mask skips any
-	// object whose sprite touches none of them: pixels outside the rects are
-	// never sampled, so painting the mask there is wasted work.  A light
-	// appearing (or the view jumping) corrects itself on the next frame.
+	// Last frame's splat rectangles (grown by a margin): update_roof_mask
+	// only paints the mask where a sprite touches one of them.
 	std::vector<TileRect> light_mask_rects;
 	// Game state values:
 	int           skip_above_actor;      // Level above actor to skip rendering.
@@ -589,11 +564,7 @@ public:
 
 	void destroy_light_layers();
 
-	// Roof-pixel mask (see roof_light_mask above): begin_roof_mask allocates /
-	// clears the mask at the start of a world render when night lighting is
-	// active; update_roof_mask marks a roof object's pixels and clears any that
-	// a later (front) non-roof object paints over, so overlapping shapes such as
-	// a tree in front of a roof stay lit.
+	// Roof-pixel mask upkeep (see roof_light_mask above and the definitions).
 	void begin_roof_mask();
 	void update_roof_mask(Game_object* obj, int sx, int sy);
 

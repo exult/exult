@@ -1364,7 +1364,7 @@ void Game_window::begin_roof_mask() {
 }
 
 /*
- *  Update the global roof mask as one object is painted Objects paint
+ *  Update the global roof mask as one object is painted.  Objects paint
  *  back-to-front, so the topmost shape at each pixel wins: a roof shape -- or
  *  anything standing at roof level (lift >= 5), which is just as far above an
  *  interior light -- sets its pixels (kept dark under lights), and any ground
@@ -1399,12 +1399,9 @@ void Game_window::update_roof_mask(Game_object* obj, int sx, int sy) {
 			return;
 		}
 	}
-	// A roof marks its pixels (255); a tall EXTERIOR shape (tree canopy,
-	// lamppost, deck object) marks 128 + its STOREY (lift / 5).  Anything
-	// painted over them clears (0).  The values differ under a SPILL glow: it
-	// lights tall shapes standing in its reach as whole units -- but only at
-	// or below the spill source's own storey -- and must never light a real
-	// roof.  A true exterior light lights everything regardless of value.
+	// Mask values: 255 = roof, 128 + storey = tall / upper-storey shape,
+	// 0 = clear.  How each light kind treats them is decided in
+	// Splat_radial_light's pixel loop.
 	static const Xform_palette roof_set = [] {
 		Xform_palette x;
 		for (int i = 0; i < 256; ++i) {
@@ -1428,22 +1425,12 @@ void Game_window::update_roof_mask(Game_object* obj, int sx, int sy) {
 		}
 		return x;
 	}();
-	// An object standing ON a roof is above any interior light source, so it
-	// must stay as dark as the roof it stands on: mark it into the mask like a
-	// roof shape instead of letting it punch a lit hole.  "On a roof" means at
-	// or above the render-skip level while the Avatar is inside (everything at
-	// that lift or higher is hidden, so whatever visible shape reaches it sits
-	// on a still-drawn LOWER roof -- e.g. a side room's) -- NOT a hardcoded
-	// z 5: in a tall room the skip is the room's own roof height (7+), and its
-	// visible upper wall segments at lift 5..6 are walls, not roofs.  While
-	// inside, an is_roof() shape likewise only counts when it sits ABOVE the
-	// Avatar (a side room's still-drawn lower roof): some interiors use roof
-	// shapes as flooring, and the floor underfoot must stay lit.  While
-	// outside nothing is skipped, so the classic z 5 threshold applies and any
-	// roof shape marks.  Ground objects merely drawn in front of a roof (a
-	// tree before a house) still clear their pixels and stay lit.  Exterior
-	// lights never apply the roof mask, so they keep lighting roofs and
-	// whatever stands on them.
+	// An object standing ON a roof must stay as dark as the roof under it.
+	// "Roof level" is the render-skip lift while inside (NOT a hardcoded z 5:
+	// a tall room's visible upper wall segments are walls, not roofs) and the
+	// classic z 5 while outside.  Inside, an is_roof() shape only counts when
+	// ABOVE the Avatar: some interiors use roof shapes as flooring.  Ground
+	// objects merely drawn in front of a roof still clear their pixels.
 	const bool inside = is_main_actor_inside();
 	// Debug (EXULT_DEBUG_LIGHT_MASK=1): report the mask verdict once per
 	// shape/frame/verdict for TALL shapes only -- the canopy/lamppost cases.
@@ -1479,14 +1466,10 @@ void Game_window::update_roof_mask(Game_object* obj, int sx, int sy) {
 	};
 	int tall_storey = 0;
 	if (obj->as_actor() != nullptr) {
-		// Actors are never silhouetted as a real roof (255).  But an actor
-		// standing on an OPEN-SKY deck (a floor-roof / battlement top) must not
-		// be lit by the room BELOW's interior light leaking up through the
-		// deck: mark it 128 like the deck objects around it, so a spill, an
-		// exterior light, or its own carried light still light it whole, while
-		// the under-deck interior (veto) light keeps it dark.  An actor on an
-		// interior upper floor (a roof above it) or at ground level stays clear
-		// (0) and is lit normally by its room's light.
+		// Actors are never marked as a real roof (255).  On an open-sky deck
+		// mark 128 like the deck objects around them (dark under the room
+		// below, lit whole by spills / exterior / carried light); at ground
+		// level or under an interior roof stay clear.
 		const int top         = obj->get_lift() + obj->get_info().get_3d_height();
 		const int floor_level = inside ? get_render_skip_lift() : 5;
 		if (obj->get_lift() >= floor_level && open_sky_above(top)) {
@@ -1494,11 +1477,8 @@ void Game_window::update_roof_mask(Game_object* obj, int sx, int sy) {
 			tall_exterior = true;
 			report("MARK deck-actor (open sky)");
 		} else if (inside && obj->get_lift() >= 5) {
-			// An actor on an UPPER storey below the render skip (an NPC on
-			// the second floor while the Avatar is up there too).  Like the
-			// upper walls and furniture, left clear the ground floor's
-			// z-blind light field would paint it bright; mark 128 + storey
-			// so only its own storey's lights and spills reach it.
+			// An actor on an upper storey below the render skip: mark
+			// 128 + storey like the walls and furniture up there.
 			roof_like     = true;
 			tall_exterior = true;
 			tall_storey   = storey_of(obj->get_lift());
@@ -1507,23 +1487,13 @@ void Game_window::update_roof_mask(Game_object* obj, int sx, int sy) {
 			roof_like = false;
 		}
 	} else if (obj->get_info().is_floor()) {
-		// A floor slab used as the roof of the storey below (%%section
-		// floor_shapes).  Keep it dark under that storey's interior lights
-		// like a roof, but mark it 128 + storey (not 255) so a window/opening
-		// SPILL at deck level still lights its top surface, while a GROUND
-		// window's glow -- whose screen radius overlaps the elevated deck --
-		// is gated off by the storey.  Only the flat TOP surface is marked:
-		// the slab's front-facing THICKNESS (the bottom / right 4px-per-z
-		// strip of the sprite) is a vertical edge facing the storey below --
-		// marking it would draw a dark seam along the wall it adjoins inside
-		// the neighbouring room -- so leave it as the shapes beneath painted
-		// it and the room's own light brushes it like the wall face.  Painted
-		// via a clip rect, so return early.  That is the INSIDE view.  From
-		// OUTSIDE, the room's light is a masked veto light whose z-blind
-		// field cells sit up-screen exactly where the thickness strip hangs:
-		// left clear it shows as a bright beam between the ground walls and
-		// the storey above, so the whole sprite keeps a plain 128 face mark
-		// under the top's 128 + storey (the pre-top-only two-pass paint).
+		// A floor slab used as the storey below's ceiling: mark its flat TOP
+		// 128 + storey (not 255) so a deck-level spill still lights it while
+		// a ground window's glow is storey-gated off.  Inside, the slab's
+		// front-facing thickness strip (bottom / right 4px-per-z) is left as
+		// painted -- marking it would draw a dark seam along the adjoining
+		// wall.  Outside, the whole sprite first gets a plain 128 face mark,
+		// or the room's veto light shows as a bright beam over the strip.
 		const int zs         = obj->get_info().get_3d_height();
 		const int top_storey = storey_of(obj->get_lift() + zs);
 		const int strip      = 4 * zs;
@@ -1554,23 +1524,15 @@ void Game_window::update_roof_mask(Game_object* obj, int sx, int sy) {
 		roof_like                = is_roof_shape || obj->get_lift() >= get_render_skip_lift();
 		const int top            = obj->get_lift() + obj->get_info().get_3d_height();
 		if (roof_like && !is_roof_shape && open_sky_above(top)) {
-			// At roof level but not a flagged roof: an object standing on an
-			// exposed deck / floor-roof (battlements on a castle top).  Under
-			// open sky it is exterior-exposed, so mark it plain 128 -- a
-			// window/opening spill from ANY storey can then light it, the way
-			// a ground window's glow brushes the walls above it -- instead of
-			// 255, which a spill must never touch.  Only the flat slab TOP is
-			// storey-gated (see the is_floor branch): a standing object's face
-			// is visible to a glow from below, a horizontal deck surface not.
+			// An object standing on an open-sky deck (castle battlements):
+			// plain 128, so a spill from any storey lights its face (only the
+			// flat slab TOP is storey-gated, see the is_floor branch).
 			tall_exterior = true;
 			report("MARK deck-object (open sky, inside)");
 		} else if (!roof_like && top > get_render_skip_lift()) {
-			// A grounded shape rising ABOVE the room's ceiling can only be an
-			// EXTERIOR one (an outside tree next to the building): interior
-			// walls stop at the skip level.  Its canopy overlaps the room's
-			// screen area, so without a mark the interior light paints it
-			// bright.  Confirm it really stands under open sky (nothing
-			// blocked above its top) so nothing indoors is ever caught here.
+			// A grounded shape rising above the room's ceiling can only be an
+			// exterior one (an outside tree); confirm open sky above its top
+			// so nothing indoors is caught here.
 			if (open_sky_above(top)) {
 				tall_exterior = true;
 				report("MARK exterior-tall (open sky)");
@@ -1584,15 +1546,9 @@ void Game_window::update_roof_mask(Game_object* obj, int sx, int sy) {
 				report("clear: tall but blocked above top");
 			}
 		} else if (!roof_like && obj->get_lift() >= 5) {
-			// An UPPER-STOREY shape below the render skip: the walls and
-			// furnishings of the second floor while the Avatar stands up
-			// there.  Left clear, the GROUND floor's interior light field
-			// and any ground window's spill dome -- both unaware of z --
-			// would paint them bright: an exterior second-storey wall lit
-			// by the lamp in the room below it.  Mark 128 + storey so the
-			// storey gates keep lights from LOWER floors off them, while
-			// the upper room's own light (its roof rises above this
-			// storey) still lights them through the veto field exception.
+			// Upper-storey walls / furnishings below the render skip: mark
+			// 128 + storey so z-blind lights from lower floors stay off them
+			// while their own storey's lights still reach them.
 			tall_exterior = true;
 			tall_storey   = storey_of(obj->get_lift());
 			report("MARK upper-storey (inside)");
@@ -1604,37 +1560,20 @@ void Game_window::update_roof_mask(Game_object* obj, int sx, int sy) {
 		roof_like                = is_roof_shape || obj->get_lift() >= 5;
 		const int top            = obj->get_lift() + obj->get_info().get_3d_height();
 		if (roof_like && !is_roof_shape && open_sky_above(top)) {
-			// At roof level but not a flagged roof: an object standing on an
-			// exposed deck / floor-roof (castle battlements).  Under open sky
-			// it is exterior-exposed, so mark it plain 128 so a window/opening
-			// spill from ANY storey can light it (a ground window's glow
-			// brushes the battlements above it just like the walls), not 255
-			// which a spill must never touch.  Only the flat slab TOP is
-			// storey-gated (see the is_floor branch).
+			// Object on an open-sky deck: plain 128, as in the inside branch.
 			tall_exterior = true;
 			report("MARK deck-object (open sky, outside)");
 		} else if (roof_like && !is_roof_shape) {
-			// Covered and at an upper storey but not a roof shape: a second
-			// storey's wall (or furnishing) seen from OUTSIDE.  Marked 255 it
-			// could never light up; left clear the ground floor's z-blind
-			// light field would paint it.  Mark 128 + storey so only lights
-			// and spills of its own storey or above reach it: the stairwell
-			// bubble on the second floor lights the second floor's walls, a
-			// ground lamp does not.
+			// A second storey's wall / furnishing seen from outside: mark
+			// 128 + storey so only its own storey's lights and spills reach it.
 			tall_exterior = true;
 			tall_storey   = storey_of(obj->get_lift());
 			report("MARK upper-storey (outside)");
 		} else if (!roof_like && top >= 5) {
-			// A grounded shape TALL enough to reach roof level (an outside
-			// tree, a lamppost).  Give it the same whole-shape verdict as
-			// the inside branch: standing under open sky it is marked as a
-			// unit, so a masked light (an interior light reaching it through
-			// a door, or a spill glow) treats the entire canopy the same --
-			// leaving the mask as-painted instead lit exactly the pixels not
-			// over the roof, cutting the canopy into lit and dark patches.
-			// Exterior lights never consult the mask, so they still light
-			// the whole shape.  If something sits above its top it is under
-			// cover; leave the mask as the shapes beneath painted it.
+			// A grounded shape tall enough to reach roof level (tree,
+			// lamppost): under open sky mark it as a whole unit so masked
+			// lights don't cut the canopy into lit and dark patches; under
+			// cover leave the mask as the shapes beneath painted it.
 			if (open_sky_above(top)) {
 				tall_exterior = true;
 				report("MARK exterior-tall (open sky, outside)");
@@ -1745,15 +1684,10 @@ void Game_window::build_light_layers() {
 	const unsigned char* roofpix = (roof_light_mask_active && roof_light_mask) ? roof_light_mask->get_bits() : nullptr;
 	const int            roof_lw = roofpix ? static_cast<int>(roof_light_mask->get_line_width()) : 0;
 
-	// While the Avatar is INSIDE (roofs hidden, interiors visible) the
-	// blocking-shape room mask applies to every light, and the roof mask takes
-	// precedence over all of them so nothing spills onto a still-drawn roof.
-	// While OUTSIDE, the mask still applies to a light that is itself under a
-	// roof (lr.mask_roof, the interior-light verdict): its walls block the
-	// light, and it reaches the outside only where the room-fill escaped
-	// through an opening (door, window gap) -- instead of lighting up
-	// everything around the building.  An exterior light (street lamp, torch,
-	// brazier) stays unmasked outside and brightens nearby house roofs again.
+	// INSIDE, the room mask applies to every light (the roof mask on top so
+	// nothing spills onto a still-drawn roof).  OUTSIDE, it still applies to a
+	// light itself under a roof (lr.mask_roof) so its walls contain it, while
+	// an exterior light stays unmasked and brightens nearby house roofs.
 	const bool inside = is_main_actor_inside();
 
 	// Per-tier signature of everything that shapes this frame's coverage
@@ -1872,31 +1806,8 @@ void Game_window::build_light_layers() {
 				if (reuse || lr.tier != t || lr.radius <= 0) {
 					continue;
 				}
-				// While the Avatar is INSIDE (roofs hidden, interiors visible) the
-				// blocking-shape room mask applies to every light, and the roof
-				// mask takes precedence over all of them so nothing spills onto a
-				// still-drawn roof.  While OUTSIDE, the mask still applies to a
-				// light that is itself under a roof (lr.mask_roof, the interior-
-				// light verdict): its walls block the light, and it reaches the
-				// outside only where the room-fill escaped through an opening
-				// (door, window gap) -- instead of lighting up everything around
-				// the building.  An exterior light (street lamp, torch, brazier)
-				// stays unmasked outside and brightens nearby house roofs again.
-				// Roof-pixel semantics per light (veto_roof in Splat_radial_light):
-				// a light that is itself under a roof (lr.mask_roof) keeps every
-				// marked pixel dark -- roof-like (255) and tall EXTERIOR (128)
-				// pixels (an outside tree's canopy overlapping the room) never
-				// light up under it.  An EXTERIOR light -- a street lamp, a torch
-				// in the open -- instead lights marked pixels as whole shapes,
-				// bypassing its tile-based room mask there: the canopy sprite
-				// spans far more screen than its stamped tile, so gating it by
-				// the ground fill would cut it into lit and dark patches.  This
-				// also keeps street lamps brightening nearby house roofs whether
-				// the Avatar is inside or out.  A SPILL GLOW (the interior bubble
-				// already outside the opening) sits between the two: it lights
-				// tall exterior shapes (128) whole, but never a real roof (255)
-				// -- it emerges right beside the building and would set the
-				// building's own roof aglow.
+				// Masking policy: see the `inside` comment above; the per-pixel
+				// roof / tall / storey semantics live in Splat_radial_light.
 				const bool mask_roof = roofpix && lr.mask_roof;
 				// The dome (intensity + falloff) emits from the flame up on the
 				// sprite, not the tile foot get_shape_location returns, so raise
@@ -1908,44 +1819,28 @@ void Game_window::build_light_layers() {
 				const int emit      = (lr.is_spill ? 0 : lr.elevation) + foot_bias;
 				const int csx       = lr.sx - emit;
 				const int csy       = lr.sy - emit;
-				// Gated lights are rendered as a PROPAGATED FIELD straight from the
-				// room-fill grid -- no stamped occlusion mask.  The splat needs one
-				// world-anchored reference to pin the grid to the screen: the foot
-				// position of the light's own tile, anchored at the TOP of the
-				// blocking walls the room is made of.  A tall wall is a 3D box: it
-				// renders shifted up-and-left of its tile by 4px per z-level, so
-				// the visible room interior sits at the walls' top edges -- the
-				// roof level over the light's tile (buildings differ in wall
-				// height, so it is not a hardcoded z 5).  Both the anchor level and
-				// the reference tile are fixed properties of the room and the tile
-				// grid -- never of the light's moving pixel position -- so the
-				// field stays pinned to the walls as the source moves: carrying a
-				// torch around a closed room does not reshape it.
+				// Gated lights render as a propagated field from the room-fill
+				// grid (see Splat_radial_light).  The screen reference pinning
+				// the grid is the foot position of the light's own tile at the
+				// TOP of the room's walls (walls render 4px per z up-left of
+				// their tile) -- a fixed property of the room, so the field
+				// stays pinned to the walls as the source moves.
 				const unsigned char* grid    = nullptr;
 				int                  grid_rt = 0;
 				int                  grid_fx = 0;
 				int                  grid_fy = 0;
-				// Storey the light's own room roof reaches (roof z / 5): a veto
-				// light may light a floor-slab top through the field only below it.
-				// For a SPILL it instead carries the bubble's RENDER storey
-				// (its tile z / 5): a bubble sitting on an upper floor (stairwell
-				// continuation) must never light clear ground-level pixels below
-				// it -- its z-blind field cells sit up-screen exactly over the
-				// ground walls' faces, which would show as a bright beam.
+				// Veto lights: the storey their room roof reaches; spills: the
+				// bubble's render storey (gating rules in Splat_radial_light).
 				int light_top_storey = 0;
 				if ((inside || lr.mask_roof || lr.is_spill) && !lr.lit.empty()) {
 					grid    = lr.lit.data();
 					grid_rt = lr.rt;
-					// The wall-top anchor is a ROOM concept: it applies when the
-					// light actually has a ceiling overhead.  That is not the same
-					// as lr.mask_roof: a dungeon torch sits under solid rock (no
-					// roof/floor-flagged shape, so mask_roof is false) yet its
-					// walls need the wall-top lattice or their faces fall outside
-					// the field and go dark.  Only a light with NO real ceiling --
-					// an exterior lamp gated here because the Avatar is inside, or
-					// a spill glow on open ground -- anchors at its own storey
-					// floor: anchoring it at Light_room_roof_z's floor+5 fallback
-					// would slide its whole field 4px per z up-left off the source.
+					// Anchor at the wall top whenever the light has a real
+					// ceiling (a dungeon's rock ceiling counts even though
+					// mask_roof is false).  Only a light with none -- an exterior
+					// lamp gated while the Avatar is inside, a spill on open
+					// ground -- anchors at its own storey floor: the floor+5
+					// fallback would slide its field 4px per z up-left off it.
 					bool      ceiling  = false;
 					const int roof_z   = NaturalLight::Light_room_roof_z(map, lr.ltx, lr.lty, lr.ltz, &ceiling);
 					const int anchor_z = (lr.mask_roof || ceiling) ? roof_z : (lr.ltz / 5) * 5;

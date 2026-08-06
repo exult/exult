@@ -649,13 +649,11 @@ namespace NaturalLight {
 		return base;
 	}
 
-	// Bounded flood fill from the Avatar's tile. Returns true if the roofed
-	// enclosure the Avatar is standing in has a passable gap in its walls that
-	// leads outside -- e.g. a doorway with no door object at all, which has no
-	// light_passes_through shape to detect. Light spreads between tiles unless a
-	// wall blocks it (tested a couple of tiles above the floor so low furniture is
-	// not mistaken for a wall). If the flood reaches a tile with no roof, the
-	// enclosure is not light-tight.
+	// Bounded flood fill from `start`. Returns true if the roofed enclosure it
+	// stands in has a passable gap in its walls that leads outside -- e.g. a
+	// doorway with no door object at all, which has no light_passes_through
+	// shape to detect. Walls are tested a couple of tiles above the floor so
+	// low furniture does not block; reaching a roofless tile means an opening.
 	bool Enclosure_open_to_outside(const Tile_coord& start) {
 		Game_map* const gmap = Game_window::get_instance()->get_map();
 		if (gmap == nullptr) {
@@ -801,15 +799,12 @@ namespace NaturalLight {
 		return false;    // Not connected within the search radius.
 	}
 
-	// True if an actual roof shape covers the light's tile from above. Scans the
-	// light's chunk and its neighbours (a roof spans several tiles / chunks) for
-	// is_roof() objects whose footprint contains the light's tile. Unlike
-	// Map_chunk::is_roof() -- which counts ANY blocking object above a lift, so a
-	// tall lamp post reads as "roofed" over itself -- this looks ONLY at roof
-	// shapes and ignores the light object itself. It is a stable, geometric,
-	// avatar-independent test, so an interior light keeps its verdict no matter
-	// where the Avatar stands (screen-space roof-mask sampling flips as Exult hides
-	// roofs above/near the Avatar, which wrongly let interior lights light roofs).
+	// True if an actual roof shape covers the light's tile from above.  Scans
+	// the light's chunk and its neighbours (a roof spans chunks) for is_roof()
+	// / is_floor() objects whose footprint contains the tile, ignoring the
+	// light itself.  Purely geometric and avatar-independent -- unlike
+	// Map_chunk::is_roof(), which counts ANY blocking object above a lift and
+	// flips as Exult hides roofs near the Avatar.
 	bool Light_beneath_roof(Game_object* light_obj) {
 		Game_window* const gwin = Game_window::get_instance();
 		Game_map* const    gmap = gwin ? gwin->get_map() : nullptr;
@@ -1568,6 +1563,18 @@ namespace NaturalLight {
 		flood_spend = 0;
 	}
 
+	// Room-fill flood from the light's tile across passable floor, stopped by
+	// tall walls (lit as a one-tile ring when `light_walls`; turned off for an
+	// interior light viewed from outside, where the ring shows as a bright
+	// seam).  Grid layout: index (dty+rt)*(2*rt+1) + (dtx+rt), dtx/dty relative
+	// to the light's tile; a nonzero cell holds the flood PATH distance + 1
+	// (Chebyshev, in tiles) -- how far the light travels around walls -- so the
+	// splat can fade by the longer of path and straight line.  The reached set
+	// depends only on the room's shape, so a torch carried around a closed room
+	// keeps the same mask.  A wall tile covered by a light_passes_through shape
+	// becomes a `spills` entry: the tile just OUTSIDE the opening (absolute
+	// coords) plus the opening's transmission percent (doorway / roof-edge
+	// exits are open air and carry 100).
 	void Build_light_shadow_grid(
 			Game_object* light_obj, int rt, std::vector<unsigned char>& lit, std::vector<Light_spill>& spills, bool light_walls) {
 		const int side = 2 * rt + 1;
@@ -1868,14 +1875,11 @@ namespace NaturalLight {
 				trow = ftmpl->alpha.data() + static_cast<size_t>(y - sy - ftmpl->y0) * ftmpl->w - (sx + ftmpl->x0);
 			}
 			for (int x = x0; x <= x1; ++x) {
-				// one), 128 a tall EXTERIOR shape (tree canopy, lamppost).  An
-				// under-roof light keeps both dark.  A SPILL glow -- the bubble
-				// already outside the opening -- lights tall shapes as whole
-				// units (bypassing the propagated field below: the sprite's
-				// elevated pixels span far more screen than its ground tiles, so
-				// sampling the field there would cut the shape into lit and dark
-				// patches) but must never light a real roof.  A true EXTERIOR
-				// light (street lamp, torch in the open) lights both.
+				// Roof-mask byte: 255 = real roof, 128 + storey = tall shape or
+				// upper-storey surface.  The branches below decide per light
+				// kind (veto / spill / exterior) what stays dark, what is lit
+				// as a whole unit (bypass_field) and what keeps sampling the
+				// propagated field.
 				bool bypass_field = false;
 				if (roofrow && roofrow[x]) {
 					if (veto_roof) {

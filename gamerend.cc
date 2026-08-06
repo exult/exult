@@ -227,10 +227,9 @@ int Game_render::paint_map(
 		paint_terrain_only(start_chunkx, start_chunky, stop_chunkx, stop_chunky);
 		return 10;    // Pretend there's lots of light!
 	}
-	// Determine once per frame whether the Avatar is inside a completely
-	// light-tight enclosureIt is sealed only if its own chunk has no
-	// light_passes_through object (window / open door / ...) AND there is no
-	// passable gap in the walls (e.g. a doorway with no door object).
+	// Once per frame: the Avatar's enclosure is light-tight only if its own
+	// chunk has no light_passes_through object AND no passable gap in the
+	// walls (e.g. a doorway with no door object).
 	avatar_enclosure_sealed = false;
 	{
 		Main_actor* const main_actor = gwin->get_main_actor();
@@ -450,52 +449,30 @@ void Game_window::paint(
 				int asx = 0;
 				int asy = 0;
 				get_shape_location(main_actor, asx, asy);
-				// The carried torch/lamp casts its pool on the floor under the
-				// Avatar -- the Avatar's foot tile -- so keep asx/asy at the foot.
-				// The flame's height only rounds the dome falloff (passed as
-				// `elevation`); shifting the centre up-left would slide the pool
-				// off the room mask it should fill.
+				// Keep the pool centred on the Avatar's foot tile; the flame's
+				// height only rounds the dome falloff (`elevation`).
 				const int elevation = (main_actor->get_info().get_3d_height() * c_tilesize) / 2;
 				const int radius    = NaturalLight::Light_radius(carried_bright);
 				const int tier      = NaturalLight::Light_tier(carried_bright);
 				// Same tall-wall occlusion as placed lights, centred on the
-				// Avatar so the carried torch is contained by the room's walls.
-				// The +7 is one tile of rounding slack plus six tiles covering
-				// the wall-top anchor shift: the mask stamps are drawn up to
-				// 4*roof_z px up-left of the tiles' floor positions (5.5 tiles
-				// at a z 11 ceiling), so without the slack a fill reaching the
-				// grid edge (large open room) ends short of the dome's
-				// south/east fringe, cutting the light off in two straight edges.
+				// Avatar.  +7: rounding slack plus the wall-top anchor shift
+				// (see the placed-light site in paint_chunk_objects).
 				const int                              rt    = radius / c_tilesize + 7;
 				const Tile_coord                       ltile = main_actor->get_tile();
 				std::vector<unsigned char>             lit;
 				std::vector<NaturalLight::Light_spill> spills;
-				// Same under-roof verdict as placed lights: a carried torch under
-				// a roof keeps roof pixels dark (it must not light the canopy of
-				// an outside tree overlapping the room); out in the open it
-				// brightens nearby roofs and tall shapes like any street lamp.
+				// Same under-roof verdict as placed lights: under a roof the
+				// torch keeps roof pixels dark, in the open it lights them.
 				const bool under_roof = NaturalLight::Light_beneath_roof(main_actor);
-				// Suppress the interior wall ring only when the light is under a
-				// roof AND the Avatar views from outside: then the one-tile wall
-				// ring must not show as a bright seam between a wall top and an
-				// adjoining floor-roof deck.  Inside, or for an open-air light,
-				// keep the ring so window faces still glow.
+				// Wall ring off only when under a roof and viewed from outside
+				// (shows as a bright seam there); on otherwise so window faces glow.
 				const bool light_walls = is_main_actor_inside() || !under_roof;
 				NaturalLight::Build_light_shadow_grid(main_actor, rt, lit, spills, light_walls);
 				add_light_render(asx, asy, radius, tier, elevation, rt, ltile.tx, ltile.ty, ltile.tz, std::move(lit), under_roof);
-				// Each window/grate the room fill reached gets its own soft glow:
-				// the source's own bubble poking through the opening, NOT a new
-				// light.  Its reach is what remains of the source's radius at the
-				// opening's distance, and the splat continues the source's falloff
-				// from there (dist_bias + the source's elevation), so brightness is
-				// seamless across the opening instead of peaking like a second
-				// lamp.  Outside the opening it behaves like an EXTERIOR light
-				// (mask_roof false: tall shapes and roofs in its reach light up
-				// whole), while its own room mask flooded from the outside tile
-				// (is_spill) still gates it so it lights what the window looks out
-				// on -- never back inside.  The opening's transmission percent
-				// (from the light_passes_through data) dims the spill: dirty
-				// glass passes less light than iron bars or an open doorway.
+				// Each opening the fill reached gets the source's own bubble
+				// poking through it: remaining radius, continued falloff
+				// (dist_bias), gated by its own spill grid, dimmed by the
+				// opening's transmission percent (see Light_spill).
 				for (const NaturalLight::Light_spill& spill : spills) {
 					const Tile_coord& sp           = spill.tile;
 					const int         spill_dist   = ltile.distance_2d(sp) * c_tilesize;
@@ -742,11 +719,8 @@ int Game_render::paint_chunk_objects(
 			}
 			const int  strength = get_light_strength(light_obj, main_actor);
 			const bool natural  = gwin->get_natural_light();
-			// The legacy global-palette light count uses a tight distance decay
-			// (get_light_strength falls to 0 well before the screen edge). Natural
-			// (spatial) lights have their own bounded glow radius, so they should
-			// still appear over the whole visible area: only cull far lights when
-			// natural light is off.
+			// Natural lights have their own bounded glow radius; only cull
+			// distance-decayed (strength 0) lights when natural light is off.
 			if (strength <= 0 && !natural) {
 				continue;
 			}
@@ -783,57 +757,31 @@ int Game_render::paint_chunk_objects(
 				int       lsx        = 0;
 				int       lsy        = 0;
 				gwin->get_shape_location(light_obj, lsx, lsy);
-				// The pool of light a source casts on the floor is centred on the
-				// tile directly beneath the flame -- the object's foot -- so keep
-				// lsx/lsy at the foot (do NOT shift it up-left to the flame, or the
-				// pool slides off the floor tiles / room mask it should fill).  The
-				// emitter's height only rounds the falloff: it is passed as
-				// `elevation` and drives the hemispherical dome in Splat, without
-				// moving the pool's centre.
+				// Keep the pool centred on the object's foot tile; the emitter's
+				// height only rounds the dome falloff (`elevation`).
 				const int elevation = (info.get_3d_height() * c_tilesize) / 2;
 				const int radius    = NaturalLight::Light_radius(brightness);
 				const int tier      = NaturalLight::Light_tier(brightness);
-				// Keep roofs dark only for a light that is itself under a roof
-				// (interior candle, hanging lamp): it must not light up its own
-				// roof. A light out in the open -- street lamp, torch, brazier
-				// -- lights nearby house roofs. Light_beneath_roof is a stable
-				// geometric test (actual roof shapes, ignoring the light's own
-				// shape), so the verdict does not flip as the Avatar moves and
-				// Exult hides roofs near it.
+				// Keep roofs dark only for a light itself under a roof; one in
+				// the open lights nearby house roofs (see Light_beneath_roof).
 				const bool under_roof = NaturalLight::Light_beneath_roof(light_obj);
-				// Tall (z >= 5) walls contain the light within the room.  The +7
-				// is one tile of rounding slack plus six tiles covering the
-				// wall-top anchor shift: the mask stamps are drawn up to 4*roof_z
-				// px up-left of the tiles' floor positions (5.5 tiles at a z 11
-				// ceiling), so without the slack a fill reaching the grid edge
-				// (large open room) ends short of the dome's south/east fringe,
-				// cutting the light off in two straight edges.
+				// +7: one tile of rounding slack plus six tiles covering the
+				// wall-top anchor shift (mask stamps draw up to 4*roof_z px
+				// up-left of the tiles), so a fill reaching the grid edge does
+				// not cut off the dome's south/east fringe.
 				const int                              rt    = radius / c_tilesize + 7;
 				const Tile_coord                       ltile = light_obj->get_tile();
 				std::vector<unsigned char>             lit;
 				std::vector<NaturalLight::Light_spill> spills;
-				// Suppress the interior wall ring when the light is under a roof
-				// and the Avatar views from outside (see carried-light above),
-				// so the wall/floor-roof seam shows no stray beam.  "Outside"
-				// is per STOREY, not just per building: from the second floor,
-				// the ground-floor room below is as invisible as from the
-				// street, and its light's ring on the ground walls' faces --
-				// peeking out under the upper floor's slab edge -- would show
-				// as a stray glow.  The ring only applies when the Avatar is
-				// inside on that light's own storey.
+				// Wall ring only when the Avatar is inside on this light's own
+				// storey: from any other storey (or outside) the ring peeks out
+				// as a stray glow on the wall faces.
 				const bool light_walls
 						= (gwin->is_main_actor_inside() && gwin->get_main_actor()->get_lift() / 5 == ltile.tz / 5) || !under_roof;
 				NaturalLight::Build_light_shadow_grid(light_obj, rt, lit, spills, light_walls);
 				gwin->add_light_render(
 						lsx, lsy, radius, tier, elevation, rt, ltile.tx, ltile.ty, ltile.tz, std::move(lit), under_roof);
-				// Each window/grate the room fill reached gets its own soft glow:
-				// the source's own bubble poking through the opening, NOT a new
-				// light (see the carried-light spills above for the full story).
-				// Continues the source's falloff (dist_bias + elevation), behaves
-				// like an exterior light outside the opening (mask_roof false),
-				// and is gated by its own room mask flooded from the outside tile
-				// (is_spill) so it never lights back inside.  The opening's
-				// transmission percent dims the spill (dirty glass < iron bars).
+				// Spill glow per reached opening (see the carried-light site).
 				for (const NaturalLight::Light_spill& spill : spills) {
 					const Tile_coord& sp           = spill.tile;
 					const int         spill_dist   = ltile.distance_2d(sp) * c_tilesize;
@@ -857,16 +805,10 @@ int Game_render::paint_chunk_objects(
 							true, spill.percent, spill.floor);
 				}
 			}
-			// Dim the light once per inside/outside boundary crossing so a
-			// light seen through an opening looks one palette step darker, and
-			// through two openings (out of one building and into another) two
-			// steps darker. It is never dimmed to nothing: an escaping light
-			// always contributes at least enough for the lowest lit palette
-			// (candle) so a room the light reaches never falls back to full
-			// night darkness.
-			// Legacy global-palette contribution keeps the original tight cutoff:
-			// a distance-culled light (strength 0, retained only for its spatial
-			// glow above) must not inflate the global light count.
+			// Dim once per inside/outside crossing (floored at the lowest lit
+			// palette, never to darkness).  Only strength > 0 contributes: a
+			// distance-culled light kept for its spatial glow must not inflate
+			// the legacy global light count.
 			if (strength > 0) {
 				int effective = strength;
 				for (int i = 0; i < crossings; ++i) {
