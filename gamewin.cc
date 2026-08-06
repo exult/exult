@@ -1508,6 +1508,14 @@ void Game_window::update_roof_mask(Game_object* obj, int sx, int sy) {
 		const int zs         = obj->get_info().get_3d_height();
 		const int top_storey = storey_of(obj->get_lift() + zs);
 		const int strip      = 4 * zs;
+		// Only an ELEVATED slab (top reaching z 5+) is a storey's ceiling /
+		// deck.  Ground-level flooring (a stone floor, a paved yard) is just
+		// floor: clear its pixels so the room's light brushes it normally.
+		if (obj->get_lift() + zs < 5) {
+			frame->paint_rle_transformed(roof_light_mask.get(), sx, sy, roof_clear);
+			report("clear: ground-level floor");
+			return;
+		}
 		if (!inside) {
 			frame->paint_rle_transformed(roof_light_mask.get(), sx, sy, roof_tall[0]);
 		}
