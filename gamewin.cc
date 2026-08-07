@@ -1432,23 +1432,6 @@ void Game_window::update_roof_mask(Game_object* obj, int sx, int sy) {
 	// ABOVE the Avatar: some interiors use roof shapes as flooring.  Ground
 	// objects merely drawn in front of a roof still clear their pixels.
 	const bool inside = is_main_actor_inside();
-	// Debug (EXULT_DEBUG_LIGHT_MASK=1): report the mask verdict once per
-	// shape/frame/verdict for TALL shapes only -- the canopy/lamppost cases.
-	const bool dbg    = std::getenv("EXULT_DEBUG_LIGHT_MASK") != nullptr;
-	auto       report = [&](const char* verdict) {
-        if (!dbg) {
-            return;
-        }
-        static std::set<std::pair<int, const char*>> seen;
-        const int                                    key = (obj->get_shapenum() << 8) | obj->get_framenum();
-        if (!seen.insert({key, verdict}).second) {
-            return;
-        }
-        const Tile_coord t = obj->get_tile();
-        std::cerr << "[roof-mask] shape=" << obj->get_shapenum() << "/" << obj->get_framenum() << " at(" << t.tx << "," << t.ty
-                  << ") lift=" << obj->get_lift() << " h=" << obj->get_info().get_3d_height() << " skip=" << get_render_skip_lift()
-                  << " inside=" << inside << " -> " << verdict << std::endl;
-	};
 	// True when nothing is drawn above this object's top -- it stands under
 	// open sky, so a spill / exterior light may treat it as a whole unit.
 	auto open_sky_above = [&](int top) {
@@ -1475,14 +1458,12 @@ void Game_window::update_roof_mask(Game_object* obj, int sx, int sy) {
 		if (obj->get_lift() >= floor_level && open_sky_above(top)) {
 			roof_like     = true;
 			tall_exterior = true;
-			report("MARK deck-actor (open sky)");
 		} else if (inside && obj->get_lift() >= 5) {
 			// An actor on an upper storey below the render skip: mark
 			// 128 + storey like the walls and furniture up there.
 			roof_like     = true;
 			tall_exterior = true;
 			tall_storey   = storey_of(obj->get_lift());
-			report("MARK upper-storey actor");
 		} else {
 			roof_like = false;
 		}
@@ -1502,7 +1483,6 @@ void Game_window::update_roof_mask(Game_object* obj, int sx, int sy) {
 		// floor: clear its pixels so the room's light brushes it normally.
 		if (obj->get_lift() + zs < 5) {
 			frame->paint_rle_transformed(roof_light_mask.get(), sx, sy, roof_clear);
-			report("clear: ground-level floor");
 			return;
 		}
 		if (!inside) {
@@ -1516,7 +1496,6 @@ void Game_window::update_roof_mask(Game_object* obj, int sx, int sy) {
 			roof_light_mask->set_clip(r.x, r.y, r.w, r.h);
 			frame->paint_rle_transformed(roof_light_mask.get(), sx, sy, roof_tall[top_storey]);
 		}
-		report(inside ? "MARK floor-slab (top only)" : "MARK floor-slab (top/face)");
 		return;
 	} else if (inside) {
 		const int  av_lift       = main_actor ? main_actor->get_lift() : 0;
@@ -1528,22 +1507,17 @@ void Game_window::update_roof_mask(Game_object* obj, int sx, int sy) {
 			// plain 128, so a spill from any storey lights its face (only the
 			// flat slab TOP is storey-gated, see the is_floor branch).
 			tall_exterior = true;
-			report("MARK deck-object (open sky, inside)");
 		} else if (!roof_like && top > get_render_skip_lift()) {
 			// A grounded shape rising above the room's ceiling can only be an
 			// exterior one (an outside tree); confirm open sky above its top
 			// so nothing indoors is caught here.
 			if (open_sky_above(top)) {
 				tall_exterior = true;
-				report("MARK exterior-tall (open sky)");
 			} else if (obj->get_lift() >= 5) {
 				// Blocked above and starting at an upper storey: a
 				// second-storey wall segment or upstairs furniture.
 				tall_exterior = true;
 				tall_storey   = storey_of(obj->get_lift());
-				report("MARK upper-storey (tall, inside)");
-			} else {
-				report("clear: tall but blocked above top");
 			}
 		} else if (!roof_like && obj->get_lift() >= 5) {
 			// Upper-storey walls / furnishings below the render skip: mark
@@ -1551,9 +1525,6 @@ void Game_window::update_roof_mask(Game_object* obj, int sx, int sy) {
 			// while their own storey's lights still reach them.
 			tall_exterior = true;
 			tall_storey   = storey_of(obj->get_lift());
-			report("MARK upper-storey (inside)");
-		} else if (!roof_like && top >= 5) {
-			report("clear: tall but top <= skip");
 		}
 	} else {
 		const bool is_roof_shape = obj->get_info().is_roof();
@@ -1562,13 +1533,11 @@ void Game_window::update_roof_mask(Game_object* obj, int sx, int sy) {
 		if (roof_like && !is_roof_shape && open_sky_above(top)) {
 			// Object on an open-sky deck: plain 128, as in the inside branch.
 			tall_exterior = true;
-			report("MARK deck-object (open sky, outside)");
 		} else if (roof_like && !is_roof_shape) {
 			// A second storey's wall / furnishing seen from outside: mark
 			// 128 + storey so only its own storey's lights and spills reach it.
 			tall_exterior = true;
 			tall_storey   = storey_of(obj->get_lift());
-			report("MARK upper-storey (outside)");
 		} else if (!roof_like && top >= 5) {
 			// A grounded shape tall enough to reach roof level (tree,
 			// lamppost): under open sky mark it as a whole unit so masked
@@ -1576,9 +1545,7 @@ void Game_window::update_roof_mask(Game_object* obj, int sx, int sy) {
 			// cover leave the mask as the shapes beneath painted it.
 			if (open_sky_above(top)) {
 				tall_exterior = true;
-				report("MARK exterior-tall (open sky, outside)");
 			} else {
-				report("leave-as-painted (outside tall, covered)");
 				return;
 			}
 		}
@@ -1603,11 +1570,18 @@ void Game_window::destroy_light_layers() {
 	light_layer_palnum = -2;
 	light_renders.clear();
 	light_mask_rects.clear();
+	light_scratch_cov.clear();
 	for (int t = 0; t < 3; ++t) {
 		light_tier_cov[t].clear();
 		light_tier_rects[t].clear();
 		light_tier_mask_rects[t].clear();
-		light_tier_sig[t] = 0;
+		light_tier_bounds[t].clear();
+		light_tier_anchor_x[t] = 0;
+		light_tier_anchor_y[t] = 0;
+		light_tier_sig[t]      = 0;
+		light_tier_mov_cov[t].clear();
+		light_tier_mov_bounds[t].clear();
+		light_tier_mov_sig[t] = 0;
 	}
 }
 
@@ -1690,45 +1664,77 @@ void Game_window::build_light_layers() {
 	// an exterior light stays unmasked and brightens nearby house roofs.
 	const bool inside = is_main_actor_inside();
 
-	// Per-tier signature of everything that shapes this frame's coverage
-	// masks.  While a tier's signature holds, its mask from the last full
-	// splat pass is bit-identical, so the pass is reused and only the copied
-	// world pixels are refreshed (the world animates beneath the mask).  The
+	// Per-tier signature of the STATIC (world-pinned) lights shaping this
+	// frame's coverage masks.  Positions are hashed RELATIVE to the tier's
+	// first static light, so a pure view scroll keeps the signature: the
+	// cached mask is then reused as-is (no scroll) or translated by the
+	// scroll delta.  Moving lights (the carried torch and its spills) never
+	// enter the signature -- they are splatted fresh on top each frame.  The
 	// room-grid and roof-mask CONTENT is not hashed; a 250ms reuse cap bounds
 	// staleness from those, matching the light caches' TTL.
 	uint64_t tier_sig[3];
+	// Moving lights get their own signature.  Scroll is mixed in ONLY for
+	// GATED moving lights (room-field lattices are world-pinned, so any
+	// scroll moves the field under the dome); an ungated moving light -- the
+	// torch outdoors -- is a pure screen-stationary dome, so its overlay
+	// survives walking.  Grid content changes are caught by the flood
+	// generation below; the stamp cap is only a roof-content safety net.
+	uint64_t mov_sig[3];
+	int      sx0[3]        = {0, 0, 0};
+	int      sy0[3]        = {0, 0, 0};
+	bool     has_static[3] = {false, false, false};
 	{
+		for (const auto& lr : light_renders) {
+			if (lr.moving || lr.tier < 0 || lr.tier > 2 || has_static[lr.tier]) {
+				continue;
+			}
+			has_static[lr.tier] = true;
+			sx0[lr.tier]        = lr.sx;
+			sy0[lr.tier]        = lr.sy;
+		}
 		auto mix = [](uint64_t h, int64_t v) {
 			h ^= static_cast<uint64_t>(v);
 			return h * 1099511628211ULL;
 		};
-		// The scroll position (incl. sub-tile lerp offsets) anchors the
-		// world-pinned room masks on screen; a carried light is screen-
-		// stationary while the view scrolls with the Avatar, so without this
-		// the signature would hold while the walls move under the mask.
 		uint64_t base = mix(mix(mix(mix(14695981039346656037ULL, W), H), inside), roofpix != nullptr);
-		base          = mix(mix(mix(mix(base, scrolltx), scrollty), scrolltx_lo), scrollty_lo);
+		// Any change to a cached room grid (a door opened/closed) rebuilds
+		// every tier's coverage immediately.
+		base        = mix(base, static_cast<int64_t>(NaturalLight::Flood_content_generation()));
 		tier_sig[0] = tier_sig[1] = tier_sig[2] = base;
+		mov_sig[0] = mov_sig[1] = mov_sig[2] = base;
 		for (const auto& lr : light_renders) {
 			if (lr.tier < 0 || lr.tier > 2) {
 				continue;
 			}
-			uint64_t h        = tier_sig[lr.tier];
-			h                 = mix(h, lr.sx);
-			h                 = mix(h, lr.sy);
-			h                 = mix(h, lr.radius);
-			h                 = mix(h, lr.elevation);
-			h                 = mix(h, lr.rt);
-			h                 = mix(h, lr.ltx);
-			h                 = mix(h, lr.lty);
-			h                 = mix(h, lr.ltz);
-			h                 = mix(h, lr.mask_roof);
-			h                 = mix(h, lr.dist_bias);
-			h                 = mix(h, lr.is_spill);
-			h                 = mix(h, lr.spill_percent);
-			h                 = mix(h, lr.spill_floor);
-			h                 = mix(h, static_cast<int64_t>(lr.lit.size()));
-			tier_sig[lr.tier] = h;
+			uint64_t h = lr.moving ? mov_sig[lr.tier] : tier_sig[lr.tier];
+			if (lr.moving) {
+				h                = mix(h, lr.sx);
+				h                = mix(h, lr.sy);
+				const bool gated = (inside || lr.mask_roof || lr.is_spill) && !lr.lit.empty();
+				if (gated) {
+					h = mix(mix(mix(mix(h, scrolltx), scrollty), scrolltx_lo), scrollty_lo);
+				}
+			} else {
+				h = mix(h, lr.sx - sx0[lr.tier]);
+				h = mix(h, lr.sy - sy0[lr.tier]);
+			}
+			h = mix(h, lr.radius);
+			h = mix(h, lr.elevation);
+			h = mix(h, lr.rt);
+			h = mix(h, lr.ltx);
+			h = mix(h, lr.lty);
+			h = mix(h, lr.ltz);
+			h = mix(h, lr.mask_roof);
+			h = mix(h, lr.dist_bias);
+			h = mix(h, lr.is_spill);
+			h = mix(h, lr.spill_percent);
+			h = mix(h, lr.spill_floor);
+			h = mix(h, static_cast<int64_t>(lr.lit.size()));
+			if (lr.moving) {
+				mov_sig[lr.tier] = h;
+			} else {
+				tier_sig[lr.tier] = h;
+			}
 		}
 	}
 
@@ -1765,135 +1771,314 @@ void Game_window::build_light_layers() {
 		unsigned char* dstpix = dst->get_bits();
 		const int      dst_lw = static_cast<int>(dst->get_line_width());
 
-		// This tier's radial-alpha (coverage) mask.  It persists between
-		// frames: while the tier's signature holds it is reused as-is; on a
-		// rebuild only last pass's written rectangles are zeroed first.
+		// This tier's radial-alpha (coverage) mask holds the STATIC
+		// (world-pinned) lights only.  It persists between frames: while the
+		// static signature holds, a still view reuses it as-is and a scrolled
+		// view translates it by the scroll delta, re-splatting only the
+		// lights exposed at a screen edge; anything else rebuilds it.
 		std::vector<unsigned char>& covbuf = light_tier_cov[t];
 		if (covbuf.size() != static_cast<size_t>(W) * H) {
 			covbuf.assign(static_cast<size_t>(W) * H, 0);
 			light_tier_rects[t].clear();
 			light_tier_mask_rects[t].clear();
+			light_tier_bounds[t].clear();
 			light_tier_sig[t] = 0;
 		}
 		unsigned char* cov    = covbuf.data();
 		const uint64_t now_ms = SDL_GetTicks();
-		const bool     reuse  = light_tier_sig[t] != 0 && tier_sig[t] == light_tier_sig[t] && now_ms - light_tier_stamp[t] < 250;
 
+		// Splat one light into `covp` (and the layer's pixels); returns the
+		// splat's unclamped screen bounds (the same union Splat_radial_light
+		// uses: the free dome around the centre plus the field's lattice
+		// around the room anchor).  An optional clip window restricts the
+		// pixels written (scroll-vacated strip patching).
+		auto do_splat
+				= [&](const Light_render_info& lr, unsigned char* covp, int cx0 = 0, int cy0 = 0, int cx1 = -1, int cy1 = -1) {
+					  // Masking policy: see the `inside` comment above; the per-pixel
+					  // roof / tall / storey semantics live in Splat_radial_light.
+					  const bool mask_roof = roofpix && lr.mask_roof;
+					  // The dome (intensity + falloff) emits from the flame up on the
+					  // sprite, not the tile foot get_shape_location returns, so raise
+					  // only its centre up-and-left by the sprite's height (plus the
+					  // foot-corner residual).  A SPILL's centre stays at the opening's
+					  // outside tile -- its elevation only shapes the continued falloff
+					  // -- so it is not shifted.
+					  const int foot_bias = c_tilesize / 4;
+					  const int emit      = (lr.is_spill ? 0 : lr.elevation) + foot_bias;
+					  const int csx       = lr.sx - emit;
+					  const int csy       = lr.sy - emit;
+					  // Gated lights render as a propagated field from the room-fill
+					  // grid (see Splat_radial_light).  The screen reference pinning
+					  // the grid is the foot position of the light's own tile at the
+					  // TOP of the room's walls (walls render 4px per z up-left of
+					  // their tile) -- a fixed property of the room, so the field
+					  // stays pinned to the walls as the source moves.
+					  const unsigned char* grid    = nullptr;
+					  int                  grid_rt = 0;
+					  int                  grid_fx = 0;
+					  int                  grid_fy = 0;
+					  // Veto lights: the storey their room roof reaches; spills: the
+					  // bubble's render storey (gating rules in Splat_radial_light).
+					  int light_top_storey = 0;
+					  if ((inside || lr.mask_roof || lr.is_spill) && !lr.lit.empty()) {
+						  grid    = lr.lit.data();
+						  grid_rt = lr.rt;
+						  // Anchor at the wall top whenever the light has a real
+						  // ceiling (a dungeon's rock ceiling counts even though
+						  // mask_roof is false).  Only a light with none -- an exterior
+						  // lamp gated while the Avatar is inside, a spill on open
+						  // ground -- anchors at its own storey floor: the floor+5
+						  // fallback would slide its field 4px per z up-left off it.
+						  bool      ceiling  = false;
+						  const int roof_z   = NaturalLight::Light_room_roof_z(map, lr.ltx, lr.lty, lr.ltz, &ceiling);
+						  const int anchor_z = (lr.mask_roof || ceiling) ? roof_z : (lr.ltz / 5) * 5;
+						  if (lr.mask_roof) {
+							  light_top_storey = anchor_z / 5;
+						  } else if (lr.is_spill) {
+							  light_top_storey = lr.ltz / 5;
+						  }
+						  const int wtx = ((lr.ltx % c_num_tiles) + c_num_tiles) % c_num_tiles;
+						  const int wty = ((lr.lty % c_num_tiles) + c_num_tiles) % c_num_tiles;
+						  get_shape_location(Tile_coord(wtx, wty, anchor_z), grid_fx, grid_fy);
+						  // Empirically the wall-top anchor lands 1px up-left of the
+						  // visible interior; nudge the reference back.
+						  grid_fx += 1;
+						  grid_fy += 1;
+					  }
+					  NaturalLight::Splat_radial_light(
+							  covp, dstpix, srcpix, W, H, dst_lw, src_lw, csx, csy, lr.radius, lr.elevation, lr.dist_bias,
+							  lr.spill_percent, roofpix, roof_lw, mask_roof, lr.is_spill, lr.spill_floor, light_top_storey, grid,
+							  grid_rt, grid_fx, grid_fy, cx0, cy0, cx1, cy1);
+					  int bx0 = csx - lr.radius;
+					  int bx1 = csx + lr.radius;
+					  int by0 = csy - lr.radius;
+					  int by1 = csy + lr.radius;
+					  if (grid != nullptr) {
+						  bx0 = std::min(bx0, grid_fx - lr.radius - c_tilesize);
+						  bx1 = std::max(bx1, grid_fx + lr.radius + c_tilesize);
+						  by0 = std::min(by0, grid_fy - lr.radius - c_tilesize);
+						  by1 = std::max(by1, grid_fy + lr.radius + c_tilesize);
+					  }
+					  return TileRect(bx0, by0, bx1 - bx0 + 1, by1 - by0 + 1);
+				  };
+
+		// Derive both rect lists from the per-light unclamped bounds:
+		// unclamped + margin -> next frame's roof-mask clips; clamped ->
+		// the coverage rows holding non-zero alpha.
+		auto rebuild_rects = [&]() {
+			light_tier_rects[t].clear();
+			light_tier_mask_rects[t].clear();
+			for (const TileRect& b : light_tier_bounds[t]) {
+				TileRect clip = b;
+				light_tier_mask_rects[t].push_back(clip.enlarge(24));
+				const int bx0 = std::max(b.x, 0);
+				const int by0 = std::max(b.y, 0);
+				const int bx1 = std::min(b.x + b.w - 1, W - 1);
+				const int by1 = std::min(b.y + b.h - 1, H - 1);
+				if (bx0 <= bx1 && by0 <= by1) {
+					light_tier_rects[t].emplace_back(bx0, by0, bx1 - bx0 + 1, by1 - by0 + 1);
+				}
+			}
+		};
+
+		// The world animates beneath a kept mask: refresh the copied world
+		// pixels over the static coverage rows.
+		auto refresh_dst = [&]() {
+			for (const TileRect& r : light_tier_rects[t]) {
+				for (int y = r.y; y < r.y + r.h; ++y) {
+					std::memcpy(
+							dstpix + static_cast<size_t>(y) * dst_lw + r.x, srcpix + static_cast<size_t>(y) * src_lw + r.x,
+							static_cast<size_t>(r.w));
+				}
+			}
+		};
+
+		const bool sig_ok = light_tier_sig[t] != 0 && tier_sig[t] == light_tier_sig[t] && now_ms - light_tier_stamp[t] < 1000;
+		int        dx     = 0;
+		int        dy     = 0;
+		if (sig_ok && has_static[t]) {
+			dx = sx0[t] - light_tier_anchor_x[t];
+			dy = sy0[t] - light_tier_anchor_y[t];
+		}
+		const bool reuse      = sig_ok && dx == 0 && dy == 0;
+		const bool translate  = sig_ok && !reuse && std::abs(dx) < W && std::abs(dy) < H;
+		bool       has_moving = false;
 		{
 			if (reuse) {
-				// Mask unchanged: refresh only the copied world pixels (the
-				// world animates beneath it) and repeat last pass's roof-mask
-				// clip rects.
-				for (const TileRect& r : light_tier_rects[t]) {
-					for (int y = r.y; y < r.y + r.h; ++y) {
-						std::memcpy(
-								dstpix + static_cast<size_t>(y) * dst_lw + r.x, srcpix + static_cast<size_t>(y) * src_lw + r.x,
-								static_cast<size_t>(r.w));
+				// Mask unchanged and screen-aligned: just refresh the copied
+				// world pixels and keep last pass's rects.
+				refresh_dst();
+			} else if (translate) {
+				// Same static set, pure view scroll: slide the cached mask by
+				// the scroll delta and zero the vacated strips.
+				const int copy_w    = W - std::abs(dx);
+				const int dst_x     = std::max(dx, 0);
+				const int src_x     = std::max(-dx, 0);
+				auto      shift_row = [&](int y) {
+                    unsigned char*       drow = cov + static_cast<size_t>(y) * W;
+                    const unsigned char* srow = cov + static_cast<size_t>(y - dy) * W;
+                    std::memmove(drow + dst_x, srow + src_x, static_cast<size_t>(copy_w));
+                    if (dx > 0) {
+                        std::memset(drow, 0, static_cast<size_t>(dst_x));
+                    } else if (dx < 0) {
+                        std::memset(drow + copy_w, 0, static_cast<size_t>(W - copy_w));
+                    }
+				};
+				if (dy >= 0) {
+					for (int y = H - 1; y >= dy; --y) {
+						shift_row(y);
+					}
+					for (int y = 0; y < dy; ++y) {
+						std::memset(cov + static_cast<size_t>(y) * W, 0, static_cast<size_t>(W));
+					}
+				} else {
+					for (int y = 0; y < H + dy; ++y) {
+						shift_row(y);
+					}
+					for (int y = H + dy; y < H; ++y) {
+						std::memset(cov + static_cast<size_t>(y) * W, 0, static_cast<size_t>(W));
 					}
 				}
-				light_mask_rects.insert(light_mask_rects.end(), light_tier_mask_rects[t].begin(), light_tier_mask_rects[t].end());
+				for (TileRect& b : light_tier_bounds[t]) {
+					b.x += dx;
+					b.y += dy;
+				}
+				rebuild_rects();
+				refresh_dst();
+
+				// Patch only the vacated strips: the translated interior is
+				// already correct, so each affected light is re-splatted
+				// CLIPPED to the strip(s) its bounds reach into -- a few
+				// pixel columns/rows, not its whole area.
+				struct Strip {
+					int x0, y0, x1, y1;
+				};
+
+				Strip strips[2];
+				int   nstrips = 0;
+				if (dx > 0) {
+					strips[nstrips++] = {0, 0, dx - 1, H - 1};
+				} else if (dx < 0) {
+					strips[nstrips++] = {W + dx, 0, W - 1, H - 1};
+				}
+				if (dy > 0) {
+					strips[nstrips++] = {0, 0, W - 1, dy - 1};
+				} else if (dy < 0) {
+					strips[nstrips++] = {0, H + dy, W - 1, H - 1};
+				}
+				size_t bi = 0;
+				for (const auto& lr : light_renders) {
+					if (lr.tier != t || lr.moving || lr.radius <= 0) {
+						continue;
+					}
+					if (bi >= light_tier_bounds[t].size()) {
+						break;
+					}
+					const TileRect& b = light_tier_bounds[t][bi++];
+					for (int s = 0; s < nstrips; ++s) {
+						const Strip& st = strips[s];
+						if (b.x > st.x1 || b.y > st.y1 || b.x + b.w - 1 < st.x0 || b.y + b.h - 1 < st.y0) {
+							continue;
+						}
+						do_splat(lr, cov, st.x0, st.y0, st.x1, st.y1);
+					}
+				}
+				light_tier_anchor_x[t] = sx0[t];
+				light_tier_anchor_y[t] = sy0[t];
 			} else {
-				// Restore the all-zero coverage invariant before rebuilding.
+				// Full rebuild: restore the all-zero coverage invariant over
+				// last pass's rows first, then splat every static light.
 				for (const TileRect& r : light_tier_rects[t]) {
 					for (int y = r.y; y < r.y + r.h; ++y) {
 						std::memset(cov + static_cast<size_t>(y) * W + r.x, 0, static_cast<size_t>(r.w));
 					}
 				}
-				light_tier_rects[t].clear();
-				light_tier_mask_rects[t].clear();
-			}
-			for (const auto& lr : light_renders) {
-				if (reuse || lr.tier != t || lr.radius <= 0) {
-					continue;
-				}
-				// Masking policy: see the `inside` comment above; the per-pixel
-				// roof / tall / storey semantics live in Splat_radial_light.
-				const bool mask_roof = roofpix && lr.mask_roof;
-				// The dome (intensity + falloff) emits from the flame up on the
-				// sprite, not the tile foot get_shape_location returns, so raise
-				// only its centre up-and-left by the sprite's height (plus the
-				// foot-corner residual).  A SPILL's centre stays at the opening's
-				// outside tile -- its elevation only shapes the continued falloff
-				// -- so it is not shifted.
-				const int foot_bias = c_tilesize / 4;
-				const int emit      = (lr.is_spill ? 0 : lr.elevation) + foot_bias;
-				const int csx       = lr.sx - emit;
-				const int csy       = lr.sy - emit;
-				// Gated lights render as a propagated field from the room-fill
-				// grid (see Splat_radial_light).  The screen reference pinning
-				// the grid is the foot position of the light's own tile at the
-				// TOP of the room's walls (walls render 4px per z up-left of
-				// their tile) -- a fixed property of the room, so the field
-				// stays pinned to the walls as the source moves.
-				const unsigned char* grid    = nullptr;
-				int                  grid_rt = 0;
-				int                  grid_fx = 0;
-				int                  grid_fy = 0;
-				// Veto lights: the storey their room roof reaches; spills: the
-				// bubble's render storey (gating rules in Splat_radial_light).
-				int light_top_storey = 0;
-				if ((inside || lr.mask_roof || lr.is_spill) && !lr.lit.empty()) {
-					grid    = lr.lit.data();
-					grid_rt = lr.rt;
-					// Anchor at the wall top whenever the light has a real
-					// ceiling (a dungeon's rock ceiling counts even though
-					// mask_roof is false).  Only a light with none -- an exterior
-					// lamp gated while the Avatar is inside, a spill on open
-					// ground -- anchors at its own storey floor: the floor+5
-					// fallback would slide its field 4px per z up-left off it.
-					bool      ceiling  = false;
-					const int roof_z   = NaturalLight::Light_room_roof_z(map, lr.ltx, lr.lty, lr.ltz, &ceiling);
-					const int anchor_z = (lr.mask_roof || ceiling) ? roof_z : (lr.ltz / 5) * 5;
-					if (lr.mask_roof) {
-						light_top_storey = anchor_z / 5;
-					} else if (lr.is_spill) {
-						light_top_storey = lr.ltz / 5;
+				light_tier_bounds[t].clear();
+				for (const auto& lr : light_renders) {
+					if (lr.tier != t || lr.moving || lr.radius <= 0) {
+						continue;
 					}
-					const int wtx = ((lr.ltx % c_num_tiles) + c_num_tiles) % c_num_tiles;
-					const int wty = ((lr.lty % c_num_tiles) + c_num_tiles) % c_num_tiles;
-					get_shape_location(Tile_coord(wtx, wty, anchor_z), grid_fx, grid_fy);
-					// Empirically the wall-top anchor lands 1px up-left of the
-					// visible interior; nudge the reference back.
-					grid_fx += 1;
-					grid_fy += 1;
+					light_tier_bounds[t].push_back(do_splat(lr, cov));
 				}
-				NaturalLight::Splat_radial_light(
-						cov, dstpix, srcpix, W, H, dst_lw, src_lw, csx, csy, lr.radius, lr.elevation, lr.dist_bias,
-						lr.spill_percent, roofpix, roof_lw, mask_roof, lr.is_spill, lr.spill_floor, light_top_storey, grid, grid_rt,
-						grid_fx, grid_fy);
-				// The splat's screen bounds (same union Splat_radial_light uses:
-				// the free dome around the centre plus the field's lattice around
-				// the anchor).  Unclamped + margin -> next frame's roof-mask clip;
-				// clamped -> the coverage rows to zero again after the upload.
-				int bx0 = csx - lr.radius;
-				int bx1 = csx + lr.radius;
-				int by0 = csy - lr.radius;
-				int by1 = csy + lr.radius;
-				if (grid != nullptr) {
-					bx0 = std::min(bx0, grid_fx - lr.radius - c_tilesize);
-					bx1 = std::max(bx1, grid_fx + lr.radius + c_tilesize);
-					by0 = std::min(by0, grid_fy - lr.radius - c_tilesize);
-					by1 = std::max(by1, grid_fy + lr.radius + c_tilesize);
-				}
-				TileRect       bounds(bx0, by0, bx1 - bx0 + 1, by1 - by0 + 1);
-				const TileRect clip = bounds.enlarge(24);
-				light_tier_mask_rects[t].push_back(clip);
-				light_mask_rects.push_back(clip);
-				bx0 = std::max(bx0, 0);
-				by0 = std::max(by0, 0);
-				bx1 = std::min(bx1, W - 1);
-				by1 = std::min(by1, H - 1);
-				if (bx0 <= bx1 && by0 <= by1) {
-					light_tier_rects[t].emplace_back(bx0, by0, bx1 - bx0 + 1, by1 - by0 + 1);
+				rebuild_rects();
+				light_tier_sig[t]      = tier_sig[t];
+				light_tier_stamp[t]    = now_ms;
+				light_tier_anchor_x[t] = sx0[t];
+				light_tier_anchor_y[t] = sy0[t];
+			}
+			// This tier's roof-mask clips for next frame.
+			light_mask_rects.insert(light_mask_rects.end(), light_tier_mask_rects[t].begin(), light_tier_mask_rects[t].end());
+			// Moving lights (the carried torch and its spills) never touch
+			// the static cache: they live in their own cached overlay, reused
+			// while the Avatar stands still and rebuilt while walking, then
+			// max-combined over a scratch copy of the static mask.
+			for (const auto& lr : light_renders) {
+				if (lr.tier == t && lr.moving && lr.radius > 0) {
+					has_moving = true;
+					break;
 				}
 			}
-			if (!reuse) {
-				light_tier_sig[t]   = tier_sig[t];
-				light_tier_stamp[t] = now_ms;
+			if (has_moving) {
+				const size_t                sz     = static_cast<size_t>(W) * H;
+				std::vector<unsigned char>& mov    = light_tier_mov_cov[t];
+				const bool                  mov_ok = light_tier_mov_sig[t] != 0 && mov_sig[t] == light_tier_mov_sig[t]
+									&& now_ms - light_tier_mov_stamp[t] < 1000 && mov.size() == sz;
+				if (!mov_ok) {
+					if (mov.size() != sz) {
+						mov.assign(sz, 0);
+					} else {
+						for (const TileRect& b : light_tier_mov_bounds[t]) {
+							const int bx0 = std::max(b.x, 0);
+							const int by0 = std::max(b.y, 0);
+							const int bx1 = std::min(b.x + b.w - 1, W - 1);
+							const int by1 = std::min(b.y + b.h - 1, H - 1);
+							for (int y = by0; y <= by1; ++y) {
+								std::memset(mov.data() + static_cast<size_t>(y) * W + bx0, 0, static_cast<size_t>(bx1 - bx0 + 1));
+							}
+						}
+					}
+					light_tier_mov_bounds[t].clear();
+					for (const auto& lr : light_renders) {
+						if (lr.tier != t || !lr.moving || lr.radius <= 0) {
+							continue;
+						}
+						light_tier_mov_bounds[t].push_back(do_splat(lr, mov.data()));
+					}
+					light_tier_mov_sig[t]   = mov_sig[t];
+					light_tier_mov_stamp[t] = now_ms;
+				}
+				// Composite into the scratch copy and refresh the world pixels
+				// beneath the moving coverage (its splat-time dst copies go
+				// stale as the world animates).
+				light_scratch_cov.resize(sz);
+				std::memcpy(light_scratch_cov.data(), cov, sz);
+				for (const TileRect& b : light_tier_mov_bounds[t]) {
+					TileRect clipr = b;
+					light_mask_rects.push_back(clipr.enlarge(24));
+					const int bx0 = std::max(b.x, 0);
+					const int by0 = std::max(b.y, 0);
+					const int bx1 = std::min(b.x + b.w - 1, W - 1);
+					const int by1 = std::min(b.y + b.h - 1, H - 1);
+					if (bx0 > bx1 || by0 > by1) {
+						continue;
+					}
+					for (int y = by0; y <= by1; ++y) {
+						std::memcpy(
+								dstpix + static_cast<size_t>(y) * dst_lw + bx0, srcpix + static_cast<size_t>(y) * src_lw + bx0,
+								static_cast<size_t>(bx1 - bx0 + 1));
+						unsigned char*       srow = light_scratch_cov.data() + static_cast<size_t>(y) * W;
+						const unsigned char* mrow = mov.data() + static_cast<size_t>(y) * W;
+						for (int x = bx0; x <= bx1; ++x) {
+							if (mrow[x] > srow[x]) {
+								srow[x] = mrow[x];
+							}
+						}
+					}
+				}
 			}
 		}
 		{
-			layer_set_coverage(handle, cov, W, H);
+			layer_set_coverage(handle, has_moving ? light_scratch_cov.data() : cov, W, H);
 			// Align the overlay with the world's on-screen rectangle.
 			int gx0 = 0;
 			int gy0 = 0;

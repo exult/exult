@@ -144,6 +144,10 @@ class Game_window {
 		// Spill glows: the source's storey (tz / 5), gating 128 + storey roof
 		// mask pixels in Splat_radial_light.
 		int spill_floor = 0;
+		// True for a light that moves with the Avatar (carried torch and its
+		// spills): splatted fresh every frame on top of the cached static mask
+		// instead of invalidating it.
+		bool moving = false;
 		// Room-fill grid ((2*rt+1) square) from Build_light_shadow_grid: light
 		// floods the room bounded by tall walls.  Empty = no gating.
 		std::vector<unsigned char> lit;
@@ -154,15 +158,34 @@ class Game_window {
 	int                            light_layer_w          = -1;
 	int                            light_layer_h          = -1;
 	int                            light_layer_palnum     = -2;
-	// Per-tier splat reuse (build_light_layers): while a tier's light set is
-	// unchanged its coverage mask is bit-identical frame to frame -- only the
-	// world pixels beneath it animate -- so the mask, its written rectangles
-	// and its roof-mask clip rects persist and the splat pass is skipped.
+	// Per-tier splat reuse (build_light_layers): the coverage cache holds only
+	// the STATIC (world-pinned) lights.  While a tier's static set is unchanged
+	// relative to the world, a view scroll just translates the cached mask by
+	// the scroll delta and re-splats only the lights exposed at a screen edge;
+	// moving lights (carried torch + spills) are splatted fresh on top into a
+	// scratch copy each frame.
 	std::vector<unsigned char> light_tier_cov[3];
-	std::vector<TileRect>      light_tier_rects[3];         // Coverage rows written.
+	std::vector<TileRect>      light_tier_rects[3];         // Static coverage rows written.
 	std::vector<TileRect>      light_tier_mask_rects[3];    // Next-frame roof-mask clips.
-	uint64_t                   light_tier_sig[3]   = {0, 0, 0};
-	uint64_t                   light_tier_stamp[3] = {0, 0, 0};
+	// Unclamped splat bounds per static light (screen coords, in the tier's
+	// light order); source of truth for the two rect lists above.
+	std::vector<TileRect> light_tier_bounds[3];
+	// First static light's screen position at the last build/translate: the
+	// per-frame scroll delta is measured against it.
+	int      light_tier_anchor_x[3] = {0, 0, 0};
+	int      light_tier_anchor_y[3] = {0, 0, 0};
+	uint64_t light_tier_sig[3]      = {0, 0, 0};
+	uint64_t light_tier_stamp[3]    = {0, 0, 0};
+	// Composite scratch: static coverage + this frame's moving lights.
+	std::vector<unsigned char> light_scratch_cov;
+	// Moving-light overlay cache: coverage of just the moving lights, keyed
+	// by a scroll-INCLUSIVE signature (their room-field anchors are world-
+	// pinned) -- so it holds while the Avatar stands still and rebuilds while
+	// walking.
+	std::vector<unsigned char> light_tier_mov_cov[3];
+	std::vector<TileRect>      light_tier_mov_bounds[3];
+	uint64_t                   light_tier_mov_sig[3]   = {0, 0, 0};
+	uint64_t                   light_tier_mov_stamp[3] = {0, 0, 0};
 	// Global roof-pixel mask, same pixel geometry as the world ibuf: built
 	// during the world render (update_roof_mask), consumed by
 	// build_light_layers / Splat_radial_light.
@@ -554,10 +577,11 @@ public:
 
 	void add_light_render(
 			int sx, int sy, int radius, int tier, int elevation, int rt, int ltx, int lty, int ltz, std::vector<unsigned char> lit,
-			bool mask_roof = false, int dist_bias = 0, bool is_spill = false, int spill_percent = 100, int spill_floor = 0) {
+			bool mask_roof = false, int dist_bias = 0, bool is_spill = false, int spill_percent = 100, int spill_floor = 0,
+			bool moving = false) {
 		light_renders.push_back(
 				{sx, sy, radius, tier, elevation, rt, ltx, lty, ltz, mask_roof, dist_bias, is_spill, spill_percent, spill_floor,
-				 std::move(lit)});
+				 moving, std::move(lit)});
 	}
 
 	void build_light_layers();

@@ -468,7 +468,10 @@ void Game_window::paint(
 				// (shows as a bright seam there); on otherwise so window faces glow.
 				const bool light_walls = is_main_actor_inside() || !under_roof;
 				NaturalLight::Build_light_shadow_grid(main_actor, rt, lit, spills, light_walls);
-				add_light_render(asx, asy, radius, tier, elevation, rt, ltile.tx, ltile.ty, ltile.tz, std::move(lit), under_roof);
+				// moving = true: the torch follows the Avatar every frame.
+				add_light_render(
+						asx, asy, radius, tier, elevation, rt, ltile.tx, ltile.ty, ltile.tz, std::move(lit), under_roof, 0, false,
+						100, 0, true);
 				// Each opening the fill reached gets the source's own bubble
 				// poking through it: remaining radius, continued falloff
 				// (dist_bias), gated by its own spill grid, dimmed by the
@@ -489,7 +492,7 @@ void Game_window::paint(
 					get_shape_location(sp, ssx, ssy);
 					add_light_render(
 							ssx, ssy, spill_radius, tier, elevation, srt, sp.tx, sp.ty, sp.tz, std::move(slit), false, spill_dist,
-							true, spill.percent, spill.floor);
+							true, spill.percent, spill.floor, true);
 				}
 			}
 			// Also check light spell.
@@ -681,7 +684,6 @@ int Game_render::paint_chunk_objects(
 		const auto& lights         = gwin->is_in_dungeon() ? olist->get_dungeon_lights() : olist->get_non_dungeon_lights();
 		const bool  natural        = gwin->get_natural_light();
 		const bool  viewer_outside = !gwin->is_main_actor_inside();
-		const bool  dbg_light_pass = std::getenv("EXULT_DEBUG_LIGHT_PASS") != nullptr;
 		// The spatial light layers are hidden at full day, so all the grid /
 		// spill building below would be wasted work then.
 		const bool day_palette = gwin->get_pal()->get_palette_number() == PALETTE_DAY;
@@ -711,7 +713,6 @@ int Game_render::paint_chunk_objects(
 		// lit palette (candle) -- it is never dimmed to full darkness.
 		constexpr int light_pass_dim_divisor  = 3;
 		constexpr int light_pass_min_strength = 1;
-		static int    light_dbg_counter       = 0;
 		for (const auto& light_obj : lights) {
 			const Shape_info& info = light_obj->get_info();
 			if (!info.is_light_source()) {
@@ -738,20 +739,6 @@ int Game_render::paint_chunk_objects(
 			const bool blocked   = vis.blocked;
 			const int  crossings = vis.crossings;
 
-			if (dbg_light_pass && ((light_dbg_counter++ % 25) == 0)) {
-				std::cerr << "[light-pass] chunk=" << cx << ',' << cy << " src=" << light_obj->get_shapenum() << '/'
-						  << light_obj->get_framenum() << " inside=" << (viewer_outside ? 0 : 1)
-						  << " same_chunk=" << (same_chunk ? 1 : 0) << " sealed=" << (avatar_sealed ? 1 : 0)
-						  << " roof=" << (vis.interior_source ? 1 : 0)
-						  << " brightness=" << info.get_object_light(light_obj->get_framenum()) << " strength=" << strength
-						  << " opening=" << (chunk_has_opening ? 1 : 0) << " gap=" << (vis.leaks_through_gap ? 1 : 0)
-						  << " crossings=" << crossings;
-				if (chunk_has_opening) {
-					std::cerr << " open_shape=" << opening_shape << '/' << opening_frame << " open_match=" << opening_match_frame
-							  << " open_tile=" << opening_tx << ',' << opening_ty << ',' << opening_lift;
-				}
-				std::cerr << " blocked=" << (blocked ? 1 : 0) << std::endl;
-			}
 			if (blocked) {
 				continue;
 			}
@@ -793,10 +780,6 @@ int Game_render::paint_chunk_objects(
 					const Tile_coord& sp           = spill.tile;
 					const int         spill_dist   = ltile.distance_2d(sp) * c_tilesize;
 					const int         spill_radius = radius - spill_dist;
-					if (std::getenv("EXULT_DEBUG_LIGHT_MASK") != nullptr) {
-						std::cerr << "[light-mask] spill-render(placed) tile=(" << sp.tx << ',' << sp.ty << ',' << sp.tz
-								  << ") dist=" << spill_dist << " radius=" << spill_radius << " floor=" << spill.floor << std::endl;
-					}
 					if (spill_radius <= 0) {
 						continue;
 					}

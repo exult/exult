@@ -100,6 +100,11 @@ namespace NaturalLight {
 	// the flood cache's per-frame refresh budget (see Build_light_shadow_grid).
 	void Flood_cache_frame_begin();
 
+	// Bumped whenever a flood refresh actually changes a cached room grid (a
+	// door opened or closed); mixed into the light-layer signatures so cached
+	// coverage rebuilds exactly when flood content changes.
+	uint64_t Flood_content_generation();
+
 	// Build the room-fill grid a light casts.  `lit` becomes a (2*rt+1)^2 grid
 	// centred on the light's tile; each cell is 0 (light cannot reach that
 	// tile) or the flood PATH distance + 1 in tiles.  An empty `lit` means
@@ -126,12 +131,14 @@ namespace NaturalLight {
 	// gates what a spill or under-roof light may still reach (see the pixel
 	// loop in the definition).  When `grid` is non-null it is the light's
 	// room-fill grid and the light renders as a propagated field pinned to the
-	// tile lattice at (`grid_fx`,`grid_fy`) instead of a free dome.
+	// tile lattice at (`grid_fx`,`grid_fy`) instead of a free dome.  A non-empty
+	// clip window (clip_x1/y1 >= 0) restricts the pixels written -- used to
+	// patch only the strips a scroll-translation vacated.
 	void Splat_radial_light(
 			unsigned char* cov, unsigned char* dstpix, const unsigned char* srcpix, int W, int H, int dst_lw, int src_lw, int sx,
 			int sy, int radius, int elevation, int dist_bias, int intensity_pct, const unsigned char* roofpix, int roof_lw,
 			bool veto_roof, bool is_spill, int spill_floor, int light_top_storey, const unsigned char* grid, int grid_rt,
-			int grid_fx, int grid_fy);
+			int grid_fx, int grid_fy, int clip_x0 = 0, int clip_y0 = 0, int clip_x1 = -1, int clip_y1 = -1);
 
 }    // namespace NaturalLight
 

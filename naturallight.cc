@@ -37,9 +37,7 @@
 #include <array>
 #include <cmath>
 #include <cstdlib>
-#include <iostream>
 #include <map>
-#include <set>
 #include <tuple>
 #include <utility>
 
@@ -165,10 +163,6 @@ namespace {
 		}
 		const int above
 				= deck_top >= 0 ? chunk->get_lowest_blocked(deck_top + 1, tx % c_tiles_per_chunk, ty % c_tiles_per_chunk) : -1;
-		if (std::getenv("EXULT_DEBUG_LIGHT_MASK") != nullptr) {
-			std::cerr << "[light-mask] deck? tile=(" << tx << ',' << ty << ") max_z=" << max_z << " deck_top=" << deck_top
-					  << " above=" << above << std::endl;
-		}
 		if (deck_top < 5) {
 			return -1;    // No storey-level floor: ground pavement is not a deck.
 		}
@@ -270,25 +264,6 @@ namespace {
 	void Light_flood_stamp_walls(
 			Game_map* gmap, int tx0, int ty0, int side, int roof_z, int floor_z, std::vector<unsigned char>& wall) {
 		wall.assign(static_cast<size_t>(side) * side, 0);
-		// Temporary diagnostics: EXULT_DEBUG_LIGHT_MASK=1 prints every shape
-		// considered and why it was (not) counted as a wall, deduplicated per
-		// shape/reason so the flood does not flood stderr.
-		const bool dbg    = std::getenv("EXULT_DEBUG_LIGHT_MASK") != nullptr;
-		auto       report = [&](Game_object* o, const Shape_info& si, const char* why) {
-            if (!dbg) {
-                return;
-            }
-            static std::set<std::pair<int, const char*>> seen;
-            if (!seen.emplace(o->get_shapenum(), why).second) {
-                return;
-            }
-            const Tile_coord ot = o->get_tile();
-            std::cerr << "[light-mask] shape=" << o->get_shapenum() << '/' << o->get_framenum() << " at(" << ot.tx << ',' << ot.ty
-                      << ") lift=" << o->get_lift() << " h=" << si.get_3d_height()
-                      << " class=" << static_cast<int>(si.get_shape_class()) << " solid=" << si.is_solid()
-                      << " roofflag=" << si.is_roof() << " roof_z=" << roof_z << " floor_z=" << floor_z << " -> " << why
-                      << std::endl;
-		};
 		const int ncx = (tx0 % c_tiles_per_chunk + side - 1) / c_tiles_per_chunk;
 		const int ncy = (ty0 % c_tiles_per_chunk + side - 1) / c_tiles_per_chunk;
 		for (int icy = 0; icy <= ncy; ++icy) {
@@ -312,7 +287,6 @@ namespace {
 						// solid up to the roof.  Real wall segments -- including
 						// shutters sitting on half walls -- are immovable (weight 0
 						// or static map fixtures), so they are not skipped here.
-						report(obj, info, "skip: dragable item");
 						continue;
 					}
 					{
@@ -336,7 +310,6 @@ namespace {
 						int  percent      = 100;
 						if (Shape_light_passes_through_strict(
 									info, obj->get_framenum(), match_frame, has_explicit, has_wildcard, percent)) {
-							report(obj, info, "skip: light_passes_through");
 							continue;
 						}
 					}
@@ -349,25 +322,20 @@ namespace {
 						// leaf is a solid box standing beside a walkable doorway --
 						// light passes through the doorway, so the room is open and
 						// the leaf must not read as a wall sealing it.
-						report(obj, info, "skip: open door");
 						continue;
 					}
 					if (!info.is_solid() || info.is_roof()) {
 						// Only blocking shapes seal the room, and the roof (or its
 						// low-hanging eaves) is not a wall.
-						report(obj, info, "skip: not solid or roof-flagged");
 						continue;
 					}
 					const int lift = obj->get_lift();
 					if (lift >= roof_z) {
-						report(obj, info, "skip: at/above roof");
 						continue;    // At/above the roof: not part of the room's walls.
 					}
 					if (lift + info.get_3d_height() < roof_z) {
-						report(obj, info, "skip: top below roof");
 						continue;    // Top below the roof: light passes over it.
 					}
-					report(obj, info, "WALL");
 					const TileRect fp = obj->get_footprint();
 					for (int fty = fp.y; fty < fp.y + fp.h; ++fty) {
 						const int dgy = Light_tile_norm(fty - ty0);
@@ -544,21 +512,6 @@ namespace NaturalLight {
 			int  percent      = 100;
 			if (Shape_light_passes_through_strict(
 						obj->get_info(), obj->get_framenum(), match_frame, has_explicit, has_wildcard, percent)) {
-				if (match_frame == -1 && std::getenv("EXULT_DEBUG_LIGHT_PASS")) {
-					std::cerr << "[light-pass-debug] wildcard-hit shape=" << obj->get_shapenum() << '/' << obj->get_framenum()
-							  << " explicit=" << (has_explicit ? 1 : 0) << " wildcard=" << (has_wildcard ? 1 : 0) << " frames=";
-					const auto& lpv = obj->get_info().get_light_passes_info();
-					for (size_t i = 0; i < lpv.size(); ++i) {
-						if (i) {
-							std::cerr << ',';
-						}
-						if (lpv[i].is_invalid()) {
-							std::cerr << '!';
-						}
-						std::cerr << lpv[i].get_frame();
-					}
-					std::cerr << std::endl;
-				}
 				pass_shape       = obj->get_shapenum();
 				pass_frame       = obj->get_framenum();
 				pass_match_frame = match_frame;
@@ -1280,12 +1233,6 @@ namespace NaturalLight {
 							const int  ox      = nx + d[0];
 							const int  oy      = ny + d[1];
 							const bool in_grid = ox >= 0 && oy >= 0 && ox < side && oy < side;
-							if (std::getenv("EXULT_DEBUG_LIGHT_MASK") != nullptr) {
-								std::cerr << "[light-mask] opening at=(" << lt.tx + nx - rt << ',' << lt.ty + ny - rt
-										  << ") pct=" << pct << " open_top=" << open_top << " far=(" << lt.tx + ox - rt << ','
-										  << lt.ty + oy - rt << ") in_grid=" << in_grid
-										  << " far_tall=" << (in_grid ? (tall(ox, oy) ? 1 : 0) : -1) << std::endl;
-							}
 							if (in_grid && !tall(ox, oy)) {
 								bool dup = false;
 								for (const auto& [px, py, ppct, ptop] : spill_cand) {
@@ -1358,7 +1305,6 @@ namespace NaturalLight {
 		// the room interior, and emitting it would spill the window's glow
 		// back INSIDE.  A tile the fill already lit needs no spill glow anyway.
 		if (spills != nullptr) {
-			const bool dbg_spill = std::getenv("EXULT_DEBUG_LIGHT_MASK") != nullptr;
 			for (const auto& [ox, oy, pct, open_top] : spill_cand) {
 				// Emit only if the far-side tile is under OPEN SKY.  A window
 				// the fill touched from its OUTSIDE face (after escaping through
@@ -1380,10 +1326,6 @@ namespace NaturalLight {
 				int        floor   = std::max(lt.tz / 5, (open_top - 1) / 5);
 				int        sp_tz   = 0;
 				const bool covered = Light_tile_roofed(gmap, fx, fy);
-				if (dbg_spill) {
-					std::cerr << "[light-mask] spill-cand far=(" << fx << ',' << fy << ") pct=" << pct << " open_top=" << open_top
-							  << " roofed=" << covered << std::endl;
-				}
 				if (covered) {
 					// Covered -- but when the cover is only a floor-roof deck
 					// the window overlooks (its top at or below the opening's
@@ -1393,17 +1335,10 @@ namespace NaturalLight {
 					// lets it light the deck's top surface.
 					const int deck_top = Light_tile_overlooked_deck(gmap, fx, fy, open_top);
 					if (deck_top < 0) {
-						if (dbg_spill) {
-							std::cerr << "[light-mask] spill-cand DROPPED (interior/roofed)" << std::endl;
-						}
 						continue;    // Far side is interior (or under another roof).
 					}
 					sp_tz = (deck_top / 5) * 5;
 					floor = std::max(floor, deck_top / 5);
-				}
-				if (dbg_spill) {
-					std::cerr << "[light-mask] spill EMIT tile=(" << Light_tile_norm(fx) << ',' << Light_tile_norm(fy) << ','
-							  << sp_tz << ") pct=" << pct << " floor=" << floor << std::endl;
 				}
 				spills->push_back({Tile_coord(Light_tile_norm(fx), Light_tile_norm(fy), sp_tz), pct, floor});
 			}
@@ -1473,10 +1408,6 @@ namespace NaturalLight {
 					continue;
 				}
 				well_emitted.emplace_back(ox, oy);
-				if (dbg_spill) {
-					std::cerr << "[light-mask] well EMIT tile=(" << Light_tile_norm(lt.tx + ox - rt) << ','
-							  << Light_tile_norm(lt.ty + oy - rt) << ',' << roof_z << ") floor=" << roof_z / 5 << std::endl;
-				}
 				spills->push_back(
 						{Tile_coord(Light_tile_norm(lt.tx + ox - rt), Light_tile_norm(lt.ty + oy - rt), roof_z), 100, roof_z / 5});
 			}
@@ -1504,15 +1435,35 @@ namespace NaturalLight {
 			std::vector<Light_spill>   spills;
 			Uint64                     stamp = 0;    // When the flood was computed.
 			Uint64                     used  = 0;    // When it was last requested.
+			// Per-entry refresh interval: doubles each time a refresh returns
+			// identical content (a resting room), snaps back on any change.
+			Uint64 ttl = 250;
 		};
 
 		// Key: tile x/y/z, grid radius, flavour (0 = spill flood, 1 = room
 		// flood with wall ring, 2 = room flood without).
 		using Flood_cache_key = std::tuple<int, int, int, int, int>;
 		std::map<Flood_cache_key, Flood_cache_entry> flood_cache;
-		constexpr Uint64                             flood_cache_ttl  = 250;     // ms.
-		constexpr Uint64                             flood_cache_keep = 1000;    // ms unused -> evict.
-		uint64_t                                     flood_spend      = 0;       // Perf ticks this frame.
+		constexpr Uint64                             flood_cache_ttl     = 250;     // ms.
+		constexpr Uint64                             flood_cache_ttl_max = 1000;    // ms (backoff cap).
+		constexpr Uint64                             flood_cache_keep    = 1000;    // ms unused -> evict.
+		uint64_t                                     flood_spend         = 0;       // Perf ticks this frame.
+		// Bumped whenever a refresh actually CHANGES a cached grid (a door
+		// opened/closed): the layer signatures mix it in, so cached coverage
+		// rebuilds exactly when flood content changes.
+		uint64_t flood_content_gen = 0;
+
+		bool Spills_equal(const std::vector<Light_spill>& a, const std::vector<Light_spill>& b) {
+			if (a.size() != b.size()) {
+				return false;
+			}
+			for (size_t i = 0; i < a.size(); ++i) {
+				if (a[i].tile != b[i].tile || a[i].percent != b[i].percent || a[i].floor != b[i].floor) {
+					return false;
+				}
+			}
+			return true;
+		}
 
 		uint64_t Flood_budget_ticks() {
 			static const uint64_t budget = SDL_GetPerformanceFrequency() / 1000;    // ~1 ms.
@@ -1532,7 +1483,7 @@ namespace NaturalLight {
 			auto it = flood_cache.find(key);
 			if (it != flood_cache.end()) {
 				it->second.used = now;
-				if (now - it->second.stamp < flood_cache_ttl) {
+				if (now - it->second.stamp < it->second.ttl) {
 					return &it->second;
 				}
 				// Expired: recompute only within this frame's budget, else
@@ -1561,6 +1512,10 @@ namespace NaturalLight {
 
 	void Flood_cache_frame_begin() {
 		flood_spend = 0;
+	}
+
+	uint64_t Flood_content_generation() {
+		return flood_content_gen;
 	}
 
 	// Room-fill flood from the light's tile across passable floor, stopped by
@@ -1600,20 +1555,21 @@ namespace NaturalLight {
 		}
 		const Flood_spend_scope spend;
 		const int               roof_z = Light_room_roof_z(gmap, lt.tx, lt.ty, lt.tz);
-		if (std::getenv("EXULT_DEBUG_LIGHT_MASK") != nullptr) {
-			static Tile_coord last(-1, -1, -1);
-			if (lt.tx != last.tx || lt.ty != last.ty || lt.tz != last.tz) {
-				last = lt;
-				std::cerr << "[light-mask] === light shape=" << light_obj->get_shapenum() << " tile=(" << lt.tx << ',' << lt.ty
-						  << ',' << lt.tz << ") roof_z=" << roof_z << " floor_z=" << (lt.tz / 5) * 5 << " rt=" << rt << std::endl;
-			}
-		}
 		Flood_room_grid(gmap, lt, rt, roof_z, lit, &spills, light_walls);
 		Flood_cache_entry& entry = flood_cache[key];
-		entry.lit                = lit;
-		entry.spills             = spills;
-		entry.stamp              = now;
-		entry.used               = now;
+		const bool         had   = entry.stamp != 0;
+		if (had && entry.lit == lit && Spills_equal(entry.spills, spills)) {
+			entry.ttl = std::min<Uint64>(entry.ttl * 2, flood_cache_ttl_max);
+		} else {
+			entry.ttl = flood_cache_ttl;
+			if (had) {
+				++flood_content_gen;
+			}
+			entry.lit    = lit;
+			entry.spills = spills;
+		}
+		entry.stamp = now;
+		entry.used  = now;
 	}
 
 	void Build_spill_shadow_grid(const Tile_coord& start, int rt, std::vector<unsigned char>& lit) {
@@ -1644,7 +1600,16 @@ namespace NaturalLight {
 		const int               roof_z = Light_room_roof_z(gmap, start.tx, start.ty, start.tz);
 		Flood_room_grid(gmap, start, rt, roof_z, lit, nullptr);
 		Flood_cache_entry& entry = flood_cache[key];
-		entry.lit                = lit;
+		const bool         had   = entry.stamp != 0;
+		if (had && entry.lit == lit) {
+			entry.ttl = std::min<Uint64>(entry.ttl * 2, flood_cache_ttl_max);
+		} else {
+			entry.ttl = flood_cache_ttl;
+			if (had) {
+				++flood_content_gen;
+			}
+			entry.lit = lit;
+		}
 		entry.spills.clear();
 		entry.stamp = now;
 		entry.used  = now;
@@ -1654,7 +1619,7 @@ namespace NaturalLight {
 			unsigned char* cov, unsigned char* dstpix, const unsigned char* srcpix, int W, int H, int dst_lw, int src_lw, int sx,
 			int sy, int radius, int elevation, int dist_bias, int intensity_pct, const unsigned char* roofpix, int roof_lw,
 			bool veto_roof, bool is_spill, int spill_floor, int light_top_storey, const unsigned char* grid, int grid_rt,
-			int grid_fx, int grid_fy) {
+			int grid_fx, int grid_fy, int clip_x0, int clip_y0, int clip_x1, int clip_y1) {
 		if (radius <= 0 || intensity_pct <= 0) {
 			return;
 		}
@@ -1703,9 +1668,7 @@ namespace NaturalLight {
 		const float           grid_u   = static_cast<float>(grid_fx) - half - static_cast<float>(grid_rt) * cell;
 		const float           grid_v   = static_cast<float>(grid_fy) - half - static_cast<float>(grid_rt) * cell;
 		std::vector<float>    field_local;
-		const Field_template* ftmpl           = nullptr;
-		int                   dbg_field_cells = 0;       // Nonzero flood cells.
-		float                 dbg_field_max   = 0.0f;    // Peak field brightness.
+		const Field_template* ftmpl = nullptr;
 		if (grid != nullptr) {
 			// Reuse a recently computed field: FNV-1a over the grid content
 			// (the flood cache above already hands back the identical grid for
@@ -1765,10 +1728,6 @@ namespace NaturalLight {
 						if (dome > 0.0f) {
 							const float fv                                   = 255.0f * dome * inten;
 							field_local[static_cast<size_t>(gy) * side + gx] = fv;
-							++dbg_field_cells;
-							if (fv > dbg_field_max) {
-								dbg_field_max = fv;
-							}
 						}
 					}
 				}
@@ -1849,20 +1808,20 @@ namespace NaturalLight {
 		if (y1 >= H) {
 			y1 = H - 1;
 		}
+		// Optional clip window (scroll-vacated strip patching).
+		if (clip_x1 >= 0 || clip_y1 >= 0) {
+			x0 = std::max(x0, clip_x0);
+			y0 = std::max(y0, clip_y0);
+			x1 = std::min(x1, clip_x1);
+			y1 = std::min(y1, clip_y1);
+			if (x0 > x1 || y0 > y1) {
+				return;
+			}
+		}
 		// Hot-loop constants for the free-dome path.
 		const float inv_rf2 = 1.0f / rf2;
 		const float amp     = 255.0f * inten;
 		const float rr      = rf * rf;
-		// Diagnostics: per-spill histogram of mask values / outcomes under the
-		// splat (EXULT_DEBUG_LIGHT_MASK).
-		const bool dbg_splat      = is_spill && std::getenv("EXULT_DEBUG_LIGHT_MASK") != nullptr;
-		size_t     dbg_clear      = 0;    // Unmarked pixels considered.
-		size_t     dbg_roof       = 0;    // Skipped: real roof 255.
-		size_t     dbg_gate       = 0;    // Skipped: storey gate.
-		size_t     dbg_tall       = 0;    // Marked, passed gate (bypass_field).
-		size_t     dbg_drawn      = 0;    // Pixels actually brightened.
-		int        dbg_maxa_tall  = 0;    // Peak alpha computed on marked pixels.
-		int        dbg_maxa_clear = 0;    // Peak alpha computed on clear pixels.
 		for (int y = y0; y <= y1; ++y) {
 			const int            dy      = y - sy;
 			const float          dy2     = static_cast<float>(dy) * static_cast<float>(dy);
@@ -1901,14 +1860,12 @@ namespace NaturalLight {
 						}
 					} else if (is_spill) {
 						if (roofrow[x] == 255) {
-							++dbg_roof;
 							continue;    // A spill never lights a real roof.
 						}
 						if (roofrow[x] - 128 > spill_floor) {
 							// The marked surface sits on a HIGHER storey than
 							// the spill's source: a ground-floor window's glow
 							// must not brighten a floor-roof deck above it.
-							++dbg_gate;
 							continue;
 						}
 						// An upper-storey mark (128 + storey, storey >= 1: a
@@ -1923,9 +1880,7 @@ namespace NaturalLight {
 					} else {
 						bypass_field = true;
 					}
-					++dbg_tall;
 				} else {
-					++dbg_clear;
 					if (roofrow && is_spill && light_top_storey >= 1) {
 						// An ELEVATED spill (a stairwell bubble on an upper
 						// floor; light_top_storey carries its render storey):
@@ -1966,30 +1921,12 @@ namespace NaturalLight {
 				if (a <= 0) {
 					continue;
 				}
-				if (dbg_splat) {
-					if (bypass_field) {
-						if (a > dbg_maxa_tall) {
-							dbg_maxa_tall = a;
-						}
-					} else if (a > dbg_maxa_clear) {
-						dbg_maxa_clear = a;
-					}
-				}
 				const size_t idx = static_cast<size_t>(y) * W + x;
 				if (a > cov[idx]) {
 					cov[idx]               = static_cast<unsigned char>(a);
 					dstpix[y * dst_lw + x] = srcpix[y * src_lw + x];
-					++dbg_drawn;
 				}
 			}
-		}
-		if (dbg_splat) {
-			std::cerr << "[light-mask] spill-splat at=(" << sx << ',' << sy << ") r=" << radius << " floor=" << spill_floor
-					  << " px clear=" << dbg_clear << " roof255=" << dbg_roof << " gated=" << dbg_gate << " tall=" << dbg_tall
-					  << " drawn=" << dbg_drawn << " maxa_tall=" << dbg_maxa_tall << " maxa_clear=" << dbg_maxa_clear
-					  << " bias=" << dist_bias << " elev=" << elevation << " pct=" << intensity_pct << " grid=" << (grid ? side : 0)
-					  << " fcells=" << dbg_field_cells << " fmax=" << static_cast<int>(dbg_field_max) << " ganchor=(" << grid_fx
-					  << ',' << grid_fy << ")" << std::endl;
 		}
 	}
 
