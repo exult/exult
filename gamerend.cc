@@ -227,11 +227,11 @@ int Game_render::paint_map(
 		paint_terrain_only(start_chunkx, start_chunky, stop_chunkx, stop_chunky);
 		return 10;    // Pretend there's lots of light!
 	}
-	// Once per frame: the Avatar's enclosure is light-tight only if its own
-	// chunk has no light_passes_through object AND no passable gap in the
-	// walls (e.g. a doorway with no door object).
+	// Once per frame (natural light only): the Avatar's enclosure is
+	// light-tight only if its own chunk has no light_passes_through object
+	// AND no passable gap in the walls (e.g. a doorway with no door object).
 	avatar_enclosure_sealed = false;
-	{
+	if (gwin->get_natural_light()) {
 		Main_actor* const main_actor = gwin->get_main_actor();
 		if (main_actor != nullptr && gwin->is_main_actor_inside()) {
 			Map_chunk* const avatar_chunk = main_actor->get_chunk();
@@ -679,6 +679,7 @@ int Game_render::paint_chunk_objects(
 	Main_actor* const main_actor    = gwin->get_main_actor();
 	if (main_actor != nullptr) {
 		const auto& lights         = gwin->is_in_dungeon() ? olist->get_dungeon_lights() : olist->get_non_dungeon_lights();
+		const bool  natural        = gwin->get_natural_light();
 		const bool  viewer_outside = !gwin->is_main_actor_inside();
 		const bool  dbg_light_pass = std::getenv("EXULT_DEBUG_LIGHT_PASS") != nullptr;
 		// The spatial light layers are hidden at full day, so all the grid /
@@ -695,9 +696,11 @@ int Game_render::paint_chunk_objects(
 		int        opening_lift        = -1;
 		// Whether this chunk has a shape light can pass through (window, open
 		// door, ...). Needed when the Avatar is outside: interior light leaks
-		// out through it.
-		const bool chunk_has_opening = NaturalLight::Chunk_find_light_passes_through(
-				olist, opening_shape, opening_frame, opening_match_frame, opening_tx, opening_ty, opening_lift);
+		// out through it. Natural light only.
+		const bool chunk_has_opening
+				= natural
+				  && NaturalLight::Chunk_find_light_passes_through(
+						  olist, opening_shape, opening_frame, opening_match_frame, opening_tx, opening_ty, opening_lift);
 		// Whether the Avatar's own enclosure is completely light-tight.
 		// Computed once per frame in paint_map (sealed = no light_passes_through
 		// object AND no passable gap in the walls).
@@ -717,11 +720,15 @@ int Game_render::paint_chunk_objects(
 			if (info.get_object_light(light_obj->get_framenum()) <= 0) {
 				continue;
 			}
-			const int  strength = get_light_strength(light_obj, main_actor);
-			const bool natural  = gwin->get_natural_light();
+			const int strength = get_light_strength(light_obj, main_actor);
 			// Natural lights have their own bounded glow radius; only cull
 			// distance-decayed (strength 0) lights when natural light is off.
 			if (strength <= 0 && !natural) {
+				continue;
+			}
+			if (!natural) {
+				// Vanilla legacy behaviour: every in-range light counts fully.
+				light_sources += strength;
 				continue;
 			}
 			// Decide whether this source reaches the viewer, and how many
@@ -752,7 +759,7 @@ int Game_render::paint_chunk_objects(
 			// build_light_layers can brighten the world around it. Radius and
 			// palette tier scale with the light's intrinsic brightness (not the
 			// distance-decayed strength used for the legacy global palette).
-			if (natural && !day_palette) {
+			if (!day_palette) {
 				const int brightness = info.get_object_light(light_obj->get_framenum());
 				int       lsx        = 0;
 				int       lsy        = 0;
