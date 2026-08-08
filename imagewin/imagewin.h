@@ -269,33 +269,37 @@ public:
 	struct ScalerConst {
 		const char* const Name;
 
+	private:
+		mutable ScalerType scaler_type = NoScaler;
+
+	public:
 		ScalerConst(const char* name) : Name(name) {}
 
 		operator ScalerType() const {
 			if (Name == nullptr) {
-				return Scalers.size();
+				return (Scalers.size());
 			}
-			return get_scaler_for_name(Name);
+			return scaler_type != NoScaler ? scaler_type : (scaler_type = get_scaler_for_name(Name));
 		}
 	};
 
-	static const ScalerType  NoScaler;
-	static const ScalerConst point;
-	static const ScalerConst interlaced;
-	static const ScalerConst bilinear;
-	static const ScalerConst BilinearPlus;
-	static const ScalerConst SaI;
-	static const ScalerConst SuperEagle;
-	static const ScalerConst Super2xSaI;
-	static const ScalerConst Scale2x;
-	static const ScalerConst Hq2x;
-	static const ScalerConst Hq3x;
-	static const ScalerConst Hq4x;
-	static const ScalerConst _2xBR;
-	static const ScalerConst _3xBR;
-	static const ScalerConst _4xBR;
-	static const ScalerConst SDLScaler;
-	static const ScalerConst NumScalers;
+	constexpr static ScalerType NoScaler = -1;
+	static const ScalerConst    point;
+	static const ScalerConst    interlaced;
+	static const ScalerConst    bilinear;
+	static const ScalerConst    BilinearPlus;
+	static const ScalerConst    SaI;
+	static const ScalerConst    SuperEagle;
+	static const ScalerConst    Super2xSaI;
+	static const ScalerConst    Scale2x;
+	static const ScalerConst    Hq2x;
+	static const ScalerConst    Hq3x;
+	static const ScalerConst    Hq4x;
+	static const ScalerConst    _2xBR;
+	static const ScalerConst    _3xBR;
+	static const ScalerConst    _4xBR;
+	static const ScalerConst    SDLScaler;
+	static const ScalerConst    NumScalers;
 
 	// Gets the draw surface and intersurface dims.
 	// if (inter_surface.wh != (dw*scale,dh*scale))

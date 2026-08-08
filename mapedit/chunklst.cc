@@ -32,6 +32,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "exult_constants.h"
 #include "ibuf8.h"
 #include "shapegroup.h"
+#include "shapevga.h"
 #include "u7drag.h"
 #include "vgafile.h"
 
@@ -222,6 +223,8 @@ void Chunk_chooser::render_chunk(
 		Image_buffer8* rwin,        // Where to draw it
 		int xoff, int yoff          // Where to draw it in rwin.
 ) {
+	auto        shapes = dynamic_cast<Shapes_vga_file*>(ifile);
+	const auto& xforms = ExultStudio::get_instance()->GetXform();
 	for (int pass = 1; pass <= 2; pass++) {
 		unsigned char* data = get_chunk(chunknum);
 		int            y    = c_tilesize;
@@ -239,20 +242,29 @@ void Chunk_chooser::render_chunk(
 					shapenum = l + 256 * h;
 					framenum = Read1(data);
 				}
-				Shape_frame* s = ifile->get_shape(shapenum, framenum);
+				Shape_frame* s      = ifile->get_shape(shapenum, framenum);
+				auto         shinfo = shapes ? &shapes->get_info(shapenum) : nullptr;
 				// First pass over non RLE flats :
 				//  8x8 tiles, shapenum < 150,
 				//  Default origin -1, -1 to be reset,
 				//  Not clickable nor Hack-Movable.
 				if (s && pass == 1 && !s->is_rle()) {
-					s->paint(rwin, xoff + x, yoff + y);
+					if ((shinfo && !shinfo->has_translucency()) || xforms.empty()) {
+						s->paint(rwin, xoff + x, yoff + y);
+					} else {
+						s->paint_rle_translucent(rwin, xoff + x, yoff + y, xforms.data(), xforms.size());
+					}
 				}
 				// Second pass over RLE flats :
 				//  Larger than 8*8 tiles, shapenum >= 150,
 				//  Valid origin,
 				//  Clikable show Name and Outline, Hack-Movable.
 				if (s && pass == 2 && s->is_rle()) {
-					s->paint(rwin, xoff + x - 1, yoff + y - 1);
+					if ((shinfo && !shinfo->has_translucency()) || xforms.empty()) {
+						s->paint(rwin, xoff + x - 1, yoff + y - 1);
+					} else {
+						s->paint_rle_translucent(rwin, xoff + x - 1, yoff + y - 1, xforms.data(), xforms.size());
+					}
 				}
 			}
 		}

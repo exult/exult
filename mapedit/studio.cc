@@ -440,6 +440,56 @@ void ExultStudio::on_play_button_toggled(GtkToggleButton* button, gpointer user_
 	studio->update_play_button(playing);
 }
 
+gboolean ExultStudio::on_animation_timeout(gpointer) {
+	unsigned min = UINT_MAX, limit = 0;
+
+	if (self->palette_cycling) {
+		const unsigned ranges[][2] = {
+				{0xfc, 3},
+                {0xf8, 4},
+                {0xf4, 4},
+                {0xf0, 4},
+                {0xe8, 8},
+                {0xe0, 8}
+        };
+
+		for (const auto range : ranges) {
+			auto first = range[0] * 3;
+			auto cnt   = range[1] * 3;
+
+			min   = std::min(min, range[0]);
+			limit = std::max(limit, range[0] + range[1]);
+
+			unsigned char* start  = self->palbuf.get() + first;
+			unsigned char* finish = start + cnt;
+			// Shift upward.
+			std::rotate(start, finish - 3, finish);
+		}
+	}
+	// call animate and update palette on all shapedraws
+
+	if (self->animating_shapes || self->palette_cycling) {
+		for (auto draw : Shape_draw::iteratable) {
+			if (auto b = dynamic_cast<Object_browser*>(draw)) {
+				// If its a browser and doesn't have a parent do nothing
+				if (!gtk_widget_get_parent(b->get_widget())) {
+					continue;
+				}
+			}
+
+			if (min < limit) {
+				draw->update_palette(self->palbuf.get(), min, limit - min);
+			}
+
+			if (self->animating_shapes) {
+				draw->animate();
+			}
+		}
+	}
+
+	return G_SOURCE_CONTINUE;
+}
+
 C_EXPORT void on_tile_grid_button_toggled(GtkToggleButton* button, gpointer user_data) {
 	ignore_unused_variable_warning(user_data);
 	ExultStudio::get_instance()->set_tile_grid(gtk_toggle_button_get_active(button));
@@ -797,6 +847,11 @@ ExultStudio::ExultStudio(int argc, char** argv)
 	config->value("config/disk/data_path", data_path, EXULT_DATADIR);
 	setup_data_dir(data_path, argv[0]);
 	string datastr;
+
+	config->value("config/estudio/animating_shapes", animating_shapes, animating_shapes);
+	config->value("config/estudio/palette_cycling", palette_cycling, palette_cycling);
+	config->value("config/estudio/translucent_drawing", translucent_drawing, translucent_drawing);
+
 #ifdef MACOSX
 	if (is_system_path_defined("<BUNDLE>")) {
 		datastr = get_system_path("<BUNDLE>");
@@ -900,6 +955,9 @@ ExultStudio::ExultStudio(int argc, char** argv)
 				= g_signal_connect(G_OBJECT(play_button), "toggled", G_CALLBACK(ExultStudio::on_play_button_toggled), this);
 		play_button_signal_id = g_signal_lookup("toggled", GTK_TYPE_TOGGLE_BUTTON);
 	}
+	// start antimation timer
+	animation_timeout_id = g_timeout_add(ANIMATION_TIMEOUT_MS, on_animation_timeout, nullptr);
+
 	// Set initial state for menus and toolbar - disconnected
 	update_menu_items(false);
 	int w;
@@ -1648,12 +1706,15 @@ void ExultStudio::set_game_path(const string& gamename, const string& modname) {
 	palbuf[3 * 255]     = (background_color >> 18) & 0x3f;
 	palbuf[3 * 255 + 1] = (background_color >> 10) & 0x3f;
 	palbuf[3 * 255 + 2] = (background_color >> 2) & 0x3f;
-	files               = new Shape_file_set();
-	vgafile             = open_shape_file("shapes.vga");
-	facefile            = open_shape_file("faces.vga");
-	fontfile            = open_shape_file("fonts.vga");
-	gumpfile            = open_shape_file("gumps.vga");
-	spritefile          = open_shape_file("sprites.vga");
+	// Load xforms after palette loaded and background colour has been set
+	load_xforms();
+
+	files      = new Shape_file_set();
+	vgafile    = open_shape_file("shapes.vga");
+	facefile   = open_shape_file("faces.vga");
+	fontfile   = open_shape_file("fonts.vga");
+	gumpfile   = open_shape_file("gumps.vga");
+	spritefile = open_shape_file("sprites.vga");
 	if (game_type == SERPENT_ISLE) {
 		paperdolfile = open_shape_file("paperdol.vga");
 	} else if (game_type == BLACK_GATE) {
@@ -1665,6 +1726,8 @@ void ExultStudio::set_game_path(const string& gamename, const string& modname) {
 			paperdolfile = nullptr;
 		}
 	}
+	// Make sure shapeinfo is read
+	static_cast<Shapes_vga_file*>(vgafile->get_ifile())->read_info(game_type, true);
 	Setup_text(game_type == SERPENT_ISLE, expansion, sibeta,
 			   gameinfo->get_game_language());    // Read in shape names.
 	misc_name_map.clear();
@@ -2474,6 +2537,64 @@ void ExultStudio::show_unused_shapes(
 	// FIXME: gtk_text_set_point(text, 0);  // Scroll back to top.
 }
 
+void ExultStudio::load_xforms() {
+	xforms.clear();
+	// If Translucemcy is disabled, do nothing other than clearing the vector
+	if (!translucent_drawing) {
+		return;
+	}
+	// Find the colour nearest to the background that is index 0xFF
+	uint_fast8_t nearest_bg = 0xff;
+
+	// This code was copied from Palette::find_color()
+	// because Exult studio doesn't compile the Palette class
+	long         best_distance = LONG_MAX;
+	uint_fast8_t bgr = palbuf[255 * 3], bgg = palbuf[255 * 3 + 1], bgb = palbuf[255 * 3 + 2];
+	// Only search for colour nearest to background in non cycled colours
+	for (int i = 0; i < 0xE0; i++) {
+		// Get deltas.
+		const long dr = bgr - palbuf[3 * i];
+		const long dg = bgg - palbuf[3 * i + 1];
+		const long db = bgb - palbuf[3 * i + 2];
+		// Figure distance-squared.
+		const long dist = dr * dr + dg * dg + db * db;
+		if (dist < best_distance) {    // Better than prev?
+			nearest_bg    = i;
+			best_distance = dist;
+			if (dist == 0) {
+				// Found a perfect match so leave
+				break;
+			}
+		}
+	}
+
+	// Load xform tables
+	// Code copied from Shape_manager::load()
+
+	if (U7exists(XFORMTBL) || U7exists(PATCH_XFORMS)) {
+		// Read in translucency tables.
+		U7multifile xformfile(XFORMTBL, PATCH_XFORMS);
+		// Allow loading of all xform tables including the ones Exult can't. Shouldn't make much of a difference
+		// Minimum size of 17 so all expected tables exist
+		xforms.resize(std::max<size_t>(17, xformfile.number_of_objects()));
+		const size_t nxforms = xforms.size();
+		for (size_t i = 0; i < nxforms; i++) {
+			auto ds = xformfile.retrieve(i);
+			if (!ds.good()) {
+				// No XForm data at all. Make this XForm into an
+				// identity transformation.
+				for (size_t j = 0; j < sizeof(xforms[0].colors); j++) {
+					xforms[nxforms - 1 - i].colors[j] = static_cast<uint8>(j);
+				}
+			} else {
+				ds.read(xforms[nxforms - 1 - i].colors, sizeof(xforms[0].colors));
+			}
+			// copy the nearest background xform colour to FF
+			xforms[nxforms - 1 - i].colors[0xff] = xforms[nxforms - 1 - i].colors[nearest_bg];
+		}
+	}
+}
+
 /*
  *  Open a shape (or chunks) file in 'patch' or 'static' directory.
  *
@@ -3085,7 +3206,14 @@ void ExultStudio::open_preferences() {
 	g_object_set_data(G_OBJECT(backgrnd), "user_data", reinterpret_cast<gpointer>(uintptr(background_color)));
 	GtkWidget* win = get_widget("prefs_window");
 	g_signal_connect(G_OBJECT(get_widget("prefs_background")), "draw", G_CALLBACK(on_prefs_background_expose_event), this);
+
+	set_toggle("prefs_transl", translucent_drawing);
+	set_toggle("prefs_palcyc", palette_cycling);
+	set_toggle("prefs_animsh", animating_shapes);
+
 	gtk_widget_set_visible(win, true);
+
+	//	ExultStudio::IsShapeAnimationEnabled()
 }
 
 /*
@@ -3096,26 +3224,46 @@ void ExultStudio::save_preferences() {
 	const char* text = get_text_entry("prefs_image_editor");
 	g_free(image_editor);
 	image_editor = g_strdup(text);
-	config->set("config/estudio/image_editor", image_editor, true);
+	config->set("config/estudio/image_editor", image_editor, false);
 	// Save image type from combobox: 0 = .PNG, 1 = .SHP
 	int         ftype_index = get_optmenu("prefs_image_type");
 	const char* ftype_str   = (ftype_index == 1) ? ".SHP" : ".PNG";
 	g_free(edit_filetype);
 	edit_filetype = g_strdup(ftype_str);
-	config->set("config/estudio/edit_filetype", edit_filetype, true);
+	config->set("config/estudio/edit_filetype", edit_filetype, false);
 	text = get_text_entry("prefs_default_game");
 	g_free(default_game);
 	default_game = g_strdup(text);
-	config->set("config/estudio/default_game", default_game, true);
+	config->set("config/estudio/default_game", default_game, false);
 	GtkWidget* backgrnd = get_widget("prefs_background");
 	set_background_color(reinterpret_cast<uintptr>(g_object_get_data(G_OBJECT(backgrnd), "user_data")));
-	config->set("config/estudio/background_color", background_color, true);
+	config->set("config/estudio/background_color", background_color, false);
 	// Set background color.
-	palbuf[3 * 255]     = (background_color >> 18) & 0x3f;
-	palbuf[3 * 255 + 1] = (background_color >> 10) & 0x3f;
-	palbuf[3 * 255 + 2] = (background_color >> 2) & 0x3f;
+	palbuf[3 * 255]                 = (background_color >> 18) & 0x3f;
+	palbuf[3 * 255 + 1]             = (background_color >> 10) & 0x3f;
+	palbuf[3 * 255 + 2]             = (background_color >> 2) & 0x3f;
+	translucent_drawing             = get_toggle("prefs_transl");
+	palette_cycling                 = get_toggle("prefs_palcyc");
+	const bool was_animating_shapes = animating_shapes;
+	animating_shapes                = get_toggle("prefs_animsh");
+	config->set("config/estudio/translucent_drawing", translucent_drawing ? "yes" : "no", false);
+	config->set("config/estudio/palette_cycling", palette_cycling ? "yes" : "no", false);
+	config->set("config/estudio/animating_shapes", animating_shapes ? "yes" : "no", false);
+	config->write_back();
+
+	// Xform loading uses background colour and translucent rendering options so reload them
+	load_xforms();
 	if (browser) {    // Repaint browser.
 		browser->set_background_color(background_color);
+	}
+	// Update background colour of all Shape_draws
+	for (auto draw : Shape_draw::iteratable) {
+		draw->set_background_color(background_color);
+		auto* chooser = dynamic_cast<Shape_chooser*>(draw);
+		// animating_shapes setting changed so call setup_info on Shape_chooser to resize animated shapes to match the setting change
+		if (was_animating_shapes != animating_shapes && chooser) {
+			chooser->setup_info();
+		}
 	}
 }
 

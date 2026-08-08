@@ -43,7 +43,7 @@ Source: Studio\aarch64\*.dll; DestDir: {app}; Flags: ignoreversion; Check: Is64B
 Source: Studio\aarch64\lib\*; DestDir: {app}\lib\; Flags: ignoreversion recursesubdirs; Check: Is64BitInstallMode and IsArm64
 #endif
 ; Architecture-neutral files
-;Source: Studio\share\*; DestDir: {app}\share\; Flags: ignoreversion recursesubdirs
+Source: Studio\share\*; DestDir: {app}\share\; Flags: ignoreversion recursesubdirs
 Source: Studio\COPYING.txt; DestDir: {app}; Flags: onlyifdoesntexist
 Source: Studio\Exult Source Code.url; DestDir: {app}; Flags: ignoreversion;
 Source: Studio\AUTHORS.txt; DestDir: {app}; Flags: onlyifdoesntexist

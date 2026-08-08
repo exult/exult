@@ -142,6 +142,7 @@ private:
 	Shape_file_info*                 paperdolfile;        // 'paperdol.vga'.
 	Object_browser*                  browser;
 	std::unique_ptr<unsigned char[]> palbuf;    // 3*256 rgb's, each 0-63.
+	std::vector<Xform_palette>       xforms;    // 'xform.tbl'
 	// Barge editor:
 	GtkWidget* bargewin;    // Barge window.
 	int        barge_ctx;
@@ -238,14 +239,22 @@ private:
 	int h_at_close;
 
 	// Widgets, Callbacks, HandlerIDs of the main_window
-	GtkWidget*  connect_button;
-	gulong      connect_button_handler_id;
-	gulong      connect_button_signal_id;
-	static void on_connect_button_toggled(GtkToggleButton* button, gpointer user_data);
-	GtkWidget*  play_button;
-	gulong      play_button_handler_id;
-	gulong      play_button_signal_id;
-	static void on_play_button_toggled(GtkToggleButton* button, gpointer user_data);
+	GtkWidget*      connect_button;
+	gulong          connect_button_handler_id;
+	gulong          connect_button_signal_id;
+	static void     on_connect_button_toggled(GtkToggleButton* button, gpointer user_data);
+	GtkWidget*      play_button;
+	gulong          play_button_handler_id;
+	gulong          play_button_signal_id;
+	static void     on_play_button_toggled(GtkToggleButton* button, gpointer user_data);
+	static gboolean on_animation_timeout(gpointer user_data);
+	gulong          animation_timeout_id;
+
+	constexpr static int ANIMATION_TIMEOUT_MS = 100;
+
+	bool animating_shapes    = true;
+	bool palette_cycling     = true;
+	bool translucent_drawing = true;
 
 public:
 	Shape_info* temp_shape_info;    // Backup for preset undo
@@ -344,6 +353,10 @@ public:
 		waiting_client     = client;
 	}
 
+	const auto& GetXform() const {
+		return xforms;
+	}
+
 	Shape_group_file* get_cur_groups();
 
 	Shape_preset_file* get_cur_presets() {
@@ -380,6 +393,7 @@ public:
 	void            set_edit_terrain(gboolean terrain);
 	void            set_edit_mode(int md);
 	void            show_unused_shapes(const unsigned char* data, int datalen);
+	void            load_xforms();
 	// Open/create shape files:
 	Shape_file_info* open_shape_file(const char* basename);
 	void             new_shape_file(bool single);
@@ -461,7 +475,7 @@ public:
 	static void schedule_btn_clicked(GtkWidget* btn, gpointer data);
 	// Shapes:
 	GdkPixbuf* shape_image(    // The GdkPixbuf should be g_object_unrefed.
-			Vga_file* shpfile, int shnum, int frnum, bool transparent);
+			Vga_file* shpfile, int shnum, int frnum, bool transparent, bool translucent);
 	void       init_equip_window(int recnum);
 	void       save_equip_window();
 	void       open_equip_window(int recnum);
@@ -660,6 +674,10 @@ public:
 	}
 
 	BaseGameInfo* get_game() const;
+
+	static bool IsShapeAnimationEnabled() {
+		return self->animating_shapes;
+	}
 };
 
 // Utilities:

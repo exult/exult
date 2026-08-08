@@ -28,11 +28,15 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "shapedraw.h"
 
+#include "aniinf.h"
 #include "ibuf8.h"
 #include "shapefile.h"
 #include "shapeinf.h"
+#include "shapevga.h"
 #include "u7drag.h"
 #include "vgafile.h"
+
+#include <random>
 
 using std::cout;
 using std::endl;
@@ -42,6 +46,7 @@ using std::endl;
  * Base class Shape_draw : Displays a Shape or many Shapes from a .vga file.
  * -------------------------------------------------------------------------
  */
+Shape_draw* Shape_draw::list_head = nullptr;
 
 /*
  *  Blit onto screen.
@@ -75,7 +80,7 @@ void Shape_draw::show(
 			// Using GdkPixbuf scaling :
 			const bool zoom_bilinear = ExultStudio::get_instance()->get_shape_bilinear();
 			GdkPixbuf* zoom_pixbuf   = gdk_pixbuf_scale_simple(
-					pixbuf, (w * zoom_scale) / 2, (h * zoom_scale) / 2, (zoom_bilinear ? GDK_INTERP_BILINEAR : GDK_INTERP_NEAREST));
+                    pixbuf, (w * zoom_scale) / 2, (h * zoom_scale) / 2, (zoom_bilinear ? GDK_INTERP_BILINEAR : GDK_INTERP_NEAREST));
 			gdk_cairo_set_source_pixbuf(drawgc, zoom_pixbuf, (x * zoom_scale) / 2, (y * zoom_scale) / 2);
 			cairo_rectangle(drawgc, (x * zoom_scale) / 2, (y * zoom_scale) / 2, (w * zoom_scale) / 2, (h * zoom_scale) / 2);
 			cairo_fill(drawgc);
@@ -95,21 +100,26 @@ void Shape_draw::show(
  *  Draw one shape at a particular place.
  */
 
-void Shape_draw::draw_shape(Shape_frame* shape, int x, int y) {
-	shape->paint(iwin, x + shape->get_xleft(), y + shape->get_yabove());
+void Shape_draw::draw_shape(Shape_frame* shape, int x, int y, bool trans) {
+	if (trans && shape->is_rle()) {
+		const auto& xform = ExultStudio::get_instance()->GetXform();
+		shape->paint_rle_translucent(iwin, x + shape->get_xleft(), y + shape->get_yabove(), xform.data(), xform.size());
+	} else {
+		shape->paint(iwin, x + shape->get_xleft(), y + shape->get_yabove());
+	}
 }
 
 /*
  *  Draw one shape at a particular place.
  */
 
-void Shape_draw::draw_shape(int shapenum, int framenum, int x, int y) {
+void Shape_draw::draw_shape(int shapenum, int framenum, int x, int y, bool trans) {
 	if (shapenum < 0 || shapenum >= ifile->get_num_shapes()) {
 		return;
 	}
 	Shape_frame* shape = ifile->get_shape(shapenum, framenum);
 	if (shape) {
-		draw_shape(shape, x, y);
+		draw_shape(shape, x, y, trans);
 	}
 }
 
@@ -145,7 +155,7 @@ void Shape_draw::draw_shape_outline(
 
 void Shape_draw::draw_shape_centered(
 		int shapenum,    // -1 to not draw shape.
-		int framenum, int& x, int& y) {
+		int framenum, int& x, int& y, bool trans) {
 	// Guard: ensure image buffer is available before using it.
 	if (iwin == nullptr) {
 		return;
@@ -174,7 +184,7 @@ void Shape_draw::draw_shape_centered(
 	} else {
 		x = (ZoomDown(alloc.width) - shape->get_width()) / 2;
 		y = (ZoomDown(alloc.height) - shape->get_height()) / 2;
-		draw_shape(shape, x, y);
+		draw_shape(shape, x, y, trans);
 	}
 }
 
@@ -189,7 +199,10 @@ Shape_draw::Shape_draw(
 		)
 		: ifile(i), draw(drw), drawgc(nullptr), drawfg(0), iwin(nullptr), palette(nullptr), drop_callback(nullptr),
 		  drop_user_data(nullptr), dragging(false) {
-	palette = new ExultRgbCmap;
+	// add this to the list
+	list_next = list_head;
+	list_head = this;
+	palette   = new ExultRgbCmap;
 	for (int i = 0; i < 256; i++) {
 		palette->colors[i] = (palbuf[3 * i] << 16) * 4 + (palbuf[3 * i + 1] << 8) * 4 + palbuf[3 * i + 2] * 4;
 	}
@@ -202,6 +215,138 @@ Shape_draw::Shape_draw(
 Shape_draw::~Shape_draw() {
 	delete palette;
 	delete iwin;
+
+	// Remove this from the linked list
+	for (Shape_draw** list = &list_head; *list; list = &(*list)->list_next) {
+		if (this == *list) {
+			*list     = list_next;
+			list_next = nullptr;
+			break;
+		}
+	}
+}
+
+// Get animated frame using an Animation_info object
+
+int Shape_draw::GetAnimInfoFrame(
+		const Animation_info* aniinf, unsigned short first_frame, unsigned short shape_frames, bool pausable) {
+	if (!ExultStudio::IsShapeAnimationEnabled()) {
+		return first_frame;
+	}
+	//
+	// Variables that represent the fields in the Frame_animator class
+	//
+	unsigned short currpos;       // Current position in the animation.
+	unsigned short nframes;       // Number of frames in cycle.
+	unsigned short last_frame;    // To check if we need to re init
+
+	//
+	// Code from Frame_animator::Initialize
+	//
+	unsigned short initial = first_frame;
+	last_frame             = first_frame & ~(1 << 5);
+
+	const int cnt = aniinf->get_frame_count();
+	if (cnt < 0) {
+		nframes = shape_frames;
+	} else {
+		nframes = cnt;
+	}
+	if (nframes == shape_frames) {
+		first_frame = 0;
+	} else {
+		first_frame = last_frame - (last_frame % nframes);
+	}
+	// Ensure proper bounds.
+	if (first_frame + nframes >= shape_frames) {
+		nframes = shape_frames - first_frame;
+	}
+	assert(nframes > 0);
+
+	//
+	// Code from Frame_animator::get_next_frame
+	//
+	if (nframes == 1) {
+		return initial;
+	}
+
+	static std::default_random_engine rng;
+
+	int framenum;
+	switch (aniinf->get_type()) {
+	case Animation_info::FA_HOURLY:
+		// Use 10 real seconds to represent an hour here
+		// An hour in game is 150 secomnds or 2 and a half minutes
+		// That is way too long to reasonably replicate here
+		framenum = ((animation_frame / 100) + initial) % nframes;
+		break;
+
+	case Animation_info::FA_NON_LOOPING:
+		currpos = animation_frame + initial;
+		if (currpos >= nframes) {
+			currpos = nframes - 1;
+		}
+		framenum = first_frame + currpos;
+		break;
+
+	case Animation_info::FA_TIMESYNCHED: {
+		currpos = animation_frame / aniinf->get_frame_delay() + initial;
+		currpos %= nframes;
+		framenum = first_frame + currpos;
+		break;
+	}
+
+	case Animation_info::FA_LOOPING:
+	default: {
+		int freeze_chance = aniinf->get_freeze_first_chance();
+		if (freeze_chance != 0 || initial != 0) {
+			currpos              = animation_frame + initial;
+			const int rec        = aniinf->get_recycle();
+			auto      first_rec  = nframes - rec;
+			int       loop_start = 0;
+			bool      looped     = false;
+			if (rec && currpos > first_rec) {
+				currpos -= first_rec;
+				loop_start = first_rec;
+				looped     = currpos >= rec;
+				currpos %= rec;
+				currpos += first_rec;
+			} else {
+				looped = currpos >= nframes;
+				currpos %= nframes;
+			}
+			// if it has looped and the loop start is zero and it should pause on zero indefinitely
+			// set frame to 0
+			if (looped && loop_start == 0 && aniinf->get_freeze_first_chance() == 0) {
+				framenum = 0;
+
+			} else {
+				framenum = first_frame + currpos;
+			}
+		} else {
+			framenum = initial;
+		}
+		// random freeze on first frame
+		if (framenum == first_frame && freeze_chance > 0 && pausable && !IsAnimatingPaused()) {
+			int pause_counter = 0;
+
+			while (rng() % 100 >= unsigned(freeze_chance)) {
+				++pause_counter;
+			}
+
+			if (pause_counter) {
+				PauseAnimating(pause_counter + 1, false);
+			}
+		}
+	} break;
+
+	case Animation_info::FA_RANDOM_FRAMES:
+		currpos  = rng() % nframes;
+		framenum = first_frame + currpos;
+		break;
+	}
+
+	return framenum;
 }
 
 /*
@@ -219,6 +364,43 @@ void Shape_draw::render() {
 void Shape_draw::set_background_color(guint32 c) {
 	palette->colors[255] = c;
 	render();
+}
+
+void Shape_draw::update_palette(const unsigned char* palbuf, unsigned start, unsigned count) {
+	auto end = start + count;
+	if (end > 256 || !palbuf) {
+		return;
+	}
+	bool changed = false;
+	for (unsigned i = start; i < end; i++) {
+		guint32 c = (palbuf[3 * i] << 16) * 4 + (palbuf[3 * i + 1] << 8) * 4 + palbuf[3 * i + 2] * 4;
+		changed |= palette->colors[i] != c;
+		palette->colors[i] = c;
+	}
+	if (changed) {
+		gtk_widget_queue_draw(draw);
+	}
+}
+
+void Shape_draw::animate() {
+	if (animating_paused > 0) {
+		if (animating_paused != INT_MAX) {
+			animating_paused--;
+		}
+	}
+	// If animation pausing just ended increment the frame now too
+	if (animating_paused == 0) {
+		if (animation_frame == INT_MAX) {
+			// No integer wrap around to INT_MIN allowed
+			// Not likely to happen as it would take 6 years of continuous running but best to do things right
+			// resetting back to 0 may cause a discontinuity but that is better than who knows what happens if it goes negative
+			animation_frame = 0;
+		} else {
+			animation_frame++;
+		}
+		// animating_frame has changed so do a render
+		render();
+	}
 }
 
 /*
@@ -385,9 +567,10 @@ static inline int extract_value(GtkWidget* widget) {
 
 Shape_single::Shape_single(
 		GtkWidget* shp, GtkWidget* shpnm, bool (*shvalid)(int), GtkWidget* frm, int vgnum, Vga_file* vg,
-		const unsigned char* palbuf, GtkWidget* drw, bool hdd)
+		const unsigned char* palbuf, GtkWidget* drw, bool hdd, Shape_single::TA_type translucent, TA_type animating)
 		: Shape_draw(vg, palbuf, drw), shape(shp), shapename(shpnm), shapevalid(shvalid), frame(frm), vganum(vgnum), hide(hdd),
-		  shape_connect(0), frame_connect(0), draw_connect(0), drop_connect(0), hide_connect(0) {
+		  translucent(translucent), animating(animating), shape_connect(0), frame_connect(0), draw_connect(0), drop_connect(0),
+		  hide_connect(0) {
 	if (shape && (GTK_IS_SPIN_BUTTON(shape) || GTK_IS_ENTRY(shape))) {
 		shape_connect = g_signal_connect(G_OBJECT(shape), "changed", G_CALLBACK(Shape_single::on_shape_changed), this);
 	}
@@ -454,6 +637,10 @@ void Shape_single::on_shape_changed(GtkWidget* widget, gpointer user_data) {
 			gtk_widget_set_visible(single->draw, false);
 		}
 	}
+	// pause animating on a change
+	if (!single->IsAnimatingStopped()) {
+		single->PauseAnimating(CHANGE_ANIM_PAUSE_FRAMES);
+	}
 	single->render();
 }
 
@@ -467,6 +654,12 @@ void Shape_single::on_frame_changed(GtkWidget* widget, gpointer user_data) {
 			gtk_widget_set_visible(single->draw, false);
 		}
 	}
+
+	// pause animating on a change
+	if (!single->IsAnimatingStopped()) {
+		single->PauseAnimating(CHANGE_ANIM_PAUSE_FRAMES);
+	}
+
 	single->render();
 }
 
@@ -483,6 +676,7 @@ void Shape_single::on_state_changed(GtkWidget* widget, GtkStateFlags flags, gpoi
 
 gboolean Shape_single::on_draw_expose_event(GtkWidget* widget, cairo_t* cairo, gpointer user_data) {
 	ignore_unused_variable_warning(widget);
+	auto         studio = ExultStudio::get_instance();
 	auto*        single = static_cast<Shape_single*>(user_data);
 	GdkRectangle area   = {0, 0, 0, 0};
 	gdk_cairo_get_clip_rectangle(cairo, &area);
@@ -501,9 +695,86 @@ gboolean Shape_single::on_draw_expose_event(GtkWidget* widget, cairo_t* cairo, g
 	if ((shnum == 0) && !(single->shapevalid(0))) {
 		shnum = -1;
 	}
+	bool  trans     = false;
+	auto  shapesvga = dynamic_cast<Shapes_vga_file*>(single->ifile);
+	auto* shinfo    = shapesvga ? &(shapesvga->get_info(shnum)) : nullptr;
+	switch (single->translucent) {
+	case TA_type::Enabled: {
+		trans = true;
+		break;
+	}
+
+	case TA_type::shapeinfo: {
+		// Get it frm Shapeinfo
+		// set translucent if the shape info wants it
+		if (shinfo) {
+			trans = shinfo->has_translucency();
+		}
+		break;
+	}
+
+	case TA_type::widget: {
+		trans = studio->get_toggle("shinfo_transl_check");
+		break;
+	}
+
+	default:
+		trans = false;
+		break;
+	}
+
+	Animation_info simpleai;
+	int            num_frames = shnum > 0 ? single->ifile->get_num_frames(shnum) : 0;
+	simpleai.set(Animation_info::AniType::FA_LOOPING);
+	auto animinfo = single->aniinf;
+
+	if (ExultStudio::IsShapeAnimationEnabled()) {
+		switch (single->animating) {
+		case TA_type::Enabled:
+			if (!animinfo) {
+				animinfo = &simpleai;
+			}
+			break;
+
+		case TA_type::shapeinfo: {
+			// Get it from Shapeinfo
+			// set animating if the shape info wants it
+			if (shinfo) {
+				if (!animinfo && shinfo->is_animated()) {
+					animinfo = shinfo->get_animation_info();
+					if (!animinfo) {
+						animinfo = &simpleai;
+					}
+				}
+			}
+			break;
+
+		case TA_type::widget: {
+			if (!studio->get_toggle("shinfo_animated_check")) {
+				animinfo = nullptr;
+			}
+		} break;
+		}
+
+		default:
+			animinfo = nullptr;
+			;
+			break;
+		}
+
+		if (animinfo) {
+			// makesure animation is emabled if needed
+			if (single->IsAnimatingStopped()) {
+				single->PauseAnimating(0);
+			} else {
+				frnum = single->GetAnimInfoFrame(animinfo, frnum, num_frames, true);
+			}
+		}
+	}
+
 	// make sure there is enough space for bbox if needed
 	int x, y;
-	single->draw_shape_centered(shnum, frnum, x, y);
+	single->draw_shape_centered(shnum, frnum, x, y, trans);
 	single->show(ZoomDown(area.x), ZoomDown(area.y), ZoomDown(area.width), ZoomDown(area.height));
 	single->set_graphic_context(nullptr);
 	return true;
@@ -549,13 +820,13 @@ void Shape_single::on_shape_dropped(int filenum, int shapenum, int framenum, gpo
 
 Shape_gump_single::Shape_gump_single(
 		GtkWidget* shp, GtkWidget* shpnm, bool (*shvalid)(int), GtkWidget* frm, int vgnum, Vga_file* vg,
-		const unsigned char* palbuf, GtkWidget* drw, bool hdd)
-		: Shape_single(shp, shpnm, shvalid, frm, vgnum, vg, palbuf, drw, hdd), container_x_widget(nullptr), container_x_connect(0),
-		  container_y_widget(nullptr), container_y_connect(0), container_w_widget(nullptr), container_w_connect(0),
-		  container_h_widget(nullptr), container_h_connect(0), show_container_widget(nullptr), show_container_connect(0),
-		  show_container_altered(0), checkmark_x_widget(nullptr), checkmark_x_connect(0), checkmark_y_widget(nullptr),
-		  checkmark_y_connect(0), checkmark_shape_widget(nullptr), checkmark_shape_connect(0), show_checkmark_widget(nullptr),
-		  show_checkmark_connect(0), show_checkmark_altered(0) {
+		const unsigned char* palbuf, GtkWidget* drw, bool hdd, TA_type translucent)
+		: Shape_single(shp, shpnm, shvalid, frm, vgnum, vg, palbuf, drw, hdd, translucent), container_x_widget(nullptr),
+		  container_x_connect(0), container_y_widget(nullptr), container_y_connect(0), container_w_widget(nullptr),
+		  container_w_connect(0), container_h_widget(nullptr), container_h_connect(0), show_container_widget(nullptr),
+		  show_container_connect(0), show_container_altered(0), checkmark_x_widget(nullptr), checkmark_x_connect(0),
+		  checkmark_y_widget(nullptr), checkmark_y_connect(0), checkmark_shape_widget(nullptr), checkmark_shape_connect(0),
+		  show_checkmark_widget(nullptr), show_checkmark_connect(0), show_checkmark_altered(0) {
 	if (draw_connect && g_signal_handler_is_connected(G_OBJECT(draw), draw_connect)) {
 		g_signal_handler_disconnect(G_OBJECT(draw), draw_connect);
 		draw_connect = 0;
@@ -593,6 +864,22 @@ Shape_gump_single::Shape_gump_single(
 			= g_signal_connect(G_OBJECT(show_checkmark_widget), "toggled", G_CALLBACK(Shape_gump_single::on_widget_changed), this);
 	show_checkmark_altered = g_signal_connect(
 			G_OBJECT(show_checkmark_widget), "state-flags-changed", G_CALLBACK(Shape_gump_single::on_widget_state), this);
+}
+
+Shape_single::WidgetChangedConnect::WidgetChangedConnect(
+		const char* name, const char* signal, void (*on_widget_changed)(GtkWidget* widget, gpointer user_data),
+		gpointer user_data) {
+	widget = ExultStudio::get_instance()->get_widget(name);
+	if (widget) {
+		connect = g_signal_connect(G_OBJECT(widget), signal, G_CALLBACK(on_widget_changed), user_data);
+	}
+}
+
+Shape_single::WidgetChangedConnect::~WidgetChangedConnect() {
+	if (connect && g_signal_handler_is_connected(G_OBJECT(widget), connect)) {
+		g_signal_handler_disconnect(G_OBJECT(widget), connect);
+		connect = 0;
+	}
 }
 
 Shape_gump_single::~Shape_gump_single() {
@@ -645,6 +932,7 @@ Shape_gump_single::~Shape_gump_single() {
 void Shape_gump_single::on_widget_changed(GtkWidget* widget, gpointer user_data) {
 	ignore_unused_variable_warning(widget);
 	auto* single = static_cast<Shape_gump_single*>(user_data);
+
 	gtk_widget_queue_draw(single->draw);
 }
 
@@ -688,7 +976,7 @@ gboolean Shape_gump_single::on_draw_expose_event(GtkWidget* widget, cairo_t* cai
 		shnum = -1;
 	}
 	int x, y;
-	single->draw_shape_centered(shnum, frnum, x, y);
+	single->draw_shape_centered(shnum, frnum, x, y, single->translucent == Shape_single::TA_type::Enabled);
 	if (shnum >= 0 && gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(single->show_checkmark_widget))
 		&& gtk_widget_is_sensitive(GTK_WIDGET(single->show_checkmark_widget))) {
 		const int checkmark_shnum = extract_value(single->checkmark_shape_widget);
@@ -701,7 +989,7 @@ gboolean Shape_gump_single::on_draw_expose_event(GtkWidget* widget, cairo_t* cai
 					   extract_value(single->checkmark_y_widget) + shape->get_height() - 1 - shape->get_ybelow()
 							   - check->get_height() + 1 + check->get_ybelow(),
 					   check->get_width(), check->get_height()};
-			single->draw_shape(check, x + overlay.x, y + overlay.y);
+			single->draw_shape(check, x + overlay.x, y + overlay, single->translucent == Shape_single::TA_type::Enabled);
 		}
 	}
 	single->show(ZoomDown(area.x), ZoomDown(area.y), ZoomDown(area.width), ZoomDown(area.height));
@@ -743,46 +1031,42 @@ gboolean Shape_gump_single::on_draw_expose_event(GtkWidget* widget, cairo_t* cai
 Shape_shape_single::Shape_shape_single(
 		GtkWidget* shp, GtkWidget* shpnm, bool (*shvalid)(int), GtkWidget* frm, int vgnum, Vga_file* vg,
 		const unsigned char* palbuf, GtkWidget* drw, bool hdd)
-		: Shape_single(shp, shpnm, shvalid, frm, vgnum, vg, palbuf, drw, hdd), shape_3d_x_widget(nullptr), shape_3d_x_connect(0),
-		  shape_3d_y_widget(nullptr), shape_3d_y_connect(0), shape_3d_z_widget(nullptr), shape_3d_z_connect(0),
-		  show_shape_3d_widget(nullptr), show_shape_3d_connect(0) {
-	auto* studio         = ExultStudio::get_instance();
-	shape_3d_x_widget    = studio->get_widget("shinfo_xtiles");
-	shape_3d_y_widget    = studio->get_widget("shinfo_ytiles");
-	shape_3d_z_widget    = studio->get_widget("shinfo_ztiles");
-	show_shape_3d_widget = studio->get_widget("shinfo_tiles_preview");
-	shape_3d_x_connect
-			= g_signal_connect(G_OBJECT(shape_3d_x_widget), "changed", G_CALLBACK(Shape_shape_single::on_widget_changed), this);
-	shape_3d_y_connect
-			= g_signal_connect(G_OBJECT(shape_3d_y_widget), "changed", G_CALLBACK(Shape_shape_single::on_widget_changed), this);
-	shape_3d_z_connect
-			= g_signal_connect(G_OBJECT(shape_3d_z_widget), "changed", G_CALLBACK(Shape_shape_single::on_widget_changed), this);
-	show_shape_3d_connect
-			= g_signal_connect(G_OBJECT(show_shape_3d_widget), "toggled", G_CALLBACK(Shape_shape_single::on_widget_changed), this);
+		: Shape_single(
+				  shp, shpnm, shvalid, frm, vgnum, vg, palbuf, drw, hdd, Shape_single::TA_type::Disabled,
+				  Shape_single::TA_type::Disabled) {
+	setup_aniinf();
 }
 
-Shape_shape_single::~Shape_shape_single() {
-	if (shape_3d_x_connect && g_signal_handler_is_connected(G_OBJECT(shape_3d_x_widget), shape_3d_x_connect)) {
-		g_signal_handler_disconnect(G_OBJECT(shape_3d_x_widget), shape_3d_x_connect);
-		shape_3d_x_connect = 0;
-	}
-	if (shape_3d_y_connect && g_signal_handler_is_connected(G_OBJECT(shape_3d_y_widget), shape_3d_y_connect)) {
-		g_signal_handler_disconnect(G_OBJECT(shape_3d_y_widget), shape_3d_y_connect);
-		shape_3d_y_connect = 0;
-	}
-	if (shape_3d_z_connect && g_signal_handler_is_connected(G_OBJECT(shape_3d_z_widget), shape_3d_z_connect)) {
-		g_signal_handler_disconnect(G_OBJECT(shape_3d_z_widget), shape_3d_z_connect);
-		shape_3d_z_connect = 0;
-	}
-	if (show_shape_3d_connect && g_signal_handler_is_connected(G_OBJECT(show_shape_3d_widget), show_shape_3d_connect)) {
-		g_signal_handler_disconnect(G_OBJECT(show_shape_3d_widget), show_shape_3d_connect);
-		show_shape_3d_connect = 0;
-	}
-}
+Shape_shape_single::~Shape_shape_single() {}
 
 void Shape_shape_single::on_widget_changed(GtkWidget* widget, gpointer user_data) {
 	ignore_unused_variable_warning(widget);
 	auto* single = static_cast<Shape_shape_single*>(user_data);
+
+	if (widget && widget == single->shape_animated.widget) {
+		if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(single->shape_animated.widget))) {
+			single->animating = Shape_single::TA_type::Enabled;
+			single->PauseAnimating(0);
+		} else {
+			single->animating = Shape_single::TA_type::Disabled;
+			single->PauseAnimating();
+		}
+	} else {
+		// if any other widget changed pause animating
+		if (!single->IsAnimatingStopped()) {
+			single->PauseAnimating(CHANGE_ANIM_PAUSE_FRAMES);
+		}
+	}
+
+	if (widget && widget == single->shape_trans.widget) {
+		if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(single->shape_trans.widget))) {
+			single->translucent = Shape_single::TA_type::Enabled;
+		} else {
+			single->translucent = Shape_single::TA_type::Disabled;
+		}
+	}
+	single->setup_aniinf();
+
 	gtk_widget_queue_draw(single->draw);
 }
 
@@ -792,16 +1076,66 @@ void Shape_shape_single::on_widget_state(GtkWidget* widget, GtkStateFlags flags,
 	gtk_widget_queue_draw(single->draw);
 }
 
-void Shape_shape_single::draw_shape(Shape_frame* shape, int x, int y) {
-	if (!gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(show_shape_3d_widget))) {
+void Shape_shape_single::setup_aniinf() {
+	if (!gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(shape_animated.widget)) || !ExultStudio::IsShapeAnimationEnabled()) {
+		animating = Shape_single::TA_type::Disabled;
+		PauseAnimating();
+		aniinf = nullptr;
+	} else {
+		animating = Shape_single::TA_type::Enabled;
+		PauseAnimating(CHANGE_ANIM_PAUSE_FRAMES);
+		if (!up_aniinf) {
+			up_aniinf = std::make_unique<Animation_info>();
+		}
+		aniinf = up_aniinf.get();
+		if (!gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(shinfo_animation_check.widget))) {
+			// shinfo_animation_check isn't checked, the widget values are in an unspecified state
+			// and should not be used. use a generic looping aniinf
+			up_aniinf->set(Animation_info::FA_LOOPING);
+			return;
+		}
+
+		auto type = static_cast<Animation_info::AniType>(gtk_combo_box_get_active(GTK_COMBO_BOX(shinfo_animation_type.widget)));
+		up_aniinf->set_type(type);
+		const int count   = gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(shinfo_animation_frcount.widget));
+		int       shnum   = extract_value(shape);
+		const int nframes = (shnum > 0 && (!shapevalid || shapevalid(shnum))) ? ifile->get_num_frames(shnum) : 1;
+		if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(shinfo_animation_frtype.widget)) || count == nframes) {
+			up_aniinf->set_frame_count(-1);
+		} else {
+			up_aniinf->set_frame_count(count);
+		}
+		if (type != Animation_info::FA_NON_LOOPING) {
+			up_aniinf->set_frame_delay(gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(shinfo_animation_ticks.widget)));
+			if (type == Animation_info::FA_LOOPING) {
+				const int menu   = gtk_combo_box_get_active(GTK_COMBO_BOX(shinfo_animation_freezefirst.widget));
+				const int chance = menu == 0 ? 100
+											 : (menu == 1 ? 0
+														  : gtk_spin_button_get_value_as_int(
+																	GTK_SPIN_BUTTON(shinfo_animation_freezechance.widget)));
+				up_aniinf->set_freeze_first_chance(chance);
+				int rec;
+				if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(shinfo_animation_rectype.widget))) {
+					rec = nframes;
+				} else {
+					rec = gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(shinfo_animation_recycle.widget));
+				}
+				up_aniinf->set_recycle(rec == nframes ? 0 : rec);
+			}
+		}
+	}
+}
+
+void Shape_shape_single::draw_shape(Shape_frame* shape, int x, int y, bool trans) {
+	if (!gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(show_shape_3d.widget))) {
 		// draw shape
-		Shape_draw::draw_shape(shape, x, y);
+		Shape_draw::draw_shape(shape, x, y, trans);
 		return;
 	}
 
-	int bbox_x = extract_value(shape_3d_x_widget);
-	int bbox_y = extract_value(shape_3d_y_widget);
-	int bbox_z = extract_value(shape_3d_z_widget);
+	int bbox_x = extract_value(shape_3d_x.widget);
+	int bbox_y = extract_value(shape_3d_y.widget);
+	int bbox_z = extract_value(shape_3d_z.widget);
 	int minx   = bbox_x * c_tilesize + bbox_z * c_tilesize / 2 + 1 - shape->get_xleft();
 	int miny   = bbox_y * c_tilesize + bbox_z * c_tilesize / 2 + 1 - shape->get_yabove();
 
@@ -828,7 +1162,7 @@ void Shape_shape_single::draw_shape(Shape_frame* shape, int x, int y) {
 	// If all bbox are zero, no bbox to draw
 	if (!bbox_x && !bbox_y && !bbox_z) {
 		// draw shape
-		Shape_draw::draw_shape(shape, x, y);
+		Shape_draw::draw_shape(shape, x, y, trans);
 		return;
 	}
 
@@ -840,7 +1174,7 @@ void Shape_shape_single::draw_shape(Shape_frame* shape, int x, int y) {
 	info.paint_bbox(x + shape->get_xleft(), y + shape->get_yabove(), 0, iwin, outline_color, 2);
 
 	//  draw shape
-	Shape_draw::draw_shape(shape, x, y);
+	Shape_draw::draw_shape(shape, x, y, trans);
 
 	// finally draw front lines
 	info.paint_bbox(x + shape->get_xleft(), y + shape->get_yabove(), 0, iwin, outline_color, 1);
@@ -850,7 +1184,7 @@ void Shape_shape_single::draw_shape(Shape_frame* shape, int x, int y) {
  *  Build an Image out of a Shape
  */
 
-GdkPixbuf* ExultStudio::shape_image(Vga_file* shpfile, int shnum, int frnum, bool transparent) {
+GdkPixbuf* ExultStudio::shape_image(Vga_file* shpfile, int shnum, int frnum, bool transparent, bool translucent) {
 	if (shnum < 0) {
 		return nullptr;
 	}
@@ -872,7 +1206,11 @@ GdkPixbuf* ExultStudio::shape_image(Vga_file* shpfile, int shnum, int frnum, boo
 	Image_buffer8 tbuf(w, h);    // Create buffer to render to.
 	tbuf.fill8(0xff);            // Fill with 'transparent' pixel.
 	unsigned char* tbits = tbuf.get_bits();
-	shape->paint(&tbuf, w - 1 - xright, h - 1 - ybelow);
+	if (!translucent || !shape->is_rle()) {
+		shape->paint(&tbuf, w - 1 - xright, h - 1 - ybelow);
+	} else {
+		shape->paint_rle_translucent(&tbuf, w - 1 - xright, h - 1 - ybelow, xforms.data(), xforms.size());
+	}
 	// Put shape on a pixmap.
 	GdkPixbuf* pixbuf  = gdk_pixbuf_new(GDK_COLORSPACE_RGB, transparent, 8, w, h);
 	guchar*    pixels  = gdk_pixbuf_get_pixels(pixbuf);
@@ -899,7 +1237,7 @@ GdkPixbuf* ExultStudio::shape_image(Vga_file* shpfile, int shnum, int frnum, boo
 		// Using GdkPixbuf scaling :
 		const bool zoom_bilinear = ExultStudio::get_instance()->get_shape_bilinear();
 		GdkPixbuf* zoom_pixbuf   = gdk_pixbuf_scale_simple(
-				pixbuf, (w * zoom_scale) / 2, (h * zoom_scale) / 2, (zoom_bilinear ? GDK_INTERP_BILINEAR : GDK_INTERP_NEAREST));
+                pixbuf, (w * zoom_scale) / 2, (h * zoom_scale) / 2, (zoom_bilinear ? GDK_INTERP_BILINEAR : GDK_INTERP_NEAREST));
 		g_object_unref(pixbuf);
 		pixbuf = zoom_pixbuf;
 	}

@@ -118,6 +118,18 @@ void Shape_manager::read_shape_info() {
 	shapes.init();
 	// Read in shape information.
 	shapes.read_info(Game::get_game_type(), Game::is_editing());
+
+	// Set no_bit5 reflection flag in typeinfo as needed
+	for (int i = 0; i < shapes.get_num_shapes(); ++i) {
+		if (shapes.has_info(i)) {
+			int nframes = shapes.get_num_frames(i);
+
+			if (nframes > 32) {
+				shapes.get_info(i).set_no_bit5_frame_reflection();
+			}
+		}
+	}
+	//
 	// Fixup Avatar shapes (1024-1035 in default SI).
 	const Shape_info& male   = shapes.get_info(Shapeinfo_lookup::GetMaleAvShape());
 	const Shape_info& female = shapes.get_info(Shapeinfo_lookup::GetFemaleAvShape());

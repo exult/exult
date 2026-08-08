@@ -245,7 +245,7 @@ bool Npc_preset_file::write() {
 		}
 		modified = false;
 		return true;
-	} catch (std::exception& e) {
+	} catch (std::exception&) {
 		return false;
 	}
 }
@@ -290,7 +290,7 @@ bool Npc_preset_file::read(const char* nm) {
 		}
 		modified = false;
 		return true;
-	} catch (std::exception& e) {
+	} catch (std::exception&) {
 		return false;
 	}
 }
@@ -333,7 +333,7 @@ void ExultStudio::setup_npc_presets_list() {
 		if (preset->has_value("face")) {
 			const int face_num = std::atoi(preset->get_value("face").c_str());
 			if (face_num >= 0 && facefile) {
-				GdkPixbuf* full_pixbuf = shape_image(facefile->get_ifile(), face_num, 0, true);
+				GdkPixbuf* full_pixbuf = shape_image(facefile->get_ifile(), face_num, 0, true, true);
 				if (full_pixbuf) {
 					const int width  = gdk_pixbuf_get_width(full_pixbuf);
 					const int height = gdk_pixbuf_get_height(full_pixbuf);
@@ -347,7 +347,7 @@ void ExultStudio::setup_npc_presets_list() {
 		if (preset->has_value("shape")) {
 			const int shape_num = std::atoi(preset->get_value("shape").c_str());
 			if (shape_num > 0 && vgafile) {
-				GdkPixbuf* full_pixbuf = shape_image(vgafile->get_ifile(), shape_num, 0, true);
+				GdkPixbuf* full_pixbuf = shape_image(vgafile->get_ifile(), shape_num, 0, true, true);
 				if (full_pixbuf) {
 					const int width  = gdk_pixbuf_get_width(full_pixbuf);
 					const int height = gdk_pixbuf_get_height(full_pixbuf);

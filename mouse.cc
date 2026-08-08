@@ -337,11 +337,6 @@ void Mouse::move(int& x, int& y) {
 		x = wx;
 		y = wy;
 	}
-#ifdef DEBUG
-	if (onscreen) {
-		std::cerr << "Trying to move mouse while onscreen!" << std::endl;
-	}
-#endif
 	// Shift to new position.
 	box.shift(x - mousex, y - mousey);
 	dirty  = dirty.add(box);    // Enlarge dirty area.

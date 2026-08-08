@@ -187,7 +187,7 @@ bool Shape_preset_file::write() {
 		}
 		modified = false;
 		return true;
-	} catch (std::exception& e) {
+	} catch (std::exception&) {
 		return false;
 	}
 }
@@ -232,7 +232,7 @@ bool Shape_preset_file::read(const char* nm) {
 		}
 		modified = false;
 		return true;
-	} catch (std::exception& e) {
+	} catch (std::exception&) {
 		return false;
 	}
 }
@@ -277,7 +277,10 @@ void ExultStudio::setup_presets_list() {
 
 			// Get shape preview image
 			if (vgafile && shape_num >= 0) {
-				GdkPixbuf* full_pixbuf = shape_image(vgafile->get_ifile(), shape_num, 0, true);
+				auto shapes = dynamic_cast<Shapes_vga_file*>(vgafile->get_ifile());
+
+				GdkPixbuf* full_pixbuf = shape_image(
+						vgafile->get_ifile(), shape_num, 0, true, shapes ? shapes->get_info(shape_num).has_translucency() : false);
 				if (full_pixbuf) {
 					// Scale to half size
 					const int width  = gdk_pixbuf_get_width(full_pixbuf);

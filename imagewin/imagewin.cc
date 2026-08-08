@@ -72,7 +72,6 @@ using std::exit;
 
 #define SCALE_BIT(factor) (1 << ((factor) - 1))
 
-const Image_window::ScalerType  Image_window::NoScaler(-1);
 const Image_window::ScalerConst Image_window::point("Point");
 const Image_window::ScalerConst Image_window::interlaced("Interlaced");
 const Image_window::ScalerConst Image_window::bilinear("Bilinear");
@@ -768,9 +767,7 @@ bool Image_window::create_scale_surfaces(int w, int h, int bpp) {
 		cout << "Couldn't create display surface: " << SDL_GetError() << std::endl;
 	}
 	if (screen_texture == nullptr) {
-		screen_texture = SDL_CreateTexture(
-				screen_renderer, desktop_displaymode.format, SDL_TEXTUREACCESS_STREAMING,
-				(fill_scaler == SDLScaler ? inter_width : w), (fill_scaler == SDLScaler ? inter_height : h));
+		screen_texture = SDL_CreateTexture(screen_renderer, desktop_displaymode.format, SDL_TEXTUREACCESS_STREAMING, w, h);
 	}
 	if (screen_texture == nullptr) {
 		cout << "Couldn't create texture: " << SDL_GetError() << std::endl;
@@ -1107,12 +1104,12 @@ void Image_window::show(int x, int y, int w, int h) {
 			sw = inter_width;
 			sh = inter_height;
 		}
-		if (!Scalers[point].arb
-			|| !Scalers[point].arb->Scale(
+		if (!Scalers[fill_scaler].arb
+			|| !Scalers[fill_scaler].arb->Scale(
 					inter_surface, sx, sy, sw, sh, display_surface, 0, 0, display_surface->w, display_surface->h, false)) {
 			const SDL_Rect src = {sx, sy, sw, sh};
 			const SDL_Rect dst = {0, 0, display_surface->w, display_surface->h};
-			SDL_BlitSurfaceScaled(inter_surface, &src, display_surface, &dst, SDL_SCALEMODE_NEAREST);
+			SDL_BlitSurfaceScaled(inter_surface, &src, display_surface, &dst, SDL_SCALEMODE_LINEAR);
 		}
 	}
 

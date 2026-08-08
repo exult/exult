@@ -201,7 +201,8 @@ void ExultStudio::open_egg_window(
 					[](int shnum) -> bool {
 						return (shnum >= c_first_obj_shape) && (shnum < c_max_shapes);
 					},
-					get_widget("monst_frame"), U7_SHAPE_SHAPES, vgafile->get_ifile(), palbuf.get(), get_widget("egg_monster_draw"));
+					get_widget("monst_frame"), U7_SHAPE_SHAPES, vgafile->get_ifile(), palbuf.get(), get_widget("egg_monster_draw"),
+					false, Shape_single::TA_type::Enabled);
 			egg_missile_single = new Shape_single(
 					get_widget("missile_shape"), nullptr,
 					[](int shnum) -> bool {
