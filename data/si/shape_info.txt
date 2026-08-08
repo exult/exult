@@ -2166,7 +2166,7 @@
 #
 #	Format:
 #		:shapenum/frame/spill percentage
-#	No frame number  or value of -1 means all the frames.
+#	No frame number or value of -1 means all the frames.
 #	Spill percentage is the percentage of light escaping through the shape.
 
 # broken door
@@ -2477,6 +2477,7 @@
 :173
 :174
 :175
+:257
 :908
 :956
 :962
