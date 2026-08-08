@@ -1833,7 +1833,7 @@ void Game_window::build_light_layers() {
 						  const int roof_z   = NaturalLight::Light_room_roof_z(map, lr.ltx, lr.lty, lr.ltz, &ceiling);
 						  const int anchor_z = (lr.mask_roof || ceiling) ? roof_z : (lr.ltz / 5) * 5;
 						  if (lr.mask_roof) {
-							  light_top_storey = anchor_z / 5;
+							  light_top_storey = (anchor_z + 4) / 5;
 						  } else if (lr.is_spill) {
 							  light_top_storey = lr.ltz / 5;
 						  }
