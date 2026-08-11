@@ -177,16 +177,17 @@ namespace {
 		return deck_top;
 	}
 
-	// Is the given absolute tile a full-height wall?  Tested a few tiles above the
-	// floor so low furniture (tables, chairs, ...) is not mistaken for a wall.
-	bool Light_tile_wall(Game_map* gmap, int tx, int ty) {
+	// Is the given absolute tile a full-height wall on the storey with floor
+	// `floor_z`?  Tested a few tiles above that floor so low furniture (tables,
+	// chairs, ...) is not mistaken for a wall.
+	bool Light_tile_wall(Game_map* gmap, int tx, int ty, int floor_z = 0) {
 		tx                     = Light_tile_norm(tx);
 		ty                     = Light_tile_norm(ty);
 		Map_chunk* const chunk = gmap->get_chunk_safely(tx / c_tiles_per_chunk, ty / c_tiles_per_chunk);
 		if (chunk == nullptr) {
 			return false;
 		}
-		return chunk->is_tile_occupied(tx % c_tiles_per_chunk, ty % c_tiles_per_chunk, 3);
+		return chunk->is_tile_occupied(tx % c_tiles_per_chunk, ty % c_tiles_per_chunk, floor_z + 3);
 	}
 
 	// Does a light_passes_through shape cover the given absolute tile, making
@@ -566,13 +567,17 @@ namespace NaturalLight {
 		Game_window* const gwin = Game_window::get_instance();
 		Game_map* const    gmap = gwin ? gwin->get_map() : nullptr;
 		Tile_coord         base = src;
-		base.tz                 = 0;
+		// Keep the light's own STOREY floor (any storey, not just ground): an
+		// upstairs light's enclosure flood must run on its floor, not in the
+		// (possibly sealed) room below it.
+		const int floor_z = (src.tz / 5) * 5;
+		base.tz           = floor_z;
 		if (gmap == nullptr) {
 			interior = false;
 			return base;
 		}
 		const bool own_roofed = Light_tile_roofed(gmap, base.tx, base.ty);
-		const bool own_wall   = Light_tile_wall(gmap, base.tx, base.ty);
+		const bool own_wall   = Light_tile_wall(gmap, base.tx, base.ty, floor_z);
 		if (own_roofed && !own_wall) {
 			interior = true;
 			return base;
@@ -592,9 +597,9 @@ namespace NaturalLight {
 		for (const auto& d : nbrs) {
 			const int nx = base.tx + d[0];
 			const int ny = base.ty + d[1];
-			if (Light_tile_roofed(gmap, nx, ny) && !Light_tile_wall(gmap, nx, ny)) {
+			if (Light_tile_roofed(gmap, nx, ny) && !Light_tile_wall(gmap, nx, ny, floor_z)) {
 				interior = true;
-				return Tile_coord(Light_tile_norm(nx), Light_tile_norm(ny), 0);
+				return Tile_coord(Light_tile_norm(nx), Light_tile_norm(ny), floor_z);
 			}
 		}
 		// No roofed interior neighbour: a genuine exterior source.
@@ -1429,7 +1434,11 @@ namespace NaturalLight {
 				}
 				emitted.emplace_back(ox, oy);
 				// A doorway / roof-edge exit is open air: full transmission.
-				emit_spill(Tile_coord(Light_tile_norm(lt.tx + ox - rt), Light_tile_norm(lt.ty + oy - rt), 0), 100, lt.tz / 5);
+				// Anchor the bubble at the source room's own storey floor: an
+				// upstairs door exits onto a walkway/deck at that level, and a
+				// ground-anchored bubble would flood the wrong (ground) room
+				// and slide its lattice off the deck.
+				emit_spill(Tile_coord(Light_tile_norm(lt.tx + ox - rt), Light_tile_norm(lt.ty + oy - rt), floor_z), 100, lt.tz / 5);
 			}
 			// Ceiling-well spills (stairwell / ladder openings): the light
 			// climbs through the hole in its own ceiling and pools on the
@@ -1908,15 +1917,24 @@ namespace NaturalLight {
 		// hard edges read as artifacts on the storey below).
 		(void)light_floor_storey;
 		(void)anchor_z;
-		// The free dome is bounded by `radius` around the splat centre; the
+		// ELEVATED spills only (walkway/deck bubbles): the source sits `bias`
+		// px behind the opening, so their wall glow falls off Euclidean
+		// (sqrt(d^2 + bias^2)) with the lateral reach capped at 1.5x radius
+		// and the dome normalized to hit 0 exactly there.  All other lights
+		// keep the classic linear continuation (d + bias) with reach =
+		// radius -- the long-standing ground-building rendering.
+		const bool  euclid_spill = is_spill && light_top_storey >= 1 && bias > 0.0f;
+		const float lat_rr       = rf * rf + 2.0f * rf * bias;
+		const int   reach = euclid_spill ? std::min(static_cast<int>(std::ceil(std::sqrt(lat_rr))), (3 * radius) / 2) : radius;
+		// The free dome is bounded by `reach` around the splat centre; the
 		// propagated field by `radius` around the GRID centre (cells beyond it
 		// go dark in the per-tile dome) plus a tile of bilinear support.  The
 		// two centres differ (elevation shift vs. anchor level), so the bbox
 		// must cover both or the field gets cut off on one side.
-		int x0 = sx - radius;
-		int x1 = sx + radius;
-		int y0 = sy - radius;
-		int y1 = sy + radius;
+		int x0 = sx - reach;
+		int x1 = sx + reach;
+		int y0 = sy - reach;
+		int y1 = sy + reach;
 		if (grid != nullptr) {
 			x0 = std::min(x0, grid_fx - radius - c_tilesize);
 			x1 = std::max(x1, grid_fx + radius + c_tilesize);
@@ -1946,9 +1964,9 @@ namespace NaturalLight {
 			}
 		}
 		// Hot-loop constants for the free-dome path.
-		const float inv_rf2 = 1.0f / rf2;
 		const float amp     = 255.0f * inten;
-		const float rr      = rf * rf;
+		const float rr      = static_cast<float>(reach) * static_cast<float>(reach);
+		const float dome_dn = rr + bias * bias + e2;
 		for (int y = y0; y <= y1; ++y) {
 			const int            dy      = y - sy;
 			const float          dy2     = static_cast<float>(dy) * static_cast<float>(dy);
@@ -2003,7 +2021,12 @@ namespace NaturalLight {
 						// Only plain 128 marks -- standing deck objects,
 						// canopies, whose sprites span far more screen than
 						// their tiles -- take the whole-unit free-dome bypass.
-						if (roofrow[x] < 129) {
+						// An ELEVATED spill (a walkway/deck bubble) also domes
+						// its storey marks whole: wall faces render 4px per z
+						// up-screen of their feet, so their pixels land on
+						// unfilled field cells behind the wall and read 0 --
+						// a patchy, uneven glow on the outside walls.
+						if (roofrow[x] < 129 || light_top_storey >= 1) {
 							bypass_field = true;
 						} else {
 							bypass_field = false;
@@ -2039,15 +2062,20 @@ namespace NaturalLight {
 					const int   dx    = x - sx;
 					const float dist2 = static_cast<float>(dx) * static_cast<float>(dx) + dy2;
 					if (dist2 > rr) {
-						continue;    // Outside the pool's ground radius.
+						continue;    // Outside the pool's ground reach.
 					}
-					float total2 = dist2;
-					if (bias > 0.0f) {
-						const float tot = std::sqrt(dist2) + bias;
-						total2          = tot * tot;
+					float dome;
+					if (euclid_spill) {
+						dome = 1.0f - (dist2 + bias * bias + e2) / dome_dn;
+					} else {
+						float total2 = dist2;
+						if (bias > 0.0f) {
+							const float tot = std::sqrt(dist2) + bias;
+							total2          = tot * tot;
+						}
+						dome = 1.0f - (total2 + e2) / rf2;
 					}
-					const float dome = 1.0f - (total2 + e2) * inv_rf2;
-					a                = static_cast<int>(amp * dome + 0.5f);
+					a = static_cast<int>(amp * dome + 0.5f);
 				}
 				if (a <= 0) {
 					continue;

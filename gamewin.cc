@@ -1800,91 +1800,107 @@ void Game_window::build_light_layers() {
 		// uses: the free dome around the centre plus the field's lattice
 		// around the room anchor).  An optional clip window restricts the
 		// pixels written (scroll-vacated strip patching).
-		auto do_splat
-				= [&](const Light_render_info& lr, unsigned char* covp, int cx0 = 0, int cy0 = 0, int cx1 = -1, int cy1 = -1) {
-					  // Masking policy: see the `inside` comment above; the per-pixel
-					  // roof / tall / storey semantics live in Splat_radial_light.
-					  const bool mask_roof = roofpix && lr.mask_roof;
-					  // The dome (intensity + falloff) emits from the flame up on the
-					  // sprite, not the tile foot get_shape_location returns, so raise
-					  // only its centre up-and-left by the sprite's height (plus the
-					  // foot-corner residual).  A SPILL's centre stays at the opening's
-					  // outside tile -- its elevation only shapes the continued falloff
-					  // -- so it is not shifted.
-					  const int foot_bias = c_tilesize / 4;
-					  const int emit      = (lr.is_spill ? 0 : lr.elevation) + foot_bias;
-					  const int csx       = lr.sx - emit;
-					  const int csy       = lr.sy - emit;
-					  // Gated lights render as a propagated field from the room-fill
-					  // grid (see Splat_radial_light).  The screen reference pinning
-					  // the grid is the foot position of the light's own tile at the
-					  // TOP of the room's walls (walls render 4px per z up-left of
-					  // their tile) -- a fixed property of the room, so the field
-					  // stays pinned to the walls as the source moves.
-					  const unsigned char* grid    = nullptr;
-					  int                  grid_rt = 0;
-					  int                  grid_fx = 0;
-					  int                  grid_fy = 0;
-					  // Veto lights: the storey their room roof reaches; spills: the
-					  // bubble's render storey (gating rules in Splat_radial_light).
-					  int light_top_storey = 0;
-					  // The field's lattice anchor level (locates the shaft band of
-					  // an elevated light's floor holes in Splat_radial_light).
-					  int field_anchor_z = 0;
-					  // A light whose room is not part of this render must not
-					  // splat: a veto light on a cut-away storey (viewer below
-					  // it) would paint only its shaft band onto the room below;
-					  // a roofed spill whose ceiling IS drawn (viewer above its
-					  // storey) is hidden and would paint only its z-shifted
-					  // wall-ring seam over the slab sides / exterior ground.
-					  bool hidden_room = lr.mask_roof && lr.ltz >= skip_above_actor;
-					  if ((inside || lr.mask_roof || lr.is_spill) && !lr.lit.empty()) {
-						  grid    = lr.lit.data();
-						  grid_rt = lr.rt;
-						  // Anchor at the wall top whenever the light has a real
-						  // ceiling (a dungeon's rock ceiling counts even though
-						  // mask_roof is false).  Only a light with none -- an exterior
-						  // lamp gated while the Avatar is inside, a spill on open
-						  // ground -- anchors at its own storey floor: the floor+5
-						  // fallback would slide its field 4px per z up-left off it.
-						  bool      ceiling  = false;
-						  const int roof_z   = NaturalLight::Light_room_roof_z(map, lr.ltx, lr.lty, lr.ltz, &ceiling);
-						  const int anchor_z = (lr.mask_roof || ceiling) ? roof_z : (lr.ltz / 5) * 5;
-						  field_anchor_z     = anchor_z;
-						  if (lr.is_spill && ceiling && roof_z < skip_above_actor) {
-							  hidden_room = true;
-						  }
-						  if (lr.mask_roof) {
-							  light_top_storey = (anchor_z + 4) / 5;
-						  } else if (lr.is_spill) {
-							  light_top_storey = lr.ltz / 5;
-						  }
-						  const int wtx = ((lr.ltx % c_num_tiles) + c_num_tiles) % c_num_tiles;
-						  const int wty = ((lr.lty % c_num_tiles) + c_num_tiles) % c_num_tiles;
-						  get_shape_location(Tile_coord(wtx, wty, anchor_z), grid_fx, grid_fy);
-						  // Empirically the wall-top anchor lands 1px up-left of the
-						  // visible interior; nudge the reference back.
-						  grid_fx += 1;
-						  grid_fy += 1;
-					  }
-					  if (!hidden_room) {
-						  NaturalLight::Splat_radial_light(
-								  covp, dstpix, srcpix, W, H, dst_lw, src_lw, csx, csy, lr.radius, lr.elevation, lr.dist_bias,
-								  lr.spill_percent, roofpix, roof_lw, mask_roof, lr.is_spill, lr.spill_floor, light_top_storey,
-								  lr.ltz / 5, field_anchor_z, grid, grid_rt, grid_fx, grid_fy, cx0, cy0, cx1, cy1);
-					  }
-					  int bx0 = csx - lr.radius;
-					  int bx1 = csx + lr.radius;
-					  int by0 = csy - lr.radius;
-					  int by1 = csy + lr.radius;
-					  if (grid != nullptr) {
-						  bx0 = std::min(bx0, grid_fx - lr.radius - c_tilesize);
-						  bx1 = std::max(bx1, grid_fx + lr.radius + c_tilesize);
-						  by0 = std::min(by0, grid_fy - lr.radius - c_tilesize);
-						  by1 = std::max(by1, grid_fy + lr.radius + c_tilesize);
-					  }
-					  return TileRect(bx0, by0, bx1 - bx0 + 1, by1 - by0 + 1);
-				  };
+		auto do_splat = [&](const Light_render_info& lr, unsigned char* covp, int cx0 = 0, int cy0 = 0, int cx1 = -1,
+							int cy1 = -1) {
+			// Masking policy: see the `inside` comment above; the per-pixel
+			// roof / tall / storey semantics live in Splat_radial_light.
+			const bool mask_roof = roofpix && lr.mask_roof;
+			// The dome (intensity + falloff) emits from the flame up on the
+			// sprite, not the tile foot get_shape_location returns, so raise
+			// only its centre up-and-left by the sprite's height (plus the
+			// foot-corner residual).  A SPILL's centre stays at the opening's
+			// outside tile -- its elevation only shapes the continued falloff
+			// -- so it is not shifted.
+			const int foot_bias = c_tilesize / 4;
+			const int emit      = (lr.is_spill ? 0 : lr.elevation) + foot_bias;
+			const int csx       = lr.sx - emit;
+			const int csy       = lr.sy - emit;
+			// Gated lights render as a propagated field from the room-fill
+			// grid (see Splat_radial_light).  The screen reference pinning
+			// the grid is the foot position of the light's own tile at the
+			// TOP of the room's walls (walls render 4px per z up-left of
+			// their tile) -- a fixed property of the room, so the field
+			// stays pinned to the walls as the source moves.
+			const unsigned char* grid    = nullptr;
+			int                  grid_rt = 0;
+			int                  grid_fx = 0;
+			int                  grid_fy = 0;
+			// Veto lights: the storey their room roof reaches; spills: the
+			// bubble's render storey (gating rules in Splat_radial_light).
+			int light_top_storey = 0;
+			// The field's lattice anchor level (locates the shaft band of
+			// an elevated light's floor holes in Splat_radial_light).
+			int field_anchor_z = 0;
+			// A light whose room is not part of this render must not
+			// splat: a veto light on a cut-away storey (viewer below
+			// it) would paint only its shaft band onto the room below;
+			// a roofed spill whose ceiling IS drawn (viewer above its
+			// storey) is hidden and would paint only its z-shifted
+			// wall-ring seam over the slab sides / exterior ground.
+			bool hidden_room = lr.mask_roof && lr.ltz >= skip_above_actor;
+			if ((inside || lr.mask_roof || lr.is_spill) && !lr.lit.empty()) {
+				grid    = lr.lit.data();
+				grid_rt = lr.rt;
+				// Anchor at the wall top whenever the light has a real
+				// ceiling (a dungeon's rock ceiling counts even though
+				// mask_roof is false).  Only a light with none -- an exterior
+				// lamp gated while the Avatar is inside, a spill on open
+				// ground -- anchors at its own storey floor: the floor+5
+				// fallback would slide its field 4px per z up-left off it.
+				bool      ceiling  = false;
+				const int roof_z   = NaturalLight::Light_room_roof_z(map, lr.ltx, lr.lty, lr.ltz, &ceiling);
+				const int anchor_z = (lr.mask_roof || ceiling) ? roof_z : (lr.ltz / 5) * 5;
+				field_anchor_z     = anchor_z;
+				if (lr.is_spill && ceiling && roof_z < skip_above_actor) {
+					hidden_room = true;
+				}
+				if (lr.mask_roof) {
+					// The roof's own storey: marks at or above it (the deck
+					// slab on the room's ceiling) stay dark from below, on
+					// any storey.  Viewer OUTSIDE: every visible mark is an
+					// exterior face (the interior is under the drawn roof);
+					// the z-blind interior field paints those patchily, and
+					// exterior faces are the spills' job -- keep all marks
+					// dark (0 fails every storey test).
+					light_top_storey = inside ? anchor_z / 5 : 0;
+				} else if (lr.is_spill) {
+					light_top_storey = lr.ltz / 5;
+				}
+				const int wtx = ((lr.ltx % c_num_tiles) + c_num_tiles) % c_num_tiles;
+				const int wty = ((lr.lty % c_num_tiles) + c_num_tiles) % c_num_tiles;
+				get_shape_location(Tile_coord(wtx, wty, anchor_z), grid_fx, grid_fy);
+				// Empirically the wall-top anchor lands 1px up-left of the
+				// visible interior; nudge the reference back.
+				grid_fx += 1;
+				grid_fy += 1;
+			}
+			if (!hidden_room) {
+				NaturalLight::Splat_radial_light(
+						covp, dstpix, srcpix, W, H, dst_lw, src_lw, csx, csy, lr.radius, lr.elevation, lr.dist_bias,
+						lr.spill_percent, roofpix, roof_lw, mask_roof, lr.is_spill, lr.spill_floor, light_top_storey, lr.ltz / 5,
+						field_anchor_z, grid, grid_rt, grid_fx, grid_fy, cx0, cy0, cx1, cy1);
+			}
+			// Match Splat_radial_light's reach: only an ELEVATED spill's
+			// dome extends sqrt(r^2 + 2*r*bias), capped at 1.5r.
+			const int reach
+					= (lr.is_spill && light_top_storey >= 1 && lr.dist_bias > 0)
+							  ? std::min(
+										static_cast<int>(std::ceil(std::sqrt(
+												static_cast<double>(lr.radius) * lr.radius + 2.0 * lr.radius * lr.dist_bias))),
+										(3 * lr.radius) / 2)
+							  : lr.radius;
+			int bx0 = csx - reach;
+			int bx1 = csx + reach;
+			int by0 = csy - reach;
+			int by1 = csy + reach;
+			if (grid != nullptr) {
+				bx0 = std::min(bx0, grid_fx - lr.radius - c_tilesize);
+				bx1 = std::max(bx1, grid_fx + lr.radius + c_tilesize);
+				by0 = std::min(by0, grid_fy - lr.radius - c_tilesize);
+				by1 = std::max(by1, grid_fy + lr.radius + c_tilesize);
+			}
+			return TileRect(bx0, by0, bx1 - bx0 + 1, by1 - by0 + 1);
+		};
 
 		// Derive both rect lists from the per-light unclamped bounds:
 		// unclamped + margin -> next frame's roof-mask clips; clamped ->
