@@ -176,6 +176,10 @@ class Game_window {
 	int      light_tier_anchor_y[3] = {0, 0, 0};
 	uint64_t light_tier_sig[3]      = {0, 0, 0};
 	uint64_t light_tier_stamp[3]    = {0, 0, 0};
+	// The tier's last rebuild sampled a roof mask stamped under the PREVIOUS
+	// frame's light rects (a light appeared/moved sets this): rebuild once
+	// more next frame with the then-complete mask.
+	bool light_tier_resample[3] = {false, false, false};
 	// Composite scratch: static coverage + this frame's moving lights.
 	std::vector<unsigned char> light_scratch_cov;
 	// Moving-light overlay cache: coverage of just the moving lights, keyed
@@ -194,6 +198,10 @@ class Game_window {
 	// Last frame's splat rectangles (grown by a margin): update_roof_mask
 	// only paints the mask where a sprite touches one of them.
 	std::vector<TileRect> light_mask_rects;
+	// A static light set changed this frame: schedule a full repaint AFTER
+	// paint_dirty's clear_dirty so the roof mask gets stamped under the new
+	// light rects next frame (see build_light_layers' full-rebuild path).
+	bool light_repaint_pending = false;
 	// Game state values:
 	int           skip_above_actor;      // Level above actor to skip rendering.
 	unsigned int  in_dungeon;            // true if inside a dungeon.

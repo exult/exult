@@ -128,7 +128,11 @@ namespace NaturalLight {
 	// transmission).  `roofpix` marks roofs (255) and tall / upper-storey
 	// surfaces (128 + storey): `veto_roof` keeps marked pixels dark under an
 	// interior light, while `is_spill` with `spill_floor` / `light_top_storey`
-	// gates what a spill or under-roof light may still reach (see the pixel
+	// gates what a spill or under-roof light may still reach, and
+	// `light_floor_storey` keeps an elevated interior light's z-blind field
+	// off the ground-level (clear) pixels below its solid floor -- except down
+	// its own floor holes (well cells flagged 0x80 in `grid`), whose shaft
+	// projection from `anchor_z` stays lit (see the pixel
 	// loop in the definition).  When `grid` is non-null it is the light's
 	// room-fill grid and the light renders as a propagated field pinned to the
 	// tile lattice at (`grid_fx`,`grid_fy`) instead of a free dome.  A non-empty
@@ -137,8 +141,9 @@ namespace NaturalLight {
 	void Splat_radial_light(
 			unsigned char* cov, unsigned char* dstpix, const unsigned char* srcpix, int W, int H, int dst_lw, int src_lw, int sx,
 			int sy, int radius, int elevation, int dist_bias, int intensity_pct, const unsigned char* roofpix, int roof_lw,
-			bool veto_roof, bool is_spill, int spill_floor, int light_top_storey, const unsigned char* grid, int grid_rt,
-			int grid_fx, int grid_fy, int clip_x0 = 0, int clip_y0 = 0, int clip_x1 = -1, int clip_y1 = -1);
+			bool veto_roof, bool is_spill, int spill_floor, int light_top_storey, int light_floor_storey, int anchor_z,
+			const unsigned char* grid, int grid_rt, int grid_fx, int grid_fy, int clip_x0 = 0, int clip_y0 = 0, int clip_x1 = -1,
+			int clip_y1 = -1);
 
 }    // namespace NaturalLight
 

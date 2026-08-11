@@ -1067,53 +1067,72 @@ namespace NaturalLight {
 		// anchors at its south-east corner with the footprint extending
 		// up-left, so scan one extra chunk row/col east and south of the grid.
 		std::vector<unsigned char> ceilcover;
-		auto                       ceil_open = [&](int gx, int gy) -> bool {
-            if (ceilcover.empty()) {
-                ceilcover.assign(static_cast<size_t>(side) * side, 0);
-                const int tx0 = Light_tile_norm(lt.tx - rt);
-                const int ty0 = Light_tile_norm(lt.ty - rt);
-                const int ncx = (tx0 % c_tiles_per_chunk + side - 1) / c_tiles_per_chunk + 1;
-                const int ncy = (ty0 % c_tiles_per_chunk + side - 1) / c_tiles_per_chunk + 1;
-                for (int icy = 0; icy <= ncy; ++icy) {
-                    for (int icx = 0; icx <= ncx; ++icx) {
-                        Map_chunk* const ch = gmap->get_chunk_safely(
-                                (tx0 / c_tiles_per_chunk + icx) % c_num_chunks, (ty0 / c_tiles_per_chunk + icy) % c_num_chunks);
-                        if (ch == nullptr) {
-                            continue;
-                        }
-                        Object_iterator it(ch->get_objects());
-                        Game_object*    obj;
-                        while ((obj = it.get_next()) != nullptr) {
-                            if (obj->as_actor() != nullptr || obj->is_dragable()) {
-                                continue;    // Bodies and loose items are not ceilings.
-                            }
-                            const Shape_info& info = obj->get_info();
-                            if (!info.is_solid() && !info.is_floor()) {
-                                continue;
-                            }
-                            const int ol = obj->get_lift();
-                            if (ol < roof_z || ol >= roof_z + 4) {
-                                continue;    // Not in the ceiling band.
-                            }
-                            const TileRect fp = obj->get_footprint();
-                            for (int fty = fp.y; fty < fp.y + fp.h; ++fty) {
-                                const int dgy = Light_tile_norm(fty - ty0);
-                                if (dgy >= side) {
-                                    continue;
-                                }
-                                for (int ftx = fp.x; ftx < fp.x + fp.w; ++ftx) {
-                                    const int dgx = Light_tile_norm(ftx - tx0);
-                                    if (dgx >= side) {
-                                        continue;
-                                    }
-                                    ceilcover[static_cast<size_t>(dgy) * side + dgx] = 1;
-                                }
-                            }
-                        }
-                    }
-                }
+		// One-pass cover-map builder shared by the ceiling and floor well
+		// tests: marks the grid tiles over/under which a solid or floor piece
+		// anchors with its lift in [band_lo, band_hi).
+		auto build_cover = [&](std::vector<unsigned char>& cover, int band_lo, int band_hi) {
+			cover.assign(static_cast<size_t>(side) * side, 0);
+			const int tx0 = Light_tile_norm(lt.tx - rt);
+			const int ty0 = Light_tile_norm(lt.ty - rt);
+			const int ncx = (tx0 % c_tiles_per_chunk + side - 1) / c_tiles_per_chunk + 1;
+			const int ncy = (ty0 % c_tiles_per_chunk + side - 1) / c_tiles_per_chunk + 1;
+			for (int icy = 0; icy <= ncy; ++icy) {
+				for (int icx = 0; icx <= ncx; ++icx) {
+					Map_chunk* const ch = gmap->get_chunk_safely(
+							(tx0 / c_tiles_per_chunk + icx) % c_num_chunks, (ty0 / c_tiles_per_chunk + icy) % c_num_chunks);
+					if (ch == nullptr) {
+						continue;
+					}
+					Object_iterator it(ch->get_objects());
+					Game_object*    obj;
+					while ((obj = it.get_next()) != nullptr) {
+						if (obj->as_actor() != nullptr || obj->is_dragable()) {
+							continue;    // Bodies and loose items are not cover.
+						}
+						const Shape_info& info = obj->get_info();
+						if (!info.is_solid() && !info.is_floor()) {
+							continue;
+						}
+						const int ol = obj->get_lift();
+						if (ol < band_lo || ol >= band_hi) {
+							continue;    // Not in the cover band.
+						}
+						const TileRect fp = obj->get_footprint();
+						for (int fty = fp.y; fty < fp.y + fp.h; ++fty) {
+							const int dgy = Light_tile_norm(fty - ty0);
+							if (dgy >= side) {
+								continue;
+							}
+							for (int ftx = fp.x; ftx < fp.x + fp.w; ++ftx) {
+								const int dgx = Light_tile_norm(ftx - tx0);
+								if (dgx >= side) {
+									continue;
+								}
+								cover[static_cast<size_t>(dgy) * side + dgx] = 1;
+							}
+						}
+					}
+				}
+			}
+		};
+		auto ceil_open = [&](int gx, int gy) -> bool {
+			if (ceilcover.empty()) {
+				build_cover(ceilcover, roof_z, roof_z + 4);
+			}
+			return ceilcover[static_cast<size_t>(gy) * side + gx] == 0;
+		};
+		// Floor-well spill candidates (an elevated room's stairwell / ladder
+		// hole DOWN to the storey below): reached tiles whose own floor band
+		// is missing beneath them.  Only elevated rooms qualify.
+		std::vector<std::pair<int, int>> down_cand;
+		std::vector<unsigned char>       floorcover;
+		auto                             floor_open = [&](int gx, int gy) -> bool {
+            if (floorcover.empty()) {
+                // -1: a slab whose top is flush with the storey floor
+                // anchors one z below it.
+                build_cover(floorcover, floor_z - 1, floor_z + 4);
             }
-            return ceilcover[static_cast<size_t>(gy) * side + gx] == 0;
+            return floorcover[static_cast<size_t>(gy) * side + gx] == 0;
 		};
 		// Memoized per-tile roof test for the doorway-spill detection: a spill
 		// is where the fill crosses from a roofed tile to an unroofed one.
@@ -1186,13 +1205,25 @@ namespace NaturalLight {
 			const int gx = queue[qhead].first;
 			const int gy = queue[qhead].second;
 			++qhead;
-			const int gdist = lit[static_cast<size_t>(gy) * side + gx] - 1;
+			const int gdist = (lit[static_cast<size_t>(gy) * side + gx] & 0x7f) - 1;
 			if (spills != nullptr && start_roofed && roofed(gx, gy) && ceil_open(gx, gy)) {
 				// The room's own ceiling is missing right above this interior
 				// tile while a higher storey still covers it: a stairwell /
 				// ladder well.  The light continues UP through it onto the
 				// storey above (emitted after the fill completes).
 				well_cand.emplace_back(gx, gy);
+			}
+			if (spills != nullptr && floor_z >= 5 && start_roofed && roofed(gx, gy) && floor_open(gx, gy)) {
+				// An elevated room's floor is missing under this reached tile
+				// (a stairwell down): the light continues DOWN onto the storey
+				// below (emitted after the fill completes).  The high bit marks
+				// the hole in the grid itself: the splat exempts the shaft's
+				// screen projection from the elevated-light clear-pixel veto,
+				// so the light keeps shining down its own well.  Roofed only:
+				// a fill escaping outdoors reaches open ground with no floor
+				// above it, which is not a well.
+				lit[static_cast<size_t>(gy) * side + gx] |= 0x80;
+				down_cand.emplace_back(gx, gy);
 			}
 			for (const auto& d : step) {
 				const int nx = gx + d[0];
@@ -1220,6 +1251,11 @@ namespace NaturalLight {
 					// the window/opening glow is unaffected.
 					if (light_walls) {
 						set_dist(nidx, gdist + 1);
+						if (spills == nullptr) {
+							// Spill-owned grid (no well flags): mark the wall so
+							// the splat's face re-probe only lands on wall cells.
+							lit[nidx] |= 0x80;
+						}
 					}
 					if (spills != nullptr) {
 						int       open_top = 0;
@@ -1287,6 +1323,9 @@ namespace NaturalLight {
 				if (tall(nx, ny)) {
 					if (light_walls) {
 						set_dist(nidx, gdist + 1);
+						if (spills == nullptr) {
+							lit[nidx] |= 0x80;
+						}
 					}
 					continue;
 				}
@@ -1305,7 +1344,33 @@ namespace NaturalLight {
 		// the room interior, and emitting it would spill the window's glow
 		// back INSIDE.  A tile the fill already lit needs no spill glow anyway.
 		if (spills != nullptr) {
+			std::vector<Tile_coord> emitted_all;
+			auto                    emit_spill = [&](const Tile_coord& t, int pct, int floor_storey) {
+                const int dedupe_r = std::max(2, floor_storey >= 1 ? 4 : 2);
+                for (const Tile_coord& e : emitted_all) {
+                    if (std::abs(t.tx - e.tx) <= dedupe_r && std::abs(t.ty - e.ty) <= dedupe_r && std::abs(t.tz - e.tz) <= 5) {
+                        return;
+                    }
+                }
+                emitted_all.push_back(t);
+                spills->push_back({t, pct, floor_storey});
+			};
+			// Like doorway/well spills below, nearby wall/window candidates can
+			// represent the same physical opening and would otherwise spawn
+			// overlapping continuation bubbles with near-identical falloff.
+			std::vector<std::pair<int, int>> spill_emitted;
 			for (const auto& [ox, oy, pct, open_top] : spill_cand) {
+				const int dedupe_r  = std::max(2, (lt.tz / 5) >= 1 ? 4 : 2);
+				bool      near_prev = false;
+				for (const auto& [ex, ey] : spill_emitted) {
+					if (std::abs(ox - ex) <= dedupe_r && std::abs(oy - ey) <= dedupe_r) {
+						near_prev = true;
+						break;
+					}
+				}
+				if (near_prev) {
+					continue;
+				}
 				// Emit only if the far-side tile is under OPEN SKY.  A window
 				// the fill touched from its OUTSIDE face (after escaping through
 				// a door and wrapping around the building) has the room interior
@@ -1340,7 +1405,8 @@ namespace NaturalLight {
 					sp_tz = (deck_top / 5) * 5;
 					floor = std::max(floor, deck_top / 5);
 				}
-				spills->push_back({Tile_coord(Light_tile_norm(fx), Light_tile_norm(fy), sp_tz), pct, floor});
+				spill_emitted.emplace_back(ox, oy);
+				emit_spill(Tile_coord(Light_tile_norm(fx), Light_tile_norm(fy), sp_tz), pct, floor);
 			}
 			// Doorway/roof-edge spills.  Neighbouring exit tiles along a wide
 			// opening would each spawn a near-identical continuation bubble
@@ -1350,9 +1416,10 @@ namespace NaturalLight {
 			// survivors still reproduce the source's dome seamlessly.
 			std::vector<std::pair<int, int>> emitted;
 			for (const auto& [ox, oy] : door_cand) {
-				bool near_prev = false;
+				const int door_dedupe_r = std::max(2, (lt.tz / 5) >= 1 ? 4 : 2);
+				bool      near_prev     = false;
 				for (const auto& [ex, ey] : emitted) {
-					if (std::abs(ox - ex) <= 2 && std::abs(oy - ey) <= 2) {
+					if (std::abs(ox - ex) <= door_dedupe_r && std::abs(oy - ey) <= door_dedupe_r) {
 						near_prev = true;
 						break;
 					}
@@ -1362,8 +1429,7 @@ namespace NaturalLight {
 				}
 				emitted.emplace_back(ox, oy);
 				// A doorway / roof-edge exit is open air: full transmission.
-				spills->push_back(
-						{Tile_coord(Light_tile_norm(lt.tx + ox - rt), Light_tile_norm(lt.ty + oy - rt), 0), 100, lt.tz / 5});
+				emit_spill(Tile_coord(Light_tile_norm(lt.tx + ox - rt), Light_tile_norm(lt.ty + oy - rt), 0), 100, lt.tz / 5);
 			}
 			// Ceiling-well spills (stairwell / ladder openings): the light
 			// climbs through the hole in its own ceiling and pools on the
@@ -1408,8 +1474,63 @@ namespace NaturalLight {
 					continue;
 				}
 				well_emitted.emplace_back(ox, oy);
-				spills->push_back(
-						{Tile_coord(Light_tile_norm(lt.tx + ox - rt), Light_tile_norm(lt.ty + oy - rt), roof_z), 100, roof_z / 5});
+				emit_spill(Tile_coord(Light_tile_norm(lt.tx + ox - rt), Light_tile_norm(lt.ty + oy - rt), roof_z), 100, roof_z / 5);
+			}
+			// Floor-well spills: the mirror of the ceiling wells above.  The
+			// bubble sits on the storey BELOW (its z / floor let it light the
+			// ground-level surfaces the elevated room's own gated splat must
+			// not touch).  NOT emitted at the hole tile itself: from there
+			// Light_room_roof_z looks straight up the well to the building's
+			// roof, giving the bubble's flood the wrong room (the lower walls
+			// no longer bound it) and sliding its field anchor 4px per z off.
+			// Emit at a LANDING neighbour instead -- one still carrying the
+			// elevated floor with open air beneath (the lower room's own
+			// headspace), where the lower ceiling is found right above.
+			// Thinned like the other candidates.
+			auto down_landing = [&](int gx, int gy, int& lx, int& ly) {
+				for (const auto& d : step) {
+					const int nx = gx + d[0];
+					const int ny = gy + d[1];
+					if (nx < 0 || ny < 0 || nx >= side || ny >= side || floor_open(nx, ny)) {
+						continue;    // Off-grid, or no floor over this neighbour either.
+					}
+					const int        ntx = Light_tile_norm(lt.tx + nx - rt);
+					const int        nty = Light_tile_norm(lt.ty + ny - rt);
+					Map_chunk* const nch = gmap->get_chunk_safely(ntx / c_tiles_per_chunk, nty / c_tiles_per_chunk);
+					if (nch != nullptr && floor_z >= 2
+						&& !nch->is_tile_occupied(ntx % c_tiles_per_chunk, nty % c_tiles_per_chunk, floor_z - 2)) {
+						lx = nx;
+						ly = ny;
+						return true;    // Floor above with air beneath: the room below.
+					}
+				}
+				return false;
+			};
+			// A/B: down-well continuation bubbles disabled -- the ground-level
+			// bubble escapes its room through doors and pools on exterior
+			// pavement (scene2b's circled artifact); the in-grid 0x80 shaft
+			// band already lets the elevated light shine down its own well.
+			constexpr bool emit_down_well_spills = false;
+			if (emit_down_well_spills) {
+				std::vector<std::pair<int, int>> down_emitted;
+				for (const auto& [ox, oy] : down_cand) {
+					bool near_prev = false;
+					for (const auto& [ex, ey] : down_emitted) {
+						if (std::abs(ox - ex) <= 2 && std::abs(oy - ey) <= 2) {
+							near_prev = true;
+							break;
+						}
+					}
+					int lx = 0;
+					int ly = 0;
+					if (near_prev || !down_landing(ox, oy, lx, ly)) {
+						continue;
+					}
+					down_emitted.emplace_back(ox, oy);
+					emit_spill(
+							Tile_coord(Light_tile_norm(lt.tx + lx - rt), Light_tile_norm(lt.ty + ly - rt), floor_z - 5), 100,
+							(floor_z - 5) / 5);
+				}
 			}
 		}
 	}
@@ -1618,8 +1739,8 @@ namespace NaturalLight {
 	void Splat_radial_light(
 			unsigned char* cov, unsigned char* dstpix, const unsigned char* srcpix, int W, int H, int dst_lw, int src_lw, int sx,
 			int sy, int radius, int elevation, int dist_bias, int intensity_pct, const unsigned char* roofpix, int roof_lw,
-			bool veto_roof, bool is_spill, int spill_floor, int light_top_storey, const unsigned char* grid, int grid_rt,
-			int grid_fx, int grid_fy, int clip_x0, int clip_y0, int clip_x1, int clip_y1) {
+			bool veto_roof, bool is_spill, int spill_floor, int light_top_storey, int light_floor_storey, int anchor_z,
+			const unsigned char* grid, int grid_rt, int grid_fx, int grid_fy, int clip_x0, int clip_y0, int clip_x1, int clip_y1) {
 		if (radius <= 0 || intensity_pct <= 0) {
 			return;
 		}
@@ -1704,12 +1825,12 @@ namespace NaturalLight {
 				int cgy                     = static_cast<int>(std::lround(vc));
 				cgx                         = std::min(std::max(cgx, 0), side - 1);
 				cgy                         = std::min(std::max(cgy, 0), side - 1);
-				const unsigned char mbase   = grid[static_cast<size_t>(cgy) * side + cgx];
+				const unsigned char mbase   = grid[static_cast<size_t>(cgy) * side + cgx] & 0x7f;
 				const float         base_px = mbase > 0 ? static_cast<float>((mbase - 1) * c_tilesize) : 0.0f;
 				field_local.assign(static_cast<size_t>(side) * side, 0.0f);
 				for (int gy = 0; gy < side; ++gy) {
 					for (int gx = 0; gx < side; ++gx) {
-						const unsigned char m = grid[static_cast<size_t>(gy) * side + gx];
+						const unsigned char m = grid[static_cast<size_t>(gy) * side + gx] & 0x7f;
 						if (!m) {
 							continue;    // Light never reaches this tile.
 						}
@@ -1781,6 +1902,12 @@ namespace NaturalLight {
 				ftmpl                  = &stored;
 			}
 		}
+		// Screen projections of the room's own floor holes (well cells flagged
+		// 0x80 in the grid) were used here for a shaft-band exemption; removed
+		// to restore the pre-floor-roofs clear-ground rendering (the band's
+		// hard edges read as artifacts on the storey below).
+		(void)light_floor_storey;
+		(void)anchor_z;
 		// The free dome is bounded by `radius` around the splat centre; the
 		// propagated field by `radius` around the GRID centre (cells beyond it
 		// go dark in the per-tile dome) plus a tile of bilinear support.  The
@@ -1876,7 +2003,11 @@ namespace NaturalLight {
 						// Only plain 128 marks -- standing deck objects,
 						// canopies, whose sprites span far more screen than
 						// their tiles -- take the whole-unit free-dome bypass.
-						bypass_field = roofrow[x] < 129;
+						if (roofrow[x] < 129) {
+							bypass_field = true;
+						} else {
+							bypass_field = false;
+						}
 					} else {
 						bypass_field = true;
 					}

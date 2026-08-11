@@ -1697,6 +1697,8 @@ void Game_window::build_light_layers() {
 			return h * 1099511628211ULL;
 		};
 		uint64_t base = mix(mix(mix(mix(14695981039346656037ULL, W), H), inside), roofpix != nullptr);
+		// Hidden-room gating (do_splat) depends on the render cut-away level.
+		base = mix(base, skip_above_actor);
 		// Any change to a cached room grid (a door opened/closed) rebuilds
 		// every tier's coverage immediately.
 		base        = mix(base, static_cast<int64_t>(NaturalLight::Flood_content_generation()));
@@ -1753,6 +1755,12 @@ void Game_window::build_light_layers() {
 			if (light_layer_handles[t] >= 0) {
 				layer_set_visible(light_layer_handles[t], false);
 			}
+			// While hidden, the roof mask goes unstamped (light_mask_rects
+			// empty) and the view scrolls under the retained coverage.  The
+			// sig would still MATCH on re-entry (it hashes light positions
+			// relative to each other), reusing/translating that garbage for
+			// up to a second -- so force a fresh rebuild + mask resample.
+			light_tier_sig[t] = 0;
 			continue;
 		}
 		// Ensure the (game-area sized) layer exists.
@@ -1820,6 +1828,16 @@ void Game_window::build_light_layers() {
 					  // Veto lights: the storey their room roof reaches; spills: the
 					  // bubble's render storey (gating rules in Splat_radial_light).
 					  int light_top_storey = 0;
+					  // The field's lattice anchor level (locates the shaft band of
+					  // an elevated light's floor holes in Splat_radial_light).
+					  int field_anchor_z = 0;
+					  // A light whose room is not part of this render must not
+					  // splat: a veto light on a cut-away storey (viewer below
+					  // it) would paint only its shaft band onto the room below;
+					  // a roofed spill whose ceiling IS drawn (viewer above its
+					  // storey) is hidden and would paint only its z-shifted
+					  // wall-ring seam over the slab sides / exterior ground.
+					  bool hidden_room = lr.mask_roof && lr.ltz >= skip_above_actor;
 					  if ((inside || lr.mask_roof || lr.is_spill) && !lr.lit.empty()) {
 						  grid    = lr.lit.data();
 						  grid_rt = lr.rt;
@@ -1832,6 +1850,10 @@ void Game_window::build_light_layers() {
 						  bool      ceiling  = false;
 						  const int roof_z   = NaturalLight::Light_room_roof_z(map, lr.ltx, lr.lty, lr.ltz, &ceiling);
 						  const int anchor_z = (lr.mask_roof || ceiling) ? roof_z : (lr.ltz / 5) * 5;
+						  field_anchor_z     = anchor_z;
+						  if (lr.is_spill && ceiling && roof_z < skip_above_actor) {
+							  hidden_room = true;
+						  }
 						  if (lr.mask_roof) {
 							  light_top_storey = (anchor_z + 4) / 5;
 						  } else if (lr.is_spill) {
@@ -1845,10 +1867,12 @@ void Game_window::build_light_layers() {
 						  grid_fx += 1;
 						  grid_fy += 1;
 					  }
-					  NaturalLight::Splat_radial_light(
-							  covp, dstpix, srcpix, W, H, dst_lw, src_lw, csx, csy, lr.radius, lr.elevation, lr.dist_bias,
-							  lr.spill_percent, roofpix, roof_lw, mask_roof, lr.is_spill, lr.spill_floor, light_top_storey, grid,
-							  grid_rt, grid_fx, grid_fy, cx0, cy0, cx1, cy1);
+					  if (!hidden_room) {
+						  NaturalLight::Splat_radial_light(
+								  covp, dstpix, srcpix, W, H, dst_lw, src_lw, csx, csy, lr.radius, lr.elevation, lr.dist_bias,
+								  lr.spill_percent, roofpix, roof_lw, mask_roof, lr.is_spill, lr.spill_floor, light_top_storey,
+								  lr.ltz / 5, field_anchor_z, grid, grid_rt, grid_fx, grid_fy, cx0, cy0, cx1, cy1);
+					  }
 					  int bx0 = csx - lr.radius;
 					  int bx1 = csx + lr.radius;
 					  int by0 = csy - lr.radius;
@@ -1893,9 +1917,10 @@ void Game_window::build_light_layers() {
 			}
 		};
 
-		const bool sig_ok = light_tier_sig[t] != 0 && tier_sig[t] == light_tier_sig[t] && now_ms - light_tier_stamp[t] < 1000;
-		int        dx     = 0;
-		int        dy     = 0;
+		const bool sig_ok = light_tier_sig[t] != 0 && tier_sig[t] == light_tier_sig[t] && now_ms - light_tier_stamp[t] < 1000
+							&& !light_tier_resample[t];
+		int dx = 0;
+		int dy = 0;
 		if (sig_ok && has_static[t]) {
 			dx = sx0[t] - light_tier_anchor_x[t];
 			dy = sy0[t] - light_tier_anchor_y[t];
@@ -1993,6 +2018,7 @@ void Game_window::build_light_layers() {
 						std::memset(cov + static_cast<size_t>(y) * W + r.x, 0, static_cast<size_t>(r.w));
 					}
 				}
+				const bool content_changed = light_tier_sig[t] != tier_sig[t];
 				light_tier_bounds[t].clear();
 				for (const auto& lr : light_renders) {
 					if (lr.tier != t || lr.moving || lr.radius <= 0) {
@@ -2005,6 +2031,19 @@ void Game_window::build_light_layers() {
 				light_tier_stamp[t]    = now_ms;
 				light_tier_anchor_x[t] = sx0[t];
 				light_tier_anchor_y[t] = sy0[t];
+				if (content_changed) {
+					// The static set changed (a light placed, removed or newly
+					// scrolled into view): the roof mask this frame was stamped
+					// only inside LAST frame's light rects, so the rebuild above
+					// baked stale mask under the new coverage.  Repaint
+					// everything next frame (deferred: paint_dirty clears the
+					// dirty rect right after this call) and rebuild once more to
+					// resample the then-complete mask.
+					light_tier_resample[t] = true;
+					light_repaint_pending  = true;
+				} else {
+					light_tier_resample[t] = false;
+				}
 			}
 			// This tier's roof-mask clips for next frame.
 			light_mask_rects.insert(light_mask_rects.end(), light_tier_mask_rects[t].begin(), light_tier_mask_rects[t].end());

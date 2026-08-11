@@ -872,6 +872,12 @@ void Game_window::paint_dirty() {
 		paint(box);    // (Could create new dirty rects.)
 	}
 	clear_dirty();
+	if (light_repaint_pending) {
+		// A light was placed / removed during the paint above: repaint
+		// everything next frame so the roof mask covers its new rects.
+		light_repaint_pending = false;
+		set_all_dirty();
+	}
 }
 
 /*
