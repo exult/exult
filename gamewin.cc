@@ -1515,14 +1515,26 @@ void Game_window::update_roof_mask(Game_object* obj, int sx, int sy) {
 				tall_exterior = true;
 			} else if (obj->get_lift() >= 5) {
 				// Blocked above and starting at an upper storey: a
-				// second-storey wall segment or upstairs furniture.
+				// second-storey wall segment or upstairs furniture.  Loose
+				// items (books on a shelf top at the storey ABOVE the room's
+				// floor) get no mark of their own: their storey equals the
+				// ceiling slab's and no cutoff can admit one without the
+				// other -- they inherit the shelf/wall/floor mark beneath
+				// and light with the room.
+				if (obj->is_dragable()) {
+					return;
+				}
 				tall_exterior = true;
 				tall_storey   = storey_of(obj->get_lift());
 			}
 		} else if (!roof_like && obj->get_lift() >= 5) {
 			// Upper-storey walls / furnishings below the render skip: mark
 			// 128 + storey so z-blind lights from lower floors stay off them
-			// while their own storey's lights still reach them.
+			// while their own storey's lights still reach them.  Loose items
+			// inherit the underlying mark (see above).
+			if (obj->is_dragable()) {
+				return;
+			}
 			tall_exterior = true;
 			tall_storey   = storey_of(obj->get_lift());
 		}
@@ -1855,14 +1867,19 @@ void Game_window::build_light_layers() {
 					hidden_room = true;
 				}
 				if (lr.mask_roof) {
-					// The roof's own storey: marks at or above it (the deck
-					// slab on the room's ceiling) stay dark from below, on
-					// any storey.  Viewer OUTSIDE: every visible mark is an
-					// exterior face (the interior is under the drawn roof);
-					// the z-blind interior field paints those patchily, and
-					// exterior faces are the spills' job -- keep all marks
+					// Cutoff = the ceiling slab TOP's storey: anchor_z is the
+					// slab's BOTTOM lift while marks carry the top's storey, so
+					// anchor_z/5 under-counts a roof at floor+4 (darkens the
+					// room's own upper-storey furnishings -- shelved books)
+					// and (anchor_z+4)/5 over-counts a roof at storey*5+1
+					// (lights the slab from below).  (anchor_z+1)/5 matches the
+					// slab top for any slab height >= 1 and stays above the
+					// room's floor storey.  Viewer OUTSIDE: every visible mark
+					// is an exterior face (the interior is under the drawn
+					// roof); the z-blind interior field paints those patchily,
+					// and exterior faces are the spills' job -- keep all marks
 					// dark (0 fails every storey test).
-					light_top_storey = inside ? anchor_z / 5 : 0;
+					light_top_storey = inside ? (anchor_z + 1) / 5 : 0;
 				} else if (lr.is_spill) {
 					light_top_storey = lr.ltz / 5;
 				}
