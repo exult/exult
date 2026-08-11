@@ -2035,11 +2035,14 @@ namespace NaturalLight {
 			const float          dy2     = static_cast<float>(dy) * static_cast<float>(dy);
 			const unsigned char* roofrow = roofpix ? roofpix + y * roof_lw : nullptr;
 			// Template row for this scanline, pre-offset so trow[x] is the
-			// field alpha at screen x.  The bbox above is the template extent
-			// clipped to the screen, so every (x, y) it visits is in range.
+			// field alpha at screen x.  The euclid-spill bbox can extend past
+			// the template (reach > radius), so rows outside it stay null.
 			const unsigned char* trow = nullptr;
 			if (ftmpl != nullptr) {
-				trow = ftmpl->alpha.data() + static_cast<size_t>(y - sy - ftmpl->y0) * ftmpl->w - (sx + ftmpl->x0);
+				const int trow_y = y - sy - ftmpl->y0;
+				if (trow_y >= 0 && trow_y < ftmpl->h) {
+					trow = ftmpl->alpha.data() + static_cast<size_t>(trow_y) * ftmpl->w - (sx + ftmpl->x0);
+				}
 			}
 			for (int x = x0; x <= x1; ++x) {
 				// Roof-mask byte: 255 = real roof, 128 + storey = tall shape or
@@ -2107,13 +2110,17 @@ namespace NaturalLight {
 				}
 				int a;
 				if (grid != nullptr && !bypass_field) {
-					// The field bounds itself (cells beyond the pool are dark,
-					// their template bytes 0), so no screen-circle clip here:
-					// the circle is centred on the elevation-shifted splat
-					// centre while the field sits on the anchor lattice, and
-					// clipping the field by it would cut a sharp edge into the
-					// pool's up-left arc.
-					a = trow[x];
+					// The field bounds itself within the template (cells beyond
+					// the pool are dark, their template bytes 0); OUTSIDE the
+					// template -- the euclid-spill ring between radius and reach
+					// -- the field is definitionally dark, so clip instead of
+					// reading past the alpha buffer.  No screen-circle clip: the
+					// circle is centred on the elevation-shifted splat centre
+					// while the field sits on the anchor lattice, and clipping
+					// the field by it would cut a sharp edge into the pool's
+					// up-left arc.
+					const int tx = x - sx - ftmpl->x0;
+					a            = (trow != nullptr && tx >= 0 && tx < ftmpl->w) ? trow[x] : 0;
 				} else {
 					// Free dome (exterior lights, and marked tall shapes /
 					// roofs lit as whole units): pure radial falloff, with
