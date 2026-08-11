@@ -36,6 +36,7 @@
 #include <algorithm>
 #include <array>
 #include <cmath>
+#include <cstdio>
 #include <cstdlib>
 #include <map>
 #include <tuple>
@@ -1648,6 +1649,68 @@ namespace NaturalLight {
 		return flood_content_gen;
 	}
 
+	void Invalidate_light_caches_near(const Tile_coord& t, int radius_tiles) {
+		// A light-blocking shape changed (a shutter or door opened/closed):
+		// drop the cached floods and verdicts it may have shaped so the next
+		// frame refloods them immediately, instead of waiting out the TTL
+		// (up to a second with backoff).  Localized: only entries whose
+		// centre lies within the changed tile's reach are evicted, so the
+		// per-frame refresh budget still protects against mass refloods.
+		auto near_tile = [&](int tx, int ty) {
+			const int dx = std::abs(Light_tile_norm(tx) - Light_tile_norm(t.tx));
+			const int dy = std::abs(Light_tile_norm(ty) - Light_tile_norm(t.ty));
+			const int wx = std::min(dx, c_num_tiles - dx);    // World wrap.
+			const int wy = std::min(dy, c_num_tiles - dy);
+			return wx <= radius_tiles && wy <= radius_tiles;
+		};
+		for (auto it = flood_cache.begin(); it != flood_cache.end();) {
+			// Key: tile x/y/z, grid radius, flavour; the grid reaches its
+			// radius past the centre, so include it in the distance test.
+			if (near_tile(std::get<0>(it->first), std::get<1>(it->first))) {
+				it = flood_cache.erase(it);
+			} else {
+				++it;
+			}
+		}
+		for (auto it = beneath_roof_cache.entries.begin(); it != beneath_roof_cache.entries.end();) {
+			if (near_tile(std::get<0>(it->first), std::get<1>(it->first))) {
+				it = beneath_roof_cache.entries.erase(it);
+			} else {
+				++it;
+			}
+		}
+		for (auto it = roof_z_cache.entries.begin(); it != roof_z_cache.entries.end();) {
+			if (near_tile(std::get<0>(it->first), std::get<1>(it->first))) {
+				it = roof_z_cache.entries.erase(it);
+			} else {
+				++it;
+			}
+		}
+		for (auto it = visibility_cache.entries.begin(); it != visibility_cache.entries.end();) {
+			if (near_tile(std::get<0>(it->first), std::get<1>(it->first))) {
+				it = visibility_cache.entries.erase(it);
+			} else {
+				++it;
+			}
+		}
+		// Rebuild the cached light-layer coverage right away too.
+		++flood_content_gen;
+	}
+
+	void Notify_object_edited(Game_object* obj) {
+		Game_window* const gwin = Game_window::get_instance();
+		if (obj == nullptr || gwin == nullptr || !gwin->get_natural_light() || obj->as_actor() != nullptr) {
+			return;
+		}
+		const Shape_info& inf = obj->get_info();
+		// Solid frame/shape-changers (shutters open/close by SHAPE swap, not
+		// frame) rewall rooms; animated shapes change frames every tick and
+		// are never room walls, so they must not thrash the flood cache.
+		if (inf.is_door() || inf.has_light_passes_info() || (inf.is_solid() && !inf.is_animated())) {
+			Invalidate_light_caches_near(obj->get_tile(), 24);
+		}
+	}
+
 	// Room-fill flood from the light's tile across passable floor, stopped by
 	// tall walls (lit as a one-tile ring when `light_walls`; turned off for an
 	// interior light viewed from outside, where the ring shows as a bright
@@ -2017,16 +2080,12 @@ namespace NaturalLight {
 						// floor-slab TOP, an upper wall) sits on the tile
 						// lattice like clear ground: keep sampling the
 						// propagated field so the spill pools across the deck
-						// bounded by its walls (the pre-floor-roofs rendering).
+						// bounded by its walls (the pre-floor-roofs rendering)
+						// and wall faces fade quickly away from the opening.
 						// Only plain 128 marks -- standing deck objects,
 						// canopies, whose sprites span far more screen than
 						// their tiles -- take the whole-unit free-dome bypass.
-						// An ELEVATED spill (a walkway/deck bubble) also domes
-						// its storey marks whole: wall faces render 4px per z
-						// up-screen of their feet, so their pixels land on
-						// unfilled field cells behind the wall and read 0 --
-						// a patchy, uneven glow on the outside walls.
-						if (roofrow[x] < 129 || light_top_storey >= 1) {
+						if (roofrow[x] < 129) {
 							bypass_field = true;
 						} else {
 							bypass_field = false;

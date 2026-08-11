@@ -1934,7 +1934,7 @@ void Game_window::build_light_layers() {
 		};
 
 		const bool sig_ok = light_tier_sig[t] != 0 && tier_sig[t] == light_tier_sig[t] && now_ms - light_tier_stamp[t] < 1000
-							&& !light_tier_resample[t];
+							&& light_tier_resample[t] == 0;
 		int dx = 0;
 		int dy = 0;
 		if (sig_ok && has_static[t]) {
@@ -2052,13 +2052,16 @@ void Game_window::build_light_layers() {
 					// scrolled into view): the roof mask this frame was stamped
 					// only inside LAST frame's light rects, so the rebuild above
 					// baked stale mask under the new coverage.  Repaint
-					// everything next frame (deferred: paint_dirty clears the
-					// dirty rect right after this call) and rebuild once more to
-					// resample the then-complete mask.
-					light_tier_resample[t] = true;
+					// everything (deferred: paint_dirty clears the dirty rect
+					// right after this call) and rebuild for the next TWO frames:
+					// the mask converges one paint->build round per frame, and a
+					// single resample can still sample it half-stamped -- the
+					// wrong layer would then be REUSED for up to a second.
+					light_tier_resample[t] = 2;
 					light_repaint_pending  = true;
-				} else {
-					light_tier_resample[t] = false;
+				} else if (light_tier_resample[t] > 0) {
+					--light_tier_resample[t];
+					light_repaint_pending = true;
 				}
 			}
 			// This tier's roof-mask clips for next frame.

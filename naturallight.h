@@ -105,6 +105,16 @@ namespace NaturalLight {
 	// coverage rebuilds exactly when flood content changes.
 	uint64_t Flood_content_generation();
 
+	// A light-blocking shape near `t` changed (a shutter or door opened or
+	// closed): evict the cached floods/verdicts within `radius_tiles` so the
+	// next frame recomputes them immediately instead of waiting out the TTL.
+	void Invalidate_light_caches_near(const Tile_coord& t, int radius_tiles);
+
+	// A world object was edited (frame change, shape swap, placed, removed):
+	// when it can shape light floods (door / light-passes / solid non-animated
+	// non-actor), invalidate the caches around it.  Cheap no-op otherwise.
+	void Notify_object_edited(Game_object* obj);
+
 	// Build the room-fill grid a light casts.  `lit` becomes a (2*rt+1)^2 grid
 	// centred on the light's tile; each cell is 0 (light cannot reach that
 	// tile) or the flood PATH distance + 1 in tiles.  An empty `lit` means

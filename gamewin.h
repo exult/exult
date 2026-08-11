@@ -179,7 +179,10 @@ class Game_window {
 	// The tier's last rebuild sampled a roof mask stamped under the PREVIOUS
 	// frame's light rects (a light appeared/moved sets this): rebuild once
 	// more next frame with the then-complete mask.
-	bool light_tier_resample[3] = {false, false, false};
+	// Rebuild countdown after the static set changes: the roof mask needs a
+	// paint->build round per step to converge under new coverage (see
+	// build_light_layers), so more than one forced rebuild is required.
+	int light_tier_resample[3] = {0, 0, 0};
 	// Composite scratch: static coverage + this frame's moving lights.
 	std::vector<unsigned char> light_scratch_cov;
 	// Moving-light overlay cache: coverage of just the moving lights, keyed
