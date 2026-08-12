@@ -1302,6 +1302,14 @@ namespace NaturalLight {
 					// Duplicates are thinned at emission.
 					door_cand.emplace_back(nx, ny);
 				}
+				if (spills == nullptr && !roofed(gx, gy) && roofed(nx, ny)) {
+					// A spill's glow was emitted OUT of a building: crossing
+					// back under a roof (a neighbouring room's open doorway or
+					// shutterless window hole) would pool the glow inside that
+					// room.  Fully dark: even a lit threshold cell smears a
+					// visible stripe onto the room via bilinear sampling.
+					continue;
+				}
 				if (visited[nidx]) {
 					continue;
 				}
@@ -1336,6 +1344,10 @@ namespace NaturalLight {
 					continue;
 				}
 				if (visited[nidx] || tall(gx + d[0], gy) || tall(gx, gy + d[1])) {
+					continue;
+				}
+				if (spills == nullptr && !roofed(gx, gy) && roofed(nx, ny)) {
+					// Same open-sky containment as the orthogonal steps.
 					continue;
 				}
 				visited[nidx] = 1;
@@ -1707,6 +1719,14 @@ namespace NaturalLight {
 		// frame) rewall rooms; animated shapes change frames every tick and
 		// are never room walls, so they must not thrash the flood cache.
 		if (inf.is_door() || inf.has_light_passes_info() || (inf.is_solid() && !inf.is_animated())) {
+			static const char* const dbg = std::getenv("EXULT_DEBUG_LIGHT_MASK");
+			if (dbg) {
+				std::fprintf(
+						stderr, "[naturallight] object-edit shape=%d frame=%d door=%d passes=%d solid=%d t=%u\n",
+						obj->get_shapenum(), obj->get_framenum(), static_cast<int>(inf.is_door()),
+						static_cast<int>(inf.has_light_passes_info()), static_cast<int>(inf.is_solid()),
+						static_cast<unsigned>(SDL_GetTicks()));
+			}
 			Invalidate_light_caches_near(obj->get_tile(), 24);
 		}
 	}
@@ -1765,7 +1785,7 @@ namespace NaturalLight {
 		entry.used  = now;
 	}
 
-	void Build_spill_shadow_grid(const Tile_coord& start, int rt, std::vector<unsigned char>& lit) {
+	void Build_spill_shadow_grid(const Tile_coord& start, int rt, std::vector<unsigned char>& lit, bool light_walls) {
 		const int side = 2 * rt + 1;
 		lit.assign(static_cast<size_t>(side) * side, 0);
 		if (rt <= 0) {
@@ -1784,14 +1804,14 @@ namespace NaturalLight {
 		// light can never come back INSIDE the room it escaped from.  No
 		// spills are collected here: a spill does not spawn further spills.
 		const Uint64          now = SDL_GetTicks();
-		const Flood_cache_key key{start.tx, start.ty, start.tz, rt, 0};
+		const Flood_cache_key key{start.tx, start.ty, start.tz, rt, light_walls ? 0 : 3};
 		if (Flood_cache_entry* hit = Flood_cache_find(key, now)) {
 			lit = hit->lit;
 			return;
 		}
 		const Flood_spend_scope spend;
 		const int               roof_z = Light_room_roof_z(gmap, start.tx, start.ty, start.tz);
-		Flood_room_grid(gmap, start, rt, roof_z, lit, nullptr);
+		Flood_room_grid(gmap, start, rt, roof_z, lit, nullptr, light_walls);
 		Flood_cache_entry& entry = flood_cache[key];
 		const bool         had   = entry.stamp != 0;
 		if (had && entry.lit == lit) {

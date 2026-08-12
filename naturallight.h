@@ -127,7 +127,9 @@ namespace NaturalLight {
 
 	// Build the room-fill grid for a spill glow (same layout), flooded from
 	// `start` -- the tile just outside the opening the light escapes through.
-	void Build_spill_shadow_grid(const Tile_coord& start, int rt, std::vector<unsigned char>& lit);
+	// `light_walls` lights the facade ring the glow falls on (viewer-outside
+	// look; from inside the ring shows through the walls' interior faces).
+	void Build_spill_shadow_grid(const Tile_coord& start, int rt, std::vector<unsigned char>& lit, bool light_walls = true);
 
 	// Splat one radial light's soft dome falloff into the coverage buffer,
 	// copying the brightened source pixel wherever this light is the strongest

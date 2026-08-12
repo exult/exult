@@ -486,7 +486,10 @@ void Game_window::paint(
 					// +7: rounding slack plus the wall-top anchor shift (see rt).
 					const int                  srt = spill_radius / c_tilesize + 7;
 					std::vector<unsigned char> slit;
-					NaturalLight::Build_spill_shadow_grid(sp, srt, slit);
+					// Facade ring only for an outside viewer: seen from inside,
+					// the ring's z-blind cells hang over the walls' INTERIOR
+					// faces up-screen and glow through neighbouring rooms.
+					NaturalLight::Build_spill_shadow_grid(sp, srt, slit, !is_main_actor_inside());
 					int ssx = 0;
 					int ssy = 0;
 					get_shape_location(sp, ssx, ssy);
@@ -786,7 +789,8 @@ int Game_render::paint_chunk_objects(
 					// +7: rounding slack plus the wall-top anchor shift (see rt).
 					const int                  srt = spill_radius / c_tilesize + 7;
 					std::vector<unsigned char> slit;
-					NaturalLight::Build_spill_shadow_grid(sp, srt, slit);
+					// Facade ring only for an outside viewer (see carried-light site).
+					NaturalLight::Build_spill_shadow_grid(sp, srt, slit, !gwin->is_main_actor_inside());
 					int ssx = 0;
 					int ssy = 0;
 					gwin->get_shape_location(sp, ssx, ssy);

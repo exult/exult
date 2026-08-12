@@ -1892,9 +1892,16 @@ void Game_window::build_light_layers() {
 				grid_fy += 1;
 			}
 			if (!hidden_room) {
+				// Inside viewer: every visible storey mark is an INTERIOR
+				// face/surface (the z-blind field would paint the neighbour
+				// rooms' wall faces with outdoor pool cells hanging over
+				// them up-screen), so an outdoor spill keeps them all dark:
+				// spill_floor 0 fails every 129+ storey test while plain 128
+				// (canopies, deck objects) keeps its whole-unit free dome.
+				const int spill_floor = lr.is_spill && inside ? 0 : lr.spill_floor;
 				NaturalLight::Splat_radial_light(
 						covp, dstpix, srcpix, W, H, dst_lw, src_lw, csx, csy, lr.radius, lr.elevation, lr.dist_bias,
-						lr.spill_percent, roofpix, roof_lw, mask_roof, lr.is_spill, lr.spill_floor, light_top_storey, lr.ltz / 5,
+						lr.spill_percent, roofpix, roof_lw, mask_roof, lr.is_spill, spill_floor, light_top_storey, lr.ltz / 5,
 						field_anchor_z, grid, grid_rt, grid_fx, grid_fy, cx0, cy0, cx1, cy1);
 			}
 			// Match Splat_radial_light's reach: only an ELEVATED spill's
