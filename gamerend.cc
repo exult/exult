@@ -718,9 +718,9 @@ int Game_render::paint_chunk_objects(
 		constexpr int light_pass_min_strength = 1;
 		for (const auto& light_obj : lights) {
 			const Shape_info& info = light_obj->get_info();
-			if (!info.is_light_source()) {
-				continue;
-			}
+			// get_object_light is the authoritative test: it covers flagged
+			// light sources AND shape_info.txt enhancement entries (gated on
+			// allow_enhancements), including frame-0-brightness-0 shapes.
 			if (info.get_object_light(light_obj->get_framenum()) <= 0) {
 				continue;
 			}

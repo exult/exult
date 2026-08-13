@@ -748,9 +748,12 @@ void Usecode_internal::set_item_shape(Usecode_value& item_arg, Usecode_value& sh
 	if (!item) {
 		return;
 	}
-	// See if light turned on/off.
-	const bool light_changed = item->get_info().is_light_source() != ShapeID::get_info(shape).is_light_source();
-	auto*      owner         = item->get_owner();
+	// See if light turned on/off (frame-aware: covers shape_info.txt
+	// enhancement lights that have no light-source flag).
+	const int  old_frame = item->get_framenum();
+	const bool light_changed
+			= (item->get_info().get_object_light(old_frame) > 0) != (ShapeID::get_info(shape).get_object_light(old_frame) > 0);
+	auto* owner = item->get_owner();
 	if (owner != nullptr) {    // Inside something?
 		owner->change_member_shape(item, shape);
 		if (light_changed) {    // Maybe we should repaint all.
