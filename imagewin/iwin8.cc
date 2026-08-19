@@ -149,6 +149,23 @@ void Image_window8::rotate_colors(
 		rotate(start, start + 3, finish);
 	}
 
+	// Rotate the same range in every layer's fixed-palette override (the
+	// spatial-light candle / single / many palettes) so their colour-cycled
+	// ranges (fire, ...) animate in phase with the live palette, using that
+	// palette's own correct flame colours instead of freezing under a light.
+	for (auto& cfg : ui_cfgs) {
+		if (cfg.ui_palette_colors.size() != 768) {
+			continue;
+		}
+		unsigned char* ostart  = cfg.ui_palette_colors.data() + first;
+		unsigned char* ofinish = ostart + cnt;
+		if (num > 0) {
+			rotate(ostart, ofinish - 3, ofinish);
+		} else {
+			rotate(ostart, ostart + 3, ofinish);
+		}
+	}
+
 	if (upd) {    // Take effect now?
 		SDL_Color colors2[256];
 		for (int i = 0; i < 256; i++) {
@@ -260,17 +277,25 @@ void Image_window8::refresh_layer(Layer& layer) {
 	if (layer.render_scale > 1 && refresh_layer_scaled(layer, layer.render_scale)) {
 		return;
 	}
-	const int            w      = layer.get_width();
-	const int            h      = layer.get_height();
-	Image_buffer*        b      = layer.get_ibuf();
-	const unsigned char* src    = b->get_bits();
-	const int            pitch  = static_cast<int>(b->get_line_width());
-	auto                 pixels = make_unique<uint32[]>(static_cast<size_t>(w) * h);
+	const int            w       = layer.get_width();
+	const int            h       = layer.get_height();
+	Image_buffer*        b       = layer.get_ibuf();
+	const unsigned char* src     = b->get_bits();
+	const int            pitch   = static_cast<int>(b->get_line_width());
+	auto                 pixels  = make_unique<uint32[]>(static_cast<size_t>(w) * h);
+	const bool           has_cov = static_cast<int>(layer.coverage.size()) == w * h;
+	const unsigned char* cov     = has_cov ? layer.coverage.data() : nullptr;
 	for (int y = 0; y < h; y++) {
 		const unsigned char* srow = src + static_cast<size_t>(y) * pitch;
 		uint32*              drow = pixels.get() + static_cast<size_t>(y) * w;
+		const unsigned char* crow = cov ? cov + static_cast<size_t>(y) * w : nullptr;
 		for (int x = 0; x < w; x++) {
-			drow[x] = layer_argb_pixel(layer, srow[x]);
+			uint32 argb = layer_argb_pixel(layer, srow[x]);
+			if (crow) {
+				const uint32 a = (((argb >> 24) & 0xff) * crow[x]) / 255;
+				argb           = (a << 24) | (argb & 0x00ffffffu);
+			}
+			drow[x] = argb;
 		}
 	}
 	SDL_UpdateTexture(layer.texture, nullptr, pixels.get(), w * static_cast<int>(sizeof(uint32)));
@@ -284,17 +309,19 @@ void Image_window8::refresh_layer(Layer& layer) {
  *  source so it stays crisp and masks any colour bleed at transparent edges.
  */
 bool Image_window8::refresh_layer_scaled(Layer& layer, int factor) {
-	const int            gb     = guard_band;    // Scaler reads a padded border.
-	const int            logw   = layer.get_width();
-	const int            logh   = layer.get_height();
-	Image_buffer*        b      = layer.get_ibuf();
-	const unsigned char* src    = b->get_bits();
-	const int            spitch = static_cast<int>(b->get_line_width());
-	const unsigned char  transp = layer.get_transparent();
-	const bool           has_ov = !layer.index_argb.empty();
-	const uint32*        ov     = has_ov ? layer.index_argb.data() : nullptr;
-	const int            tex_w  = logw * factor;
-	const int            tex_h  = logh * factor;
+	const int            gb      = guard_band;    // Scaler reads a padded border.
+	const int            logw    = layer.get_width();
+	const int            logh    = layer.get_height();
+	Image_buffer*        b       = layer.get_ibuf();
+	const unsigned char* src     = b->get_bits();
+	const int            spitch  = static_cast<int>(b->get_line_width());
+	const unsigned char  transp  = layer.get_transparent();
+	const bool           has_ov  = !layer.index_argb.empty();
+	const uint32*        ov      = has_ov ? layer.index_argb.data() : nullptr;
+	const bool           has_cov = static_cast<int>(layer.coverage.size()) == logw * logh;
+	const unsigned char* covbuf  = has_cov ? layer.coverage.data() : nullptr;
+	const int            tex_w   = logw * factor;
+	const int            tex_h   = logh * factor;
 	// Fixed-palette override for this layer, if any (else the live palette).
 	const std::vector<unsigned char>& pal_ov      = get_ui_cfg(layer.ui_kind).ui_palette_colors;
 	const unsigned char*              palette_rgb = pal_ov.empty() ? colors : pal_ov.data();
@@ -344,10 +371,16 @@ bool Image_window8::refresh_layer_scaled(Layer& layer, int factor) {
 					const size_t  dpitch = static_cast<size_t>(odst->pitch) / sizeof(uint32);
 					const size_t  sgb    = static_cast<size_t>(factor) * gb;
 					for (int y = 0; y < tex_h; y++) {
-						const uint32* row  = pix + (static_cast<size_t>(y) + sgb) * dpitch + sgb;
-						uint32*       trow = texpix.get() + static_cast<size_t>(y) * tex_w;
+						const uint32*        row  = pix + (static_cast<size_t>(y) + sgb) * dpitch + sgb;
+						uint32*              trow = texpix.get() + static_cast<size_t>(y) * tex_w;
+						const unsigned char* crow = covbuf ? covbuf + static_cast<size_t>(y / factor) * logw : nullptr;
 						for (int x = 0; x < tex_w; x++) {
-							trow[x] = 0xff000000u | (row[x] & 0x00ffffffu);
+							uint32 argb = 0xff000000u | (row[x] & 0x00ffffffu);
+							if (crow) {
+								const uint32 a = (0xffu * crow[x / factor]) / 255;
+								argb           = (a << 24) | (argb & 0x00ffffffu);
+							}
+							trow[x] = argb;
 						}
 					}
 					SDL_UpdateTexture(layer.texture, nullptr, texpix.get(), tex_w * static_cast<int>(sizeof(uint32)));
@@ -559,8 +592,9 @@ bool Image_window8::refresh_layer_scaled(Layer& layer, int factor) {
 				} else {
 					intrinsic = 255;    // Opaque (or an outer AA pixel).
 				}
-				const uint32 a = static_cast<uint32>(cov * intrinsic / 255);
-				trow[x]        = (a << 24) | rgb;
+				const uint32 a     = static_cast<uint32>(cov * intrinsic / 255);
+				const uint32 cov_a = covbuf ? (a * covbuf[static_cast<size_t>(sy) * logw + x / factor]) / 255 : a;
+				trow[x]            = (cov_a << 24) | rgb;
 			}
 		}
 	} else {
@@ -568,8 +602,14 @@ bool Image_window8::refresh_layer_scaled(Layer& layer, int factor) {
 		for (int y = 0; y < tex_h; y++) {
 			const unsigned char* srow = src + static_cast<size_t>(y / factor) * spitch;
 			uint32*              trow = texpix.get() + static_cast<size_t>(y) * tex_w;
+			const unsigned char* crow = covbuf ? covbuf + static_cast<size_t>(y / factor) * logw : nullptr;
 			for (int x = 0; x < tex_w; x++) {
-				trow[x] = layer_argb_pixel(layer, srow[x / factor]);
+				uint32 argb = layer_argb_pixel(layer, srow[x / factor]);
+				if (crow) {
+					const uint32 a = (((argb >> 24) & 0xff) * crow[x / factor]) / 255;
+					argb           = (a << 24) | (argb & 0x00ffffffu);
+				}
+				trow[x] = argb;
 			}
 		}
 	}

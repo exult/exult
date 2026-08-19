@@ -33,6 +33,7 @@
 #include <array>
 #include <memory>
 #include <string>    // STL string
+#include <utility>
 #include <vector>
 
 #ifndef ATTR_PRINTF
@@ -114,6 +115,96 @@ class Game_window {
 	bool painted;               // true if we updated image buffer.
 	bool ambient_light;         // Permanent version of special_light.
 	bool infravision_active;    // Infravision flag.
+
+	// Spatial light overlays: per-frame list of light sources (in ibuf
+	// game-pixel coords) that the light layers brighten around, plus the three
+	// tier layer handles and a reusable coverage (radial-alpha) scratch buffer.
+	struct Light_render_info {
+		int sx, sy;    // Center of the light in game-pixel (ibuf) coords.
+		int radius;    // Radius in game pixels.
+		int tier;      // 0 = candle, 1 = single light, 2 = many lights.
+		// Emitter height above the floor in game px; rounds the dome falloff
+		// in Splat_radial_light.
+		int elevation = 0;
+		// Radius in tiles (grid half-size); 0 when there is no occlusion grid.
+		int rt = 0;
+		// The light's own tile (world coords): anchors the room-fill grid on
+		// screen so the mask stays fixed to the walls as the light moves.
+		int ltx = 0, lty = 0, ltz = 0;
+		// True if the light is itself under a roof (Light_beneath_roof): roof
+		// pixels stay dark for it.
+		bool mask_roof = false;
+		// Spill glows: distance (game px) already travelled to the spill
+		// point; the splat continues the source's falloff.  0 for real sources.
+		int dist_bias = 0;
+		// True for a spill glow (semantics in Splat_radial_light).
+		bool is_spill = false;
+		// The opening's transmission percent (1..100); real sources pass 100.
+		int spill_percent = 100;
+		// Spill glows: the source's storey (tz / 5), gating 128 + storey roof
+		// mask pixels in Splat_radial_light.
+		int spill_floor = 0;
+		// True for a light that moves with the Avatar (carried torch and its
+		// spills): splatted fresh every frame on top of the cached static mask
+		// instead of invalidating it.
+		bool moving = false;
+		// Room-fill grid ((2*rt+1) square) from Build_light_shadow_grid: light
+		// floods the room bounded by tall walls.  Empty = no gating.
+		std::vector<unsigned char> lit;
+	};
+
+	std::vector<Light_render_info> light_renders;
+	int                            light_layer_handles[3] = {-1, -1, -1};
+	int                            light_layer_w          = -1;
+	int                            light_layer_h          = -1;
+	int                            light_layer_palnum     = -2;
+	// Per-tier splat reuse (build_light_layers): the coverage cache holds only
+	// the STATIC (world-pinned) lights.  While a tier's static set is unchanged
+	// relative to the world, a view scroll just translates the cached mask by
+	// the scroll delta and re-splats only the lights exposed at a screen edge;
+	// moving lights (carried torch + spills) are splatted fresh on top into a
+	// scratch copy each frame.
+	std::vector<unsigned char> light_tier_cov[3];
+	std::vector<TileRect>      light_tier_rects[3];         // Static coverage rows written.
+	std::vector<TileRect>      light_tier_mask_rects[3];    // Next-frame roof-mask clips.
+	// Unclamped splat bounds per static light (screen coords, in the tier's
+	// light order); source of truth for the two rect lists above.
+	std::vector<TileRect> light_tier_bounds[3];
+	// First static light's screen position at the last build/translate: the
+	// per-frame scroll delta is measured against it.
+	int      light_tier_anchor_x[3] = {0, 0, 0};
+	int      light_tier_anchor_y[3] = {0, 0, 0};
+	uint64_t light_tier_sig[3]      = {0, 0, 0};
+	uint64_t light_tier_stamp[3]    = {0, 0, 0};
+	// The tier's last rebuild sampled a roof mask stamped under the PREVIOUS
+	// frame's light rects (a light appeared/moved sets this): rebuild once
+	// more next frame with the then-complete mask.
+	// Rebuild countdown after the static set changes: the roof mask needs a
+	// paint->build round per step to converge under new coverage (see
+	// build_light_layers), so more than one forced rebuild is required.
+	int light_tier_resample[3] = {0, 0, 0};
+	// Composite scratch: static coverage + this frame's moving lights.
+	std::vector<unsigned char> light_scratch_cov;
+	// Moving-light overlay cache: coverage of just the moving lights, keyed
+	// by a scroll-INCLUSIVE signature (their room-field anchors are world-
+	// pinned) -- so it holds while the Avatar stands still and rebuilds while
+	// walking.
+	std::vector<unsigned char> light_tier_mov_cov[3];
+	std::vector<TileRect>      light_tier_mov_bounds[3];
+	uint64_t                   light_tier_mov_sig[3]   = {0, 0, 0};
+	uint64_t                   light_tier_mov_stamp[3] = {0, 0, 0};
+	// Global roof-pixel mask, same pixel geometry as the world ibuf: built
+	// during the world render (update_roof_mask), consumed by
+	// build_light_layers / Splat_radial_light.
+	std::unique_ptr<Image_buffer8> roof_light_mask;
+	bool                           roof_light_mask_active = false;
+	// Last frame's splat rectangles (grown by a margin): update_roof_mask
+	// only paints the mask where a sprite touches one of them.
+	std::vector<TileRect> light_mask_rects;
+	// A static light set changed this frame: schedule a full repaint AFTER
+	// paint_dirty's clear_dirty so the roof mask gets stamped under the new
+	// light rects next frame (see build_light_layers' full-rebuild path).
+	bool light_repaint_pending = false;
 	// Game state values:
 	int           skip_above_actor;      // Level above actor to skip rendering.
 	unsigned int  in_dungeon;            // true if inside a dungeon.
@@ -149,8 +240,10 @@ class Game_window {
 	bool scroll_with_mouse;       // scroll game view with mousewheel
 	bool alternate_drop;          // don't split stacks, can be inverted with a CTRL
 								  // key modifier
-	bool         allow_autonotes;
-	bool         allow_enhancements;
+	bool allow_autonotes;
+	bool allow_enhancements;
+	bool natural_light;              // Use spatial (layered) light instead of
+									 // tinting the whole global palette
 	bool         in_exult_menu;      // used for menu options
 	uint8        use_shortcutbar;    // 0 = no, 1 = trans, 2 = yes
 	Pixel_colors outline_color;
@@ -329,6 +422,17 @@ public:
 		allow_autonotes = s;
 	}
 
+	bool get_natural_light() const {
+		return natural_light;
+	}
+
+	void set_natural_light(bool s) {
+		if (!s && natural_light) {
+			destroy_light_layers();
+		}
+		natural_light = s;
+	}
+
 	bool get_allow_enhancements() const {
 		return allow_enhancements;
 	}
@@ -473,6 +577,31 @@ public:
 	void layer_set_index_argb(int handle, const uint32* argb256) {
 		win->layer_set_index_argb(handle, argb256);
 	}
+
+	void layer_set_coverage(int handle, const unsigned char* cov, int w, int h) {
+		win->layer_set_coverage(handle, cov, w, h);
+	}
+
+	void clear_light_renders() {
+		light_renders.clear();
+	}
+
+	void add_light_render(
+			int sx, int sy, int radius, int tier, int elevation, int rt, int ltx, int lty, int ltz, std::vector<unsigned char> lit,
+			bool mask_roof = false, int dist_bias = 0, bool is_spill = false, int spill_percent = 100, int spill_floor = 0,
+			bool moving = false) {
+		light_renders.push_back(
+				{sx, sy, radius, tier, elevation, rt, ltx, lty, ltz, mask_roof, dist_bias, is_spill, spill_percent, spill_floor,
+				 moving, std::move(lit)});
+	}
+
+	void build_light_layers();
+
+	void destroy_light_layers();
+
+	// Roof-pixel mask upkeep (see roof_light_mask above and the definitions).
+	void begin_roof_mask();
+	void update_roof_mask(Game_object* obj, int sx, int sy);
 
 	void layer_set_alpha(int handle, unsigned char a) {
 		win->layer_set_alpha(handle, a);

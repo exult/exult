@@ -1313,6 +1313,22 @@ void Image_window::game_to_screen(int gx, int gy, bool fast, int& sx, int& sy) {
 	}
 }
 
+void Image_window::get_game_area_dest(int& x, int& y, int& w, int& h) {
+	// Map the game viewport's corners to screen space with the very same
+	// transform the mouse cursor uses, so an overlay placed at this rect lines
+	// up pixel-perfectly with the base world under any scaler / fill mode.
+	int sx0;
+	int sy0;
+	int sx1;
+	int sy1;
+	game_to_screen(0, 0, false, sx0, sy0);
+	game_to_screen(get_game_width(), get_game_height(), false, sx1, sy1);
+	x = sx0;
+	y = sy0;
+	w = sx1 - sx0;
+	h = sy1 - sy0;
+}
+
 bool Image_window::get_draw_dims(int sw, int sh, int scale, FillMode fillmode, int& gw, int& gh, int& iw, int& ih) {
 	// Handle each type separately
 
@@ -1655,6 +1671,19 @@ void Image_window::layer_set_index_argb(int handle, const uint32* argb256) {
 	layer.set_dirty();
 }
 
+void Image_window::layer_set_coverage(int handle, const unsigned char* cov, int w, int h) {
+	if (handle < 0 || handle >= static_cast<int>(layers.size()) || !layers[handle]) {
+		return;
+	}
+	Layer& layer = *layers[handle];
+	if (cov == nullptr || w != layer.logw || h != layer.logh) {
+		layer.coverage.clear();
+	} else {
+		layer.coverage.assign(cov, cov + static_cast<size_t>(w) * h);
+	}
+	layer.set_dirty();
+}
+
 void Image_window::layer_set_z(int handle, int z) {
 	if (handle < 0 || handle >= static_cast<int>(layers.size()) || !layers[handle]) {
 		return;
@@ -1803,11 +1832,15 @@ void Image_window::set_ui_layer_config(UiLayerKind kind, int width, int height, 
 		return;
 	}
 	UiLayerConfig& cfg = ui_cfgs[static_cast<int>(kind)];
-	cfg.width          = width;
-	cfg.height         = height;
-	cfg.scaler         = scaler_;
-	cfg.fill_mode      = fmode;
-	cfg.fill_scaler    = fill_scaler_;
+	if (cfg.width == width && cfg.height == height && cfg.scaler == scaler_ && cfg.fill_mode == fmode
+		&& cfg.fill_scaler == fill_scaler_) {
+		return;    // Unchanged; don't force a needless texture rebuild.
+	}
+	cfg.width       = width;
+	cfg.height      = height;
+	cfg.scaler      = scaler_;
+	cfg.fill_mode   = fmode;
+	cfg.fill_scaler = fill_scaler_;
 	mark_all_layers_dirty();
 }
 
@@ -1844,6 +1877,11 @@ void Image_window::set_ui_layer_palette_colors(UiLayerKind kind, const unsigned 
 		}
 		cfg.ui_palette_colors.clear();
 	} else {
+		// Skip the re-upload if the colors are identical (this is re-asserted
+		// every frame by the spatial-light renderer).
+		if (cfg.ui_palette_colors.size() == 768 && memcmp(cfg.ui_palette_colors.data(), colors768, 768) == 0) {
+			return;
+		}
 		cfg.ui_palette_colors.assign(colors768, colors768 + 768);
 	}
 	mark_all_layers_dirty();

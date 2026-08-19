@@ -3116,6 +3116,25 @@ static void apply_ui_layer_config() {
 	apply_named_layer(Image_window::UiLayerModalGumps, "modal_gumps");
 	apply_named_layer(Image_window::UiLayerDisplayMap, "display_map");
 	apply_named_layer(Image_window::UiLayerTextEffects, "text_effect");
+
+	// Spatial light overlays: a copy of the world drawn with the candle /
+	// single-light / many-lights palette, masked to each light's radius.  They
+	// use the game's own scaler / fill scaler (so the lit copy is filtered like
+	// the world) and are placed exactly on the game viewport each frame via
+	// get_game_area_dest; build_light_layers() re-asserts this config and their
+	// fixed palettes each frame (some video/UI changes reset per-kind configs).
+	{
+		const int                       game_scaler = gwin->get_win()->get_scaler();
+		const int                       game_fill   = gwin->get_win()->get_fill_scaler();
+		const Image_window::UiLayerKind light_kinds[3]
+				= {Image_window::UiLayerLightCandle, Image_window::UiLayerLightSingle, Image_window::UiLayerLightMany};
+		const int light_modes[3]
+				= {Image_window::UiPaletteCandle, Image_window::UiPaletteSingleLight, Image_window::UiPaletteManyLights};
+		for (int i = 0; i < 3; ++i) {
+			gwin->set_ui_layer_config(light_kinds[i], 0, 0, game_scaler, Image_window::Fill, game_fill);
+			gwin->set_ui_layer_palette(light_kinds[i], light_modes[i]);
+		}
+	}
 }
 
 /*

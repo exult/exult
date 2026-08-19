@@ -36,10 +36,17 @@
 #include "gamemap.h"
 #include "gamewin.h"
 #include "ignore_unused_variable_warning.h"
+#include "naturallight.h"
 #include "objiter.h"
+#include "path.h"
+#include "paths.h"
 
 #include <algorithm>
+#include <array>
 #include <cstdio>
+#include <cstdlib>
+#include <iostream>
+#include <utility>
 
 /*
  *  Paint just the map with given top-left-corner tile.
@@ -195,6 +202,7 @@ int Game_render::paint_map(
 	Shape_manager* sman = gwin->shape_man;
 	render_seq++;    // Increment sequence #.
 	gwin->painted = true;
+	gwin->clear_light_renders();    // Rebuild the spatial-light source list.
 
 	const int scrolltx      = gwin->scrolltx;
 	const int scrollty      = gwin->scrollty;
@@ -218,6 +226,24 @@ int Game_render::paint_map(
 	if (!gwin->skip_lift) {    // Special mode for editing?
 		paint_terrain_only(start_chunkx, start_chunky, stop_chunkx, stop_chunky);
 		return 10;    // Pretend there's lots of light!
+	}
+	// Once per frame (natural light only): the Avatar's enclosure is
+	// light-tight only if its own chunk has no light_passes_through object
+	// AND no passable gap in the walls (e.g. a doorway with no door object).
+	avatar_enclosure_sealed = false;
+	if (gwin->get_natural_light()) {
+		Main_actor* const main_actor = gwin->get_main_actor();
+		if (main_actor != nullptr && gwin->is_main_actor_inside()) {
+			Map_chunk* const avatar_chunk = main_actor->get_chunk();
+			bool             has_opening  = false;
+			if (avatar_chunk != nullptr) {
+				int a_s, a_f, a_mf, a_tx, a_ty, a_lift;
+				has_opening = NaturalLight::Chunk_find_light_passes_through(avatar_chunk, a_s, a_f, a_mf, a_tx, a_ty, a_lift);
+			}
+			if (!has_opening) {
+				avatar_enclosure_sealed = !NaturalLight::Enclosure_open_to_outside(main_actor->get_tile());
+			}
+		}
 	}
 	int cx;
 	int cy;    // Chunk #'s.
@@ -249,6 +275,7 @@ int Game_render::paint_map(
 	}
 	// Draw the chunks' objects
 	//   diagonally NE.
+	gwin->begin_roof_mask();    // Reset the global roof-pixel mask for this frame.
 	const int tmp_stopy = DECR_CHUNK(start_chunky);
 	for (cy = start_chunky; cy != stop_chunky; cy = INCR_CHUNK(cy)) {
 		for (int dx = start_chunkx, dy = cy; dx != stop_chunkx && dy != tmp_stopy; dx = INCR_CHUNK(dx), dy = DECR_CHUNK(dy)) {
@@ -309,12 +336,13 @@ int Game_render::get_light_strength(const Game_object* obj, const Game_object* a
 void Game_render::increment_bbox_index() {
 	int  bbox_indices[] = {15, 0, 22, 38, 5, 64, 80, 94, -1};
 	auto start          = bbox_indices;
-	auto end            = bbox_indices + std::size(bbox_indices);
+	auto end            = bbox_indices + (sizeof(bbox_indices) / sizeof(bbox_indices[0]));
 
-	size_t found = std::find(start, end, bbox_palindex) - start;
+	size_t       found      = std::find(start, end, bbox_palindex) - start;
+	const size_t bbox_count = sizeof(bbox_indices) / sizeof(bbox_indices[0]);
 
-	if (found < std::size(bbox_indices)) {
-		bbox_palindex = bbox_indices[(found + 1) % std::size(bbox_indices)];
+	if (found < bbox_count) {
+		bbox_palindex = bbox_indices[(found + 1) % bbox_count];
 	}
 	Game_window::get_instance()->set_all_dirty();
 }
@@ -328,6 +356,26 @@ void Game_window::paint(
 ) {
 	if (!win->ready()) {
 		return;
+	}
+	// The spatial-light layers hold a brightened COPY of the world image and
+	// are only rebuilt on a COMPLETE repaint (see the "Complete repaint?"
+	// block below).  A partial paint -- the strip repaints of view_left/right/
+	// up/down and paint_dirty's rects, the normal path when smooth scrolling
+	// is off -- would move the world under stale layers, leaving a displaced
+	// faint ghost of every light pool (and freezing flames/NPCs inside them).
+	// So while any light layer is visible, promote the paint to the full
+	// window, matching what smooth scrolling gets from its per-frame full
+	// paint_lerped.
+	if (natural_light && main_actor && (x > 0 || y > 0 || w < get_width() || h < get_height())) {
+		for (int handle : light_layer_handles) {
+			if (handle >= 0 && win->layer_is_visible(handle)) {
+				x = 0;
+				y = 0;
+				w = get_width();
+				h = get_height();
+				break;
+			}
+		}
 	}
 	// This will adjust and clip the rectangle as appropriate, it may end up
 	// bigger or smaller
@@ -388,21 +436,98 @@ void Game_window::paint(
 
 	// Complete repaint?
 	if (!gx && !gy && gw == get_width() && gh == get_height() && main_actor) {
-		// Look for lights.
-		Actor*    party[9];    // Get party, including Avatar.
-		const int cnt           = get_party(party, 1);
-		int       carried_light = 0;
-		for (int i = 0; i < cnt; i++) {
-			carried_light += Get_light_strength(party[i], main_actor, party[i]->get_light_source());
+		if (natural_light) {
+			// Carried light (torch/lamp) becomes a spatial light centered on the
+			// Avatar, like any placed source, instead of tinting the whole scene.
+			Actor*    party[9];    // Get party, including Avatar.
+			const int cnt            = get_party(party, 1);
+			int       carried_bright = 0;
+			for (int i = 0; i < cnt; i++) {
+				carried_bright += party[i]->get_light_source();
+			}
+			if (carried_bright > 0 && pal && pal->get_palette_number() != PALETTE_DAY) {
+				int asx = 0;
+				int asy = 0;
+				get_shape_location(main_actor, asx, asy);
+				// Keep the pool centred on the Avatar's foot tile; the flame's
+				// height only rounds the dome falloff (`elevation`).
+				const int elevation = (main_actor->get_info().get_3d_height() * c_tilesize) / 2;
+				const int radius    = NaturalLight::Light_radius(carried_bright);
+				const int tier      = NaturalLight::Light_tier(carried_bright);
+				// Same tall-wall occlusion as placed lights, centred on the
+				// Avatar.  +7: rounding slack plus the wall-top anchor shift
+				// (see the placed-light site in paint_chunk_objects).
+				const int                              rt    = radius / c_tilesize + 7;
+				const Tile_coord                       ltile = main_actor->get_tile();
+				std::vector<unsigned char>             lit;
+				std::vector<NaturalLight::Light_spill> spills;
+				// Same under-roof verdict as placed lights: under a roof the
+				// torch keeps roof pixels dark, in the open it lights them.
+				const bool under_roof = NaturalLight::Light_beneath_roof(main_actor);
+				// Wall ring off only when under a roof and viewed from outside
+				// (shows as a bright seam there); on otherwise so window faces glow.
+				const bool light_walls = is_main_actor_inside() || !under_roof;
+				NaturalLight::Build_light_shadow_grid(main_actor, rt, lit, spills, light_walls);
+				// moving = true: the torch follows the Avatar every frame.
+				add_light_render(
+						asx, asy, radius, tier, elevation, rt, ltile.tx, ltile.ty, ltile.tz, std::move(lit), under_roof, 0, false,
+						100, 0, true);
+				// Each opening the fill reached gets the source's own bubble
+				// poking through it: remaining radius, continued falloff
+				// (dist_bias), gated by its own spill grid, dimmed by the
+				// opening's transmission percent (see Light_spill).
+				for (const NaturalLight::Light_spill& spill : spills) {
+					const Tile_coord& sp           = spill.tile;
+					const int         spill_dist   = ltile.distance_2d(sp) * c_tilesize;
+					const int         spill_radius = radius - spill_dist;
+					if (spill_radius <= 0) {
+						continue;
+					}
+					// +7: rounding slack plus the wall-top anchor shift (see rt).
+					const int                  srt = spill_radius / c_tilesize + 7;
+					std::vector<unsigned char> slit;
+					// Facade ring only for an outside viewer: seen from inside,
+					// the ring's z-blind cells hang over the walls' INTERIOR
+					// faces up-screen and glow through neighbouring rooms.
+					NaturalLight::Build_spill_shadow_grid(sp, srt, slit, !is_main_actor_inside());
+					int ssx = 0;
+					int ssy = 0;
+					get_shape_location(sp, ssx, ssy);
+					add_light_render(
+							ssx, ssy, spill_radius, tier, elevation, srt, sp.tx, sp.ty, sp.tz, std::move(slit), false, spill_dist,
+							true, spill.percent, spill.floor, true);
+				}
+			}
+			// Also check light spell.
+			if (special_light && clock->get_total_minutes() > special_light) {
+				// Just expired.
+				special_light = 0;
+				clock->set_palette();
+			}
+			// Light sources no longer tint the global palette; it stays purely
+			// time-of-day (incl. dawn/dusk). The spatial light layers do the local
+			// brightening around each source instead.
+			(void)light_sources;
+			clock->set_light_source(0, in_dungeon);
+			build_light_layers();
+		} else {
+			// Legacy lighting: carried and placed lights tint the whole global
+			// palette based on their combined strength.
+			Actor*    party[9];    // Get party, including Avatar.
+			const int cnt           = get_party(party, 1);
+			int       carried_light = 0;
+			for (int i = 0; i < cnt; i++) {
+				carried_light += Get_light_strength(party[i], main_actor, party[i]->get_light_source());
+			}
+			// Also check light spell.
+			if (special_light && clock->get_total_minutes() > special_light) {
+				// Just expired.
+				special_light = 0;
+				clock->set_palette();
+			}
+			// Set palette for lights.
+			clock->set_light_source(carried_light + light_sources, in_dungeon);
 		}
-		// Also check light spell.
-		if (special_light && clock->get_total_minutes() > special_light) {
-			// Just expired.
-			special_light = 0;
-			clock->set_palette();
-		}
-		// Set palette for lights.
-		clock->set_light_source(carried_light + light_sources, in_dungeon);
 	}
 
 	win->EndPaintIntoGuardBand();
@@ -559,12 +684,135 @@ int Game_render::paint_chunk_objects(
 	int               light_sources = 0;    // Also check for light sources.
 	Main_actor* const main_actor    = gwin->get_main_actor();
 	if (main_actor != nullptr) {
-		const auto& lights = gwin->is_in_dungeon() ? olist->get_dungeon_lights() : olist->get_non_dungeon_lights();
+		const auto& lights         = gwin->is_in_dungeon() ? olist->get_dungeon_lights() : olist->get_non_dungeon_lights();
+		const bool  natural        = gwin->get_natural_light();
+		const bool  viewer_outside = !gwin->is_main_actor_inside();
+		// The spatial light layers are hidden at full day, so all the grid /
+		// spill building below would be wasted work then.
+		const bool day_palette = gwin->get_pal()->get_palette_number() == PALETTE_DAY;
+		// All lights in this loop live in the chunk being painted (cx, cy).
+		// Treat the Avatar's own chunk as "the building you are in".
+		const bool same_chunk          = (cx == main_actor->get_cx() && cy == main_actor->get_cy());
+		int        opening_shape       = -1;
+		int        opening_frame       = -1;
+		int        opening_match_frame = -2;
+		int        opening_tx          = -1;
+		int        opening_ty          = -1;
+		int        opening_lift        = -1;
+		// Whether this chunk has a shape light can pass through (window, open
+		// door, ...). Needed when the Avatar is outside: interior light leaks
+		// out through it. Natural light only.
+		const bool chunk_has_opening
+				= natural
+				  && NaturalLight::Chunk_find_light_passes_through(
+						  olist, opening_shape, opening_frame, opening_match_frame, opening_tx, opening_ty, opening_lift);
+		// Whether the Avatar's own enclosure is completely light-tight.
+		// Computed once per frame in paint_map (sealed = no light_passes_through
+		// object AND no passable gap in the walls).
+		const bool avatar_sealed = avatar_enclosure_sealed;
+		// Per-crossing light dimming. Each inside/outside boundary a light
+		// crosses divides its strength by this factor (one darker palette step)
+		// but it is floored so an escaping light never drops below the lowest
+		// lit palette (candle) -- it is never dimmed to full darkness.
+		constexpr int light_pass_dim_divisor  = 3;
+		constexpr int light_pass_min_strength = 1;
 		for (const auto& light_obj : lights) {
 			const Shape_info& info = light_obj->get_info();
-			if (info.get_object_light(light_obj->get_framenum()) > 0) {
+			// get_object_light is the authoritative test: it covers flagged
+			// light sources AND shape_info.txt enhancement entries (gated on
+			// allow_enhancements), including frame-0-brightness-0 shapes.
+			if (info.get_object_light(light_obj->get_framenum()) <= 0) {
+				continue;
+			}
+			const int strength = get_light_strength(light_obj, main_actor);
+			// Natural lights have their own bounded glow radius; only cull
+			// distance-decayed (strength 0) lights when natural light is off.
+			if (strength <= 0 && !natural) {
+				continue;
+			}
+			if (!natural) {
+				// Vanilla legacy behaviour: every in-range light counts fully.
+				light_sources += strength;
+				continue;
+			}
+			// Decide whether this source reaches the viewer, and how many
+			// inside/outside boundaries its light crosses on the way.
+			const NaturalLight::LightVisibility vis = NaturalLight::Evaluate_light_visibility(
+					light_obj, olist, main_actor, viewer_outside, same_chunk, avatar_sealed, chunk_has_opening);
+			const bool blocked   = vis.blocked;
+			const int  crossings = vis.crossings;
+
+			if (blocked) {
+				continue;
+			}
+			// Spatial lighting: record this (unblocked) source so
+			// build_light_layers can brighten the world around it. Radius and
+			// palette tier scale with the light's intrinsic brightness (not the
+			// distance-decayed strength used for the legacy global palette).
+			if (!day_palette) {
+				const int brightness = info.get_object_light(light_obj->get_framenum());
+				int       lsx        = 0;
+				int       lsy        = 0;
+				gwin->get_shape_location(light_obj, lsx, lsy);
+				// Keep the pool centred on the object's foot tile; the emitter's
+				// height only rounds the dome falloff (`elevation`).
+				const int elevation = (info.get_3d_height() * c_tilesize) / 2;
+				const int radius    = NaturalLight::Light_radius(brightness);
+				const int tier      = NaturalLight::Light_tier(brightness);
+				// Keep roofs dark only for a light itself under a roof; one in
+				// the open lights nearby house roofs (see Light_beneath_roof).
+				const bool under_roof = NaturalLight::Light_beneath_roof(light_obj);
+				// +7: one tile of rounding slack plus six tiles covering the
+				// wall-top anchor shift (mask stamps draw up to 4*roof_z px
+				// up-left of the tiles), so a fill reaching the grid edge does
+				// not cut off the dome's south/east fringe.
+				const int                              rt    = radius / c_tilesize + 7;
+				const Tile_coord                       ltile = light_obj->get_tile();
+				std::vector<unsigned char>             lit;
+				std::vector<NaturalLight::Light_spill> spills;
+				// Wall ring only when the Avatar is inside on this light's own
+				// storey: from any other storey (or outside) the ring peeks out
+				// as a stray glow on the wall faces.
+				const bool light_walls
+						= (gwin->is_main_actor_inside() && gwin->get_main_actor()->get_lift() / 5 == ltile.tz / 5) || !under_roof;
+				NaturalLight::Build_light_shadow_grid(light_obj, rt, lit, spills, light_walls);
+				gwin->add_light_render(
+						lsx, lsy, radius, tier, elevation, rt, ltile.tx, ltile.ty, ltile.tz, std::move(lit), under_roof);
+				// Spill glow per reached opening (see the carried-light site).
+				for (const NaturalLight::Light_spill& spill : spills) {
+					const Tile_coord& sp           = spill.tile;
+					const int         spill_dist   = ltile.distance_2d(sp) * c_tilesize;
+					const int         spill_radius = radius - spill_dist;
+					if (spill_radius <= 0) {
+						continue;
+					}
+					// +7: rounding slack plus the wall-top anchor shift (see rt).
+					const int                  srt = spill_radius / c_tilesize + 7;
+					std::vector<unsigned char> slit;
+					// Facade ring only for an outside viewer (see carried-light site).
+					NaturalLight::Build_spill_shadow_grid(sp, srt, slit, !gwin->is_main_actor_inside());
+					int ssx = 0;
+					int ssy = 0;
+					gwin->get_shape_location(sp, ssx, ssy);
+					gwin->add_light_render(
+							ssx, ssy, spill_radius, tier, elevation, srt, sp.tx, sp.ty, sp.tz, std::move(slit), false, spill_dist,
+							true, spill.percent, spill.floor);
+				}
+			}
+			// Dim once per inside/outside crossing (floored at the lowest lit
+			// palette, never to darkness).  Only strength > 0 contributes: a
+			// distance-culled light kept for its spatial glow must not inflate
+			// the legacy global light count.
+			if (strength > 0) {
+				int effective = strength;
+				for (int i = 0; i < crossings; ++i) {
+					effective /= light_pass_dim_divisor;
+				}
+				if (crossings > 0 && effective < light_pass_min_strength) {
+					effective = light_pass_min_strength;
+				}
 				// Count light sources.
-				light_sources += get_light_strength(light_obj, main_actor);
+				light_sources += effective;
 			}
 		}
 	}
@@ -606,6 +854,9 @@ void Game_render::paint_object(Game_object* obj) {
 				bbox_x, bbox_y, obj->get_framenum(), Game_window::get_instance()->get_win()->get_ib8(), bbox_palindex, 2);
 	}
 	obj->paint();    // Finally, paint this one.
+	// Update the roof-pixel mask: roofs mark their pixels, front objects clear
+	// them, so an overlapping shape (e.g. a tree) is not darkened as a roof.
+	Game_window::get_instance()->update_roof_mask(obj, bbox_x, bbox_y);
 	// paint bbox front
 	if (bbox_palindex != -1) {
 		obj->get_info().paint_bbox(
@@ -625,6 +876,12 @@ void Game_window::paint_dirty() {
 		paint(box);    // (Could create new dirty rects.)
 	}
 	clear_dirty();
+	if (light_repaint_pending) {
+		// A light was placed / removed during the paint above: repaint
+		// everything next frame so the roof mask covers its new rects.
+		light_repaint_pending = false;
+		set_all_dirty();
+	}
 }
 
 /*

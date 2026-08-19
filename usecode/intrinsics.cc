@@ -55,6 +55,7 @@
 #include "monsters.h"
 #include "monstinf.h"
 #include "mouse.h"
+#include "naturallight.h"
 #include "objiter.h"
 #include "palette.h"
 #include "party.h"
@@ -752,6 +753,10 @@ USECODE_INTRINSIC(set_last_created) {
 	Game_object_shared keep;
 	if (obj) {
 		add_dirty(obj);    // Set to repaint area.
+		// Taking a wall-like object (shutter leaf) off the map reshapes floods.
+		if (obj->get_owner() == nullptr && obj->get_chunk() != nullptr) {
+			NaturalLight::Notify_object_edited(obj);
+		}
 		last_created.push_back(obj->shared_from_this());
 		obj->remove_this(&keep);    // Remove, but don't delete.
 	}
@@ -779,6 +784,8 @@ USECODE_INTRINSIC(update_last_created) {
 		const Tile_coord dest(
 				arr.get_elem(0).get_int_value(), arr.get_elem(1).get_int_value(), sz >= 3 ? arr.get_elem(2).get_int_value() : 0);
 		obj->move(dest.tx, dest.ty, dest.tz, sz < 4 ? -1 : arr.get_elem(3).get_int_value());
+		// Placing a wall-like object (a shutter leaf) reshapes light floods.
+		NaturalLight::Notify_object_edited(obj.get());
 	} else if (sz == 1) {
 		obj->remove_this();
 	}
@@ -979,7 +986,7 @@ USECODE_INTRINSIC(npc_nearby) {
 	const Tile_coord pos = obj->get_tile();
 	Actor*           npc;
 	const bool       is_near = gwin->get_win_tile_rect().has_world_point(pos.tx, pos.ty) &&
-							   // Guessing: true if non-NPC, false if NPC is dead, asleep or
+						 // Guessing: true if non-NPC, false if NPC is dead, asleep or
 						 // paralyzed.
 						 ((npc = as_actor(obj)) == nullptr || npc->can_act());
 	Usecode_value u(is_near);
@@ -1431,7 +1438,7 @@ USECODE_INTRINSIC(summon) {
 	}
 	const Tile_coord start = gwin->get_main_actor()->get_tile();
 	const Tile_coord dest  = Map_chunk::find_spot(
-			start, 5, shapenum, 0, 1, -1, gwin->is_main_actor_inside() ? Map_chunk::inside : Map_chunk::outside);
+            start, 5, shapenum, 0, 1, -1, gwin->is_main_actor_inside() ? Map_chunk::inside : Map_chunk::outside);
 	if (dest.tx == -1) {
 		return Usecode_value(0);
 	}
@@ -1963,10 +1970,9 @@ USECODE_INTRINSIC(sprite_effect) {
 	// Validate sprite number is in valid range before creating effect
 	Shape_manager* sman = Shape_manager::get_instance();
 	if (sprite_num >= 0 && sprite_num < sman->get_file(SF_SPRITES_VGA).get_num_shapes()) {
-		gwin->get_effects()->add_effect(
-				std::make_unique<Sprites_effect>(
-						sprite_num, Tile_coord(parms[1].get_int_value(), parms[2].get_int_value(), 0), parms[3].get_int_value(),
-						parms[4].get_int_value(), 0, parms[5].get_int_value(), parms[6].get_int_value()));
+		gwin->get_effects()->add_effect(std::make_unique<Sprites_effect>(
+				sprite_num, Tile_coord(parms[1].get_int_value(), parms[2].get_int_value(), 0), parms[3].get_int_value(),
+				parms[4].get_int_value(), 0, parms[5].get_int_value(), parms[6].get_int_value()));
 	}
 	return no_ret;
 }
@@ -1980,10 +1986,9 @@ USECODE_INTRINSIC(obj_sprite_effect) {
 		// Validate sprite number is in valid range before creating effect
 		Shape_manager* sman = Shape_manager::get_instance();
 		if (sprite_num >= 0 && sprite_num < sman->get_file(SF_SPRITES_VGA).get_num_shapes()) {
-			gwin->get_effects()->add_effect(
-					std::make_unique<Sprites_effect>(
-							sprite_num, obj, -parms[2].get_int_value(), -parms[3].get_int_value(), parms[4].get_int_value(),
-							parms[5].get_int_value(), parms[6].get_int_value(), parms[7].get_int_value()));
+			gwin->get_effects()->add_effect(std::make_unique<Sprites_effect>(
+					sprite_num, obj, -parms[2].get_int_value(), -parms[3].get_int_value(), parms[4].get_int_value(),
+					parms[5].get_int_value(), parms[6].get_int_value(), parms[7].get_int_value()));
 		}
 	}
 	return no_ret;
@@ -3037,8 +3042,8 @@ USECODE_INTRINSIC(is_not_blocked) {
 	// Find out about given shape.
 	const Shape_info& info = ShapeID::get_info(shapenum);
 	const TileRect    footprint(
-			tile.tx - info.get_3d_xtiles(framenum) + 1, tile.ty - info.get_3d_ytiles(framenum) + 1, info.get_3d_xtiles(framenum),
-			info.get_3d_ytiles(framenum));
+            tile.tx - info.get_3d_xtiles(framenum) + 1, tile.ty - info.get_3d_ytiles(framenum) + 1, info.get_3d_xtiles(framenum),
+            info.get_3d_ytiles(framenum));
 	int        new_lift;
 	const bool blocked = Map_chunk::is_blocked(
 			info.get_3d_height(), tile.tz, footprint.x, footprint.y, footprint.w, footprint.h, new_lift, MOVE_ALL_TERRAIN, 1);
