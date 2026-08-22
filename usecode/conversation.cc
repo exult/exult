@@ -217,7 +217,7 @@ TileRect Conversation::get_conv_rect() const {
  */
 int Conversation::get_conv_layer() {
 	if (conv_layer < 0) {
-		conv_layer = gwin->create_layer(conv_width, conv_height, conv_transparent);
+		conv_layer = gwin->create_layer("conv", conv_width, conv_height, conv_transparent, 0, 0);
 		if (conv_layer >= 0) {
 			gwin->layer_set_ui_kind(conv_layer, Image_window::UiLayerConversations);
 			// Let the layer render translucent (Guardian/serpent) pixels with
@@ -251,7 +251,7 @@ int Conversation::get_conv_layer() {
 
 int Conversation::get_conv_bg_layer() {
 	if (conv_bg_layer < 0) {
-		conv_bg_layer = gwin->create_layer(conv_width, conv_height, conv_transparent, 0, -1);
+		conv_bg_layer = gwin->create_layer("convbg", conv_width, conv_height, conv_transparent, 0, -1);
 		if (conv_bg_layer >= 0) {
 			gwin->layer_set_ui_kind(conv_bg_layer, Image_window::UiLayerConversations);
 			gwin->layer_set_alpha(conv_bg_layer, conv_bg_alpha);

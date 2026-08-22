@@ -187,7 +187,8 @@ const struct Action {
 		{       "WRITE_MINIMAP",       ActionWriteMiniMap,           nullptr, 0x854, Action::mapedit_keys,         NONE, false,  true,  true, false},
 		{             "REPAINT",            ActionRepaint,           nullptr, 0x855,    Action::dont_show,         NONE,  true,  true,  true, false},
 		{       "TOGGLE_BBOXES",       ActionToggleBBoxes,           nullptr, 0x856, Action::mapedit_keys,         NONE, false,  true,  true, false},
-		{                    "",                  nullptr,           nullptr,     0,    Action::dont_show,         NONE, false, false, false, false}  //  terminator
+		{       "PERF_METRICS",         ActionPerfMetrics,           nullptr, 0x856, Action::dont_show,            NONE, false,  true,  true, false},
+		{                    "",                  nullptr,           nullptr,     0,    Action::dont_show,         NONE, true,  true,  true, false}  //  terminator
 		// clang-format on
 };
 

@@ -979,7 +979,7 @@ USECODE_INTRINSIC(npc_nearby) {
 	const Tile_coord pos = obj->get_tile();
 	Actor*           npc;
 	const bool       is_near = gwin->get_win_tile_rect().has_world_point(pos.tx, pos.ty) &&
-							   // Guessing: true if non-NPC, false if NPC is dead, asleep or
+						 // Guessing: true if non-NPC, false if NPC is dead, asleep or
 						 // paralyzed.
 						 ((npc = as_actor(obj)) == nullptr || npc->can_act());
 	Usecode_value u(is_near);
@@ -1431,7 +1431,7 @@ USECODE_INTRINSIC(summon) {
 	}
 	const Tile_coord start = gwin->get_main_actor()->get_tile();
 	const Tile_coord dest  = Map_chunk::find_spot(
-			start, 5, shapenum, 0, 1, -1, gwin->is_main_actor_inside() ? Map_chunk::inside : Map_chunk::outside);
+            start, 5, shapenum, 0, 1, -1, gwin->is_main_actor_inside() ? Map_chunk::inside : Map_chunk::outside);
 	if (dest.tx == -1) {
 		return Usecode_value(0);
 	}
@@ -1482,7 +1482,7 @@ public:
 			return;
 		}
 		if (layer < 0) {
-			layer = gwin->create_layer(w, h, 255, 0, display_map_layer_z);
+			layer = gwin->create_layer("map", w, h, 255, 0, display_map_layer_z);
 			if (layer < 0) {
 				return;
 			}
@@ -1963,10 +1963,9 @@ USECODE_INTRINSIC(sprite_effect) {
 	// Validate sprite number is in valid range before creating effect
 	Shape_manager* sman = Shape_manager::get_instance();
 	if (sprite_num >= 0 && sprite_num < sman->get_file(SF_SPRITES_VGA).get_num_shapes()) {
-		gwin->get_effects()->add_effect(
-				std::make_unique<Sprites_effect>(
-						sprite_num, Tile_coord(parms[1].get_int_value(), parms[2].get_int_value(), 0), parms[3].get_int_value(),
-						parms[4].get_int_value(), 0, parms[5].get_int_value(), parms[6].get_int_value()));
+		gwin->get_effects()->add_effect(std::make_unique<Sprites_effect>(
+				sprite_num, Tile_coord(parms[1].get_int_value(), parms[2].get_int_value(), 0), parms[3].get_int_value(),
+				parms[4].get_int_value(), 0, parms[5].get_int_value(), parms[6].get_int_value()));
 	}
 	return no_ret;
 }
@@ -1980,10 +1979,9 @@ USECODE_INTRINSIC(obj_sprite_effect) {
 		// Validate sprite number is in valid range before creating effect
 		Shape_manager* sman = Shape_manager::get_instance();
 		if (sprite_num >= 0 && sprite_num < sman->get_file(SF_SPRITES_VGA).get_num_shapes()) {
-			gwin->get_effects()->add_effect(
-					std::make_unique<Sprites_effect>(
-							sprite_num, obj, -parms[2].get_int_value(), -parms[3].get_int_value(), parms[4].get_int_value(),
-							parms[5].get_int_value(), parms[6].get_int_value(), parms[7].get_int_value()));
+			gwin->get_effects()->add_effect(std::make_unique<Sprites_effect>(
+					sprite_num, obj, -parms[2].get_int_value(), -parms[3].get_int_value(), parms[4].get_int_value(),
+					parms[5].get_int_value(), parms[6].get_int_value(), parms[7].get_int_value()));
 		}
 	}
 	return no_ret;
@@ -3037,8 +3035,8 @@ USECODE_INTRINSIC(is_not_blocked) {
 	// Find out about given shape.
 	const Shape_info& info = ShapeID::get_info(shapenum);
 	const TileRect    footprint(
-			tile.tx - info.get_3d_xtiles(framenum) + 1, tile.ty - info.get_3d_ytiles(framenum) + 1, info.get_3d_xtiles(framenum),
-			info.get_3d_ytiles(framenum));
+            tile.tx - info.get_3d_xtiles(framenum) + 1, tile.ty - info.get_3d_ytiles(framenum) + 1, info.get_3d_xtiles(framenum),
+            info.get_3d_ytiles(framenum));
 	int        new_lift;
 	const bool blocked = Map_chunk::is_blocked(
 			info.get_3d_height(), tile.tz, footprint.x, footprint.y, footprint.w, footprint.h, new_lift, MOVE_ALL_TERRAIN, 1);

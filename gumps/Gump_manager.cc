@@ -170,7 +170,15 @@ void Gump_manager::render_gump_part_to_layer(Gump* g, int z, int part, bool is_h
 			gwin->destroy_layer(layer);
 			layer = -1;
 		}
-		layer = gwin->create_layer(b.w, b.h, 255, 0, z);
+		std::string layer_name;
+		layer_name.reserve(32);
+		layer_name = typeid(*g).name();
+		if (auto cont = g->get_container()) {
+			layer_name += ":";
+			layer_name += cont->get_name();
+		}
+
+		layer = gwin->create_layer(std::move(layer_name), b.w, b.h, 255, 0, z);
 		if (layer < 0) {
 			return;
 		}

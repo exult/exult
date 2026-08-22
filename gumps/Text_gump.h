@@ -47,6 +47,12 @@ public:
 	int  paint_page(const TileRect& box, int start);
 	// Next page of book/scroll.
 	int show_next_page();
-};
 
+protected:
+	bool begin_layer_paint(int drawx, int drawy, int& ox, int& oy, int& w, int& h, class Image_buffer8*& prev_target);
+
+	void end_layer_paint(int w, int h, class Image_buffer8* prev_target);
+	// Above normal/hud gumps, below modal gumps.
+	constexpr static int text_gump_layer_z = (1 << 18) + (1 << 16) + 1;
+};
 #endif

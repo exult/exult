@@ -426,8 +426,8 @@ public:
 		return win;
 	}
 
-	int create_layer(int w, int h, unsigned char transparent = 255, int fixed_scale = 0, int z = 0) {
-		return win->create_layer(w, h, transparent, fixed_scale, z);
+	int create_layer(std::string&& name, int w, int h, unsigned char transparent = 255, int fixed_scale = 0, int z = 0) {
+		return win->create_layer(std::move(name), w, h, transparent, fixed_scale, z);
 	}
 
 	void destroy_layer(int handle) {

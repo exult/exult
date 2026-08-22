@@ -1176,7 +1176,7 @@ void Text_effect::paint_to_layer() {
 			gwin->destroy_layer(text_layer);
 			text_layer = -1;
 		}
-		text_layer = gwin->create_layer(w, h, 255, 0, text_effect_layer_z);
+		text_layer = gwin->create_layer("Text effect", w, h, 255, 0, text_effect_layer_z);
 		if (text_layer < 0) {
 			return;
 		}

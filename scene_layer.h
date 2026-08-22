@@ -50,7 +50,7 @@ public:
 		gwin->set_ui_layer_config(
 				Image_window::UiLayerFullScreenScene, scene_w, scene_h, iwin->get_scaler(), Image_window::Fill,
 				iwin->get_fill_scaler());
-		handle = gwin->create_layer(scene_w, scene_h, transparent_index, 0, scene_layer_z);
+		handle = gwin->create_layer("scene", scene_w, scene_h, transparent_index, 0, scene_layer_z);
 		if (handle >= 0) {
 			gwin->layer_set_ui_kind(handle, Image_window::UiLayerFullScreenScene);
 			// A scene is a full-screen opaque takeover: NO palette index is

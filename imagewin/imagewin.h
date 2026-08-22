@@ -78,6 +78,8 @@ public:
 		UiLayerDisplayMap,
 		UiLayerTextEffects,
 		UiLayerFullScreenScene,
+		UiLayerFullScreenNoScaler,
+
 		NumUiLayerKinds
 	};
 
@@ -189,10 +191,16 @@ public:
 		// entry is used verbatim (with its own alpha) instead of the opaque
 		// palette colour, letting a layer draw translucent pixels.
 		std::vector<uint32> index_argb;
+		std::vector<uint32> gamma_argb;
+		double              gamma_r = 0;
+		double              gamma_g = 0;
+		double              gamma_b = 0;
+
+		std::string name;
 
 	public:
-		Layer(std::unique_ptr<Image_buffer> b, int w, int h, unsigned char transp, int fscale, int zorder)
-				: buf(std::move(b)), logw(w), logh(h), fixed_scale(fscale), transparent(transp), z(zorder) {}
+		Layer(std::unique_ptr<Image_buffer> b, int w, int h, unsigned char transp, int fscale, int zorder, std::string&& name)
+				: buf(std::move(b)), logw(w), logh(h), fixed_scale(fscale), transparent(transp), z(zorder), name(std::move(name)) {}
 
 		Image_buffer* get_ibuf() const {
 			return buf.get();
@@ -228,6 +236,10 @@ public:
 
 		bool is_visible() const {
 			return visible;
+		}
+
+		const std::string& get_name() const {
+			return name;
 		}
 	};
 
@@ -329,6 +341,8 @@ protected:
 	int active_scene_layer = -1;
 	int inter_width;
 	int inter_height;
+	int display_width;
+	int display_height;
 	// Guardband around the edge of the draw surface to allow scalers to run
 	// without per pixel bounds checking and to allow rounding up to
 	// multiples of 4. It should  not be less than 4 and there is no reason for
@@ -369,14 +383,18 @@ protected:
 	static SDL_DisplayMode desktop_displaymode;
 	struct SDL_Window*     screen_window;
 	struct SDL_Renderer*   screen_renderer;
-	struct SDL_Texture*    screen_texture;
-	void                   UpdateRect(SDL_Surface* surf);
+	struct SDL_Texture*
+			screen_texture;    // Output of scalers gets drawn here. This may contain partial frames if there is no inter_surface
+	struct SDL_Texture* screen_texture_a;    // What gets drawn to the screen by SDL. The is the accumulation of all updates to
+											 // screen_texture and contains the current full frame being displayed
+
+	// Update screen_texture_a with the dirtyRect changes made to screen_texture and render fullRect of screen_texture_a
+	void UpdateRect(SDL_FRect* dirtyRect, SDL_FRect* fullRect);
 
 	SDL_Surface* paletted_surface;    // Surface that palette is set on (Example
-									  // res)
-	SDL_Surface* display_surface;     // Final surface that is displayed  (1024x1024)
-	SDL_Surface* inter_surface;       // Post scaled/pre stretch surface  (960x600)
-	SDL_Surface* draw_surface;        // Pre scaled surface               (320x200)
+									  // res) - Never null
+	SDL_Surface* inter_surface;    // Post scaled/pre stretch surface  (960x600) - can be null if there is no stretching being dome
+	SDL_Surface* draw_surface;     // Pre scaled surface               (320x200) - Never null
 
 	// Layers composited on top of the main image (see class Layer).
 	std::vector<std::unique_ptr<Layer>> layers;
@@ -541,7 +559,7 @@ public:
 			FillMode fmode = AspectCorrectCentre, int fillsclr = point)
 			: ibuf(ib), scale(scl), scaler(sclr), uses_palette(true), fullscreen(fs), game_width(gamew), game_height(gameh),
 			  saved_game_width(gamew), saved_game_height(gameh), fill_mode(fmode), fill_scaler(fillsclr), screen_window(nullptr),
-			  screen_renderer(nullptr), screen_texture(nullptr), paletted_surface(nullptr), display_surface(nullptr),
+			  screen_renderer(nullptr), screen_texture(nullptr), screen_texture_a(nullptr), paletted_surface(nullptr),
 			  inter_surface(nullptr), draw_surface(nullptr) {
 		static_init();
 		create_surface(w, h);
@@ -555,8 +573,13 @@ public:
 		return scale;
 	}
 
-	int get_display_width();
-	int get_display_height();
+	int get_display_width() {
+		return display_width;
+	}
+
+	int get_display_height() {
+		return display_height;
+	}
 
 	void screen_to_game(int sx, int sy, bool fast, int& gx, int& gy);
 
@@ -663,7 +686,7 @@ public:
 	// constant on-screen size independent of the world scaling), otherwise it
 	// is drawn at the given integer scale.  'z' orders layers: higher values
 	// are composited on top.
-	int           create_layer(int w, int h, unsigned char transparent = 255, int fixed_scale = 0, int z = 0);
+	int           create_layer(std::string&& name, int w, int h, unsigned char transparent = 255, int fixed_scale = 0, int z = 0);
 	void          destroy_layer(int handle);
 	Image_buffer* get_layer_ibuf(int handle);
 	// Mark a layer's buffer as changed so it is re-uploaded before the next
@@ -770,7 +793,7 @@ public:
 			return false;
 		}
 		// Only if actually scaling
-		if (draw_surface == display_surface) {
+		if (draw_surface->w == screen_texture->w && draw_surface->h == screen_texture->h) {
 			return false;
 		}
 
@@ -780,9 +803,9 @@ public:
 			return false;
 		}
 
-		// if inter is the same as display the scaling is only being done by
+		// if no inter surface the scaling is only being done by
 		// scaler and if is point we don't need to do this
-		if (display_surface == inter_surface && point == scaler) {
+		if (!inter_surface && point == scaler) {
 			return false;
 		}
 

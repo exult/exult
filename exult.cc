@@ -3116,6 +3116,8 @@ static void apply_ui_layer_config() {
 	apply_named_layer(Image_window::UiLayerModalGumps, "modal_gumps");
 	apply_named_layer(Image_window::UiLayerDisplayMap, "display_map");
 	apply_named_layer(Image_window::UiLayerTextEffects, "text_effect");
+	gwin->set_ui_layer_config(
+			Image_window::UiLayerFullScreenNoScaler, 320, 200, Image_window::NoScaler, Image_window::Fill, Image_window::SDLScaler);
 }
 
 /*

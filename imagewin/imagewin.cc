@@ -34,10 +34,13 @@ Boston, MA  02111-1307, USA.
 #include "Configuration.h"
 #include "PointScaler.h"
 #include "common_types.h"
+#include "exceptions.h"
+#include "gamewin.h"
 #include "istring.h"
 #include "items.h"
 #include "manip.h"
 #include "mouse.h"
+#include "perf.h"
 
 #include <algorithm>
 #include <cstdlib>
@@ -552,100 +555,16 @@ void Image_window::create_surface(unsigned int w, unsigned int h) {
 		// Try fallback to point scaler if it failed, if it doesn't work, we
 		// probably can't run
 		scaler = point;
-		try_scaler(w, h);
-	}
-
-	if (!paletted_surface && !force_bpp) {    // No scaling, or failed?
-		uint32 flags = SDL_WINDOW_HIGH_PIXEL_DENSITY;
-		if (screen_window != nullptr) {
-			SDL_SetWindowSize(screen_window, w / scale, h / scale);
-#if 0
-			{
-				SDL_DisplayMode closest_mode;
-				// This does not appear to have any effect
-				if (SDL_GetClosestFullscreenDisplayMode(
-							SDL_GetPrimaryDisplay(), w / scale, h / scale, 0.0,
-							true, &closest_mode)) {
-					SDL_SetWindowFullscreenMode(screen_window, &closest_mode);
-				}
-			}
-#endif
-			SDL_SetWindowFullscreen(screen_window, fullscreen);
-		} else {
-			screen_window = SDL_CreateWindow("", w / scale, h / scale, flags);
-#if 0
-			{
-				SDL_DisplayMode closest_mode;
-				// This does not appear to have any effect
-				if (SDL_GetClosestFullscreenDisplayMode(
-							SDL_GetPrimaryDisplay(), w / scale, h / scale, 0.0,
-							true, &closest_mode)) {
-					SDL_SetWindowFullscreenMode(screen_window, &closest_mode);
-				}
-			}
-#endif
-			SDL_SetWindowFullscreen(screen_window, fullscreen);
-		}
-		if (screen_window == nullptr) {
-			cout << "Couldn't create window: " << SDL_GetError() << std::endl;
-		}
-
-		if (screen_renderer == nullptr) {
-			screen_renderer = SDL_CreateRenderer(screen_window, nullptr);
-		}
-		if (screen_renderer == nullptr) {
-			cout << "Couldn't create renderer: " << SDL_GetError() << std::endl;
-		}
-		SDL_SetRenderVSync(screen_renderer, 1);
-		// Do an initial draw/fill
-		SDL_SetRenderDrawColor(screen_renderer, 0, 0, 0, 255);
-		SDL_RenderClear(screen_renderer);
-		SDL_RenderPresent(screen_renderer);
-
-		int    sbpp;
-		Uint32 sRmask;
-		Uint32 sGmask;
-		Uint32 sBmask;
-		Uint32 sAmask;
-		SDL_GetMasksForPixelFormat(desktop_displaymode.format, &sbpp, &sRmask, &sGmask, &sBmask, &sAmask);
-		display_surface
-				= SDL_CreateSurface((w / scale), (h / scale), SDL_GetPixelFormatForMasks(sbpp, sRmask, sGmask, sBmask, sAmask));
-		if (display_surface == nullptr) {
-			cout << "Couldn't create display surface: " << SDL_GetError() << std::endl;
-		}
-		if (screen_texture == nullptr) {
-			screen_texture = SDL_CreateTexture(
-					screen_renderer, desktop_displaymode.format, SDL_TEXTUREACCESS_STREAMING, (w / scale), (h / scale));
-		}
-		if (screen_texture == nullptr) {
-			cout << "Couldn't create texture: " << SDL_GetError() << std::endl;
-		}
-		SDL_SetTextureBlendMode(screen_texture, SDL_BLENDMODE_NONE);
-		inter_surface = draw_surface = paletted_surface = display_surface;
-		inter_width                                     = w / scale;
-		inter_height                                    = h / scale;
-		scale                                           = 1;
-	}
-	if (!paletted_surface) {
-		cerr << "Couldn't set video mode (" << w << ", " << h << ") at " << ibuf->depth
-			 << " bpp depth: " << (force_bpp ? "" : SDL_GetError()) << endl;
-		if (w == 640 && h == 480) {
-			exit(-1);
-		} else {
-			cerr << "Attempting fallback to 640x480. Good luck..." << endl;
-			scale = 2;
-			create_surface(640, 480);
-			return;
+		if (!try_scaler(w, h)) {
+			throw exult_exception("Failed to creat Display Sorfaces");
 		}
 	}
 
 	ibuf->width  = draw_surface->w;
 	ibuf->height = draw_surface->h;
 
-	if (draw_surface != display_surface) {
-		ibuf->width -= guard_band * 2;
-		ibuf->height -= guard_band * 2;
-	}
+	ibuf->width -= guard_band * 2;
+	ibuf->height -= guard_band * 2;
 
 	// Update line size in words.
 	ibuf->line_width = draw_surface->pitch / ibuf->pixel_size;
@@ -654,9 +573,7 @@ void Image_window::create_surface(unsigned int w, unsigned int h) {
 	ibuf->offset_y = (get_full_height() - get_game_height()) / 2;
 	ibuf->bits     = static_cast<unsigned char*>(draw_surface->pixels) - get_start_x() - get_start_y() * ibuf->line_width;
 	// Scaler guardband is in effect
-	if (draw_surface != display_surface) {
-		ibuf->bits += guard_band + ibuf->line_width * guard_band;
-	}
+	ibuf->bits += guard_band + ibuf->line_width * guard_band;
 }
 
 /*
@@ -710,7 +627,9 @@ bool Image_window::create_scale_surfaces(int w, int h, int bpp) {
 	if (screen_renderer == nullptr) {
 		cout << "Couldn't create renderer: " << SDL_GetError() << std::endl;
 	}
-	SDL_SetRenderVSync(screen_renderer, 1);
+	int vsync = 1;
+	config->value("config/video/vsync", vsync, vsync);
+	SDL_SetRenderVSync(screen_renderer, vsync);
 
 	SDL_DisplayID original_displayID = SDL_GetDisplayForWindow(screen_window);
 
@@ -749,12 +668,17 @@ bool Image_window::create_scale_surfaces(int w, int h, int bpp) {
 				SDL_WINDOWPOS_CENTERED_DISPLAY(original_displayID));
 		SDL_SetRenderLogicalPresentation(screen_renderer, w, h, SDL_LOGICAL_PRESENTATION_LETTERBOX);
 	}
+	display_width  = w;
+	display_height = h;
 
 	// Do an initial draw/fill
 	SDL_SetRenderDrawColor(screen_renderer, 0, 0, 0, 255);
 	SDL_RenderClear(screen_renderer);
+	// Clear screen_texture_a too
+	SDL_SetRenderTarget(screen_renderer, screen_texture_a);
+	SDL_RenderClear(screen_renderer);
+	SDL_SetRenderTarget(screen_renderer, nullptr);
 	SDL_RenderPresent(screen_renderer);
-
 	int    sbpp;
 	Uint32 sRmask;
 	Uint32 sGmask;
@@ -762,22 +686,26 @@ bool Image_window::create_scale_surfaces(int w, int h, int bpp) {
 	Uint32 sAmask;
 	SDL_GetMasksForPixelFormat(desktop_displaymode.format, &sbpp, &sRmask, &sGmask, &sBmask, &sAmask);
 
-	display_surface = SDL_CreateSurface(w, h, SDL_GetPixelFormatForMasks(sbpp, sRmask, sGmask, sBmask, sAmask));
-	if (display_surface == nullptr) {
-		cout << "Couldn't create display surface: " << SDL_GetError() << std::endl;
+	if (screen_texture == nullptr) {
+		screen_texture = SDL_CreateTexture(
+				screen_renderer, desktop_displaymode.format, SDL_TEXTUREACCESS_STREAMING,
+				std::max(inter_width, w) + 2 * guard_band * scale, std::max(inter_height, h) + 2 * guard_band * scale);
 	}
 	if (screen_texture == nullptr) {
-		screen_texture = SDL_CreateTexture(screen_renderer, desktop_displaymode.format, SDL_TEXTUREACCESS_STREAMING, w, h);
+		cout << "Couldn't create screen_texture: " << SDL_GetError() << std::endl;
 	}
-	if (screen_texture == nullptr) {
-		cout << "Couldn't create texture: " << SDL_GetError() << std::endl;
+	// This is just to make sure that rects in screen_texture get copied exactly to screen_texture_a
+	SDL_SetTextureScaleMode(screen_texture, SDL_SCALEMODE_NEAREST);
+
+	if (screen_texture_a == nullptr) {
+		screen_texture_a = SDL_CreateTexture(
+				screen_renderer, desktop_displaymode.format, SDL_TEXTUREACCESS_TARGET, screen_texture->w, screen_texture->h);
+	}
+	if (screen_texture_a == nullptr) {
+		cout << "Couldn't create screen_texture_a: " << SDL_GetError() << std::endl;
 	}
 	SDL_SetTextureBlendMode(screen_texture, SDL_BLENDMODE_NONE);
-	if (!display_surface) {
-		cerr << "Unable to set video mode to" << w << "x" << h << " " << hwdepth << " bpp" << endl;
-		free_surface();
-		return false;
-	}
+	SDL_SetTextureBlendMode(screen_texture_a, SDL_BLENDMODE_NONE);
 
 	int draw_width  = inter_width / scale + 2 * guard_band;
 	int draw_height = inter_height / scale + 2 * guard_band;
@@ -793,32 +721,29 @@ bool Image_window::create_scale_surfaces(int w, int h, int bpp) {
 	}
 
 	// Scale using 'fill_scaler' only
-	if (fill_scaler != SDLScaler && (scaler == fill_scaler || scale == 1)) {
+	if (scaler == fill_scaler || scale == 1 || (fill_scaler == SDLScaler && (scaler == point || scaler == bilinear))) {
+		// Use nearest scale mode if the scaler is point otherwise use linear
+		SDL_SetTextureScaleMode(
+				screen_texture_a, (fill_scaler == SDLScaler && scaler == point) ? SDL_SCALEMODE_NEAREST : SDL_SCALEMODE_LINEAR);
 		inter_surface = draw_surface;
 	} else if (inter_width != w || inter_height != h) {
-		const SDL_PixelFormatDetails* display_surface_format = SDL_GetPixelFormatDetails(display_surface->format);
-		int                           i_width                = inter_width + 2 * scale * guard_band;
-		int                           i_height               = inter_height + 2 * scale * guard_band;
-		if (!(inter_surface = SDL_CreateSurface(
-					  i_width, i_height,
-					  SDL_GetPixelFormatForMasks(
-							  hwdepth, display_surface_format->Rmask, display_surface_format->Gmask, display_surface_format->Bmask,
-							  display_surface_format->Amask)))) {
+		int i_width  = inter_width + 2 * scale * guard_band;
+		int i_height = inter_height + 2 * scale * guard_band;
+		if (!(inter_surface = SDL_CreateSurface(i_width, i_height, SDL_PIXELFORMAT_ARGB8888))) {
 			cerr << "Couldn't create inter surface: " << SDL_GetError() << endl;
 			free_surface();
 			return false;
 		}
+		// inter_surface could have an alpha channel but we don't want blending
+		// so disable it
+		SDL_SetSurfaceBlendMode(inter_surface, SDL_BLENDMODE_NONE);
 	}
 	// Scale using 'scaler' only
 	else {
-		inter_surface = display_surface;
+		inter_surface = nullptr;
 	}
 
-	if ((uses_palette = (bpp == 8))) {
-		paletted_surface = display_surface;
-	} else {
-		paletted_surface = draw_surface;
-	}
+	paletted_surface = draw_surface;
 
 	return true;
 }
@@ -841,35 +766,21 @@ bool Image_window::try_scaler(int w, int h) {
 		return false;
 	}
 
-	bool has8  = ibuf->depth == 8 && info->fun8to8 && (force_bpp == 0 || force_bpp == 8);
 	bool has16 = ibuf->depth == 8 && info->fun8to16 && (force_bpp == 0 || force_bpp == 16);
 	bool has32 = ibuf->depth == 8 && info->fun8to32 && (force_bpp == 0 || force_bpp == 32);
 
 	if (info->arb) {
-		has8 |= (force_bpp == 0 || force_bpp == 8) && info->arb->Support8bpp(ibuf->depth);
 		has16 |= (force_bpp == 0 || force_bpp == 16) && info->arb->Support16bpp(ibuf->depth);
 		has32 |= (force_bpp == 0 || force_bpp == 32) && info->arb->Support32bpp(ibuf->depth);
 	}
 
-	// First try best of 16 bit/32 bit scaler
-	if (has16 && has32 && create_scale_surfaces(w, h, 0)) {
-		return true;
+	// 16 and 32 bit both un supported means this scaler is unuusable so bail
+	if (!has16 && !has32) {
+		return false;
 	}
-
-	if (has16 && create_scale_surfaces(w, h, 16)) {
-		return true;
-	}
-
-	if (has32 && create_scale_surfaces(w, h, 32)) {
-		return true;
-	}
-
-	// 8bit display output is mostly deprecated!
-	if (has8 && create_scale_surfaces(w, h, 8)) {
-		return true;
-	}
-
-	return false;
+	// If both 16 and 32 bit supported allow create_scale_surfaces to select bpp
+	// otherwise try 16 or 32 as suppoprted by the scaler
+	return create_scale_surfaces(w, h, has16 && has32 ? 0 : has16 ? 16 : 32);
 }
 
 /*
@@ -877,11 +788,8 @@ bool Image_window::try_scaler(int w, int h) {
  */
 
 void Image_window::free_surface() {
-	if (inter_surface != nullptr && inter_surface != display_surface && inter_surface != draw_surface) {
+	if (inter_surface != nullptr && inter_surface != draw_surface) {
 		SDL_DestroySurface(inter_surface);
-	}
-	if (display_surface != nullptr && display_surface != draw_surface) {
-		SDL_DestroySurface(display_surface);
 	}
 	if (draw_surface != nullptr) {
 		SDL_DestroySurface(draw_surface);
@@ -889,11 +797,14 @@ void Image_window::free_surface() {
 	if (screen_texture != nullptr) {
 		SDL_DestroyTexture(screen_texture);
 	}
+	if (screen_texture_a != nullptr) {
+		SDL_DestroyTexture(screen_texture_a);
+	}
 	screen_texture   = nullptr;
+	screen_texture_a = nullptr;
 	paletted_surface = nullptr;
 	inter_surface    = nullptr;
 	draw_surface     = nullptr;
-	display_surface  = nullptr;
 	ibuf->bits       = nullptr;
 	free_layer_textures();
 	if (screen_renderer != nullptr) {
@@ -941,6 +852,10 @@ void Image_window::resized(
  */
 
 void Image_window::show(int x, int y, int w, int h) {
+	PerformanceTimer::paintPerfMetrics();
+	SDL_ClearError();
+
+	auto perftimer = PerformanceTimer::GetScopedPerfTimer(__func__);
 	if (!ready()) {
 		return;
 	}
@@ -963,10 +878,10 @@ void Image_window::show(int x, int y, int w, int h) {
 	x -= get_start_x();
 	y -= get_start_y();
 
-	// we can only include guard band in the buffersize if inter_surface is not
-	// display_surface otherwise scalers will write out of bounds. A separate
-	// inter_surface has a guardband but display_surface does not
-	int gb = (inter_surface != display_surface) ? guard_band : 0;
+	// we can only include guard band in the buffersize if inter_surface is being used
+	// otherwise scalers will write out of bounds. A separate
+	// inter_surface has a guardband but screen_texture does not
+	int gb = guard_band;
 	//  Include guardband when comparing to width and height so the whole buffer
 	//  can still be used if it is not a muliple of 4
 	int buffer_w = get_full_width() + gb;
@@ -1000,19 +915,35 @@ void Image_window::show(int x, int y, int w, int h) {
 	if (h + y > buffer_h) {
 		h = buffer_h - y;
 	}
+	// Create temporary display_surface from screen_texture;
+	SDL_Surface* display_surface;
+
+	// The region of screen_texture that was changed
+	SDL_FRect dirtyrect = {0, 0, 0, 0};
+	// The Region of the screen_texture that needs to be rendered to the screen
+	SDL_FRect fullrect = {0, 0, 0, 0};
+	{
+		auto perftimer_s_ltts = PerformanceTimer::GetScopedPerfTimer(__func__, " SDL_LockTextureToSurface");
+
+		// Lock the texture as a surface so we can draw to it. The Lock operation imvalidates anything already in the texture
+		if (!SDL_LockTextureToSurface(screen_texture, nullptr, &display_surface)) {
+			const char* err = SDL_GetError();
+			std::cerr << "SDL_LockTextureToSurface failed: " << (err ? err : "") << std::endl;
+			SDL_ClearError();
+		}
+	}
+
+	// inter_surface is not null use that, otherwise set it to the temporary display_surface
+	inter_surface = inter_surface ? inter_surface : display_surface;
 
 	// No scaling if ibuf and draw_surface are not the same size
 	if (ibuf->width + 2 * guard_band == draw_surface->w && ibuf->height + 2 * guard_band == draw_surface->h) {
-		// Phase 1 blit from draw_surface to inter_surface
+		// Phase 1 blit from draw_surface to inter_surface. This only scales the input rectangle
+		const SDL_PixelFormatDetails* inter_surface_format  = SDL_GetPixelFormatDetails(inter_surface->format);
+		const size_t                  inter_bytes_per_pixel = inter_surface_format->bits_per_pixel / 8;
 		if (draw_surface != inter_surface) {
-			const ScalerInfo& sel_scaler = Scalers[scaler];
-
-			const SDL_PixelFormatDetails* inter_surface_format = SDL_GetPixelFormatDetails(inter_surface->format);
-			// Need to apply an offset to compensate for the guard_band
-			if (inter_surface == display_surface) {
-				inter_surface->pixels = static_cast<uint8*>(inter_surface->pixels) - inter_surface->pitch * guard_band * scale
-										- inter_surface_format->bytes_per_pixel * guard_band * scale;
-			}
+			auto              perftimer_s = PerformanceTimer::GetScopedPerfTimer(__func__, " scaler");
+			const ScalerInfo& sel_scaler  = Scalers[scaler];
 
 			if (sel_scaler.arb) {
 				if (!sel_scaler.arb->Scale(
@@ -1042,22 +973,23 @@ void Image_window::show(int x, int y, int w, int h) {
 
 				(this->*show_scaled)(x, y, w, h);
 			}
-
-			// Undo guard_band offset
-			if (inter_surface == display_surface) {
-				inter_surface->pixels = static_cast<uint8*>(inter_surface->pixels) + inter_surface->pitch * guard_band * scale
-										+ inter_surface_format->bytes_per_pixel * guard_band * scale;
-			}
-
+			x += guard_band;
+			y += guard_band;
 			x *= scale;
 			y *= scale;
 			w *= scale;
 			h *= scale;
+
+			fullrect.x = guard_band * scale;
+			fullrect.y = guard_band * scale;
+			fullrect.w = (draw_surface->w - 2 * guard_band) * scale;
+			fullrect.h = (draw_surface->h - 2 * guard_band) * scale;
 		}
 
-		// Phase 2 blit from inter_surface to display_surface
+		// Phase 2 blit from inter_surface to display_surface (this scales the entire surface)
 		if (inter_surface != display_surface && fill_scaler != SDLScaler) {
-			const ScalerInfo& sel_scaler = Scalers[fill_scaler];
+			auto              perftimer_fs = PerformanceTimer::GetScopedPerfTimer(__func__, " fill scaler");
+			const ScalerInfo& sel_scaler   = Scalers[fill_scaler];
 
 			// Just scale entire surfaces
 			if (inter_surface == draw_surface) {
@@ -1071,51 +1003,86 @@ void Image_window::show(int x, int y, int w, int h) {
 				w = inter_width;
 				h = inter_height;
 			}
+			int dw = display_surface->w - 2 * guard_band * scale;
+			int dh = display_surface->h - 2 * guard_band * scale;
 
-			if (!sel_scaler.arb
-				|| !sel_scaler.arb->Scale(
-						inter_surface, x, y, w, h, display_surface, 0, 0, display_surface->w, display_surface->h, false)) {
-				Scalers[point].arb->Scale(
-						inter_surface, x, y, w, h, display_surface, 0, 0, display_surface->w, display_surface->h, false);
+			if (!sel_scaler.arb || !sel_scaler.arb->Scale(inter_surface, x, y, w, h, display_surface, 0, 0, dw, dh, false)) {
+				Scalers[point].arb->Scale(inter_surface, x, y, w, h, display_surface, 0, 0, dw, dh, false);
 			}
 
-			x = 0;
-			y = 0;
-			w = display_surface->w;
-			h = display_surface->h;
+			x          = 0;
+			y          = 0;
+			w          = dw;
+			h          = dh;
+			fullrect.x = x;
+			fullrect.y = y;
+			fullrect.w = w;
+			fullrect.h = h;
 		}
-	}
-	// When using the fill scaler path, 'inter_surface' may differ from the
-	// display size (e.g. AspectCorrectCentre), so uploading it directly may not
-	// match the display texture dimensions. Resolve to display_surface first.
-	if (fill_scaler == SDLScaler && inter_surface != display_surface) {
-		int sx;
-		int sy;
-		int sw;
-		int sh;
-		if (inter_surface == draw_surface) {
-			sx = guard_band;
-			sy = guard_band;
-			sw = get_full_width();
-			sh = get_full_height();
-		} else {
-			sx = guard_band * scale;
-			sy = guard_band * scale;
-			sw = inter_width;
-			sh = inter_height;
-		}
-		if (!Scalers[fill_scaler].arb
-			|| !Scalers[fill_scaler].arb->Scale(
-					inter_surface, sx, sy, sw, sh, display_surface, 0, 0, display_surface->w, display_surface->h, false)) {
-			const SDL_Rect src = {sx, sy, sw, sh};
-			const SDL_Rect dst = {0, 0, display_surface->w, display_surface->h};
-			SDL_BlitSurfaceScaled(inter_surface, &src, display_surface, &dst, SDL_SCALEMODE_LINEAR);
-		}
-	}
 
-	// Phase 3 blit high res draw surface on top of display_surface
-	// Phase 4 notify SDL
-	UpdateRect(display_surface);
+		// Copy the entire inter surface including guardband to the display surface with no scaling here.
+		else if (fill_scaler == SDLScaler && inter_surface != display_surface) {
+			auto perfcounter_sfs = PerformanceTimer::GetScopedPerfTimer(__func__, " sdl fill scaler");
+			// display_surface is always as big as or bigger than inter_surface so we copy the entire inter_surface to
+			// display_surface So the scaling can be done when rendering the texture in UpdateRect
+
+			if (inter_surface == draw_surface) {
+				x = guard_band;
+				y = guard_band;
+				w = get_full_width();
+				h = get_full_height();
+			} else {
+				x = guard_band * scale;
+				y = guard_band * scale;
+				w = inter_width;
+				h = inter_height;
+			}
+			// Copy everything using memcpy if the surfaces have the same format
+			if (inter_surface->format == display_surface->format) {
+				char* src = reinterpret_cast<char*>(inter_surface->pixels) + x * inter_bytes_per_pixel
+							+ y * size_t(inter_surface->pitch);
+				char* end = src + h * inter_surface->pitch;
+				char* dst = reinterpret_cast<char*>(display_surface->pixels) + x * inter_bytes_per_pixel
+							+ y * size_t(display_surface->pitch);
+
+				while (src != end) {
+					memcpy(dst, src, w * inter_bytes_per_pixel);
+					src += inter_surface->pitch;
+					dst += display_surface->pitch;
+				}
+			} else {
+				// Fallback to SDL if pixel format conversion is needed
+				if (!SDL_BlitSurface(inter_surface, nullptr, display_surface, nullptr)) {
+					const char* err = SDL_GetError();
+					std::cerr << "SDL_BlitSurface failed: " << (err ? err : "") << std::endl;
+					SDL_ClearError();
+				}
+			}
+			fullrect.x = x;
+			fullrect.y = y;
+			fullrect.w = w;
+			fullrect.h = h;
+		}
+	}
+	dirtyrect.x = x;
+	dirtyrect.y = y;
+	dirtyrect.w = w;
+	dirtyrect.h = h;
+
+	// Phase 3 call UpdateRect to render screen_texture
+
+	// reset inter_surface back to nullptr if it was set to the temporary display_surface that is about to be destroyed
+	if (inter_surface == display_surface) {
+		inter_surface = nullptr;
+	}
+	// Unlocking the texture destroys display_surface
+	SDL_UnlockTexture(screen_texture);
+	UpdateRect(&dirtyrect, &fullrect);
+
+	const char* err = SDL_GetError();
+	if (err && *err) {
+		std::cerr << "A SDL error occurred: " << err << std::endl;
+	}
 }
 
 /*
@@ -1125,8 +1092,8 @@ void Image_window::toggle_fullscreen() {
 	int w;
 	int h;
 
-	w = display_surface->w;
-	h = display_surface->h;
+	w = display_height;
+	h = display_height;
 
 	if (fullscreen) {
 		cout << "Switching to windowed mode." << endl;
@@ -1265,14 +1232,6 @@ bool Image_window::screenshot(SDL_IOStream* dst) {
 
 void Image_window::set_title(const char* title) {
 	SDL_SetWindowTitle(screen_window, title);
-}
-
-int Image_window::get_display_width() {
-	return display_surface->w;
-}
-
-int Image_window::get_display_height() {
-	return display_surface->h;
 }
 
 void Image_window::screen_to_game(int sx, int sy, bool fast, int& gx, int& gy) {
@@ -1573,7 +1532,7 @@ bool Image_window::fillmode_to_string(FillMode fmode, std::string& str) {
  *  Layers.
  */
 
-int Image_window::create_layer(int w, int h, unsigned char transparent, int fixed_scale, int z) {
+int Image_window::create_layer(std::string&& name, int w, int h, unsigned char transparent, int fixed_scale, int z) {
 	if (w <= 0 || h <= 0) {
 		return -1;
 	}
@@ -1582,7 +1541,7 @@ int Image_window::create_layer(int w, int h, unsigned char transparent, int fixe
 		return -1;
 	}
 	buf->fill8(transparent);    // Start fully transparent.
-	auto layer = std::make_unique<Layer>(std::move(buf), w, h, transparent, fixed_scale, z);
+	auto layer = std::make_unique<Layer>(std::move(buf), w, h, transparent, fixed_scale, z, std::move(name));
 	// Reuse a freed slot if there is one, so handles stay stable.
 	for (size_t i = 0; i < layers.size(); i++) {
 		if (!layers[i]) {
@@ -1902,8 +1861,8 @@ int Image_window::get_ui_height(UiLayerKind kind) const {
 }
 
 void Image_window::compute_fill_dest(int logw, int logh, FillMode fmode, int escl, SDL_FRect& dst) const {
-	const int dw = display_surface ? display_surface->w : logw;
-	const int dh = display_surface ? display_surface->h : logh;
+	const int dw = display_width;
+	const int dh = display_height;
 	double    cw;
 	double    ch;
 	if (logw <= 0 || logh <= 0) {
@@ -2049,6 +2008,7 @@ void Image_window::composite_layers() {
 	if (layers.empty() || screen_renderer == nullptr) {
 		return;
 	}
+	auto perftimer = PerformanceTimer::GetScopedPerfTimer(__func__);
 	// Gather the visible layers and composite them from lowest to highest z.
 	std::vector<Layer*> ordered;
 	ordered.reserve(layers.size());
@@ -2073,8 +2033,10 @@ void Image_window::composite_layers() {
 		return a->z < b->z;
 	});
 	for (Layer* lptr : ordered) {
-		Layer&               layer = *lptr;
-		const UiLayerConfig& cfg   = get_ui_cfg(layer.ui_kind);
+		Layer& layer     = *lptr;
+		auto   perftimer = PerformanceTimer::GetScopedPerfTimer("Composite_Layer:", layer.get_name(), true);
+
+		const UiLayerConfig& cfg = get_ui_cfg(layer.ui_kind);
 		// Match filtering to this layer's scaler/fill scaler.
 		const bool smooth = (eff_ui_scaler(cfg) == bilinear) || (eff_ui_scaler(cfg) == SDLScaler)
 							|| (eff_ui_fill_scaler(cfg) == bilinear) || (eff_ui_fill_scaler(cfg) == SDLScaler);
@@ -2111,20 +2073,48 @@ void Image_window::composite_layers() {
 	}
 }
 
-void Image_window::UpdateRect(SDL_Surface* surf) {
-	// TODO: Only update the necessary portion of the screen.
-	// Seem to get flicker like crazy or some other ill effect no matter
-	// what I try. -Lanica 08/28/2013
-	const SDL_PixelFormatDetails* surf_format = SDL_GetPixelFormatDetails(surf->format);
-	uint8*                        pixels
-			= (surf == display_surface ? static_cast<uint8*>(surf->pixels)
-									   : static_cast<uint8*>(surf->pixels) + guard_band * scale * surf_format->bytes_per_pixel
-												 + guard_band * scale * surf->pitch);
-	SDL_UpdateTexture(screen_texture, nullptr, pixels, surf->pitch);
-	SDL_RenderTexture(screen_renderer, screen_texture, nullptr, nullptr);
+void Image_window::UpdateRect(SDL_FRect* dirtyRect, SDL_FRect* fullRect) {
+	auto perfcounter = PerformanceTimer::GetScopedPerfTimer(__func__);
+
+	{
+		auto perfcounter_rt = PerformanceTimer::GetScopedPerfTimer(__func__, " Rendering Textures");
+		if (!SDL_SetRenderTarget(screen_renderer, screen_texture_a)) {
+			const char* err = SDL_GetError();
+			std::cerr << "SDL_SetRenderTarget(screen_renderer, screen_texture_a) failed: " << (err ? err : "") << std::endl;
+			SDL_ClearError();
+		}
+
+		if (!SDL_RenderTexture(screen_renderer, screen_texture, dirtyRect, dirtyRect)) {
+			const char* err = SDL_GetError();
+			std::cerr << "SDL_RenderTexture(screen_renderer, screen_texture, srcRect, srcRect) failed: " << (err ? err : "")
+					  << std::endl;
+			SDL_ClearError();
+		}
+
+		if (!SDL_SetRenderTarget(screen_renderer, nullptr)) {
+			const char* err = SDL_GetError();
+			std::cerr << "SDL_SetRenderTarget(screen_renderer, screen_texture_a) failed: " << (err ? err : "") << std::endl;
+			SDL_ClearError();
+		}
+		SDL_RenderClear(screen_renderer);
+		if (!SDL_RenderTexture(screen_renderer, screen_texture_a, fullRect, nullptr)) {
+			const char* err = SDL_GetError();
+			std::cerr << "SDL_RenderTexture(screen_renderer, screen_texture_a, srcRect, nullptr) failed: " << (err ? err : "")
+					  << std::endl;
+			SDL_ClearError();
+		}
+	}
+
 	// Draw overlay layers on top of the main image, before presenting.
 	composite_layers();
-	SDL_RenderPresent(screen_renderer);
+	{
+		auto perfcounter_srp = PerformanceTimer::GetScopedPerfTimer(__func__, " SDL_RenderPresent");
+		if (!SDL_RenderPresent(screen_renderer)) {
+			const char* err = SDL_GetError();
+			std::cerr << "SDL_RenderPresent failed: " << (err ? err : "") << std::endl;
+			SDL_ClearError();
+		}
+	}
 }
 
 int Image_window::VideoModeOK(int width, int height, bool fullscreen, int bpp) {
@@ -2144,7 +2134,7 @@ int Image_window::VideoModeOK(int width, int height, bool fullscreen, int bpp) {
 		Uint32                 Bmask;
 		Uint32                 Amask;
 		if (SDL_GetMasksForPixelFormat(mode->format, &nbpp, &Rmask, &Gmask, &Bmask, &Amask) && mode->w >= width && mode->h >= height
-			&& ((bpp == nbpp) || (bpp == 0 && (nbpp == 8 || nbpp == 16 || nbpp == 32)))) {
+			&& ((bpp == nbpp) || (bpp == 0 && (nbpp == 16 || nbpp == 32)))) {
 			return nbpp;
 		}
 		return 0;
@@ -2158,7 +2148,7 @@ int Image_window::VideoModeOK(int width, int height, bool fullscreen, int bpp) {
 		Uint32 Bmask;
 		Uint32 Amask;
 		if (SDL_GetMasksForPixelFormat(modes[j]->format, &nbpp, &Rmask, &Gmask, &Bmask, &Amask) && modes[j]->w == width
-			&& modes[j]->h == height && ((bpp == nbpp) || (bpp == 0 && (nbpp == 8 || nbpp == 16 || nbpp == 32)))) {
+			&& modes[j]->h == height && ((bpp == nbpp) || (bpp == 0 && (nbpp == 16 || nbpp == 32)))) {
 			SDL_free(modes);
 			return nbpp;
 		}

@@ -19,14 +19,14 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #ifndef SIGN_GUMP_H
 #define SIGN_GUMP_H
 
-#include "Gump.h"
+#include "Text_gump.h"
 
 #include <string>
 
 /*
  *  A sign showing runes.
  */
-class Sign_gump : public Gump {
+class Sign_gump : public Text_gump {
 protected:
 	std::string* lines;    // Lines of text.
 	int          num_lines;

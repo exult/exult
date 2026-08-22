@@ -1256,7 +1256,7 @@ public:
 			return;
 		}
 		if (layer < 0) {
-			layer = gwin->create_layer(w, h, 255, 0, display_map_layer_z);
+			layer = gwin->create_layer("map", w, h, 255, 0, display_map_layer_z);
 			if (layer < 0) {
 				return;
 			}
