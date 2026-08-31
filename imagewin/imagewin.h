@@ -198,10 +198,8 @@ public:
 		// entry is used verbatim (with its own alpha) instead of the opaque
 		// palette colour, letting a layer draw translucent pixels.
 		std::vector<uint32> index_argb;
-		std::vector<uint32> gamma_argb;
-		double              gamma_r = 0;
-		double              gamma_g = 0;
-		double              gamma_b = 0;
+		bool                no_gammacorrection = false;    // If set no gamma correction is applied to index_argb
+		SDL_BlendMode       blend_mode         = SDL_BLENDMODE_BLEND;
 
 		std::string name;
 
@@ -231,6 +229,14 @@ public:
 
 		void set_opaque(bool o) {
 			opaque = o;
+			// If setting opaque disable blending
+			if (o) {
+				blend_mode = SDL_BLENDMODE_NONE;
+			}
+			// If not opaque only change blending mode if it was set to none
+			else if (!o && blend_mode == SDL_BLENDMODE_NONE) {
+				blend_mode = SDL_BLENDMODE_BLEND;
+			}
 		}
 
 		void set_dirty() {
@@ -717,10 +723,12 @@ public:
 	// Set (or clear, with nullptr) a layer's 256-entry ARGB override table.
 	// Non-zero entries replace the opaque palette colour for that index,
 	// carrying their own alpha (used for translucent pixels).
-	void layer_set_index_argb(int handle, const uint32* argb256);
+	void layer_set_index_argb(int handle, const uint32* argb256, bool nogc);
 	// Whole-layer opacity (255 = opaque). Lets an opaque-painted layer be
 	// composited semi-transparently (e.g. the translucent shortcut bar).
 	void layer_set_alpha(int handle, unsigned char a);
+
+	void layer_set_blendmode(int handle, SDL_BlendMode blendmode);
 
 	// -------- Layer scaling config --------
 	// Configure how layers (conversation, mouse cursor) are scaled and
