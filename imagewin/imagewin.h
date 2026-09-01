@@ -201,6 +201,29 @@ public:
 		bool                no_gammacorrection = false;    // If set no gamma correction is applied to index_argb
 		SDL_BlendMode       blend_mode         = SDL_BLENDMODE_BLEND;
 
+		/* SDL Render Targets
+
+		* A layer can be created as a SDL render target. A SDL Render Target
+		  layer can only be used as a render target as another layer. It has no
+		  surface or buf and cannot be drawn to in software. A SDL render target
+		  layer is always created at the display resolution. It will by default
+		  render fullscreen. It cannot use software scalers. Render target
+		  contents will persist between frames.
+
+		* These are used to do complex layering effects in Hardware
+
+		* When a layer is set to use a sdl render target, it will be rendered to
+		  the sdl render target layer instead of to the screen. a regular layer
+		  created with create Layer cannot be used as a SDlrender target. A sdl
+		  render target layer can itself have a sdl render target
+
+		* A sdl render target layer should have a higher z than any layer that uses it.
+		*
+		*/
+
+		SDL_PixelFormat   sdl_render_target_format = SDL_PIXELFORMAT_UNKNOWN;
+		Layer* sdl_render_target    = nullptr;
+
 		std::string name;
 
 	public:
@@ -780,6 +803,19 @@ public:
 	// Mark a layer as fully opaque: no palette index is treated as transparent
 	// (for a full-screen scene whose content may legitimately use index 255).
 	void layer_set_opaque(int handle, bool opaque);
+
+	// Create a laayer to use a render target for other layers
+	int create_sdl_render_target_layer(std::string&& name, int z, SDL_PixelFormat format);
+
+	// Returns true if the layer is a render target layer
+	bool layer_get_is_sdl_rendertarget(int handle);
+
+	// Set the Render Target of a layer
+	// rthandle is the handle to a render target layer or -1 to clear
+	bool layer_set_sdl_render_target(int handle, int rthandle);
+
+	// Get the handle of the layer's render arget
+	int layer_get_sdl_render_target(int handle);
 
 	// Set palette.
 	virtual void set_palette(const unsigned char* rgbs, int maxval, int brightness = 100) {
