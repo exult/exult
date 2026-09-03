@@ -150,6 +150,23 @@ void Image_window8::rotate_colors(
 		rotate(start, start + 3, finish);
 	}
 
+	// Rotate the same range in every layer's fixed-palette override (the
+	// spatial-light candle / single / many palettes) so their colour-cycled
+	// ranges (fire, ...) animate in phase with the live palette, using that
+	// palette's own correct flame colours instead of freezing under a light.
+	for (auto& cfg : ui_cfgs) {
+		if (cfg.ui_palette_colors.size() != 768) {
+			continue;
+		}
+		unsigned char* ostart  = cfg.ui_palette_colors.data() + first;
+		unsigned char* ofinish = ostart + cnt;
+		if (num > 0) {
+			rotate(ostart, ofinish - 3, ofinish);
+		} else {
+			rotate(ostart, ostart + 3, ofinish);
+		}
+	}
+
 	if (upd) {    // Take effect now?
 		SDL_Color colors2[256];
 		for (int i = 0; i < 256; i++) {
@@ -287,6 +304,8 @@ void Image_window8::refresh_layer(Layer& layer) {
 	}
 	const int            w            = layer.get_width();
 	const int            h            = layer.get_height();
+	const bool           has_cov      = static_cast<int>(layer.coverage.size()) == w * h;
+	const unsigned char* cov          = has_cov ? layer.coverage.data() : nullptr;
 	SDL_Surface*         s            = layer.surface;
 	const size_t         spitch       = s->pitch;
 	const unsigned char* src          = reinterpret_cast<unsigned char*>(s->pixels) + spitch * guard_band + guard_band;
@@ -299,7 +318,6 @@ void Image_window8::refresh_layer(Layer& layer) {
 				  << (err ? err : "") << std::endl;
 		return;
 	}
-
 	fill_guardband(pixels, w, h, pixels_pitch, guard_band, 0);
 
 	uint32 palette[256];
@@ -311,11 +329,20 @@ void Image_window8::refresh_layer(Layer& layer) {
 	pixels += ppitch * guard_band + guard_band * sizeof(uint32);
 	for (int y = 0; y < h; y++) {
 		const unsigned char* srow = src + y * spitch;
+		const unsigned char* crow = cov ? cov + static_cast<size_t>(y) * w : nullptr;
 		uint32*              drow = reinterpret_cast<uint32*>(pixels + y * ppitch);
-		uint32*              end  = drow + w;
-
-		while (drow != end) {
-			*drow++ = palette[*srow++];
+		if (crow) {
+			// Coverage (light-layer radial mask) modulates the alpha.
+			for (int x = 0; x < w; x++) {
+				uint32       argb = palette[srow[x]];
+				const uint32 a    = (((argb >> 24) & 0xff) * crow[x]) / 255;
+				drow[x]           = (a << 24) | (argb & 0x00ffffffu);
+			}
+		} else {
+			uint32* end = drow + w;
+			while (drow != end) {
+				*drow++ = palette[*srow++];
+			}
 		}
 	}
 	SDL_UnlockTexture(layer.texture);
@@ -329,11 +356,13 @@ void Image_window8::refresh_layer(Layer& layer) {
  *  source so it stays crisp and masks any colour bleed at transparent edges.
  */
 bool Image_window8::refresh_layer_scaled(Layer& layer, int factor) {
-	const int            logw   = layer.get_width();
-	const int            logh   = layer.get_height();
-	SDL_Surface*         lsurf  = layer.surface;
-	const size_t         spitch = static_cast<size_t>(lsurf->pitch);
-	unsigned char* const src    = reinterpret_cast<unsigned char*>(lsurf->pixels) + guard_band + guard_band * spitch;
+	const int            logw    = layer.get_width();
+	const int            logh    = layer.get_height();
+	const bool           has_cov = static_cast<int>(layer.coverage.size()) == logw * logh;
+	const unsigned char* covbuf  = has_cov ? layer.coverage.data() : nullptr;
+	SDL_Surface*         lsurf   = layer.surface;
+	const size_t         spitch  = static_cast<size_t>(lsurf->pitch);
+	unsigned char* const src     = reinterpret_cast<unsigned char*>(lsurf->pixels) + guard_band + guard_band * spitch;
 
 	const unsigned char transp = layer.get_transparent();
 	const bool          has_ov = !layer.index_argb.empty();
@@ -411,9 +440,29 @@ bool Image_window8::refresh_layer_scaled(Layer& layer, int factor) {
 		if (odst) {
 			if (scale_layer_color(layer, lsurf, logw, logh, odst)) {
 				auto texpix = make_unique<uint32[]>(static_cast<size_t>(tex_w) * tex_h);
-
-				done = true;
+				done        = true;
 			}
+		}
+		if (scale_layer_color(layer, lsurf, logw, logh, odst)) {
+			// The scaler's output alpha is undefined for an opaque layer:
+			// force it opaque and apply the light-coverage mask over the
+			// content region (at the scaled guard-band offset).
+			const size_t dpitch = static_cast<size_t>(odst->pitch) / sizeof(uint32);
+			const size_t sgb    = static_cast<size_t>(factor) * guard_band;
+			uint32*      pix    = static_cast<uint32*>(odst->pixels);
+			for (int y = 0; y < tex_h; y++) {
+				uint32*              row  = pix + (static_cast<size_t>(y) + sgb) * dpitch + sgb;
+				const unsigned char* crow = covbuf ? covbuf + static_cast<size_t>(y / factor) * logw : nullptr;
+				for (int x = 0; x < tex_w; x++) {
+					uint32 argb = 0xff000000u | (row[x] & 0x00ffffffu);
+					if (crow) {
+						const uint32 a = (0xffu * crow[x / factor]) / 255;
+						argb           = (a << 24) | (argb & 0x00ffffffu);
+					}
+					row[x] = argb;
+				}
+			}
+			done = true;
 		}
 
 		SDL_UnlockTexture(layer.texture);
@@ -599,17 +648,26 @@ bool Image_window8::refresh_layer_scaled(Layer& layer, int factor) {
 				} else {
 					intrinsic = 255;    // Opaque (or an outer AA pixel).
 				}
-				const uint32 a = static_cast<uint32>(cov * intrinsic / 255);
-				trow[realx]    = (a << 24) | rgb;
+				const uint32 a     = static_cast<uint32>(cov * intrinsic / 255);
+				const uint32 cov_a = covbuf ? (a * covbuf[static_cast<size_t>(sy) * logw + x / factor]) / 255 : a;
+				trow[realx]        = (cov_a << 24) | rgb;
 			}
 		}
 	} else {
-		// Fallback: nearest-neighbour upscale of the 1:1 conversion.
+		// Fallback: nearest-neighbour upscale of the 1:1 conversion, written
+		// at the scaled guard-band offset with coverage applied to alpha.
+		const size_t sgb = static_cast<size_t>(factor) * guard_band;
 		for (int y = 0; y < tex_h; y++) {
 			const unsigned char* srow = src + static_cast<size_t>(y / factor) * spitch;
-			uint32*              trow = reinterpret_cast<uint32*>(texpix + static_cast<size_t>(y) * texpix_pitch);
+			const unsigned char* crow = covbuf ? covbuf + static_cast<size_t>(y / factor) * logw : nullptr;
+			uint32*              trow = reinterpret_cast<uint32*>(texpix + (static_cast<size_t>(y) + sgb) * texpix_pitch) + sgb;
 			for (int x = 0; x < tex_w; x++) {
-				trow[x] = layer_argb_pixel(layer, srow[x / factor]);
+				uint32 argb = layer_argb_pixel(layer, srow[x / factor]);
+				if (crow) {
+					const uint32 a = (((argb >> 24) & 0xff) * crow[x / factor]) / 255;
+					argb           = (a << 24) | (argb & 0x00ffffffu);
+				}
+				trow[x] = argb;
 			}
 		}
 	}

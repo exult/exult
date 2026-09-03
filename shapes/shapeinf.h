@@ -27,7 +27,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
 #include "baseinf.h"
+#include "exult_constants.h"
 
+#include <iosfwd>
 #include <vector>
 
 class Armor_info;
@@ -46,6 +48,7 @@ class Frame_flags_info;
 class Frame_usecode_info;
 class Light_info;
 class Warmth_info;
+class Light_passes_info;
 class Content_rules;
 class Shapes_vga_file;
 class Image_buffer;
@@ -97,6 +100,92 @@ class Vector_writer_functor;
 
 class Readytype_writer_functor;
 
+/*
+ *  Shape/frame entries that allow interior light to pass outside.
+ *  Frame -1 means all frames.  `percent` is how much of the light the
+ *  opening transmits (0..100): 100 = passes freely (iron bars, broken
+ *  wall), lower = dimmed spill (dirty glass), 0 = blocks light entirely
+ *  (the entry is then treated as if the shape were not listed).
+ */
+class Light_passes_info : public Base_info {
+	short frame;
+	short percent = 100;
+
+public:
+	friend class Shape_info;
+	Light_passes_info() = default;
+
+	Light_passes_info(short f, bool p = false, bool m = false, bool s = false, bool inv = false)
+			: Base_info(m, p, inv, s), frame(f) {}
+
+	Light_passes_info(const Light_passes_info& other) : Base_info(other), frame(other.frame), percent(other.percent) {
+		info_flags = other.info_flags;
+	}
+
+	bool read(std::istream& in, int version, Exult_Game game);
+	void write(std::ostream& out, int shapenum, Exult_Game game);
+
+	void invalidate() {
+		frame = -1;
+		set_invalid(true);
+	}
+
+	int get_frame() const {
+		return frame;
+	}
+
+	void set_frame(int f) {
+		if (frame != f) {
+			set_modified(true);
+			frame = f;
+		}
+	}
+
+	int get_percent() const {
+		return percent;
+	}
+
+	void set_percent(int p) {
+		if (percent != p) {
+			set_modified(true);
+			percent = p;
+		}
+	}
+
+	bool operator<(const Light_passes_info& other) const noexcept {
+		return static_cast<unsigned short>(frame) < static_cast<unsigned short>(other.frame);
+	}
+
+	bool operator==(const Light_passes_info& other) const {
+		return this == &other || (!(*this < other) && !(other < *this));
+	}
+
+	bool operator!=(const Light_passes_info& other) const {
+		return !(*this == other);
+	}
+
+	Light_passes_info& operator=(const Light_passes_info& other) {
+		if (this != &other) {
+			frame      = other.frame;
+			percent    = other.percent;
+			info_flags = other.info_flags;
+		}
+		return *this;
+	}
+
+	void set(const Light_passes_info& other) {
+		set_patch(other.from_patch());
+		set_invalid(other.is_invalid());
+		set_frame(other.frame);
+		set_percent(other.percent);
+	}
+
+	enum {
+		is_binary  = 0,
+		entry_size = 0
+	};
+};
+
 enum Data_flag_bits {
 	tf_ready_type_flag = 0,
 	tf_gump_shape_flag,
@@ -118,6 +207,8 @@ enum Data_flag_bits {
 	tf_on_fire_flag,
 	tf_extradimensional_storage_flag,
 	tf_on_hit_usecode_flag,
+	tf_roof_flag,
+	tf_floor_flag,
 };
 
 enum Data_flag_names {
@@ -140,6 +231,8 @@ enum Data_flag_names {
 	on_fire_flag                  = (1U << tf_on_fire_flag),
 	extradimensional_storage_flag = (1U << tf_extradimensional_storage_flag),
 	on_hit_usecode_flag           = (1U << tf_on_hit_usecode_flag),
+	roof_flag                     = (1U << tf_roof_flag),
+	floor_flag                    = (1U << tf_floor_flag),
 };
 
 /*
@@ -185,6 +278,7 @@ protected:
 	std::vector<Frame_flags_info>   frflagsinf;
 	std::vector<Frame_usecode_info> frucinf;
 	std::vector<Light_info>         lightinf;
+	std::vector<Light_passes_info>  lightpassinf;
 	std::vector<Warmth_info>        warminf;
 	std::vector<Content_rules>      cntrules;
 	int                             on_hit_usecode = -1;
@@ -236,6 +330,8 @@ public:
 		mirror,
 		on_fire,
 		extradimensional_storage,
+		roof,
+		floor,
 	};
 
 	enum Mountain_tops {
@@ -531,6 +627,18 @@ public:
 	void                     add_light_info(Light_info& add);
 	int                      get_object_light(int frame) const;
 
+	bool has_light_passes_info() const;
+
+	const std::vector<Light_passes_info>& get_light_passes_info() const {
+		return lightpassinf;
+	}
+
+	std::vector<Light_passes_info>& set_light_passes_info(bool tf);
+	void                            clean_invalid_light_passes_info();
+	void                            clear_light_passes_info();
+	void                            add_light_passes_info(Light_passes_info& add);
+	bool                            light_passes_through(int frame, int* matched_frame = nullptr) const;
+
 	bool has_warmth_info() const;
 
 	const std::vector<Warmth_info>& get_warmth_info() const {
@@ -686,6 +794,21 @@ public:
 
 	bool has_extradimensional_storage() const {
 		return get_shape_flag(extradimensional_storage);
+	}
+
+	// Flagged in shape_info.txt %%section roof_shapes: a roof shape whose
+	// pixels the spatial light layers keep dark (so an interior light never
+	// lights up its own roof).
+	bool is_roof() const {
+		return get_shape_flag(roof);
+	}
+
+	// Flagged in shape_info.txt %%section floor_shapes: a floor slab used as
+	// the roof of the storey below.  It contains that storey's light like a
+	// roof, but only its top surface is masked (not its full 3d thickness),
+	// and objects standing on top of it are still lit by window/opening spill.
+	bool is_floor() const {
+		return get_shape_flag(floor);
 	}
 
 	unsigned char get_actor_flags() const {

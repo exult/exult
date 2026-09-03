@@ -43,6 +43,7 @@
 #include "gamewin.h"
 #include "ignore_unused_variable_warning.h"
 #include "items.h"
+#include "naturallight.h"
 #include "objiter.h"
 #include "ordinfo.h"
 #include "ready.h"
@@ -572,8 +573,16 @@ void Game_object::change_frame(int frnum) {
 	gwin->add_dirty(this);    // Set to repaint old area.
 							  // Track brightness change when changing frames
 	const int old_brightness = get_info().get_object_light(get_framenum());
+	const int old_frame      = get_framenum();
 
 	set_frame(frnum);
+
+	// A door or shutter changing frame reshapes nearby rooms' light floods:
+	// refresh the natural-light caches around it right away, so the spill
+	// through a freshly opened shutter appears without the cache-TTL lag.
+	if (frnum != old_frame) {
+		NaturalLight::Notify_object_edited(this);
+	}
 
 	// Update light status if brightness changed across zero threshold
 	const int new_brightness = get_info().get_object_light(frnum);

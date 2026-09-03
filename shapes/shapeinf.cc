@@ -50,6 +50,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "ready.h"
 #include "sfxinf.h"
 #include "shapeid.h"
+#include "utils.h"
 #include "warminf.h"
 #include "weaponinf.h"
 
@@ -58,6 +59,31 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 using std::cerr;
 using std::endl;
 using std::vector;
+
+bool Light_passes_info::read(std::istream& in, int version, Exult_Game game) {
+	ignore_unused_variable_warning(version, game);
+	frame = ReadInt(in, -1);
+	if (frame < 0) {
+		frame = -1;
+	} else {
+		frame &= 0xff;
+	}
+	// Optional transmission percentage (0..100); omitted means 100 (light
+	// passes freely).  0 blocks light entirely.
+	int pct = ReadInt(in, 100);
+	if (pct < 0) {
+		pct = 0;
+	} else if (pct > 100) {
+		pct = 100;
+	}
+	percent = static_cast<short>(pct);
+	return true;
+}
+
+void Light_passes_info::write(std::ostream& out, int shapenum, Exult_Game game) {
+	ignore_unused_variable_warning(game);
+	out << ':' << shapenum << '/' << frame << '/' << percent << std::endl;
+}
 
 bool Shape_info::allow_enhancements = false;
 
@@ -96,6 +122,7 @@ Shape_info::~Shape_info() {
 	clear_effective_hp_info();
 	clear_frame_name_info();
 	clear_light_info();
+	clear_light_passes_info();
 	clear_warmth_info();
 }
 
@@ -159,6 +186,7 @@ void Shape_info::copy(const Shape_info& inf2, bool skip_dolls) {
 	copy_vector_info(inf2.nameinf, nameinf);
 	copy_vector_info(inf2.frucinf, frucinf);
 	copy_vector_info(inf2.lightinf, lightinf);
+	copy_vector_info(inf2.lightpassinf, lightpassinf);
 	copy_vector_info(inf2.warminf, warminf);
 
 	delete sfxinf;
@@ -360,6 +388,54 @@ void Shape_info::clear_light_info() {
 
 void Shape_info::add_light_info(Light_info& add) {
 	add_vector_info(add, lightinf);
+}
+
+bool Shape_info::has_light_passes_info() const {
+	return !lightpassinf.empty();
+}
+
+std::vector<Light_passes_info>& Shape_info::set_light_passes_info(bool tf) {
+	return set_vector_info(tf, lightpassinf);
+}
+
+void Shape_info::clean_invalid_light_passes_info() {
+	clean_vector(lightpassinf);
+}
+
+void Shape_info::clear_light_passes_info() {
+	lightpassinf.clear();
+}
+
+void Shape_info::add_light_passes_info(Light_passes_info& add) {
+	add_vector_info(add, lightpassinf);
+}
+
+bool Shape_info::light_passes_through(int frame, int* matched_frame) const {
+	const int want_frame   = frame & 31;
+	bool      has_explicit = false;
+	bool      explicit_hit = false;
+	bool      wildcard_hit = false;
+
+	for (const auto& inf : lightpassinf) {
+		if (inf.is_invalid()) {
+			continue;
+		}
+		const int ent_frame = inf.get_frame();
+		if (ent_frame >= 0) {
+			has_explicit = true;
+			if (ent_frame == want_frame) {
+				explicit_hit = true;
+			}
+		} else if (ent_frame == -1) {
+			wildcard_hit = true;
+		}
+	}
+
+	const bool hit = has_explicit ? explicit_hit : wildcard_hit;
+	if (matched_frame != nullptr) {
+		*matched_frame = hit ? (has_explicit ? want_frame : -1) : -2;
+	}
+	return hit;
 }
 
 bool Shape_info::has_warmth_info() const {

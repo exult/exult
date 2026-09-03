@@ -54,6 +54,7 @@
 #include "monsters.h"
 #include "mouse.h"
 #include "msgfile.h"
+#include "naturallight.h"
 #include "opcodes.h"
 #include "party.h"
 #include "schedule.h"
@@ -670,7 +671,7 @@ int Usecode_internal::get_face_shape(Usecode_value& arg1, Actor*& npc, int& fram
 		Actor*     ava      = gwin->get_main_actor();
 		const bool sishapes = Shape_manager::get_instance()->have_si_shapes();
 		Skin_data* skin     = Shapeinfo_lookup::GetSkinInfoSafe(
-				ava->get_skin_color(), npc ? (npc->get_type_flag(Actor::tf_sex)) : (ava->get_type_flag(Actor::tf_sex)), sishapes);
+                ava->get_skin_color(), npc ? (npc->get_type_flag(Actor::tf_sex)) : (ava->get_type_flag(Actor::tf_sex)), sishapes);
 		if (gwin->get_main_actor()->get_flag(Obj_flags::tattooed)) {
 			shape = skin->alter_face_shape;
 			frame = skin->alter_face_frame;
@@ -726,8 +727,7 @@ void Usecode_internal::show_npc_face(
  *  Remove an NPC's face.
  */
 
-void Usecode_internal::remove_npc_face(
-		Usecode_value& arg1    // Shape (NPC #).
+void Usecode_internal::remove_npc_face(Usecode_value& arg1    // Shape (NPC #).
 ) {
 	show_pending_text();
 	Actor*    npc;
@@ -748,9 +748,12 @@ void Usecode_internal::set_item_shape(Usecode_value& item_arg, Usecode_value& sh
 	if (!item) {
 		return;
 	}
-	// See if light turned on/off.
-	const bool light_changed = item->get_info().is_light_source() != ShapeID::get_info(shape).is_light_source();
-	auto*      owner         = item->get_owner();
+	// See if light turned on/off (frame-aware: covers shape_info.txt
+	// enhancement lights that have no light-source flag).
+	const int  old_frame = item->get_framenum();
+	const bool light_changed
+			= (item->get_info().get_object_light(old_frame) > 0) != (ShapeID::get_info(shape).get_object_light(old_frame) > 0);
+	auto* owner = item->get_owner();
 	if (owner != nullptr) {    // Inside something?
 		owner->change_member_shape(item, shape);
 		if (light_changed) {    // Maybe we should repaint all.
@@ -776,6 +779,8 @@ void Usecode_internal::set_item_shape(Usecode_value& item_arg, Usecode_value& sh
 	item->set_shape(shape);
 	chunk->add(item);
 	gwin->add_dirty(item);
+	// Shutters open/close by shape swap: refresh natural-light caches.
+	NaturalLight::Notify_object_edited(item);
 	//	rect = gwin->get_shape_rect(item).add(rect);
 	//	rect.enlarge(8);
 	//	rect = gwin->clip_to_win(rect);
@@ -861,6 +866,10 @@ void Usecode_internal::remove_item(Game_object* obj) {
 		}
 	}
 	Game_object_shared keep;
+	// Removing a wall-like object (shutter leaf) reshapes light floods.
+	if (obj->get_owner() == nullptr && obj->get_chunk() != nullptr) {
+		NaturalLight::Notify_object_edited(obj);
+	}
 	obj->remove_this(obj->as_actor() ? &keep : nullptr);
 }
 
@@ -1418,8 +1427,8 @@ bool Usecode_internal::path_run_usecode(
 	}
 	const Tile_coord src = npc->get_tile();
 	Tile_coord       dest(
-			locval.get_elem(0).get_int_value(), locval.get_elem(1).get_int_value(),
-			sz == 3 ? locval.get_elem(2).get_int_value() : 0);
+            locval.get_elem(0).get_int_value(), locval.get_elem(1).get_int_value(),
+            sz == 3 ? locval.get_elem(2).get_int_value() : 0);
 	dest.tz = std::max<short>(dest.tz, 0);
 
 	if (find_free) {
@@ -1643,8 +1652,7 @@ void Usecode_internal::click_to_continue() {
  *  Set book/scroll to display.
  */
 
-void Usecode_internal::set_book(
-		Text_gump* b    // Book/scroll.
+void Usecode_internal::set_book(Text_gump* b    // Book/scroll.
 ) {
 	if (touchui != nullptr) {
 		Gump_manager* gumpman = gwin->get_gump_man();

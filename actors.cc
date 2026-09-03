@@ -975,7 +975,8 @@ void Actor::refigure_gear() {
 		if (worn) {
 			const Shape_info& info = worn->get_info();
 			const char        rdy  = info.get_ready_type();
-			if (info.is_light_source() && (loc != belt || (rdy != lhand && rdy != rhand && rdy != both_hands))) {
+			if (info.get_object_light(worn->get_framenum()) > 0
+				&& (loc != belt || (rdy != lhand && rdy != rhand && rdy != both_hands))) {
 				add_light_source(info.get_object_light(worn->get_framenum()));
 			}
 			powers |= info.get_object_flags(worn->get_framenum(), info.has_quality() ? worn->get_quality() : -1);
@@ -3779,7 +3780,7 @@ bool Actor::add_readied(
 
 	const Shape_info& info = obj->get_info();
 
-	if (info.is_light_source() && (index == lhand || index == rhand)) {
+	if (info.get_object_light(obj->get_framenum()) > 0 && (index == lhand || index == rhand)) {
 		add_light_source(info.get_object_light(obj->get_framenum()));
 	}
 
