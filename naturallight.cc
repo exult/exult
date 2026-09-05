@@ -2541,16 +2541,24 @@ namespace NaturalLight {
 									= (cidx >= 0 && ring != nullptr) ? ((ring[static_cast<size_t>(cidx) * 4 + 2] >> 7) & 1) : -1;
 							const int b3
 									= (cidx >= 0 && ring != nullptr) ? ((ring[static_cast<size_t>(cidx) * 4 + 3] >> 7) & 1) : -1;
+							// fv = the z-blind field sample a clear pixel would take.
+							int fv = -1;
+							if (ftmpl != nullptr && trow != nullptr) {
+								const int ttx = x - sx - ftmpl->x0;
+								if (ttx >= 0 && ttx < ftmpl->w) {
+									fv = trow[x];
+								}
+							}
 							std::fprintf(
 									stderr,
 									"[probe] px=(%d,%d) cs=(%d,%d) spill=%d veto=%d mark=%d kv=%d kraw=%d cell=%d gval=%d "
-									"b2=%d b3=%d rfd=%d fa=%d oa=%d t=%u\n",
+									"b2=%d b3=%d rfd=%d fa=%d oa=%d fv=%d t=%u\n",
 									x, y, sx, sy, static_cast<int>(is_spill), static_cast<int>(veto_roof),
 									roofrow != nullptr ? roofrow[x] : -1, kv, kindrow != nullptr ? kindrow[x] : -1, cidx,
 									cidx >= 0 ? (grid[static_cast<size_t>(cidx)] & 0x7f) : -1, b2, b3,
 									(cidx >= 0 && ring != nullptr) ? ring_face_dist(cidx % side, cidx / side) : -1,
 									(cidx >= 0 && ring != nullptr) ? face_alpha(x, y) : -1, cidx >= 0 ? object_alpha(x, y, 4) : -1,
-									static_cast<unsigned>(nowp));
+									fv, static_cast<unsigned>(nowp));
 						}
 					}
 				}
@@ -2571,7 +2579,47 @@ namespace NaturalLight {
 						// brighten them from underneath.  It samples the
 						// propagated field like clear ground, so where the fill
 						// never reached, the field is 0 and it stays dark.
-						if (roofrow[x] < 129 || roofrow[x] - 128 >= light_top_storey) {
+						// EXTERIOR WALL FACE (132) under its own room's veto
+						// light: the inside view leaves these pixels CLEAR and
+						// washes them with the field (the masonry glow around
+						// a light-passing window wall); same sample here for
+						// inside/outside parity.  Gate by the wall cell's
+						// arrivals: escaped-only (b2, the outdoor wash
+						// reaching this wall) washes; a cell with roofed
+						// arrivals (b3) is the room's own boundary, whose top
+						// rim would leak the interior field at the
+						// wall/floor-roof seam.
+						bool face_wash = false;
+						int  face_cap  = 0;
+						if (roofrow[x] == 132 && grid != nullptr && ring != nullptr && footdx != nullptr) {
+							const int fc = foot_cell(x, y);
+							if (fc >= 0 && (ring[static_cast<size_t>(fc) * 4 + 2] & 0x80) != 0
+								&& (ring[static_cast<size_t>(fc) * 4 + 3] & 0x80) == 0) {
+								face_wash = true;
+								face_cap  = cell_dome(fc, ring_face_dist(fc % side, fc / side));
+							}
+						}
+						if (face_wash) {
+							// The smooth z-blind field wash (the inside look),
+							// CAPPED at the wall cell's own viewer-side arrival
+							// dome: rows under a floor-roof slab bilinear-borrow
+							// the bright interior/ring cells (the lit seam
+							// between wall top and roof floor) but their cells
+							// have no face arrival (cap ~0) -- clipped dark;
+							// the window wall's cells carry real arrivals and
+							// keep the full wash.
+							int wv = 0;
+							if (trow != nullptr) {
+								const int ttx = x - sx - ftmpl->x0;
+								if (ttx >= 0 && ttx < ftmpl->w) {
+									wv = trow[x];
+								}
+							}
+							forced_a = wv < face_cap ? wv : face_cap;
+							if (forced_a <= 0) {
+								continue;
+							}
+						} else if (roofrow[x] < 129 || roofrow[x] - 128 >= light_top_storey) {
 							// A whole-unit exterior OBJECT (a rampart beyond the
 							// window) can stand inside the fill's through-window
 							// reach: light it by the ring arrivals at its own

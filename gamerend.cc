@@ -785,11 +785,16 @@ int Game_render::paint_chunk_objects(
 				std::vector<unsigned char>             lit;
 				std::vector<unsigned char>             ringv;
 				std::vector<NaturalLight::Light_spill> spills;
-				// Wall ring only when the Avatar is inside on this light's own
-				// storey: from any other storey (or outside) the ring peeks out
-				// as a stray glow on the wall faces.
+				// Wall ring off only when the Avatar is inside on ANOTHER
+				// storey: there the ring peeks out as a stray glow on the
+				// interior-view wall faces.  Outside viewers keep it -- the
+				// ring is the window/wall-line light of the veto field, and
+				// without it the wash a light-passing window wall shows
+				// (clear pixels, z-blind) loses its wall-line cells and
+				// drifts off the window (inside/outside parity).
 				const bool light_walls
-						= (gwin->is_main_actor_inside() && gwin->get_main_actor()->get_lift() / 5 == ltile.tz / 5) || !under_roof;
+						= !gwin->is_main_actor_inside()
+						  || gwin->get_main_actor()->get_lift() / 5 == ltile.tz / 5 || !under_roof;
 				NaturalLight::Build_light_shadow_grid(light_obj, rt, lit, spills, light_walls, &ringv);
 				// Spill glow per reached opening (see the carried-light site).
 				for (const NaturalLight::Light_spill& spill : spills) {
