@@ -72,6 +72,7 @@
 #include "naturallight.h"
 #include "npcnear.h"
 #include "objiter.h"
+#include "ordinfo.h"
 #include "palette.h"
 #include "party.h"
 #include "paths.h"
