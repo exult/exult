@@ -477,6 +477,9 @@ void Game_window::paint(
 				add_light_render(
 						asx, asy, radius, tier, elevation, rt, ltile.tx, ltile.ty, ltile.tz, std::move(lit), under_roof, 0, false,
 						100, 0, true);
+					add_light_render(
+							asx, asy, radius, tier, elevation, rt, ltile.tx, ltile.ty, ltile.tz, std::move(lit), under_roof, 0,
+							false, 100, 0, true, std::move(ringv));
 				// Each opening the fill reached gets the source's own bubble
 				// poking through it: remaining radius, continued falloff
 				// (dist_bias), gated by its own spill grid, dimmed by the
@@ -495,10 +498,10 @@ void Game_window::paint(
 					const int                  srt = spill_radius / c_tilesize + 7;
 					std::vector<unsigned char> slit;
 					std::vector<unsigned char> sring;
-					// Facade ring only for an outside viewer: seen from inside,
-					// the ring's z-blind cells hang over the walls' INTERIOR
-					// faces up-screen and glow through neighbouring rooms.
-					NaturalLight::Build_spill_shadow_grid(sp, srt, slit, !is_main_actor_inside(), &sring);
+					// Walls in the grid for any viewer: the exterior-facing shell
+					// is stamped 132 from inside too (faces_exterior), so the
+					// ring cannot wash interior faces.
+					NaturalLight::Build_spill_shadow_grid(sp, srt, slit, true, &sring);
 					int ssx = 0;
 					int ssy = 0;
 					get_shape_location(sp, ssx, ssy);
@@ -796,6 +799,9 @@ int Game_render::paint_chunk_objects(
 						= !gwin->is_main_actor_inside()
 						  || gwin->get_main_actor()->get_lift() / 5 == ltile.tz / 5 || !under_roof;
 				NaturalLight::Build_light_shadow_grid(light_obj, rt, lit, spills, light_walls, &ringv);
+					gwin->add_light_render(
+							lsx, lsy, radius, tier, elevation, rt, ltile.tx, ltile.ty, ltile.tz, std::move(lit), under_roof, 0,
+							false, 100, 0, false, std::move(ringv));
 				// Spill glow per reached opening (see the carried-light site).
 				for (const NaturalLight::Light_spill& spill : spills) {
 					const Tile_coord& sp = spill.tile;
@@ -809,8 +815,8 @@ int Game_render::paint_chunk_objects(
 					const int                  srt = spill_radius / c_tilesize + 7;
 					std::vector<unsigned char> slit;
 					std::vector<unsigned char> sring;
-					// Facade ring only for an outside viewer (see carried-light site).
-					NaturalLight::Build_spill_shadow_grid(sp, srt, slit, !gwin->is_main_actor_inside(), &sring);
+					// Walls in the grid for any viewer (see the carried-light site).
+					NaturalLight::Build_spill_shadow_grid(sp, srt, slit, true, &sring);
 					int ssx = 0;
 					int ssy = 0;
 					gwin->get_shape_location(sp, ssx, ssy);

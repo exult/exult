@@ -89,6 +89,9 @@ namespace NaturalLight {
 		int        percent;
 		int        floor;
 		int        path = 0;
+		// The opening's own wall tile (world coords) for window/grate spills;
+		// tx < 0 for doorway/roof-edge/well exits (no pass-through shape).
+		Tile_coord opening = Tile_coord(-1, -1, -1);
 	};
 
 	// Call once per world render: replenishes the flood cache's refresh budget.

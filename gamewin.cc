@@ -1587,6 +1587,156 @@ void Game_window::update_roof_mask(Game_object* obj, int sx, int sy) {
 		}
 		return false;
 	};
+	// Which face of this piece the camera shows: an E-W piece its SOUTH
+	// face, a N-S piece its EAST (or narrow WEST-shell edge) face, a square
+	// piece per the wall line running through it.  That face is EXTERIOR
+	// when the tile column 1-2 tiles out on that side is not this
+	// building's roofed walkable interior -- open sky OR another
+	// structure's solid mass (the city wall beside the east facade) both
+	// count as outdoors.  Interior walls' camera sides are roofed rooms.
+	auto faces_exterior = [&]() {
+		const TileRect ft = obj->get_footprint();
+		// The chunk blocked bitmap includes ACTORS: bitmap tests made the
+		// shell classification flicker as NPCs (or the viewer) walked by.
+		// Scan the chunk's IMMOVABLE solids instead.
+		auto static_solid_at = [&](int tx, int ty, int z_lo, int z_hi) {
+			tx                  = ((tx % c_num_tiles) + c_num_tiles) % c_num_tiles;
+			ty                  = ((ty % c_num_tiles) + c_num_tiles) % c_num_tiles;
+			Map_chunk* const ch = map->get_chunk_safely(tx / c_tiles_per_chunk, ty / c_tiles_per_chunk);
+			if (ch == nullptr) {
+				return false;
+			}
+			Object_iterator it(ch->get_objects());
+			Game_object*    o;
+			while ((o = it.get_next()) != nullptr) {
+				if (o == obj || o->as_actor() != nullptr || o->is_dragable()) {
+					continue;
+				}
+				const Shape_info& oi = o->get_info();
+				if (!oi.is_solid()) {
+					continue;
+				}
+				const int lo = o->get_lift();
+				if (lo > z_hi || lo + oi.get_3d_height() <= z_lo) {
+					continue;
+				}
+				if (o->get_footprint().has_world_point(tx, ty)) {
+					return true;
+				}
+			}
+			return false;
+		};
+		// Probe outward from a face: open sky right beyond = exterior; a
+		// solid column right beyond = the face is PRESSED against another
+		// mass (a desk against the room wall, a zero-gap city wall) and is
+		// hidden -- never shell; a roofed walkable strip (under an eave) is
+		// exterior only when open sky follows it.
+		auto open_sky_tile = [&](int px, int py) {
+			const int        wtx = ((px % c_num_tiles) + c_num_tiles) % c_num_tiles;
+			const int        wty = ((py % c_num_tiles) + c_num_tiles) % c_num_tiles;
+			Map_chunk* const ch  = map->get_chunk_safely(wtx / c_tiles_per_chunk, wty / c_tiles_per_chunk);
+			return ch != nullptr && ch->get_lowest_blocked(5, wtx % c_tiles_per_chunk, wty % c_tiles_per_chunk) < 0;
+		};
+		auto probe_open = [&](int tx, int ty, int dx, int dy) {
+			if (open_sky_tile(tx, ty)) {
+				return true;
+			}
+			if (static_solid_at(tx, ty, 1, 1) && static_solid_at(tx, ty, 4, 4)) {
+				return false;
+			}
+			return open_sky_tile(tx + dx, ty + dy);
+		};
+		auto south_open = [&]() {
+			for (int i = 0; i < ft.w; ++i) {
+				if (probe_open(ft.x + i, ft.y + ft.h, 0, 1)) {
+					return true;
+				}
+			}
+			return false;
+		};
+		auto east_open = [&]() {
+			for (int i = 0; i < ft.h; ++i) {
+				if (probe_open(ft.x + ft.w, ft.y + i, 1, 0)) {
+					return true;
+				}
+			}
+			return false;
+		};
+		// A door anchored on/next to the tile: a DOORWAY continues the wall
+		// line even though its tile is unoccupied (open leaf swung aside) --
+		// the stub flanking an entrance is shell, not furniture.
+		auto door_at = [&](int tx, int ty) {
+			const int        wtx = ((tx % c_num_tiles) + c_num_tiles) % c_num_tiles;
+			const int        wty = ((ty % c_num_tiles) + c_num_tiles) % c_num_tiles;
+			Map_chunk* const ch  = map->get_chunk_safely(wtx / c_tiles_per_chunk, wty / c_tiles_per_chunk);
+			if (ch == nullptr) {
+				return false;
+			}
+			Object_iterator it(ch->get_objects());
+			Game_object*    o;
+			while ((o = it.get_next()) != nullptr) {
+				if (!o->get_info().is_door()) {
+					continue;
+				}
+				const Tile_coord t = o->get_tile();
+				if (std::abs(Tile_coord::delta(t.tx, wtx)) <= 1 && std::abs(Tile_coord::delta(t.ty, wty)) <= 1) {
+					return true;
+				}
+			}
+			return false;
+		};
+		// An immovable solid at mid-wall height: the wall line continues.
+		auto wall_at = [&](int tx, int ty) {
+			return static_solid_at(tx, ty, obj->get_lift() + 2, obj->get_lift() + 2);
+		};
+		const int  mx = ft.x + ft.w / 2;
+		const int  my = ft.y + ft.h / 2;
+		const bool wn = wall_at(mx, ft.y - 1) || door_at(mx, ft.y - 1);
+		const bool ws = wall_at(mx, ft.y + ft.h) || door_at(mx, ft.y + ft.h);
+		const bool ww = wall_at(ft.x - 1, my) || door_at(ft.x - 1, my);
+		const bool we = wall_at(ft.x + ft.w, my) || door_at(ft.x + ft.w, my);
+		if (ft.w > ft.h) {
+			// E-W pieces show their SOUTH face; only a wall LINE member is
+			// shell (a freestanding desk classifies as wall face too).
+			return (ww || we) && south_open();
+		}
+		auto ns_shell = [&]() {
+			// N-S LINE members only; shell iff the visible EAST face adjoins
+			// the outdoors.  An east face on a roofed walkable space (room,
+			// porch, passage) is INTERIOR: lit by whatever light reaches that
+			// space -- never a property of the lights themselves.
+			return (wn || ws) && east_open();
+		};
+		if (ft.h > ft.w) {
+			return ns_shell();
+		}
+		// Square piece: classify by the wall line running through it.  NE/NW
+		// corners show the room their S/E faces -- interior -- and stay clear.
+		if (wn && ws) {
+			return ns_shell();
+		}
+		if (ww && we) {
+			return south_open();    // South wall line.
+		}
+		if (wn && ww) {
+			return south_open() || east_open();    // SE corner.
+		}
+		if (wn && we) {
+			return south_open();    // SW corner.
+		}
+		// Single-anchor stubs: line membership is along the FACE being
+		// stamped -- W/E anchors carry a south face, N/S anchors an east
+		// face.  A piece whose only wall neighbour is BEHIND its face (a
+		// desk against a wall) is furniture, not shell; an east face over
+		// a room to the south (NE corner) shows interior and stays clear.
+		if ((ww || we) && south_open()) {
+			return true;
+		}
+		return (wn || ws) && east_open() && (ws || probe_open(mx, ft.y + ft.h, 0, 1));
+	};
+	// A placed light source does NOT exempt a wall: mask state is pure
+	// geometry (interior faces light with their space whether the sconce
+	// on them burns or not).
 	bool roof_like;
 	bool tall_exterior = false;
 	// Storey a tall-exterior mark belongs to (mask value 128 + storey): a
@@ -1596,6 +1746,26 @@ void Game_window::update_roof_mask(Game_object* obj, int sx, int sy) {
 		return s < 0 ? 0 : (s > 3 ? 3 : s);
 	};
 	int tall_storey = 0;
+	// Paint a shell wall: whole sprite 132; with `lit_top` (inside view) its
+	// flat TOP band (sprite minus the 4px-per-z bottom/right face strip)
+	// stays CLEAR so the room's field washes it like the interior walls'
+	// tops -- the faces stay dark wall.  (A 128+storey top mark fails the
+	// room's own storey gate and would stay dark.)
+	auto paint_shell_face = [&](bool lit_top) {
+		frame->paint_rle_transformed(roof_light_mask.get(), sx, sy, roof_face);
+		if (!lit_top) {
+			return;
+		}
+		const int                  strip = 4 * obj->get_info().get_3d_height();
+		Image_buffer::ClipRectSave clipsave(roof_light_mask.get());
+		const TileRect             top_rect(
+                sx - frame->get_xleft(), sy - frame->get_yabove(), frame->get_width() - strip, frame->get_height() - strip);
+		const TileRect r = top_rect.intersect(clipsave.Rect());
+		if (r.w > 0 && r.h > 0) {
+			roof_light_mask->set_clip(r.x, r.y, r.w, r.h);
+			frame->paint_rle_transformed(roof_light_mask.get(), sx, sy, roof_clear);
+		}
+	};
 	if (obj->get_info().is_floor()) {
 		// A floor slab used as the storey below's ceiling: mark its flat TOP
 		// 128 + storey (not 255) so a deck-level spill still lights it while
@@ -1671,6 +1841,19 @@ void Game_window::update_roof_mask(Game_object* obj, int sx, int sy) {
 				}
 				tall_exterior = true;
 				tall_storey   = storey_of(obj->get_lift());
+			} else if (!is_in_dungeon() && faces_exterior()) {
+				// Covered, grounded and camera-facing the outdoors: the
+				// building shell seen from inside -- same rules as the
+				// outside view.  Wall faces and light-passing pieces are 132
+				// (dark under lights; panes take the glass rule), door
+				// leaves stay unmarked; anything else falls through clear.
+				if (obj->get_info().is_door()) {
+					return;
+				}
+				if (NaturalLight::Object_is_wall_face(obj) || NaturalLight::Object_passes_light(obj)) {
+					paint_shell_face(true);
+					return;
+				}
 			}
 		} else if (!roof_like && obj->get_lift() >= 5) {
 			// Upper-storey walls / furnishings below the render skip: mark
@@ -1682,6 +1865,20 @@ void Game_window::update_roof_mask(Game_object* obj, int sx, int sy) {
 			}
 			tall_exterior = true;
 			tall_storey   = storey_of(obj->get_lift());
+		} else if (!roof_like && top >= 5 && !open_sky_above(top) && !is_in_dungeon() && faces_exterior()) {
+			// Ground shell walls below the render skip (see the branch above).
+			if (obj->get_info().is_door()) {
+				return;
+			}
+			if (NaturalLight::Object_is_wall_face(obj) || NaturalLight::Object_passes_light(obj)) {
+				paint_shell_face(true);
+				return;
+			}
+		} else if (!roof_like && top < 5 && !open_sky_above(top) && obj->get_info().is_solid() && !obj->get_info().is_door()
+				   && !obj->is_dragable() && !is_in_dungeon() && faces_exterior()) {
+			// Low shell trim (battlement pieces beside a window), as outside.
+			frame->paint_rle_transformed(roof_light_mask.get(), sx, sy, roof_face);
+			return;
 		}
 	} else {
 		const bool is_roof_shape = obj->get_info().is_roof();
@@ -1711,12 +1908,23 @@ void Game_window::update_roof_mask(Game_object* obj, int sx, int sy) {
 				tall_exterior = true;
 			} else {
 				const Shape_info& winfo = obj->get_info();
-				if (winfo.is_door() || winfo.has_light_passes_info()) {
+				// Light-passing wall pieces (window walls, grates) are 132 like
+				// any covered wall: their glass band lights via the veto's glass
+				// rule, never the z-blind field (which washed the wall under the
+				// glass).  Only door leaves stay unmarked.
+				if (winfo.is_door()) {
 					return;
 				}
-				frame->paint_rle_transformed(roof_light_mask.get(), sx, sy, roof_face);
+				paint_shell_face(false);
 				return;
 			}
+		} else if (!roof_like && !open_sky_above(top) && obj->get_info().is_solid() && !obj->get_info().is_door()
+				   && !obj->is_dragable()) {
+			// A LOW solid under cover (battlement trim beside a window):
+			// part of the wall shell too -- left clear, its pixels z-blind
+			// sample the interior field (the lit strip beneath a window).
+			frame->paint_rle_transformed(roof_light_mask.get(), sx, sy, roof_face);
+			return;
 		}
 	}
 	frame->paint_rle_transformed(
@@ -2346,6 +2554,203 @@ void Game_window::build_light_layers() {
 							if (mrow[x] > srow[x]) {
 								srow[x] = mrow[x];
 							}
+						}
+					}
+				}
+			}
+		}
+		// ACTORS (and placed LIGHT-SOURCE sprites) relight per frame: an
+		// actor standing in a light pool in front of a wall -- or a torch
+		// whose bearing wall's 132 stamp paints after its sprite -- is
+		// darkened by the cached stamp behind it; lift its pixels to the
+		// ground coverage at its own feet.  Written to the per-frame SCRATCH
+		// copy only, never the cached static coverage, so nothing ghosts.
+		{
+			static const Xform_palette lift_set = [] {
+				Xform_palette x;
+				for (int i = 0; i < 256; ++i) {
+					x.colors[i] = 255;
+				}
+				return x;
+			}();
+			std::vector<Game_object*> subjects;
+			{
+				Actor_vector alist;
+				if (main_actor != nullptr) {
+					main_actor->find_nearby_actors(alist, c_any_shapenum, 24, 0x28);
+					alist.push_back(main_actor);
+				}
+				subjects.assign(alist.begin(), alist.end());
+			}
+			for (const auto& lr2 : light_renders) {
+				if (lr2.is_spill || lr2.moving || lr2.tier != t) {
+					continue;
+				}
+				// A roofed light's sprite is hidden behind the shell from
+				// outside: don't lift it (this replaces the occluder erase,
+				// whose binary paint-order compare wrongly wiped visible
+				// sconces -- [lift] foot_a>0 lifted=0).
+				if (!inside && lr2.mask_roof) {
+					continue;
+				}
+				const int        wtx = ((lr2.ltx % c_num_tiles) + c_num_tiles) % c_num_tiles;
+				const int        wty = ((lr2.lty % c_num_tiles) + c_num_tiles) % c_num_tiles;
+				Map_chunk* const ch  = map->get_chunk_safely(wtx / c_tiles_per_chunk, wty / c_tiles_per_chunk);
+				if (ch == nullptr) {
+					continue;
+				}
+				Object_iterator it(ch->get_objects());
+				Game_object*    o;
+				while ((o = it.get_next()) != nullptr) {
+					const Tile_coord ot = o->get_tile();
+					if (ot.tx == wtx && ot.ty == wty && ot.tz == lr2.ltz && o->get_info().is_light_source()) {
+						subjects.push_back(o);
+						break;
+					}
+				}
+			}
+			const size_t sz = static_cast<size_t>(W) * H;
+			for (Game_object* act : subjects) {
+				if (act == nullptr || act->get_flag(Obj_flags::dont_render)) {
+					continue;
+				}
+				Shape_frame* fr = act->get_shape();
+				if (fr == nullptr) {
+					continue;
+				}
+				int asx = 0;
+				int asy = 0;
+				get_shape_location(act, asx, asy);
+				const int abx0 = asx - fr->get_xleft();
+				const int aby0 = asy - fr->get_yabove();
+				const int abw  = fr->get_width();
+				const int abh  = fr->get_height();
+				if (abx0 + abw <= 0 || aby0 + abh <= 0 || abx0 >= W || aby0 >= H) {
+					continue;
+				}
+				// Ground light at his feet: brightest CLEAR-pixel coverage in
+				// a small window around the foot hotspot (marked pixels --
+				// walls, slabs -- are not pool light).  A wall-mounted sconce
+				// has no clear ground at its mount: reach further down-screen
+				// to the floor its own pool lights.
+				const bool           is_actor = act->as_actor() != nullptr;
+				const unsigned char* rdcov    = has_moving ? light_scratch_cov.data() : cov;
+				int                  foot_a   = 0;
+				const int            wy1      = asy + (is_actor ? c_tilesize / 2 : 2 * c_tilesize);
+				const int            wx0      = asx - (is_actor ? c_tilesize : 2 * c_tilesize);
+				const int            wx1      = asx + (is_actor ? c_tilesize / 2 : c_tilesize);
+				for (int y = std::max(asy - c_tilesize / 2, 0); y <= std::min(wy1, H - 1); ++y) {
+					for (int x = std::max(wx0, 0); x <= std::min(wx1, W - 1); ++x) {
+						if (roofpix != nullptr && roofpix[static_cast<size_t>(y) * roof_lw + x] != 0) {
+							continue;
+						}
+						const unsigned char cv2 = rdcov[static_cast<size_t>(y) * W + x];
+						if (cv2 > foot_a) {
+							foot_a = cv2;
+						}
+					}
+				}
+				if (foot_a <= 0) {
+					static const char* const dbg_lift0 = std::getenv("EXULT_DEBUG_LIGHT_MASK");
+					if (dbg_lift0 != nullptr && !is_actor) {
+						static std::map<std::tuple<int, int, int>, uint64_t> last_z;
+						const Tile_coord                                     st   = act->get_tile();
+						uint64_t&                                            lt_z = last_z[{st.tx, st.ty, t}];
+						const uint64_t                                       nowz = SDL_GetTicks();
+						if (nowz - lt_z > 2000) {
+							lt_z = nowz;
+							std::fprintf(
+									stderr, "[lift] shape=%d/%d lt=(%d,%d,%d) tier=%d as=(%d,%d) foot_a=0 SKIP t=%u\n",
+									act->get_shapenum(), act->get_framenum(), st.tx, st.ty, st.tz, t, asx, asy,
+									static_cast<unsigned>(nowz));
+						}
+					}
+					continue;
+				}
+				if (!has_moving) {
+					light_scratch_cov.resize(sz);
+					std::memcpy(light_scratch_cov.data(), cov, sz);
+					has_moving = true;    // Route layer_set_coverage to the scratch.
+				}
+				// Rasterize the sprite's coverage, then lift its pixels.
+				static std::unique_ptr<Image_buffer8> ascratch;
+				if (!ascratch || static_cast<int>(ascratch->get_width()) < abw
+					|| static_cast<int>(ascratch->get_height()) < abh) {
+					const int nw = std::max(abw, ascratch ? static_cast<int>(ascratch->get_width()) : 0);
+					const int nh = std::max(abh, ascratch ? static_cast<int>(ascratch->get_height()) : 0);
+					ascratch     = std::make_unique<Image_buffer8>(nw, nh);
+				}
+				ascratch->fill8(0, abw, abh, 0, 0);
+				fr->paint_rle_transformed(ascratch.get(), fr->get_xleft(), fr->get_yabove(), lift_set);
+				// Erase every sprite the renderer paints AFTER the actor (the
+				// real paint order -- a foot-offset heuristic misjudges thick
+				// multi-tile walls, shining his light through them): what
+				// covers his sprite must not be lifted.  ACTORS ONLY: the
+				// binary compare mis-orders wall/roof sprites against wall
+				// decorations and wiped visible sconces; light sprites are
+				// instead gated by viewer-vs-roof above.
+				static const Xform_palette erase_set = [] {
+					Xform_palette x;
+					for (int i = 0; i < 256; ++i) {
+						x.colors[i] = 0;
+					}
+					return x;
+				}();
+				if (is_actor) {
+					Game_object_vector occ;
+					act->find_nearby(occ, c_any_shapenum, 10, 0x80);
+					Ordering_info aord(this, act);
+					for (Game_object* obj : occ) {
+						if (obj == nullptr || obj->as_actor() != nullptr) {
+							continue;
+						}
+						if (Game_object::compare(aord, obj) != -1) {
+							continue;    // Paints before him, or no overlap.
+						}
+						Shape_frame* ofr = obj->get_shape();
+						if (ofr == nullptr) {
+							continue;
+						}
+						int osx = 0;
+						int osy = 0;
+						get_shape_location(obj, osx, osy);
+						ofr->paint_rle_transformed(ascratch.get(), osx - abx0, osy - aby0, erase_set);
+					}
+				}
+				const unsigned char* abits = ascratch->get_bits();
+				const int            aslw  = static_cast<int>(ascratch->get_line_width());
+				unsigned char*       wcov  = light_scratch_cov.data();
+				int                  lifted = 0;
+				for (int y = std::max(aby0, 0); y < std::min(aby0 + abh, H); ++y) {
+					const unsigned char* arow = abits + static_cast<size_t>(y - aby0) * aslw;
+					for (int x = std::max(abx0, 0); x < std::min(abx0 + abw, W); ++x) {
+						if (arow[x - abx0] == 0) {
+							continue;
+						}
+						if (roofpix != nullptr && roofpix[static_cast<size_t>(y) * roof_lw + x] == 255) {
+							continue;    // Never light a drawn roof.
+						}
+						const size_t ci = static_cast<size_t>(y) * W + x;
+						if (wcov[ci] < foot_a) {
+							wcov[ci] = static_cast<unsigned char>(foot_a);
+							dstpix[static_cast<size_t>(y) * dst_lw + x] = srcpix[static_cast<size_t>(y) * src_lw + x];
+							++lifted;
+						}
+					}
+				}
+				{
+					static const char* const dbg_lift = std::getenv("EXULT_DEBUG_LIGHT_MASK");
+					if (dbg_lift != nullptr && !is_actor) {
+						static std::map<std::tuple<int, int, int>, uint64_t> last_l;
+						const Tile_coord                                     st   = act->get_tile();
+						uint64_t&                                            lt_l = last_l[{st.tx, st.ty, t}];
+						const uint64_t                                       nowl = SDL_GetTicks();
+						if (nowl - lt_l > 2000) {
+							lt_l = nowl;
+							std::fprintf(
+									stderr, "[lift] shape=%d/%d lt=(%d,%d,%d) tier=%d as=(%d,%d) box=(%d,%d,%d,%d) foot_a=%d lifted=%d t=%u\n",
+									act->get_shapenum(), act->get_framenum(), st.tx, st.ty, st.tz, t, asx, asy, abx0, aby0, abw,
+									abh, foot_a, lifted, static_cast<unsigned>(nowl));
 						}
 					}
 				}
