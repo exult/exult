@@ -705,9 +705,23 @@ bool Image_window::create_scale_surfaces(int w, int h, int bpp) {
 	}
 	if (screen_texture_a == nullptr) {
 		cout << "Couldn't create screen_texture_a: " << SDL_GetError() << std::endl;
+		return false;
 	}
 	SDL_SetTextureBlendMode(screen_texture, SDL_BLENDMODE_NONE);
 	SDL_SetTextureBlendMode(screen_texture_a, SDL_BLENDMODE_NONE);
+
+	// lock screen_texture to get its actual format in case it is different
+	// from desktop_displaymode.format for some reason
+	// inter_surface must have the same actual pixel format as locked screen_texture
+	SDL_Surface* locked_screen_texture;
+	if (!SDL_LockTextureToSurface(screen_texture, nullptr, &locked_screen_texture)) {
+		cout << "Couldn't lock screen_texture: " << SDL_GetError() << std::endl;
+		free_surface();
+		return false;
+	}
+	SDL_PixelFormat inter_surface_format = locked_screen_texture->format;
+	SDL_UnlockTexture(screen_texture);
+	locked_screen_texture = nullptr;
 
 	int draw_width  = inter_width / scale + 2 * guard_band;
 	int draw_height = inter_height / scale + 2 * guard_band;
@@ -731,7 +745,7 @@ bool Image_window::create_scale_surfaces(int w, int h, int bpp) {
 	} else if (inter_width != w || inter_height != h) {
 		int i_width  = inter_width + 2 * scale * guard_band;
 		int i_height = inter_height + 2 * scale * guard_band;
-		if (!(inter_surface = SDL_CreateSurface(i_width, i_height, SDL_PIXELFORMAT_ARGB8888))) {
+		if (!(inter_surface = SDL_CreateSurface(i_width, i_height, inter_surface_format))) {
 			cerr << "Couldn't create inter surface: " << SDL_GetError() << endl;
 			free_surface();
 			return false;
