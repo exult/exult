@@ -108,8 +108,8 @@ int Image_window::windowed      = 0;
 // so we need to define the default
 float Image_window::nativescale = 1.0f;
 
-const SDL_PixelFormatDetails* ManipBase::fmt;            // Format of dest. pixels (and src for rgb src).
-SDL_Color                     ManipBase::colors[256];    // Palette for source window.
+SDL_PixelFormatDetails ManipBase::fmt;            // Format of dest. pixels (and src for rgb src).
+SDL_Color              ManipBase::colors[256];    // Palette for source window.
 
 // Constructor for the ScalerVector, setup the list
 Image_window::ScalerVector::ScalerVector() {
