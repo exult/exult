@@ -1595,7 +1595,7 @@ void Game_window::update_roof_mask(Game_object* obj, int sx, int sy) {
 	// building's roofed walkable interior -- open sky OR another
 	// structure's solid mass (the city wall beside the east facade) both
 	// count as outdoors.  Interior walls' camera sides are roofed rooms.
-	auto faces_exterior = [&]() {
+	auto faces_exterior = [&](bool doors_anchor = true) {
 		const TileRect ft = obj->get_footprint();
 		// The chunk blocked bitmap includes ACTORS: bitmap tests made the
 		// shell classification flicker as NPCs (or the viewer) walked by.
@@ -1690,12 +1690,17 @@ void Game_window::update_roof_mask(Game_object* obj, int sx, int sy) {
 		auto wall_at = [&](int tx, int ty) {
 			return static_solid_at(tx, ty, obj->get_lift() + 2, obj->get_lift() + 2);
 		};
-		const int  mx = ft.x + ft.w / 2;
-		const int  my = ft.y + ft.h / 2;
-		const bool wn = wall_at(mx, ft.y - 1) || door_at(mx, ft.y - 1);
-		const bool ws = wall_at(mx, ft.y + ft.h) || door_at(mx, ft.y + ft.h);
-		const bool ww = wall_at(ft.x - 1, my) || door_at(ft.x - 1, my);
-		const bool we = wall_at(ft.x + ft.w, my) || door_at(ft.x + ft.w, my);
+		const int mx = ft.x + ft.w / 2;
+		const int my = ft.y + ft.h / 2;
+		// A low piece sitting IN the doorway path (door within a tile of its
+		// own body) is the fan's threshold, not shell trim.
+		if (!doors_anchor && (door_at(mx, my) || door_at(ft.x, ft.y) || door_at(ft.x + ft.w - 1, ft.y + ft.h - 1))) {
+			return false;
+		}
+		const bool wn = wall_at(mx, ft.y - 1) || (doors_anchor && door_at(mx, ft.y - 1));
+		const bool ws = wall_at(mx, ft.y + ft.h) || (doors_anchor && door_at(mx, ft.y + ft.h));
+		const bool ww = wall_at(ft.x - 1, my) || (doors_anchor && door_at(ft.x - 1, my));
+		const bool we = wall_at(ft.x + ft.w, my) || (doors_anchor && door_at(ft.x + ft.w, my));
 		if (ft.w > ft.h) {
 			// E-W pieces show their SOUTH face; only a wall LINE member is
 			// shell (a freestanding desk classifies as wall face too).
@@ -1875,9 +1880,12 @@ void Game_window::update_roof_mask(Game_object* obj, int sx, int sy) {
 				paint_shell_face(true);
 				return;
 			}
-		} else if (!roof_like && top < 5 && !open_sky_above(top) && obj->get_info().is_solid() && !obj->get_info().is_door()
-				   && !obj->is_dragable() && !is_in_dungeon() && faces_exterior()) {
+		} else if (
+				!roof_like && top < 5 && !open_sky_above(top) && obj->get_info().is_solid() && !obj->get_info().is_door()
+				&& !obj->is_dragable() && !is_in_dungeon() && faces_exterior(false)) {
 			// Low shell trim (battlement pieces beside a window), as outside.
+			// Door anchors excluded: a threshold step in front of the doorway
+			// is part of the fan's ground, not the shell.
 			frame->paint_rle_transformed(roof_light_mask.get(), sx, sy, roof_face);
 			return;
 		}
@@ -1919,8 +1927,9 @@ void Game_window::update_roof_mask(Game_object* obj, int sx, int sy) {
 				paint_shell_face(false);
 				return;
 			}
-		} else if (!roof_like && !open_sky_above(top) && obj->get_info().is_solid() && !obj->get_info().is_door()
-				   && !obj->is_dragable()) {
+		} else if (
+				!roof_like && !open_sky_above(top) && obj->get_info().is_solid() && !obj->get_info().is_door()
+				&& !obj->is_dragable()) {
 			// A LOW solid under cover (battlement trim beside a window):
 			// part of the wall shell too -- left clear, its pixels z-blind
 			// sample the interior field (the lit strip beneath a window).
@@ -2575,14 +2584,6 @@ void Game_window::build_light_layers() {
 				return x;
 			}();
 			std::vector<Game_object*> subjects;
-			{
-				Actor_vector alist;
-				if (main_actor != nullptr) {
-					main_actor->find_nearby_actors(alist, c_any_shapenum, 24, 0x28);
-					alist.push_back(main_actor);
-				}
-				subjects.assign(alist.begin(), alist.end());
-			}
 			for (const auto& lr2 : light_renders) {
 				if (lr2.is_spill || lr2.moving || lr2.tier != t) {
 					continue;
@@ -2592,6 +2593,15 @@ void Game_window::build_light_layers() {
 				// whose binary paint-order compare wrongly wiped visible
 				// sconces -- [lift] foot_a>0 lifted=0).
 				if (!inside && lr2.mask_roof) {
+					continue;
+				}
+				// Mirror: an EXTERIOR light's sprite seen from inside -- the
+				// viewer's shell may cover it in the world render, and lifting
+				// would stamp its glow through the wall (streetlamp dome
+				// bleeding into the barn).  Same trade-off as above when it is
+				// actually visible through an opening: sprite unbrightened,
+				// pool unaffected.
+				if (inside && !lr2.mask_roof) {
 					continue;
 				}
 				const int        wtx = ((lr2.ltx % c_num_tiles) + c_num_tiles) % c_num_tiles;
@@ -2652,20 +2662,6 @@ void Game_window::build_light_layers() {
 					}
 				}
 				if (foot_a <= 0) {
-					static const char* const dbg_lift0 = std::getenv("EXULT_DEBUG_LIGHT_MASK");
-					if (dbg_lift0 != nullptr && !is_actor) {
-						static std::map<std::tuple<int, int, int>, uint64_t> last_z;
-						const Tile_coord                                     st   = act->get_tile();
-						uint64_t&                                            lt_z = last_z[{st.tx, st.ty, t}];
-						const uint64_t                                       nowz = SDL_GetTicks();
-						if (nowz - lt_z > 2000) {
-							lt_z = nowz;
-							std::fprintf(
-									stderr, "[lift] shape=%d/%d lt=(%d,%d,%d) tier=%d as=(%d,%d) foot_a=0 SKIP t=%u\n",
-									act->get_shapenum(), act->get_framenum(), st.tx, st.ty, st.tz, t, asx, asy,
-									static_cast<unsigned>(nowz));
-						}
-					}
 					continue;
 				}
 				if (!has_moving) {
@@ -2675,8 +2671,7 @@ void Game_window::build_light_layers() {
 				}
 				// Rasterize the sprite's coverage, then lift its pixels.
 				static std::unique_ptr<Image_buffer8> ascratch;
-				if (!ascratch || static_cast<int>(ascratch->get_width()) < abw
-					|| static_cast<int>(ascratch->get_height()) < abh) {
+				if (!ascratch || static_cast<int>(ascratch->get_width()) < abw || static_cast<int>(ascratch->get_height()) < abh) {
 					const int nw = std::max(abw, ascratch ? static_cast<int>(ascratch->get_width()) : 0);
 					const int nh = std::max(abh, ascratch ? static_cast<int>(ascratch->get_height()) : 0);
 					ascratch     = std::make_unique<Image_buffer8>(nw, nh);
@@ -2718,9 +2713,9 @@ void Game_window::build_light_layers() {
 						ofr->paint_rle_transformed(ascratch.get(), osx - abx0, osy - aby0, erase_set);
 					}
 				}
-				const unsigned char* abits = ascratch->get_bits();
-				const int            aslw  = static_cast<int>(ascratch->get_line_width());
-				unsigned char*       wcov  = light_scratch_cov.data();
+				const unsigned char* abits  = ascratch->get_bits();
+				const int            aslw   = static_cast<int>(ascratch->get_line_width());
+				unsigned char*       wcov   = light_scratch_cov.data();
 				int                  lifted = 0;
 				for (int y = std::max(aby0, 0); y < std::min(aby0 + abh, H); ++y) {
 					const unsigned char* arow = abits + static_cast<size_t>(y - aby0) * aslw;
@@ -2733,25 +2728,9 @@ void Game_window::build_light_layers() {
 						}
 						const size_t ci = static_cast<size_t>(y) * W + x;
 						if (wcov[ci] < foot_a) {
-							wcov[ci] = static_cast<unsigned char>(foot_a);
+							wcov[ci]                                    = static_cast<unsigned char>(foot_a);
 							dstpix[static_cast<size_t>(y) * dst_lw + x] = srcpix[static_cast<size_t>(y) * src_lw + x];
 							++lifted;
-						}
-					}
-				}
-				{
-					static const char* const dbg_lift = std::getenv("EXULT_DEBUG_LIGHT_MASK");
-					if (dbg_lift != nullptr && !is_actor) {
-						static std::map<std::tuple<int, int, int>, uint64_t> last_l;
-						const Tile_coord                                     st   = act->get_tile();
-						uint64_t&                                            lt_l = last_l[{st.tx, st.ty, t}];
-						const uint64_t                                       nowl = SDL_GetTicks();
-						if (nowl - lt_l > 2000) {
-							lt_l = nowl;
-							std::fprintf(
-									stderr, "[lift] shape=%d/%d lt=(%d,%d,%d) tier=%d as=(%d,%d) box=(%d,%d,%d,%d) foot_a=%d lifted=%d t=%u\n",
-									act->get_shapenum(), act->get_framenum(), st.tx, st.ty, st.tz, t, asx, asy, abx0, aby0, abw,
-									abh, foot_a, lifted, static_cast<unsigned>(nowl));
 						}
 					}
 				}

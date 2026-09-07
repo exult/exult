@@ -117,10 +117,12 @@ namespace NaturalLight {
 			bool light_walls = true, std::vector<unsigned char>* ring = nullptr);
 
 	// Build the room-fill grid for a spill glow (same layout), flooded from
-	// `start` -- the tile just outside the opening.
+	// `start` -- the tile just outside the opening.  A nonzero (cone_dx,
+	// cone_dy) unit axis restricts the fill to the outward fan in front of
+	// the opening (45 degrees each side); (0,0) floods freely.
 	void Build_spill_shadow_grid(
 			const Tile_coord& start, int rt, std::vector<unsigned char>& lit, bool light_walls = true,
-			std::vector<unsigned char>* ring = nullptr);
+			std::vector<unsigned char>* ring = nullptr, int cone_dx = 0, int cone_dy = 0);
 
 	// Splat one radial light's dome falloff into the coverage buffer and copy
 	// the brightened source pixels it wins.  Parameters at the definition.

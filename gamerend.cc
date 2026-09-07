@@ -476,10 +476,7 @@ void Game_window::paint(
 				// moving = true: the torch follows the Avatar every frame.
 				add_light_render(
 						asx, asy, radius, tier, elevation, rt, ltile.tx, ltile.ty, ltile.tz, std::move(lit), under_roof, 0, false,
-						100, 0, true);
-					add_light_render(
-							asx, asy, radius, tier, elevation, rt, ltile.tx, ltile.ty, ltile.tz, std::move(lit), under_roof, 0,
-							false, 100, 0, true, std::move(ringv));
+						100, 0, true, std::move(ringv));
 				// Each opening the fill reached gets the source's own bubble
 				// poking through it: remaining radius, continued falloff
 				// (dist_bias), gated by its own spill grid, dimmed by the
@@ -498,10 +495,23 @@ void Game_window::paint(
 					const int                  srt = spill_radius / c_tilesize + 7;
 					std::vector<unsigned char> slit;
 					std::vector<unsigned char> sring;
-					// Walls in the grid for any viewer: the exterior-facing shell
-					// is stamped 132 from inside too (faces_exterior), so the
-					// ring cannot wash interior faces.
-					NaturalLight::Build_spill_shadow_grid(sp, srt, slit, true, &sring);
+					// Outward fan axis: window spills exit through their opening
+					// wall tile; doorway/well exits fall back to the light->exit
+					// dominant axis.  (0,0) = unconstrained.
+					int cdx = spill.opening.tx >= 0 ? Tile_coord::delta(spill.opening.tx, sp.tx)
+													: Tile_coord::delta(ltile.tx, sp.tx);
+					int cdy = spill.opening.tx >= 0 ? Tile_coord::delta(spill.opening.ty, sp.ty)
+													: Tile_coord::delta(ltile.ty, sp.ty);
+					if (std::abs(cdx) >= std::abs(cdy)) {
+						cdx = cdx > 0 ? 1 : (cdx < 0 ? -1 : 0);
+						cdy = 0;
+					} else {
+						cdy = cdy > 0 ? 1 : -1;
+						cdx = 0;
+					}
+					// Walls in the grid for any viewer: the shell is stamped from
+					// inside too, so the ring cannot wash interior faces.
+					NaturalLight::Build_spill_shadow_grid(sp, srt, slit, true, &sring, cdx, cdy);
 					int ssx = 0;
 					int ssy = 0;
 					get_shape_location(sp, ssx, ssy);
@@ -759,9 +769,15 @@ int Game_render::paint_chunk_objects(
 			// chunk over inside the barn used to vanish the lamppost pool seen
 			// through the door).  Blocked lights still never count toward the
 			// legacy global palette below.
-			if (blocked && (day_palette || NaturalLight::Light_beneath_roof(light_obj))) {
+			if (blocked && day_palette) {
 				continue;
 			}
+			// A blocked INTERIOR light keeps its outdoor SPILLS: escaped light
+			// is exterior geometry, visible from anywhere -- the blocked
+			// verdict is a viewer-relative heuristic (avatar chunk / enclosure)
+			// and walking room to room must not toggle a tree lit through a
+			// window.  Only the main splat is suppressed.
+			const bool suppress_main = blocked && NaturalLight::Light_beneath_roof(light_obj);
 			// Spatial lighting: record this (unblocked) source so
 			// build_light_layers can brighten the world around it. Radius and
 			// palette tier scale with the light's intrinsic brightness (not the
@@ -796,12 +812,13 @@ int Game_render::paint_chunk_objects(
 				// (clear pixels, z-blind) loses its wall-line cells and
 				// drifts off the window (inside/outside parity).
 				const bool light_walls
-						= !gwin->is_main_actor_inside()
-						  || gwin->get_main_actor()->get_lift() / 5 == ltile.tz / 5 || !under_roof;
+						= !gwin->is_main_actor_inside() || gwin->get_main_actor()->get_lift() / 5 == ltile.tz / 5 || !under_roof;
 				NaturalLight::Build_light_shadow_grid(light_obj, rt, lit, spills, light_walls, &ringv);
+				if (!suppress_main) {
 					gwin->add_light_render(
 							lsx, lsy, radius, tier, elevation, rt, ltile.tx, ltile.ty, ltile.tz, std::move(lit), under_roof, 0,
 							false, 100, 0, false, std::move(ringv));
+				}
 				// Spill glow per reached opening (see the carried-light site).
 				for (const NaturalLight::Light_spill& spill : spills) {
 					const Tile_coord& sp = spill.tile;
@@ -815,8 +832,19 @@ int Game_render::paint_chunk_objects(
 					const int                  srt = spill_radius / c_tilesize + 7;
 					std::vector<unsigned char> slit;
 					std::vector<unsigned char> sring;
-					// Walls in the grid for any viewer (see the carried-light site).
-					NaturalLight::Build_spill_shadow_grid(sp, srt, slit, true, &sring);
+					// Outward fan axis (see the carried-light site).
+					int cdx = spill.opening.tx >= 0 ? Tile_coord::delta(spill.opening.tx, sp.tx)
+													: Tile_coord::delta(ltile.tx, sp.tx);
+					int cdy = spill.opening.tx >= 0 ? Tile_coord::delta(spill.opening.ty, sp.ty)
+													: Tile_coord::delta(ltile.ty, sp.ty);
+					if (std::abs(cdx) >= std::abs(cdy)) {
+						cdx = cdx > 0 ? 1 : (cdx < 0 ? -1 : 0);
+						cdy = 0;
+					} else {
+						cdy = cdy > 0 ? 1 : -1;
+						cdx = 0;
+					}
+					NaturalLight::Build_spill_shadow_grid(sp, srt, slit, true, &sring, cdx, cdy);
 					int ssx = 0;
 					int ssy = 0;
 					gwin->get_shape_location(sp, ssx, ssy);
