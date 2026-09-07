@@ -994,5 +994,7 @@ public:
 	}
 
 	bool screenshot(SDL_IOStream* dst, bool paletted);
+
+	bool SDLBlendModeSupported(SDL_BlendMode blendmode);
 };
 #endif /* INCL_IMAGEWIN    */

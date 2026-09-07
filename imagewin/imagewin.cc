@@ -1271,6 +1271,18 @@ bool Image_window::screenshot(SDL_IOStream* dst, bool paletted) {
 	return false;
 }
 
+bool Image_window::SDLBlendModeSupported(SDL_BlendMode blendmode) {
+	SDL_BlendMode original;
+	if (!screen_renderer || !SDL_GetRenderDrawBlendMode(screen_renderer, &original)) {
+		return false;
+	}
+
+	bool supported = SDL_SetRenderDrawBlendMode(screen_renderer, blendmode);
+	SDL_SetRenderDrawBlendMode(screen_renderer, original);
+
+	return supported;
+}
+
 void Image_window::set_title(const char* title) {
 	SDL_SetWindowTitle(screen_window, title);
 }
