@@ -22,6 +22,7 @@ Free Software Foundation, Inc., 59 Temple Place - Suite 330,
 Boston, MA  02111-1307, USA.
 */
 #include "perf.h"
+#include <inttypes.h> // For the PRIi64 macro
 
 #include "gamewin.h"
 
@@ -137,7 +138,7 @@ void PerformanceTimer::paintPerfMetrics() {
 		for (node = all; node; node = node->next) {
 			if (node->used && (mode == 2 || node == &frameperf)) {
 				auto time = node->value / 1000;
-				snprintf(line, 80, "%s: %lli us", node->name.c_str(), time);
+				snprintf(line, 80, "%s: %" PRIi64 " us", node->name.c_str(), time);
 				xlimit = font->paint_text_fixedwidth(ibuf, line, 0, y++ * 9, 8);
 				ibuf->fill_translucent8(0, xlimit + 2, 9, 0, y * 9 - 9, textbg);
 			}
