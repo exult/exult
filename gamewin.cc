@@ -1604,6 +1604,37 @@ void Game_window::update_roof_mask(Game_object* obj, int sx, int sy) {
 		const Tile_coord t = obj->get_tile();
 		return !static_cover_above(t.tx, t.ty, top);
 	};
+	// Is a real ROOF shape drawn above this object?
+	auto roof_shape_above = [&](int z) {
+		const Tile_coord t   = obj->get_tile();
+		const int        wtx = ((t.tx % c_num_tiles) + c_num_tiles) % c_num_tiles;
+		const int        wty = ((t.ty % c_num_tiles) + c_num_tiles) % c_num_tiles;
+		const int        cx  = wtx / c_tiles_per_chunk;
+		const int        cy  = wty / c_tiles_per_chunk;
+		for (int dcy = -1; dcy <= 1; ++dcy) {
+			for (int dcx = -1; dcx <= 1; ++dcx) {
+				Map_chunk* const ch = map->get_chunk_safely(cx + dcx, cy + dcy);
+				if (ch == nullptr) {
+					continue;
+				}
+				Object_iterator it(ch->get_objects());
+				Game_object*    o;
+				while ((o = it.get_next()) != nullptr) {
+					if (o == obj || o->as_actor() != nullptr || o->is_dragable()) {
+						continue;
+					}
+					if (!o->get_info().is_roof() || o->get_lift() < z) {
+						continue;
+					}
+					if (o->get_footprint().has_world_point(wtx, wty)) {
+						return true;
+					}
+				}
+			}
+		}
+		return false;
+	};
+	(void)roof_shape_above;
 	// Solid support from the ground to the object's lift (a crenellation
 	// capping a rampart): it lights with the wall beneath as one whole unit.
 	// A gap below (a deck object -- the room's air under the floor-roof)

@@ -2418,6 +2418,15 @@ namespace NaturalLight {
 			y0 = std::min(y0, grid_fy - radius - c_tilesize);
 			y1 = std::max(y1, grid_fy + radius + c_tilesize);
 		}
+		if (face_data) {
+			// A surface pixel resolves by its OWNER's foot cell, and a sprite
+			// renders UP-LEFT of its foot: a tree whose foot cell sits in the
+			// pool has its crown far above this bbox, so the rows the loop
+			// never visits cut a straight dark line across it.  Reach up-left
+			// by the widest foot offset the mask can record.
+			x0 -= 128;
+			y0 -= 128;
+		}
 		if (x0 < 0) {
 			x0 = 0;
 		}

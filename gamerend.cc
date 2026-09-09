@@ -812,7 +812,8 @@ int Game_render::paint_chunk_objects(
 				// (clear pixels, z-blind) loses its wall-line cells and
 				// drifts off the window (inside/outside parity).
 				const bool light_walls
-						= !gwin->is_main_actor_inside() || gwin->get_main_actor()->get_lift() / 5 == ltile.tz / 5 || !under_roof;
+						= !gwin->is_main_actor_inside()
+						  || gwin->get_main_actor()->get_lift() / 5 == ltile.tz / 5 || !under_roof;
 				NaturalLight::Build_light_shadow_grid(light_obj, rt, lit, spills, light_walls, &ringv);
 				if (!suppress_main) {
 					gwin->add_light_render(
