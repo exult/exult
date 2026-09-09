@@ -1452,6 +1452,33 @@ void Game_window::update_roof_mask(Game_object* obj, int sx, int sy) {
 		}
 		return x;
 	}();
+	// A floor slab's south/right THICKNESS strip (133): the band the clipped
+	// top paint leaves over.  It is the deck's own edge, so a spill fan must
+	// cross it (a plain 128 breaks the glow with a strip-wide dark band), but
+	// it must stay dark under a room's veto light, which a 128 + storey mark
+	// would not.  No geometric test identifies a deck reliably -- ramparts
+	// carry merlons above and passages below -- so the strip is labelled.
+	static const Xform_palette roof_strip = [] {
+		Xform_palette x;
+		for (int i = 0; i < 256; ++i) {
+			x.colors[i] = 133;
+		}
+		return x;
+	}();
+	// A storey's floor SLAB surface (140 + storey).  Distinct from the tall
+	// mark (128 + storey) an exterior upper-storey wall carries: a slab is a
+	// room's ceiling seen from beneath, so a light on a lower storey must
+	// never reach it, while an outdoor light must light an exterior wall
+	// whatever storey it belongs to.
+	static const std::array<Xform_palette, 4> roof_slab = [] {
+		std::array<Xform_palette, 4> a{};
+		for (int s = 0; s < 4; ++s) {
+			for (int i = 0; i < 256; ++i) {
+				a[s].colors[i] = static_cast<unsigned char>(140 + s);
+			}
+		}
+		return a;
+	}();
 	// Surface-identity channels (face design §4.1): the topmost sprite at a
 	// pixel owns its KIND; wall faces and objects also record their per-tile
 	// foot offset so the splat can sample the owner's cell instead of the
@@ -1542,27 +1569,72 @@ void Game_window::update_roof_mask(Game_object* obj, int sx, int sy) {
 	const bool inside = is_main_actor_inside();
 	// True when nothing is drawn above this object's top -- it stands under
 	// open sky, so a spill / exterior light may treat it as a whole unit.
+	// Structural cover only, for the same reason faces_exterior scans objects:
+	// the chunk blocked bitmap counts ACTORS and loose items, so a crate set
+	// down on a rampart (or an NPC crossing it) flipped the pieces around it
+	// from open-sky whole units to covered shell faces (132 / 128 + storey),
+	// which the spill branch vetoes -- a black patch far wider than the sprite.
+	auto static_cover_above = [&](int tx, int ty, int z) {
+		tx                  = ((tx % c_num_tiles) + c_num_tiles) % c_num_tiles;
+		ty                  = ((ty % c_num_tiles) + c_num_tiles) % c_num_tiles;
+		Map_chunk* const ch = map->get_chunk_safely(tx / c_tiles_per_chunk, ty / c_tiles_per_chunk);
+		if (ch == nullptr) {
+			return false;
+		}
+		Object_iterator it(ch->get_objects());
+		Game_object*    o;
+		while ((o = it.get_next()) != nullptr) {
+			if (o == obj || o->as_actor() != nullptr || o->is_dragable()) {
+				continue;
+			}
+			const Shape_info& oi = o->get_info();
+			if (!oi.is_solid()) {
+				continue;
+			}
+			if (o->get_lift() + oi.get_3d_height() <= z) {
+				continue;
+			}
+			if (o->get_footprint().has_world_point(tx, ty)) {
+				return true;
+			}
+		}
+		return false;
+	};
 	auto open_sky_above = [&](int top) {
-		const Tile_coord t     = obj->get_tile();
-		Map_chunk* const chunk = map->get_chunk_safely(t.tx / c_tiles_per_chunk, t.ty / c_tiles_per_chunk);
-		return chunk != nullptr && chunk->get_lowest_blocked(top, t.tx % c_tiles_per_chunk, t.ty % c_tiles_per_chunk) < 0;
+		const Tile_coord t = obj->get_tile();
+		return !static_cover_above(t.tx, t.ty, top);
 	};
 	// Solid support from the ground to the object's lift (a crenellation
 	// capping a rampart): it lights with the wall beneath as one whole unit.
 	// A gap below (a deck object -- the room's air under the floor-roof)
-	// makes it belong to its storey instead.
+	// makes it belong to its storey instead.  ANY tile of the footprint with a
+	// full column counts: a piece straddling the wall's outer edge still rests
+	// on the wall, and judging it by the anchor tile alone marked it 128 +
+	// storey, which the spill branch vetoes.
 	auto solid_below = [&]() {
-		const Tile_coord t     = obj->get_tile();
-		Map_chunk* const chunk = map->get_chunk_safely(t.tx / c_tiles_per_chunk, t.ty / c_tiles_per_chunk);
-		if (chunk == nullptr) {
-			return false;
+		const TileRect ft   = obj->get_footprint();
+		const int      lift = obj->get_lift();
+		if (lift <= 0) {
+			return true;
 		}
-		for (int z = 0; z < obj->get_lift(); ++z) {
-			if (!chunk->is_tile_occupied(t.tx % c_tiles_per_chunk, t.ty % c_tiles_per_chunk, z)) {
-				return false;
+		for (int fy = ft.y; fy < ft.y + ft.h; ++fy) {
+			for (int fx = ft.x; fx < ft.x + ft.w; ++fx) {
+				const int        wtx = ((fx % c_num_tiles) + c_num_tiles) % c_num_tiles;
+				const int        wty = ((fy % c_num_tiles) + c_num_tiles) % c_num_tiles;
+				Map_chunk* const ch  = map->get_chunk_safely(wtx / c_tiles_per_chunk, wty / c_tiles_per_chunk);
+				if (ch == nullptr) {
+					continue;
+				}
+				bool full = true;
+				for (int z = 0; z < lift && full; ++z) {
+					full = ch->is_tile_occupied(wtx % c_tiles_per_chunk, wty % c_tiles_per_chunk, z);
+				}
+				if (full) {
+					return true;
+				}
 			}
 		}
-		return true;
+		return false;
 	};
 	// A floor-roof / roof piece right at the object's base: a deck object
 	// even where the wall line below it is solid to the ground.
@@ -1633,10 +1705,7 @@ void Game_window::update_roof_mask(Game_object* obj, int sx, int sy) {
 		// hidden -- never shell; a roofed walkable strip (under an eave) is
 		// exterior only when open sky follows it.
 		auto open_sky_tile = [&](int px, int py) {
-			const int        wtx = ((px % c_num_tiles) + c_num_tiles) % c_num_tiles;
-			const int        wty = ((py % c_num_tiles) + c_num_tiles) % c_num_tiles;
-			Map_chunk* const ch  = map->get_chunk_safely(wtx / c_tiles_per_chunk, wty / c_tiles_per_chunk);
-			return ch != nullptr && ch->get_lowest_blocked(5, wtx % c_tiles_per_chunk, wty % c_tiles_per_chunk) < 0;
+			return !static_cover_above(px, py, 5);
 		};
 		auto probe_open = [&](int tx, int ty, int dx, int dy) {
 			if (open_sky_tile(tx, ty)) {
@@ -1752,6 +1821,12 @@ void Game_window::update_roof_mask(Game_object* obj, int sx, int sy) {
 		return s < 0 ? 0 : (s > 3 ? 3 : s);
 	};
 	int tall_storey = 0;
+	// With the roof hidden, every upper-storey surface on screen is an INTERIOR
+	// one (140 + storey): only its own storey may light it, so a ground-floor
+	// torch cannot wash the floor above.  From outside the same surfaces are the
+	// building's exterior -- facade and walkable floor-roof deck -- and an
+	// outdoor light must light them to full height (128 + storey).
+	const bool upper_interior = inside;
 	// Paint a shell wall: whole sprite 132; with `lit_top` (inside view) its
 	// flat TOP band (sprite minus the 4px-per-z bottom/right face strip)
 	// stays CLEAR so the room's field washes it like the interior walls'
@@ -1790,8 +1865,15 @@ void Game_window::update_roof_mask(Game_object* obj, int sx, int sy) {
 			frame->paint_rle_transformed(roof_light_mask.get(), sx, sy, roof_clear);
 			return;
 		}
+		const Xform_palette& slab_pal = (upper_interior && top_storey >= 1) ? roof_slab[top_storey] : roof_tall[top_storey];
 		if (!inside) {
-			frame->paint_rle_transformed(roof_light_mask.get(), sx, sy, roof_tall[0]);
+			frame->paint_rle_transformed(roof_light_mask.get(), sx, sy, roof_strip);
+		} else {
+			// The clipped paint below covers the slab's TOP only, leaving its
+			// south/right thickness strip unmarked -- and unmarked pixels
+			// z-blind sample the field, so an outdoor light lit that strip
+			// along every slab edge and around every floor hole.
+			frame->paint_rle_transformed(roof_light_mask.get(), sx, sy, slab_pal);
 		}
 		Image_buffer::ClipRectSave clipsave(roof_light_mask.get());
 		const TileRect             top_rect(
@@ -1799,7 +1881,7 @@ void Game_window::update_roof_mask(Game_object* obj, int sx, int sy) {
 		const TileRect r = top_rect.intersect(clipsave.Rect());
 		if (r.w > 0 && r.h > 0) {
 			roof_light_mask->set_clip(r.x, r.y, r.w, r.h);
-			frame->paint_rle_transformed(roof_light_mask.get(), sx, sy, roof_tall[top_storey]);
+			frame->paint_rle_transformed(roof_light_mask.get(), sx, sy, slab_pal);
 		}
 		return;
 	} else if (inside) {
@@ -1938,7 +2020,9 @@ void Game_window::update_roof_mask(Game_object* obj, int sx, int sy) {
 		}
 	}
 	frame->paint_rle_transformed(
-			roof_light_mask.get(), sx, sy, tall_exterior ? roof_tall[tall_storey] : (roof_like ? roof_set : roof_clear));
+			roof_light_mask.get(), sx, sy,
+			tall_exterior ? ((upper_interior && tall_storey >= 1) ? roof_slab[tall_storey] : roof_tall[tall_storey])
+						  : (roof_like ? roof_set : roof_clear));
 }
 
 /*
@@ -2367,8 +2451,12 @@ void Game_window::build_light_layers() {
 			}
 		};
 
-		const bool sig_ok = light_tier_sig[t] != 0 && tier_sig[t] == light_tier_sig[t] && now_ms - light_tier_stamp[t] < 1000
-							&& light_tier_resample[t] == 0;
+		// A dragged object is lifted out of the world into its own layer, so
+		// the world render loses it while the cached coverage still carries
+		// its splat: bare ground then shows at the object's alpha as a
+		// brighter silhouette.  Re-splat for as long as the drag is in flight.
+		const bool sig_ok = !is_dragging() && light_tier_sig[t] != 0 && tier_sig[t] == light_tier_sig[t]
+							&& now_ms - light_tier_stamp[t] < 1000 && light_tier_resample[t] == 0;
 		int dx = 0;
 		int dy = 0;
 		if (sig_ok && has_static[t]) {
@@ -2584,6 +2672,14 @@ void Game_window::build_light_layers() {
 				return x;
 			}();
 			std::vector<Game_object*> subjects;
+			{
+				Actor_vector alist;
+				if (main_actor != nullptr) {
+					main_actor->find_nearby_actors(alist, c_any_shapenum, 24, 0x28);
+					alist.push_back(main_actor);
+				}
+				subjects.assign(alist.begin(), alist.end());
+			}
 			for (const auto& lr2 : light_renders) {
 				if (lr2.is_spill || lr2.moving || lr2.tier != t) {
 					continue;
@@ -2591,7 +2687,7 @@ void Game_window::build_light_layers() {
 				// A roofed light's sprite is hidden behind the shell from
 				// outside: don't lift it (this replaces the occluder erase,
 				// whose binary paint-order compare wrongly wiped visible
-				// sconces -- [lift] foot_a>0 lifted=0).
+				// sconces).
 				if (!inside && lr2.mask_roof) {
 					continue;
 				}
@@ -2713,10 +2809,23 @@ void Game_window::build_light_layers() {
 						ofr->paint_rle_transformed(ascratch.get(), osx - abx0, osy - aby0, erase_set);
 					}
 				}
-				const unsigned char* abits  = ascratch->get_bits();
-				const int            aslw   = static_cast<int>(ascratch->get_line_width());
-				unsigned char*       wcov   = light_scratch_cov.data();
-				int                  lifted = 0;
+				const unsigned char* abits = ascratch->get_bits();
+				const int            aslw  = static_cast<int>(ascratch->get_line_width());
+				unsigned char*       wcov  = light_scratch_cov.data();
+				// A LIGHT SOURCE cannot use the ordering compare above (it
+				// mis-orders wall sprites against their decorations and wipes
+				// visible sconces), so occlusion is decided from the surface
+				// channels instead: the kind mask records the TOPMOST sprite's
+				// foot at each pixel, so a foot pointing at another object's
+				// tile means that object is drawn in front of the lamp.  Kind 0
+				// carries no foot, so it stays permissive -- a sconce whose own
+				// shape is not solid must keep lighting up.
+				const int  own_lift = act->get_lift();
+				const int  own_f0x  = asx + 4 * own_lift;
+				const int  own_f0y  = asy + 4 * own_lift;
+				const int  own_xts  = act->get_info().get_3d_xtiles(act->get_framenum());
+				const int  own_yts  = act->get_info().get_3d_ytiles(act->get_framenum());
+				const bool own_test = !is_actor && kindpix != nullptr && footdxp != nullptr && footdyp != nullptr;
 				for (int y = std::max(aby0, 0); y < std::min(aby0 + abh, H); ++y) {
 					const unsigned char* arow = abits + static_cast<size_t>(y - aby0) * aslw;
 					for (int x = std::max(abx0, 0); x < std::min(abx0 + abw, W); ++x) {
@@ -2726,11 +2835,21 @@ void Game_window::build_light_layers() {
 						if (roofpix != nullptr && roofpix[static_cast<size_t>(y) * roof_lw + x] == 255) {
 							continue;    // Never light a drawn roof.
 						}
+						if (own_test) {
+							const unsigned char kb = kindpix[static_cast<size_t>(y) * kind_lw + x];
+							if (kb == 1 || kb == 2) {
+								const size_t fi  = static_cast<size_t>(y) * foot_lw + x;
+								const int    dfx = own_f0x - (x + static_cast<int>(footdxp[fi]) - 128);
+								const int    dfy = own_f0y - (y + static_cast<int>(footdyp[fi]) - 128);
+								if (dfx < 0 || dfy < 0 || dfx > own_xts * c_tilesize || dfy > own_yts * c_tilesize) {
+									continue;    // Another object owns this pixel.
+								}
+							}
+						}
 						const size_t ci = static_cast<size_t>(y) * W + x;
 						if (wcov[ci] < foot_a) {
 							wcov[ci]                                    = static_cast<unsigned char>(foot_a);
 							dstpix[static_cast<size_t>(y) * dst_lw + x] = srcpix[static_cast<size_t>(y) * src_lw + x];
-							++lifted;
 						}
 					}
 				}

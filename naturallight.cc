@@ -2394,7 +2394,6 @@ namespace NaturalLight {
 		// 0x80 in the grid) were used here for a shaft-band exemption; removed
 		// to restore the pre-floor-roofs clear-ground rendering (the band's
 		// hard edges read as artifacts on the storey below).
-		(void)light_floor_storey;
 		// ELEVATED spills only (walkway/deck bubbles): the source sits `bias`
 		// px behind the opening, so their wall glow falls off Euclidean
 		// (sqrt(d^2 + bias^2)) with the lateral reach capped at 1.5x radius
@@ -2528,17 +2527,21 @@ namespace NaturalLight {
 		// pool is lit from any side.  `max_walk` > 0 (whole-unit thick solids:
 		// ramparts, crenelations) steps an UNREACHED foot cell toward the splat
 		// centre to the footprint's lit near edge -- the fill can never enter a
-		// wide solid's interior columns.
+		// wide solid's interior columns.  The walked depth is added back to the
+		// arrival distance and the dome is taken at the pixel's OWN cell, so the
+		// face keeps fading inward instead of reading the near edge's value flat
+		// across the whole thickness.
 		auto object_alpha = [&](int px, int py, int max_walk) -> int {
 			const int cidx = foot_cell(px, py);
 			if (cidx < 0) {
 				return 0;
 			}
-			int       cu = cidx % side;
-			int       cv = cidx / side;
-			int       d  = grid[static_cast<size_t>(cidx)] & 0x7f;
-			const int tu = static_cast<int>(std::lround(uc));
-			const int tv = static_cast<int>(std::lround(vc));
+			int       cu    = cidx % side;
+			int       cv    = cidx / side;
+			int       d     = grid[static_cast<size_t>(cidx)] & 0x7f;
+			int       steps = 0;
+			const int tu    = static_cast<int>(std::lround(uc));
+			const int tv    = static_cast<int>(std::lround(vc));
 			for (int step = 0; d == 0 && step < max_walk; ++step) {
 				// Dominant axis only: a diagonal walk drifts along the wall
 				// toward the light and lands on CLOSER edge cells, lighting
@@ -2556,45 +2559,17 @@ namespace NaturalLight {
 				if (cu < 0 || cv < 0 || cu >= side || cv >= side) {
 					return 0;
 				}
+				++steps;
 				d = grid[static_cast<size_t>(cv) * side + cu] & 0x7f;
 			}
-			const int base = cell_dome(cv * side + cu, d);
-			if (!is_spill || max_walk <= 0) {
-				return base;
+			if (d == 0) {
+				return 0;
 			}
-			// Spills: stacked blocks (merlons vs the deck body) put adjacent
-			// screen columns on cells up to ~2 rows apart; on the spill's
-			// steep rim that honest offset reads as a hard seam.  Flatten it
-			// by taking the max over the wall's own reached ring cells within
-			// +/-2 along each axis -- one smooth envelope, like the room
-			// field shows the surface from inside.
-			int best = base;
-			for (int k = -2; k <= 2; ++k) {
-				if (k == 0) {
-					continue;
-				}
-				const int nu = cu + k;
-				const int nv = cv + k;
-				if (nu >= 0 && nu < side) {
-					const unsigned char m = grid[static_cast<size_t>(cv) * side + nu];
-					if ((m & 0x80) != 0 && (m & 0x7f) != 0) {
-						const int v_ = cell_dome(cv * side + nu, m & 0x7f);
-						if (v_ > best) {
-							best = v_;
-						}
-					}
-				}
-				if (nv >= 0 && nv < side) {
-					const unsigned char m = grid[static_cast<size_t>(nv) * side + cu];
-					if ((m & 0x80) != 0 && (m & 0x7f) != 0) {
-						const int v_ = cell_dome(nv * side + cu, m & 0x7f);
-						if (v_ > best) {
-							best = v_;
-						}
-					}
-				}
-			}
-			return best;
+			// Charge the walk to the path so the far side of a thick solid is
+			// dimmer than its lit near edge, and keep the radial term on the
+			// pixel's own cell.  Taking the near cell's dome verbatim painted
+			// the whole thickness flat with a hard edge at the far side.
+			return cell_dome(cidx, d + steps);
 		};
 		// ACTOR pixels (kind 3) sample like ground here -- silhouette-shaped
 		// deviations would ghost in the cached static coverage; their cap at
@@ -2656,115 +2631,57 @@ namespace NaturalLight {
 							// An under-roof light keeps marked pixels dark: real
 							// roofs (255) and whole-unit tall marks (128 -- tree
 							// canopies, deck objects) never light up under it.
-							// EXCEPTION: a surface one or more storeys up (129+ --
-							// a floor-slab TOP, an upper-storey wall or furnishing)
-							// is something the light's fill can genuinely reach --
-							// but ONLY when the light's own room roof rises ABOVE
-							// that storey (light_top_storey): the upper room's own
-							// lamp lights its walls, while the light of the room
-							// BELOW (its roof is that storey's floor) must never
-							// brighten them from underneath.  It samples the
+							// EXCEPTION: a floor SLAB surface one or more storeys up
+							// (140 + storey) is something the light's fill can
+							// genuinely reach -- but ONLY when the light's own room
+							// roof rises ABOVE that storey (light_top_storey): the
+							// upper room's own lamp lights its floor, while the light
+							// of the room BELOW (its roof is that storey's floor) must
+							// never brighten it from underneath.  It samples the
 							// propagated field like clear ground, so where the fill
 							// never reached, the field is 0 and it stays dark.
 							// Exterior wall faces (132) stay dark here for an
 							// outside viewer; panes and inside faces resolved above.
-							if (roofrow[x] < 129 || roofrow[x] - 128 >= light_top_storey) {
-								// A whole-unit exterior OBJECT (a rampart beyond the
-								// window) can stand inside the fill's through-window
-								// reach: light it by the ring arrivals at its own
-								// cells -- but only cells touched EXCLUSIVELY by
-								// escaped (outdoor) fill: cells with roofed arrivals
-								// belong to the light's own room boundary, and
-								// lighting them paints the crenellations on its roof.
-								if (grid == nullptr || ring == nullptr || kindrow == nullptr || kindrow[x] != 2
-									|| roofrow[x] != 128) {
-									continue;    // Keep dark under this interior light.
-								}
-								// A thick solid's interior columns carry no arrivals
-								// (the fill can never enter them): walk the foot cell
-								// toward the splat centre to the wall's fill-facing
-								// edge cell -- the same value a walls=1 inside grid
-								// holds in lit[] -- and gate + light by THAT cell.
-								const size_t fi_v = static_cast<size_t>(y) * foot_lw + x;
-								const int    fx_v = x + static_cast<int>(footdx[fi_v]) - 128 - foot_shift;
-								const int    fy_v = y + static_cast<int>(footdy[fi_v]) - 128 - foot_shift;
-								int          wu_v = static_cast<int>(std::lround((static_cast<float>(fx_v) - grid_u) * inv_cell));
-								int          wv_v = static_cast<int>(std::lround((static_cast<float>(fy_v) - grid_v) * inv_cell));
-								if (wu_v < 0 || wv_v < 0 || wu_v >= side || wv_v >= side) {
-									continue;
-								}
-								{
-									const int tu_v = static_cast<int>(std::lround(uc));
-									const int tv_v = static_cast<int>(std::lround(vc));
-									for (int step = 0;
-										 step < 4 && (ring[(static_cast<size_t>(wv_v) * side + wu_v) * 4] & 0x80) == 0; ++step) {
-										// Dominant axis only, as in object_alpha.
-										const int du = tu_v - wu_v;
-										const int dv = tv_v - wv_v;
-										if (du == 0 && dv == 0) {
-											break;
-										}
-										if (std::abs(du) >= std::abs(dv)) {
-											wu_v += du > 0 ? 1 : -1;
-										} else {
-											wv_v += dv > 0 ? 1 : -1;
-										}
-										if (wu_v < 0 || wv_v < 0 || wu_v >= side || wv_v >= side) {
-											wu_v = -1;
-											break;
-										}
-									}
-								}
-								if (wu_v < 0) {
-									continue;
-								}
-								const size_t wcell = static_cast<size_t>(wv_v) * side + wu_v;
-								if ((ring[wcell * 4 + 2] & 0x80) == 0 || (ring[wcell * 4 + 3] & 0x80) != 0) {
-									continue;
-								}
-								// The honest through-window arrival dome (what the
-								// walls=1 inside grid computes), plus the z-blind
-								// field bleed the inside bilinear shows near the
-								// foot -- never the free dome or the walkway cells'
-								// own field: both wash flat bands far past the
-								// window's true reach.
-								forced_a = face_alpha_from(x, y, fx_v, fy_v, wu_v, wv_v, true);
-								if (trow != nullptr) {
-									const int ttx = x - sx - ftmpl->x0;
-									if (ttx >= 0 && ttx < ftmpl->w && trow[x] > forced_a) {
-										forced_a = trow[x];
-									}
-								}
-								if (forced_a <= 0) {
-									continue;
-								}
+							if (roofrow[x] < 140 || roofrow[x] > 143 || roofrow[x] - 140 >= light_top_storey) {
+								// Whole-unit marks stay dark under an interior light,
+								// OUTDOOR ones included: light that escapes an opening
+								// is delivered by the spill fan alone, so a tree or a
+								// rampart outside only lights when it stands in a fan.
+								// Reading the escaped ring arrivals here lit every
+								// exterior unit around the building as soon as it had
+								// any opening, whatever direction it faced.
+								continue;
 							}
 					} else if (is_spill) {
 						if (roofrow[x] == 255) {
 							continue;    // A spill never lights a real roof.
 						}
-						if (roofrow[x] == 132 || roofrow[x] - 128 > spill_floor) {
-							// Wall faces stay dark under a spill (approved rule: no
-							// facade wash at the spilling source -- a ring-arrival
-							// glow crawls along the whole wall line).  Higher-storey
-							// marks too.
+						if (roofrow[x] == 133) {
+							// A slab's thickness strip is the deck's own edge: sample
+							// the field like the deck top beside it, or the fan breaks
+							// at the strip and resumes a strip-width further south.
+							bypass_field = false;
+						} else if (roofrow[x] >= 140 && roofrow[x] <= 143) {
+							if (roofrow[x] - 140 > spill_floor) {
+								continue;    // A slab on a storey above the spill's.
+							}
+							bypass_field = false;
+						} else if (roofrow[x] == 132 || roofrow[x] - 128 > spill_floor) {
+							// Wall faces stay dark under a spill: their ring
+							// arrivals run the whole length of the wall line (a
+							// rampart's merlon gaps each emit their own fan, so
+							// the fans union into a flat full-height band with no
+							// falloff).  Crenellations are lit as whole-unit
+							// OBJECTS below instead.  Higher-storey marks too.
 							continue;
 						}
-						// An upper-storey mark (128 + storey, storey >= 1: a
-						// floor-slab TOP, an upper wall) sits on the tile
-						// lattice like clear ground: keep sampling the
-						// propagated field so the spill pools across the deck
-						// bounded by its walls (the pre-floor-roofs rendering)
-						// and wall faces fade quickly away from the opening.
-						// Only plain 128 marks -- standing deck objects,
-						// canopies, whose sprites span far more screen than
-						// their tiles -- take the whole-unit free-dome bypass;
-						// SLAB stamps (no kind byte: a floor-roof's south/right
-						// thickness strip) are no such objects and stay dark.
 						if (roofrow[x] < 129) {
-							if (kindrow == nullptr || kindrow[x] == 0) {
-								continue;
-							}
+							// Plain 128: a standing deck object or a rampart's
+							// crenellation, lit as a whole unit.  A missing kind
+							// byte is NOT a reason to veto: the kind mask is owned
+							// by the topmost sprite, so a decoration drawn over the
+							// merlon clears its kind while the 128 stays, and the
+							// slab strips this veto used to catch carry 133 now.
 							if (grid == nullptr) {
 								// Gridless spill: treat as fully lit (old bypass).
 								bypass_field = true;
@@ -2775,24 +2692,56 @@ namespace NaturalLight {
 								// screen shape shifts), topped by the fan field where
 								// the sprite overlaps it; outside both it stays dark
 								// (no floating whole-unit block over dark ground).
-								const int oa = footdx != nullptr ? object_alpha(x, y, 0) : 0;
-								int       tv = 0;
-								if (ftmpl != nullptr && trow != nullptr) {
-									const int ttx = x - sx - ftmpl->x0;
-									if (ttx >= 0 && ttx < ftmpl->w) {
-										tv = trow[x];
+								// A solid's foot cell never enters the fill, so its
+								// arrival lives in the RING; and a rampart is deep --
+								// the fan stops at its outer face and the whole
+								// walkway behind it borrows that arrival, charged by
+								// the distance walked so it still fades.  The limit
+								// is how far a deck may extend behind its face.
+								int forced = footdx != nullptr ? object_alpha(x, y, 10) : 0;
+								if (ring != nullptr && footdx != nullptr) {
+									const int ra = face_alpha(x, y, true);
+									if (ra > forced) {
+										forced = ra;
 									}
 								}
-								forced_a = oa > tv ? oa : tv;
+								if (ftmpl != nullptr && trow != nullptr) {
+									const int ttx = x - sx - ftmpl->x0;
+									if (ttx >= 0 && ttx < ftmpl->w && trow[x] > forced) {
+										forced = trow[x];
+									}
+								}
+								forced_a = forced;
 								if (forced_a <= 0) {
 									continue;
 								}
 							}
 						} else {
+							// An upper-storey mark (128 + storey, storey >= 1: a
+							// floor-slab TOP, an upper wall) sits on the tile
+							// lattice like clear ground: keep sampling the
+							// propagated field so the spill pools across the deck
+							// bounded by its walls.
 							bypass_field = false;
 						}
 					} else {
-						bypass_field = true;
+						// A floor SLAB surface (140 + storey) is a room's ceiling
+						// seen from beneath when the light is lower: keep it dark,
+						// or a ground torch lights the whole floor above it through
+						// the walls.  At or below the light's own storey it is
+						// ground to it and samples the field, so walls block it.
+						// Everything else -- an exterior building's upper-storey
+						// wall mass (128 + storey), roofs (255) -- is lit as a
+						// whole unit: an outdoor light illuminates a facade to its
+						// full height.
+						if (roofrow[x] >= 140 && roofrow[x] <= 143) {
+							if (roofrow[x] - 140 > light_floor_storey) {
+								continue;
+							}
+							bypass_field = false;
+						} else {
+							bypass_field = true;
+						}
 					}
 				} else {
 					// An ELEVATED spill (a stairwell bubble on an upper
@@ -2859,18 +2808,16 @@ namespace NaturalLight {
 					// the z-blind field at its own screen position: a tree crown
 					// keeps its near-lamp glow, a rampart lights along its length
 					// with the same wide wash the room field gives it from inside.
+					// A/B attribution switches: EXULT_NL_NO_OA / _NO_FACEMAX /
+					// _NO_TROWMAX disable one term each.
 					if (surf_px) {
-						{
-							const int oa = object_alpha(x, y, 4);
-							if (oa > a) {
-								a = oa;
-							}
+						const int oa = object_alpha(x, y, 4);
+						if (oa > a) {
+							a = oa;
 						}
-						{
-							const int sa = face_alpha(x, y, roofrow != nullptr && roofrow[x] == 132);
-							if (sa > a) {
-								a = sa;
-							}
+						const int sa = face_alpha(x, y, roofrow != nullptr && roofrow[x] == 132);
+						if (sa > a) {
+							a = sa;
 						}
 						if (ftmpl != nullptr && trow != nullptr) {
 							const int ttx = x - sx - ftmpl->x0;
