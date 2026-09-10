@@ -1756,7 +1756,7 @@ void Image_window::layer_set_blendmode(int handle, SDL_BlendMode blendmode) {
 	layers[handle]->blend_mode = blendmode;
 }
 
-void Image_window::layer_set_dest(int handle, int x, int y, int w, int h, bool add) {
+void Image_window::layer_set_dest(int handle, int x, int y, int w, int h, bool add, int alpha) {
 	if (handle < 0 || handle >= static_cast<int>(layers.size()) || !layers[handle]) {
 		return;
 	}
@@ -1769,6 +1769,7 @@ void Image_window::layer_set_dest(int handle, int x, int y, int w, int h, bool a
 	layer.dest.back().y = float(y);
 	layer.dest.back().w = float(w);
 	layer.dest.back().h = float(h);
+	layer.dest.back().a = alpha;
 }
 
 void Image_window::layer_clear_dest(int handle) {
@@ -1891,9 +1892,11 @@ SDL_Surface* Image_window::get_layer_dst32_surface(unsigned index, int w, int h)
 	return surface;
 }
 
-bool Image_window::get_layer_dest(const Layer& layer, SDL_FRect& dst, int num) {
+bool Image_window::get_layer_dest(const Layer& layer, SDL_FRect& dst, int& alpha, int num) {
 	if (num >= 0 && size_t(num) < layer.dest.size()) {    // Explicit placement (e.g. the mouse cursor).
-		dst = layer.dest[num];
+		const auto& dst_full = layer.dest[num];
+		dst                  = dst_full;
+		alpha                = dst_full.a != -1 ? dst_full.a : layer.alpha;
 	} else if (num <= 0) {
 		if (layer.sdl_render_target_format != SDL_PIXELFORMAT_UNKNOWN) {
 			// Render targets draw fullscreen
@@ -1904,8 +1907,10 @@ bool Image_window::get_layer_dest(const Layer& layer, SDL_FRect& dst, int num) {
 		} else {
 			compute_layer_fill_dest(layer.logw, layer.logh, dst, layer.ui_kind);
 		}
+		alpha = layer.alpha;
 	} else {
-		dst = {0, 0, 0, 0};
+		dst   = {0, 0, 0, 0};
+		alpha = layer.alpha;
 		return false;
 	}
 	return true;
@@ -2147,7 +2152,8 @@ bool Image_window::screen_to_layer(int handle, int sx, int sy, int& lx, int& ly)
 	}
 	const Layer& layer = *layers[handle];
 	SDL_FRect    dst;
-	get_layer_dest(layer, dst);
+	int          alpha;
+	get_layer_dest(layer, dst, alpha);
 	if (dst.w <= 0 || dst.h <= 0) {
 		return false;
 	}
@@ -2163,7 +2169,8 @@ bool Image_window::layer_to_screen(int handle, int lx, int ly, int& sx, int& sy)
 	}
 	const Layer& layer = *layers[handle];
 	SDL_FRect    dst;
-	get_layer_dest(layer, dst);
+	int          alpha;
+	get_layer_dest(layer, dst, alpha);
 	if (dst.w <= 0 || dst.h <= 0 || layer.logw <= 0 || layer.logh <= 0) {
 		return false;
 	}
@@ -2289,15 +2296,17 @@ void Image_window::composite_layers() {
 			layer.dirty = false;
 		}
 		// Render targets have no guardband
-		int gb = is_sdl_render_target ? 0 : guard_band;
-		SDL_SetTextureAlphaMod(layer.texture, layer.alpha);
+		int       gb = is_sdl_render_target ? 0 : guard_band;
 		SDL_FRect dst, src = {float(gb * render_scale), float(gb * render_scale), float(layer.logw * render_scale),
 							  float(layer.logh * render_scale)};
 
 		for (int i = 0;; i++) {
-			if (!get_layer_dest(layer, dst, i)) {
+			int alpha;
+			if (!get_layer_dest(layer, dst, alpha, i)) {
 				break;
 			}
+			SDL_SetTextureAlphaMod(layer.texture, alpha);
+
 			// Only draw if dest rect is valid
 			if (dst.w > 0 && dst.h > 0) {
 				SDL_RenderTexture(screen_renderer, layer.texture, &src, &dst);
