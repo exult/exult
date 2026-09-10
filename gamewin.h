@@ -459,8 +459,8 @@ public:
 		win->layer_set_z(handle, z);
 	}
 
-	void layer_set_dest(int handle, int x, int y, int w, int h, bool add = false) {
-		win->layer_set_dest(handle, x, y, w, h, add);
+	void layer_set_dest(int handle, int x, int y, int w, int h, bool add = false, int alpha = -1) {
+		win->layer_set_dest(handle, x, y, w, h, add, alpha);
 	}
 
 	void layer_clear_dest(int handle) {
