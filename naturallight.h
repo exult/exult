@@ -135,6 +135,14 @@ namespace NaturalLight {
 			const unsigned char* footdx = nullptr, const unsigned char* footdy = nullptr, int foot_lw = 0,
 			const unsigned char* ring = nullptr, int av_fx = 0, int av_fy = 0);
 
+	// The dome brightness this light puts on the GROUND of one world tile,
+	// straight from its fill -- no screen mask, no sprite.  For subjects whose
+	// own pixels are all masked (an actor under a drawn roof or against a shell
+	// wall) yet who stand in the light.  Definition carries the details.
+	int Light_tile_alpha(
+			const unsigned char* grid, int grid_rt, const unsigned char* ring, int ltx, int lty, int tx, int ty, int radius,
+			int elevation, int dist_bias, int intensity_pct);
+
 }    // namespace NaturalLight
 
 #endif

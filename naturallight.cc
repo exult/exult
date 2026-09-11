@@ -1825,6 +1825,11 @@ namespace NaturalLight {
 				}
 				if (!serves) {
 					lit[i] &= 0x80;
+				} else if (ring != nullptr) {
+					// Kept for the anchor-shifted SAMPLE only -- no light reaches
+					// the ground here, so flag it (ring byte 1's high bit, unused
+					// on open cells) for consumers that read a cell by geometry.
+					(*ring)[i * 4 + 1] |= 0x80;
 				}
 			}
 		}
@@ -2121,6 +2126,66 @@ namespace NaturalLight {
 		entry.spills.clear();
 		entry.stamp = now;
 		entry.used  = now;
+	}
+
+	// Ground light at one world TILE, read straight from the fill: the same
+	// dome the splat paints on clear ground there, without the screen mask.
+	// The relight pass needs it because a sprite's own pixels may all be
+	// masked -- an actor under a drawn roof samples nothing but 255 -- while
+	// the tile he stands on is squarely in the fan.  Apron cells (kept in the
+	// grid only so an interior pixel's anchor-shifted sample finds light) do
+	// not count: nothing standing there is really lit.
+	int Light_tile_alpha(
+			const unsigned char* grid, int grid_rt, const unsigned char* ring, int ltx, int lty, int tx, int ty, int radius,
+			int elevation, int dist_bias, int intensity_pct) {
+		if (radius <= 0 || intensity_pct <= 0) {
+			return 0;
+		}
+		auto wrap_delta = [](int a, int b) {
+			int d = Light_tile_norm(a) - Light_tile_norm(b);
+			if (d > c_num_tiles / 2) {
+				d -= c_num_tiles;
+			} else if (d < -c_num_tiles / 2) {
+				d += c_num_tiles;
+			}
+			return d;
+		};
+		const int   du     = wrap_delta(tx, ltx);
+		const int   dv     = wrap_delta(ty, lty);
+		const float euclid = std::sqrt(static_cast<float>(du * du + dv * dv)) * static_cast<float>(c_tilesize);
+		float       travel = euclid;
+		if (grid != nullptr) {
+			const int side = 2 * grid_rt + 1;
+			const int cu   = du + grid_rt;
+			const int cv   = dv + grid_rt;
+			if (cu < 0 || cv < 0 || cu >= side || cv >= side) {
+				return 0;
+			}
+			const size_t cidx = static_cast<size_t>(cv) * side + cu;
+			const int    d    = grid[cidx] & 0x7f;
+			if (d == 0) {
+				return 0;    // The fill never reached this tile.
+			}
+			if (ring != nullptr && (ring[cidx * 4] & 0x80) == 0 && (ring[cidx * 4 + 1] & 0x80) != 0) {
+				return 0;    // Apron cell: sampling-only light.
+			}
+			const float path = static_cast<float>((d - 1) * c_tilesize);
+			if (path > travel) {
+				travel = path;
+			}
+		}
+		const float inten = intensity_pct >= 100 ? 1.0f : static_cast<float>(intensity_pct) / 100.0f;
+		const float e     = static_cast<float>(elevation > 0 ? elevation : 0);
+		const float bias  = static_cast<float>(dist_bias > 0 ? dist_bias : 0);
+		const float full  = static_cast<float>(radius) + bias;
+		const float rf2   = full * full + e * e;
+		const float tot   = travel + bias;
+		const float dome  = 1.0f - (tot * tot + e * e) / rf2;
+		if (dome <= 0.0f) {
+			return 0;
+		}
+		const int a = static_cast<int>(255.0f * inten * dome + 0.5f);
+		return a > 255 ? 255 : a;
 	}
 
 	// Splat one radial light: a soft dome falloff written into `cov` (W*H,
@@ -2545,12 +2610,29 @@ namespace NaturalLight {
 			if (cidx < 0) {
 				return 0;
 			}
+			if (ring != nullptr && (ring[static_cast<size_t>(cidx) * 4] & 0x80) == 0
+				&& (ring[static_cast<size_t>(cidx) * 4 + 1] & 0x80) != 0) {
+				// An APRON cell (Flood_room_grid): escaped light kept in the grid
+				// only so an interior pixel's anchor-shifted sample finds it.
+				// Nothing standing there is really lit -- a fence outside an open
+				// window took its dome and glowed.
+				return 0;
+			}
 			int       cu    = cidx % side;
 			int       cv    = cidx / side;
 			int       d     = grid[static_cast<size_t>(cidx)] & 0x7f;
 			int       steps = 0;
 			const int tu    = static_cast<int>(std::lround(uc));
 			const int tv    = static_cast<int>(std::lround(vc));
+			if (ring != nullptr && (ring[static_cast<size_t>(cidx) * 4] & 0x80) != 0) {
+				// A WALL cell records an arrival for whichever side the fill
+				// touched, and reading it raw is side-blind: a lamp outside a
+				// sealed building lit the wall course on the INSIDE.  Take the
+				// viewer-side faces; a wall reached only from the far side is
+				// dark, and the walk below must not step out through it either.
+				const int fd = ring_face_dist_gated(cu, cv);
+				return fd == 0 ? 0 : cell_dome(cidx, fd);
+			}
 			for (int step = 0; d == 0 && step < max_walk; ++step) {
 				// Dominant axis only: a diagonal walk drifts along the wall
 				// toward the light and lands on CLOSER edge cells, lighting
@@ -2579,6 +2661,26 @@ namespace NaturalLight {
 			// pixel's own cell.  Taking the near cell's dome verbatim painted
 			// the whole thickness flat with a hard edge at the far side.
 			return cell_dome(cidx, d + steps);
+		};
+		// GLASS: what a pane shows is the light at its OWN tile -- the far side
+		// counts, that is the point of glass -- so all four face arrivals count,
+		// and an opening tile the fill flows through contributes its own cell
+		// value.  The z-blind field cannot serve here: a tall window's upper
+		// pixels read cells two or three tiles up-screen and went dark.
+		auto pane_alpha = [&](int px, int py) -> int {
+			const int cidx = foot_cell(px, py);
+			if (cidx < 0) {
+				return 0;
+			}
+			int a = ring != nullptr ? face_alpha(px, py, true) : 0;
+			const int d = grid[static_cast<size_t>(cidx)] & 0x7f;
+			if (d != 0) {
+				const int ca = cell_dome(cidx, d);
+				if (ca > a) {
+					a = ca;
+				}
+			}
+			return a;
 		};
 		// ACTOR pixels (kind 3) sample like ground here -- silhouette-shaped
 		// deviations would ghost in the cached static coverage; their cap at
@@ -2612,26 +2714,16 @@ namespace NaturalLight {
 				const bool          surf_px      = kv == 1 || kv == 2;
 				bool                bypass_field = false;
 				int                 forced_a     = -1;
-				if (roofrow && roofrow[x]) {
+				// A light-passing wall piece (132 with no kind byte -- window
+				// glass, an open shutter's panel; true wall faces carry kind 1)
+				// is a surface every light reaches like clear ground: the lit
+				// room shows through it from outside, and a fan or a torch out
+				// there lights it.  Gating this on the veto light alone left
+				// the same piece dark from outside while it lit from inside.
+				const bool pane_px = roofrow != nullptr && roofrow[x] == 132 && kindrow != nullptr && kindrow[x] == 0;
+				if (roofrow && roofrow[x] && !pane_px) {
 					if (veto_roof) {
-						// GLASS: a light-passing wall piece (132 with no kind
-						// byte -- true wall faces carry kind 1) shows the lit
-						// room through it: sample the z-blind field so its
-						// panes glow with the interior light behind them, while
-						// the wall around them stays dark.
-						if (roofrow[x] == 132 && kindrow != nullptr && kindrow[x] == 0) {
-							int gv = 0;
-							if (ftmpl != nullptr && trow != nullptr) {
-								const int ttx = x - sx - ftmpl->x0;
-								if (ttx >= 0 && ttx < ftmpl->w) {
-									gv = trow[x];
-								}
-							}
-							if (gv <= 0) {
-								continue;
-							}
-							forced_a = gv;
-						} else if (inside_viewer && roofrow[x] == 128 && kindrow != nullptr && kindrow[x] == 1) {
+						if (inside_viewer && roofrow[x] == 128 && kindrow != nullptr && kindrow[x] == 1) {
 							// A whole-unit WALL line (a porch wall rising past its
 							// roof edge) in the viewer's space: sample the field
 							// like an interior wall -- only kind-2 objects take the
@@ -2770,6 +2862,8 @@ namespace NaturalLight {
 				int a;
 				if (forced_a >= 0) {
 					a = forced_a;
+				} else if (pane_px && face_data && grid != nullptr) {
+					a = pane_alpha(x, y);
 				} else if (face_px) {
 					// 132 = certified shell face: whole-unit, all-side arrivals;
 					// clear/other = interior-classified face: viewer-side only.
@@ -2778,6 +2872,14 @@ namespace NaturalLight {
 					// Whole-unit 128 marks keep the free-dome bypass: a tree
 					// crown near the lamp glows even though its trunk stands
 					// beyond the pool.
+					a = object_alpha(x, y, 0);
+				} else if (
+						veto_roof && face_data && grid != nullptr && kindrow != nullptr && kindrow[x] == 2 && !bypass_field) {
+					// A veto splat disables face_grid, so kind is never consulted
+					// above: an OBJECT standing outside (a fence beside a lit
+					// window) has its sprite hanging over the room's lit cells and
+					// drank that field straight through the wall.  Resolve it by
+					// its own foot cell, like every other object.
 					a = object_alpha(x, y, 0);
 				} else if (grid != nullptr && !bypass_field) {
 					// The field bounds itself within the template (cells beyond
@@ -2817,8 +2919,6 @@ namespace NaturalLight {
 					// the z-blind field at its own screen position: a tree crown
 					// keeps its near-lamp glow, a rampart lights along its length
 					// with the same wide wash the room field gives it from inside.
-					// A/B attribution switches: EXULT_NL_NO_OA / _NO_FACEMAX /
-					// _NO_TROWMAX disable one term each.
 					if (surf_px) {
 						const int oa = object_alpha(x, y, 4);
 						if (oa > a) {
