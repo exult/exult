@@ -2662,6 +2662,21 @@ namespace NaturalLight {
 			// the whole thickness flat with a hard edge at the far side.
 			return cell_dome(cidx, d + steps);
 		};
+		// Is the object's own cell part of this light's fill?  Reachability
+		// only: the dome's reach is a different question -- a wall course five
+		// tiles from a candle is still in the room, and the field decides how
+		// bright it is.  Apron cells do not count (see object_alpha).
+		auto object_reached = [&](int px, int py) -> bool {
+			const int cidx = foot_cell(px, py);
+			if (cidx < 0) {
+				return false;
+			}
+			if (ring != nullptr && (ring[static_cast<size_t>(cidx) * 4] & 0x80) == 0
+				&& (ring[static_cast<size_t>(cidx) * 4 + 1] & 0x80) != 0) {
+				return false;
+			}
+			return (grid[static_cast<size_t>(cidx)] & 0x7f) != 0;
+		};
 		// GLASS: what a pane shows is the light at its OWN tile -- the far side
 		// counts, that is the point of glass -- so all four face arrivals count,
 		// and an opening tile the fill flows through contributes its own cell
@@ -2878,9 +2893,15 @@ namespace NaturalLight {
 					// A veto splat disables face_grid, so kind is never consulted
 					// above: an OBJECT standing outside (a fence beside a lit
 					// window) has its sprite hanging over the room's lit cells and
-					// drank that field straight through the wall.  Resolve it by
-					// its own foot cell, like every other object.
-					a = object_alpha(x, y, 0);
+					// drank that field straight through the wall.  Being in the
+					// fill at all decides WHETHER it is lit; the field still
+					// decides how bright, or furniture bands into flat per-cell
+					// blocks instead of taking the room's smooth wash.
+					if (!object_reached(x, y)) {
+						continue;
+					}
+					const int tx = x - sx - ftmpl->x0;
+					a            = (trow != nullptr && tx >= 0 && tx < ftmpl->w) ? trow[x] : 0;
 				} else if (grid != nullptr && !bypass_field) {
 					// The field bounds itself within the template (cells beyond
 					// the pool are dark, their template bytes 0); OUTSIDE the
