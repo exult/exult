@@ -1483,7 +1483,13 @@ void Game_window::update_roof_mask(Game_object* obj, int sx, int sy) {
 	// pixel owns its KIND; wall faces and objects also record their per-tile
 	// foot offset so the splat can sample the owner's cell instead of the
 	// cells the sprite overlaps.  Viewer-independent (R5).
-	if (light_kind_mask && !light_foot_dx.empty()) {
+	// A loose item resting on an upper storey owns no surface of its own: the
+	// branches below leave the mark beneath it alone.  It must inherit the KIND
+	// and FOOT channels for the same reason -- stamping them while the mask
+	// stays the slab's pairs one object's mask with another's owner cell, and
+	// the splat then lights the item's silhouette at that cell's flat alpha.
+	const bool inherits_mark = obj->is_dragable() && obj->get_lift() >= 5;
+	if (light_kind_mask && !light_foot_dx.empty() && !inherits_mark) {
 		const Shape_info& sinf = obj->get_info();
 		int               kind = 0;
 		bool              pane = false;
@@ -2040,7 +2046,7 @@ void Game_window::update_roof_mask(Game_object* obj, int sx, int sy) {
 				// ceiling slab's and no cutoff can admit one without the
 				// other -- they inherit the shelf/wall/floor mark beneath
 				// and light with the room.
-				if (obj->is_dragable()) {
+				if (inherits_mark) {
 					return;
 				}
 				tall_exterior = true;
@@ -2065,7 +2071,7 @@ void Game_window::update_roof_mask(Game_object* obj, int sx, int sy) {
 			// 128 + storey so z-blind lights from lower floors stay off them
 			// while their own storey's lights still reach them.  Loose items
 			// inherit the underlying mark (see above).
-			if (obj->is_dragable()) {
+			if (inherits_mark) {
 				return;
 			}
 			tall_exterior = true;
