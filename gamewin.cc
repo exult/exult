@@ -1452,19 +1452,43 @@ void Game_window::update_roof_mask(Game_object* obj, int sx, int sy) {
 		}
 		return x;
 	}();
-	// A floor slab's south/right THICKNESS strip (133): the band the clipped
-	// top paint leaves over.  It is the deck's own edge, so a spill fan must
-	// cross it (a plain 128 breaks the glow with a strip-wide dark band), but
-	// it must stay dark under a room's veto light, which a 128 + storey mark
-	// would not.  No geometric test identifies a deck reliably -- ramparts
-	// carry merlons above and passages below -- so the strip is labelled.
-	static const Xform_palette roof_strip = [] {
-		Xform_palette x;
-		for (int i = 0; i < 256; ++i) {
-			x.colors[i] = 133;
-		}
-		return x;
-	}();
+	// A floor slab's south/right THICKNESS strip (144 + storey): the band the
+	// clipped top paint leaves over.  It is the deck's own edge, so a spill fan
+	// must cross it (a plain 128 breaks the glow with a strip-wide dark band),
+	// but it must stay dark under a room's veto light, which a 128 + storey
+	// mark would not.  No geometric test identifies a deck reliably --
+	// ramparts carry merlons above and passages below -- so the strip is
+	// labelled.  It carries its STOREY for the same reason the slab surface
+	// does: a flat 133 let a ground spill light the edge of a slab a storey up.
+	static const Xform_palette roof_strip[4] = {
+			[] {
+				Xform_palette x;
+				for (int i = 0; i < 256; ++i) {
+					x.colors[i] = 144;
+				}
+				return x;
+			}(),
+			[] {
+				Xform_palette x;
+				for (int i = 0; i < 256; ++i) {
+					x.colors[i] = 145;
+				}
+				return x;
+			}(),
+			[] {
+				Xform_palette x;
+				for (int i = 0; i < 256; ++i) {
+					x.colors[i] = 146;
+				}
+				return x;
+			}(),
+			[] {
+				Xform_palette x;
+				for (int i = 0; i < 256; ++i) {
+					x.colors[i] = 147;
+				}
+				return x;
+			}()};
 	// A storey's floor SLAB surface (140 + storey).  Distinct from the tall
 	// mark (128 + storey) an exterior upper-storey wall carries: a slab is a
 	// room's ceiling seen from beneath, so a light on a lower storey must
@@ -1542,6 +1566,26 @@ void Game_window::update_roof_mask(Game_object* obj, int sx, int sy) {
 				}
 				return f0 - i * c_tilesize - c_tilesize / 2;
 			};
+			// Elevated art is drawn up-LEFT 4px per z, so a face pixel stands
+			// over a ground point DOWN-RIGHT of it along the diagonal.  Snapping
+			// the raw screen position ignores that and hands a tall wall's whole
+			// face to its far tile -- a 1x4 wall beside an open door read its
+			// north end (arrival 14) where the art actually shows the south end
+			// at the doorway (arrival 9), which is the seam down an inside wall
+			// face.  A wall's THIN axis pins the shear: its ground strip is one
+			// tile wide, so the offset from that edge IS the elevation.
+			const int zshear = 4 * sinf.get_3d_height();
+			auto      shear  = [&](int px, int py) {
+                int s = 0;
+                if (xts == 1) {
+                    s = f0x - c_tilesize / 2 - px;
+                } else if (yts == 1) {
+                    s = f0y - c_tilesize / 2 - py;
+                } else {
+                    return 0;
+                }
+                return s < 0 ? 0 : (s > zshear ? zshear : s);
+			};
 			const int x0 = sx - frame->get_xleft();
 			const int y0 = sy - frame->get_yabove();
 			for (int y = 0; y < fh; ++y) {
@@ -1558,8 +1602,9 @@ void Game_window::update_roof_mask(Game_object* obj, int sx, int sy) {
 					if (px < 0 || px >= W) {
 						continue;
 					}
-					int ddx                                         = snap(px, f0x, xts) - px;
-					int ddy                                         = snap(py, f0y, yts) - py;
+					const int s                                     = shear(px, py);
+					int       ddx                                   = snap(px + s, f0x, xts) - px;
+					int       ddy                                   = snap(py + s, f0y, yts) - py;
 					ddx                                             = ddx < -128 ? -128 : (ddx > 127 ? 127 : ddx);
 					ddy                                             = ddy < -128 ? -128 : (ddy > 127 ? 127 : ddy);
 					kbits[static_cast<size_t>(py) * klw + px]       = static_cast<unsigned char>(kind);
@@ -1707,8 +1752,15 @@ void Game_window::update_roof_mask(Game_object* obj, int sx, int sy) {
 	// building's roofed walkable interior -- open sky OR another
 	// structure's solid mass (the city wall beside the east facade) both
 	// count as outdoors.  Interior walls' camera sides are roofed rooms.
-	auto faces_exterior = [&](bool doors_anchor = true, bool* out_south_in = nullptr, bool* out_east_in = nullptr) {
+	auto faces_exterior = [&](bool doors_anchor = true, bool* out_south_in = nullptr, bool* out_east_in = nullptr,
+							  uint32_t* out_south_bits = nullptr, uint32_t* out_east_bits = nullptr) {
 		const TileRect ft = obj->get_footprint();
+		if (out_south_bits != nullptr) {
+			*out_south_bits = 0;
+		}
+		if (out_east_bits != nullptr) {
+			*out_east_bits = 0;
+		}
 		if (out_south_in != nullptr) {
 			*out_south_in = false;
 		}
@@ -1814,12 +1866,22 @@ void Game_window::update_roof_mask(Game_object* obj, int sx, int sy) {
 			return !static_solid_at(tx, ty, obj->get_lift() + 2, obj->get_lift() + 2) && !open_sky_tile(tx, ty);
 		};
 		bool south_in = false;
-		for (int i = 0; i < ft.w && !south_in; ++i) {
-			south_in = face_interior(ft.x + i, ft.y + ft.h);
+		for (int i = 0; i < ft.w; ++i) {
+			if (face_interior(ft.x + i, ft.y + ft.h)) {
+				south_in = true;
+				if (out_south_bits != nullptr && i < 32) {
+					*out_south_bits |= 1u << i;
+				}
+			}
 		}
 		bool east_in = false;
-		for (int i = 0; i < ft.h && !east_in; ++i) {
-			east_in = face_interior(ft.x + ft.w, ft.y + i);
+		for (int i = 0; i < ft.h; ++i) {
+			if (face_interior(ft.x + ft.w, ft.y + i)) {
+				east_in = true;
+				if (out_east_bits != nullptr && i < 32) {
+					*out_east_bits |= 1u << i;
+				}
+			}
 		}
 		if (out_south_in != nullptr) {
 			*out_south_in = south_in;
@@ -1900,8 +1962,10 @@ void Game_window::update_roof_mask(Game_object* obj, int sx, int sy) {
 		return s < 0 ? 0 : (s > 3 ? 3 : s);
 	};
 	int  tall_storey   = 0;
-	bool shell_s_in    = false;
-	bool shell_e_in    = false;
+	bool     shell_s_in   = false;
+	bool     shell_e_in   = false;
+	uint32_t shell_s_bits = 0;
+	uint32_t shell_e_bits = 0;
 	// With the roof hidden, every upper-storey surface on screen is an INTERIOR
 	// one (140 + storey): only its own storey may light it, so a ground-floor
 	// torch cannot wash the floor above.  From outside the same surfaces are the
@@ -1913,7 +1977,7 @@ void Game_window::update_roof_mask(Game_object* obj, int sx, int sy) {
 	// stays CLEAR so the room's field washes it like the interior walls'
 	// tops -- the faces stay dark wall.  (A 128+storey top mark fails the
 	// room's own storey gate and would stay dark.)
-	auto paint_shell_face = [&](bool lit_top, bool south_interior = false, bool east_interior = false) {
+	auto paint_shell_face = [&](bool lit_top, uint32_t south_bits = 0, uint32_t east_bits = 0) {
 		frame->paint_rle_transformed(roof_light_mask.get(), sx, sy, roof_face);
 		if (!lit_top) {
 			return;
@@ -1923,6 +1987,28 @@ void Game_window::update_roof_mask(Game_object* obj, int sx, int sy) {
 		const int by    = sy - frame->get_yabove();
 		const int bw    = frame->get_width();
 		const int bh    = frame->get_height();
+		// Interior-ness is per TILE, not per sprite: a 4-tile wall can face
+		// the room along most of its run and another wall at its end.  Undo
+		// the elevation shear to find which footprint tile a pixel shows (the
+		// same inversion the foot stamp uses), then ask that tile.
+		const int f0x  = sx + 4 * obj->get_lift();
+		const int f0y  = sy + 4 * obj->get_lift();
+		const int xts  = obj->get_info().get_3d_xtiles(obj->get_framenum());
+		const int yts  = obj->get_info().get_3d_ytiles(obj->get_framenum());
+		const int zsh  = strip;
+		auto      tidx = [&](int px, int py, bool along_y) {
+            int s = 0;
+            if (xts == 1) {
+                s = f0x - c_tilesize / 2 - px;
+            } else if (yts == 1) {
+                s = f0y - c_tilesize / 2 - py;
+            }
+            s              = s < 0 ? 0 : (s > zsh ? zsh : s);
+            const int n    = along_y ? yts : xts;
+            int       from = along_y ? ((f0y - (py + s)) >> 3) : ((f0x - (px + s)) >> 3);
+            from           = from < 0 ? 0 : (from >= n ? n - 1 : from);
+            return n - 1 - from;    // Footprint index, counted from its origin.
+		};
 		// The three surfaces a wall sprite draws -- flat top, south face, east
 		// face -- have OVERLAPPING bounding boxes: both faces are sheared 4px
 		// per z, so the south face's foot end lies inside the east band's
@@ -1962,9 +2048,25 @@ void Game_window::update_roof_mask(Game_object* obj, int sx, int sy) {
 					continue;
 				}
 				const bool is_top = u < bw - strip && v < bh - strip;
-				const bool clear  = is_top ? true : (u - v < diag ? south_interior : east_interior);
-				if (clear) {
-					mbits[static_cast<size_t>(py) * mlw + px] = 0;
+				if (is_top) {
+					// 134 = shell wall TOP: horizontal, so it has no viewer
+					// side.  Left CLEAR it read as an interior face and took
+					// the viewer-gated arrivals, which for an outside light
+					// seen from inside collapse to the wrap-around path -- dark
+					// tops over a lit face.
+					mbits[static_cast<size_t>(py) * mlw + px] = 134;
+				} else {
+					// 135 / 136 = interior-facing wall face, lit only from the
+					// room on its SOUTH / EAST side.  Which side that is, is
+					// known here and nowhere else; left as a plain 0 the splat
+					// had to guess it from the avatar's position, and the guess
+					// flipped mid-wall and punched dark blobs at the flip.
+					const bool     south = u - v < diag;
+					const uint32_t bits  = south ? south_bits : east_bits;
+					const int      j     = tidx(px, py, !south);
+					if (j < 32 && (bits & (1u << j)) != 0) {
+						mbits[static_cast<size_t>(py) * mlw + px] = south ? 135 : 136;
+					}
 				}
 			}
 		}
@@ -1989,7 +2091,7 @@ void Game_window::update_roof_mask(Game_object* obj, int sx, int sy) {
 		}
 		const Xform_palette& slab_pal = (upper_interior && top_storey >= 1) ? roof_slab[top_storey] : roof_tall[top_storey];
 		if (!inside) {
-			frame->paint_rle_transformed(roof_light_mask.get(), sx, sy, roof_strip);
+			frame->paint_rle_transformed(roof_light_mask.get(), sx, sy, roof_strip[top_storey & 3]);
 		} else {
 			// The clipped paint below covers the slab's TOP only, leaving its
 			// south/right thickness strip unmarked -- and unmarked pixels
@@ -2051,18 +2153,26 @@ void Game_window::update_roof_mask(Game_object* obj, int sx, int sy) {
 				}
 				tall_exterior = true;
 				tall_storey   = storey_of(obj->get_lift());
-			} else if (!is_in_dungeon() && faces_exterior(true, &shell_s_in, &shell_e_in)) {
+			} else if (!is_in_dungeon()) {
 				// Covered, grounded and camera-facing the outdoors: the
 				// building shell seen from inside -- same rules as the
 				// outside view.  Wall faces and light-passing pieces are 132
 				// (dark under lights; panes take the glass rule), a CLOSED
 				// door is shell like the wall it fills, an OPEN leaf stays
 				// unmarked; anything else falls through clear.
-				if (obj->get_info().is_door() && !obj->is_closed_door()) {
+				const bool shell = faces_exterior(true, &shell_s_in, &shell_e_in, &shell_s_bits, &shell_e_bits);
+				if (shell && obj->get_info().is_door() && !obj->is_closed_door()) {
 					return;
 				}
-				if (NaturalLight::Object_is_wall_face(obj) || NaturalLight::Object_passes_light(obj)) {
-					paint_shell_face(true, shell_s_in, shell_e_in);
+				if ((shell || !obj->get_info().is_door())
+					&& (NaturalLight::Object_is_wall_face(obj) || NaturalLight::Object_passes_light(obj))) {
+					// A wall facing no outdoors still has a flat TOP, and a top
+					// has no viewer side: stamp 134 with both faces left clear.
+					// A non-shell wall is interior all round, so every face looks
+					// onto a room somewhere; ring_side_dist finds which.  Leaving
+					// such a face on 132 made it all-sides and lit it from the
+					// OUTSIDE, which lights a sealed room's walls.
+					paint_shell_face(true, shell ? shell_s_bits : ~0u, shell ? shell_e_bits : ~0u);
 					return;
 				}
 			}
@@ -2076,15 +2186,15 @@ void Game_window::update_roof_mask(Game_object* obj, int sx, int sy) {
 			}
 			tall_exterior = true;
 			tall_storey   = storey_of(obj->get_lift());
-		} else if (
-				!roof_like && top >= 5 && !open_sky_above(top) && !is_in_dungeon()
-				&& faces_exterior(true, &shell_s_in, &shell_e_in)) {
+		} else if (!roof_like && top >= 5 && !open_sky_above(top) && !is_in_dungeon()) {
 			// Ground shell walls below the render skip (see the branch above).
-			if (obj->get_info().is_door() && !obj->is_closed_door()) {
+			const bool shell = faces_exterior(true, &shell_s_in, &shell_e_in, &shell_s_bits, &shell_e_bits);
+			if (shell && obj->get_info().is_door() && !obj->is_closed_door()) {
 				return;
 			}
-			if (NaturalLight::Object_is_wall_face(obj) || NaturalLight::Object_passes_light(obj)) {
-				paint_shell_face(true, shell_s_in, shell_e_in);
+			if ((shell || !obj->get_info().is_door())
+				&& (NaturalLight::Object_is_wall_face(obj) || NaturalLight::Object_passes_light(obj))) {
+				paint_shell_face(true, shell ? shell_s_bits : ~0u, shell ? shell_e_bits : ~0u);
 				return;
 			}
 		} else if (
@@ -2263,6 +2373,7 @@ void Game_window::build_light_layers() {
 	const int            foot_lw = kindpix ? static_cast<int>(light_kind_mask->get_width()) : 0;
 	const unsigned char* footdxp = kindpix ? light_foot_dx.data() : nullptr;
 	const unsigned char* footdyp = kindpix ? light_foot_dy.data() : nullptr;
+
 	// INSIDE, the room mask applies to every light (the roof mask on top so
 	// nothing spills onto a still-drawn roof).  OUTSIDE, it still applies to a
 	// light itself under a roof (lr.mask_roof) so its walls contain it, while
@@ -2836,7 +2947,7 @@ void Game_window::build_light_layers() {
 				// A roofed light's sprite is hidden behind the shell from
 				// outside: don't lift it (this replaces the occluder erase,
 				// whose binary paint-order compare wrongly wiped visible
-				// sconces).
+							// sconces).
 				if (!inside && lr2.mask_roof) {
 					continue;
 				}
@@ -2892,15 +3003,15 @@ void Game_window::build_light_layers() {
 				const bool           is_actor = act->as_actor() != nullptr;
 				const unsigned char* rdcov    = has_moving ? light_scratch_cov.data() : cov;
 				int                  foot_a   = 0;
-				const int            wy1      = asy + (is_actor ? c_tilesize / 2 : 2 * c_tilesize);
-				const int            wx0      = asx - (is_actor ? c_tilesize : 2 * c_tilesize);
-				const int            wx1      = asx + (is_actor ? c_tilesize / 2 : c_tilesize);
+				const int wy1        = asy + (is_actor ? c_tilesize / 2 : 2 * c_tilesize);
+				const int wx0        = asx - (is_actor ? c_tilesize : 2 * c_tilesize);
+				const int wx1        = asx + (is_actor ? c_tilesize / 2 : c_tilesize);
 				for (int y = std::max(asy - c_tilesize / 2, 0); y <= std::min(wy1, H - 1); ++y) {
 					for (int x = std::max(wx0, 0); x <= std::min(wx1, W - 1); ++x) {
+						const unsigned char cv2 = rdcov[static_cast<size_t>(y) * W + x];
 						if (roofpix != nullptr && roofpix[static_cast<size_t>(y) * roof_lw + x] != 0) {
 							continue;
 						}
-						const unsigned char cv2 = rdcov[static_cast<size_t>(y) * W + x];
 						if (cv2 > foot_a) {
 							foot_a = cv2;
 						}
