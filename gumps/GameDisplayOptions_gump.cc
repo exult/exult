@@ -46,6 +46,7 @@
 #include "Gump_manager.h"
 #include "ShortcutBar_gump.h"
 #include "Text_button.h"
+#include "effects.h"
 #include "exult.h"
 #include "font.h"
 #include "game.h"
@@ -227,6 +228,17 @@ public:
 	static auto Serif() {
 		return get_text_msg(0x5DA - msg_file_start);
 	}
+
+	static inline const String<0x05DB>       Cloud_Style;
+	static inline const String<0x05DC>       Cloud_Intensity;
+	static inline const stringString<0x05DD> Light;
+	static inline const stringString<0x05DE> Normal;
+	static inline const stringString<0x05DF> Dark;
+	static inline const stringString<0x05E0> Darker;
+	static inline const stringString<0x05E1> Hard;
+	static inline const stringString<0x05E2> Soft;
+	static inline const stringString<0x05E3> Softer;
+	static inline const stringString<0x05E4> Very_Soft;
 };
 
 using GameDisplayOptions_button = CallbackTextButton<GameDisplayOptions_gump>;
@@ -349,6 +361,36 @@ void GameDisplayOptions_gump::build_buttons() {
 			this, &GameDisplayOptions_gump::toggle_fonts, fonts_txt, fonts, get_button_pos_for_label(Strings::Fonts_()),
 			yForRow(++y_index), large_size);
 
+	if (have_hw_clouds) {
+		auto cloud_styles_txt
+				= std::vector<std::string>{Strings::Original(), Strings::Hard, Strings::Soft, Strings::Softer, Strings::Very_Soft};
+		if (!buttons[id_cloud_style]) {
+			buttons[id_cloud_style] = std::make_unique<GameDisplayTextToggle>(
+					this, &GameDisplayOptions_gump::toggle_cloud_style, cloud_styles_txt, cloud_style,
+					get_button_pos_for_label("Cloud Style"), yForRow(++y_index), large_size);
+		} else {
+			++y_index;
+		}
+
+		if (cloud_style != 0) {
+			auto cloud_intensity_txt = std::vector<std::string>{Strings::Light, Strings::Normal, Strings::Dark, Strings::Darker};
+
+			if (!buttons[id_cloud_intensity]) {
+				buttons[id_cloud_intensity] = std::make_unique<GameDisplayTextToggle>(
+						this, &GameDisplayOptions_gump::toggle_cloud_intensity, cloud_intensity_txt, cloud_intensity,
+						get_button_pos_for_label("Cloud Intensity"), yForRow(++y_index), large_size);
+			} else {
+				++y_index;
+			}
+
+		} else {
+			buttons[id_cloud_intensity].reset();
+		}
+	} else {
+		buttons[id_cloud_style].reset();
+		buttons[id_cloud_intensity].reset();
+	}
+
 	// Risize to fit all
 	ResizeWidthToFitWidgets(tcb::span(buttons.data() + id_first, id_count));
 
@@ -405,10 +447,11 @@ void GameDisplayOptions_gump::load_settings() {
 	} else {
 		fonts = 0;    // original
 	}
+	have_hw_clouds = Clouds_effect::GetCloudParameters(cloud_style, cloud_intensity);
 }
 
 GameDisplayOptions_gump::GameDisplayOptions_gump() : Modal_gump(nullptr, -1) {
-	SetProceduralBackground(TileRect(0, 0, 100, yForRow(13)), -1);
+	SetProceduralBackground(TileRect(0, 0, 100, yForRow(15)), -1);
 
 	for (auto& btn : buttons) {
 		btn.reset();
@@ -416,13 +459,13 @@ GameDisplayOptions_gump::GameDisplayOptions_gump() : Modal_gump(nullptr, -1) {
 
 	// Ok
 	buttons[id_ok] = std::make_unique<GameDisplayOptions_button>(
-			this, &GameDisplayOptions_gump::close, Strings::OK(), 15, yForRow(12), 50);
+			this, &GameDisplayOptions_gump::close, Strings::OK(), 15, yForRow(14), 50);
 	// Help
 	buttons[id_help] = std::make_unique<GameDisplayOptions_button>(
-			this, &GameDisplayOptions_gump::help, Strings::HELP(), 50, yForRow(12), 50);
+			this, &GameDisplayOptions_gump::help, Strings::HELP(), 50, yForRow(14), 50);
 	// Cancel
 	buttons[id_cancel] = std::make_unique<GameDisplayOptions_button>(
-			this, &GameDisplayOptions_gump::cancel, Strings::CANCEL(), 75, yForRow(12), 50);
+			this, &GameDisplayOptions_gump::cancel, Strings::CANCEL(), 75, yForRow(14), 50);
 
 	load_settings();
 	build_buttons();
@@ -489,6 +532,10 @@ void GameDisplayOptions_gump::save_settings() {
 		// Re-translate text messages with the correct UTF-8 map
 		Game::setup_text();
 	}
+	if (clouds_changed) {
+		Clouds_effect::SetCloudParameters(Clouds_effect::Cloudstyle(cloud_style), Clouds_effect::CloudIntensity(cloud_intensity));
+		clouds_changed = false;
+	}
 
 	config->write_back();
 }
@@ -527,6 +574,12 @@ void GameDisplayOptions_gump::paint() {
 	}
 	if (buttons[id_fonts]) {
 		font->paint_text(iwin->get_ib8(), Strings::Fonts_(), x + label_margin, y + yForRow(++y_index) + 1);
+	}
+	if (buttons[id_cloud_style]) {
+		font->paint_text(iwin->get_ib8(), Strings::Cloud_Style, x + label_margin, y + yForRow(++y_index) + 1);
+	}
+	if (buttons[id_cloud_intensity]) {
+		font->paint_text(iwin->get_ib8(), Strings::Cloud_Intensity, x + label_margin, y + yForRow(++y_index) + 1);
 	}
 	gwin->set_painted();
 }
