@@ -28,6 +28,7 @@
 #include "tqueue.h"
 
 #include <list>
+#include <map>
 #include <memory>
 #include <string>
 
@@ -50,6 +51,7 @@ class Effects_manager {
 	Game_window*                               gwin;       // Handy pointer.
 	std::list<std::unique_ptr<Special_effect>> effects;    // Sprite effects, projectiles, etc.
 	std::list<std::unique_ptr<Text_effect>>    texts;      // Text snippets.
+
 public:
 	Effects_manager(Game_window* g) : gwin(g) {}
 
@@ -74,6 +76,7 @@ public:
 	void set_sprites_always(bool tf);    // Set/clear 'always' on sprites.
 	void paint();                        // Draw all sprites/proj./weather.
 	void paint_text();                   // Draw text.
+	void init();
 };
 
 /*
@@ -361,17 +364,21 @@ public:
  *  A single cloud (sprite shape 2):
  */
 class Cloud {
-	ShapeID    cloud;
-	long       wx, wy;            // Position within world.
-	short      deltax, deltay;    // How to move.
-	int        count;             // Counts down to 0.
-	int        max_count;
-	uint32     start_time;    // When to start.
-	static int randcnt;       // For generating random times.
-	void       set_start_pos(Shape_frame* shape, int w, int h, int& x, int& y);
+	ShapeID              cloud;
+	long                 wx, wy;                  // Position within world.
+	short                deltax, deltay;          // How to move.
+	int                  count;                   // Counts down to 0.
+	int                  max_count;               // count starts from this
+	int                  fade_out_count = 100;    // Fade out when count is less than this
+	uint32               fade_in_time   = 100;    // Fade in when last_time is this amount before start_time
+	uint32               start_time;              // When to start.
+	uint32               last_time;               // time next was last caled
+	class Clouds_effect* owner;                   // the effect that created us
+	static int           randcnt;                 // For generating random times.
+	void                 set_start_pos(Shape_frame* shape, int w, int h, int& x, int& y);
 
 public:
-	Cloud(short dx, short dy);
+	Cloud(short dx, short dy, class Clouds_effect* owner);
 	// Move to next position & paint.
 	void next(Game_window* gwin, unsigned long curtime, int w, int h);
 	void paint();
@@ -382,6 +389,8 @@ public:
  */
 class Clouds_effect : public Weather_effect {
 	int                                 num_clouds;
+	int                                 alpha     = 255;    // Clouds owned by this effect are drawn with this alpha
+	static inline const int             fade_time = 2000;
 	std::vector<std::unique_ptr<Cloud>> clouds;
 	bool                                overcast;
 
@@ -392,6 +401,42 @@ public:
 	// Render.
 	void paint() override;
 	~Clouds_effect() override;
+
+	static std::map<ShapeID, int> shape_layers;
+	static int              blur_size;    // size of blur to use when creating cloud layers. If -1 classic cloud rendering is used.
+	static inline const int max_cloud_blur_size = 16;    // This max value is completely arbitrary. It just a matter of nothing is
+														 // gained by going bigger and the clouds just look like diffuse blobs
+	static int              base_alpha;                  // Alpha value to use with cloud layers
+	static inline const int min_base_alpha
+			= 40;    // minimum for base_alpha to make sure clouds are always visable at least a little
+	static inline const int max_base_alpha = 200;    // maximum for base_alpha to make sure clouds are not completely black
+	static int              rt_layers[6];            // Cloud Render TargetLayer and modifier layers
+
+	static int last_width;
+	static int last_height;
+
+	static inline const int layer_z = -100;
+	static void             init_layers(bool load_config);
+	static void             deinit_layers();
+
+	static void start_frame();
+	static void end_frame();
+
+	static bool HWCloudsSupported();
+	enum class BLEND {
+		ADD_BOTH,
+		MODCOLOUR_BLEND_PREMULTIPLIED,
+		DST_ALPHA_TO_COLOUR,
+		INVERT_COLOUR,
+		ADD_DST_ALPHA_TO_DST_ALPHA,
+		MOD_DST_COLOUR_BY_ALPHA,
+		COUNT
+	};
+	static uint32 GetSDLBlendMode(BLEND type);
+
+private:
+	friend Cloud;
+	static int GetCloudLayer(const ShapeID sid, bool force_refresh);
 };
 
 /*
