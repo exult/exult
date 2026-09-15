@@ -434,6 +434,24 @@ public:
 	};
 	static uint32 GetSDLBlendMode(BLEND type);
 
+	enum Cloudstyle {
+		CS_Original,    // Equiv to blur_size = -1
+		CS_Hard,        // Equiv to blur_size = 0
+		CS_Soft,        // Equiv to blur_size = 2
+		CS_Softer,      // Equiv to blur_size = 4
+		CS_VerySoft,    // Equiv to blur_size = 8
+	};
+
+	enum CloudIntensity {
+		CI_Light,     // Equiv to base_alpha = 40
+		CI_Normal,    // Equiv to base_alpha = 60
+		CI_Dark,      // Equiv to base_alpha = 80
+		CI_Darker,    // Equiv to base_alpha = 100
+	};
+
+	static void SetCloudParameters(Cloudstyle style, CloudIntensity intensity);
+	static bool GetCloudParameters(int& style, int& intensity);
+
 private:
 	friend Cloud;
 	static int GetCloudLayer(const ShapeID sid, bool force_refresh);

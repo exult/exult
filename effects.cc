@@ -2216,6 +2216,74 @@ int Clouds_effect::GetCloudLayer(const ShapeID sid, bool force_refresh) {
 	return layer;
 }
 
+void Clouds_effect::SetCloudParameters(Cloudstyle style, CloudIntensity intensity) {
+	if (!HWCloudsSupported() || Game_window::get_instance()->is_in_exult_menu()) {
+		return;
+	}
+	switch (style) {
+	case CS_Hard:
+		blur_size = 0;
+		break;
+	case CS_Soft:
+		blur_size = 2;
+		break;
+	case CS_Softer:
+		blur_size = 4;
+		break;
+	case CS_VerySoft:
+		blur_size = 8;
+		break;
+	default:
+		blur_size = -1;
+		break;
+	}
+
+	switch (intensity) {
+	case CI_Light:
+		base_alpha = 60;
+		break;
+	case CI_Dark:
+		base_alpha = 120;
+		break;
+	case CI_Darker:
+		base_alpha = 140;
+		break;
+	default:
+		base_alpha = 100;
+		break;
+	}
+
+	config->set("config/video/clouds/alpha", base_alpha, false);
+	config->set("config/video/clouds/blur_size", blur_size, false);
+	config->write_back();
+	init_layers(false);
+}
+
+bool Clouds_effect::GetCloudParameters(int& style, int& intensity) {
+	if (base_alpha > 120) {
+		intensity = CI_Darker;
+	} else if (base_alpha > 100) {
+		intensity = CI_Dark;
+	} else if (base_alpha < 100) {
+		intensity = CI_Light;
+	} else {
+		intensity = CI_Normal;
+	}
+	if (blur_size >= 8) {
+		style = CS_VerySoft;
+	} else if (blur_size >= 4) {
+		style = CS_Softer;
+	} else if (blur_size >= 2) {
+		style = CS_Soft;
+	} else if (blur_size == 0) {
+		style = CS_Hard;
+	} else {
+		style = CS_Original;
+	}
+
+	return HWCloudsSupported() && !Game_window::get_instance()->is_in_exult_menu();
+}
+
 /**
  *  Render.
  */
