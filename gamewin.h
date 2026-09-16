@@ -24,6 +24,7 @@
 
 #include "flags.h"
 #include "iwin8.h"
+#include "naturallight.h"
 #include "rect.h"
 #include "shapeid.h"
 #include "shapeinf.h"
@@ -210,6 +211,10 @@ class Game_window {
 	// byte each, offset+128).  Consumed by Splat_radial_light.
 	std::unique_ptr<Image_buffer8> light_kind_mask;
 	std::vector<unsigned char>     light_foot_dx, light_foot_dy;
+	// This frame's stamped sprite art boxes: a tall sprite's crown sits far
+	// outside the pool that lights its foot, and only its own box identifies
+	// those pixels (the foot channel is shear-clamped).
+	std::vector<NaturalLight::Sprite_box> light_sprite_boxes;
 	// A static light set changed this frame: schedule a full repaint AFTER
 	// paint_dirty's clear_dirty so the roof mask gets stamped under the new
 	// light rects next frame (see build_light_layers' full-rebuild path).

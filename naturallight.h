@@ -94,6 +94,21 @@ namespace NaturalLight {
 		Tile_coord opening = Tile_coord(-1, -1, -1);
 	};
 
+	// One stamped sprite's screen art box plus its paint origin (the foot).
+	// A tall sprite's art reaches far above the pool that lights its foot, and
+	// the per-pixel foot channel is clamped by the shear, so only the object's
+	// own box can say which pixels belong to it.
+	struct Sprite_box {
+		short x0, y0, x1, y1;
+		short fx, fy;
+	};
+
+	// Grow a splat's unclamped screen bbox up-left by the art boxes of the
+	// sprites rooted inside it.  The caller's bounds bookkeeping MUST apply
+	// this too: coverage written outside the recorded bounds is never cleared,
+	// and the scroll path then translates those stale pixels across the screen.
+	void Reach_extend_box(int& x0, int& y0, int x1, int y1, const Sprite_box* sprites, int nsprites);
+
 	// Call once per world render: replenishes the flood cache's refresh budget.
 	void Flood_cache_frame_begin();
 
@@ -133,7 +148,8 @@ namespace NaturalLight {
 			const unsigned char* grid, int grid_rt, int grid_fx, int grid_fy, bool inside_viewer = false, int clip_x0 = 0,
 			int clip_y0 = 0, int clip_x1 = -1, int clip_y1 = -1, const unsigned char* kindpix = nullptr, int kind_lw = 0,
 			const unsigned char* footdx = nullptr, const unsigned char* footdy = nullptr, int foot_lw = 0,
-			const unsigned char* ring = nullptr, int av_fx = 0, int av_fy = 0);
+			const unsigned char* ring = nullptr, int av_fx = 0, int av_fy = 0, const Sprite_box* sprites = nullptr,
+			int nsprites = 0);
 
 	// The dome brightness this light puts on the GROUND of one world tile,
 	// straight from its fill -- no screen mask, no sprite.  For subjects whose

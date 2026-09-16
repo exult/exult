@@ -1369,6 +1369,7 @@ void Game_window::begin_roof_mask() {
 	light_kind_mask->fill8(0);    // 0 = ground kind.
 	light_foot_dx.assign(static_cast<size_t>(bw) * bh, 128);
 	light_foot_dy.assign(static_cast<size_t>(bw) * bh, 128);
+	light_sprite_boxes.clear();
 	roof_light_mask_active = true;
 }
 
@@ -1413,6 +1414,21 @@ void Game_window::update_roof_mask(Game_object* obj, int sx, int sy) {
 	// coverage.  Their pixels light like the surface behind them.
 	if (obj->as_actor() != nullptr) {
 		return;
+	}
+	// Record the art box for the reach pass.  Only free-standing OBJECTS get
+	// one: a wall face is resolved inside the pool by the ring/face rule, and
+	// reaching for it lights shell art beyond the light's radius -- the wall
+	// piece that appears copied across the screen as the view scrolls.
+	{
+		const Shape_info& rinf = obj->get_info();
+		if (!NaturalLight::Object_is_wall_face(obj) && !rinf.is_floor() && !rinf.is_roof()
+			&& (sprite_box.y < sy || sprite_box.x < sx)) {
+			light_sprite_boxes.push_back(
+					{static_cast<short>(sprite_box.x), static_cast<short>(sprite_box.y),
+					 static_cast<short>(sprite_box.x + sprite_box.w - 1),
+					 static_cast<short>(sprite_box.y + sprite_box.h - 1), static_cast<short>(sx),
+					 static_cast<short>(sy)});
+		}
 	}
 	// Mask values: 255 = roof, 128 + storey = tall / upper-storey shape,
 	// 0 = clear.  How each light kind treats them is decided in
@@ -1517,7 +1533,13 @@ void Game_window::update_roof_mask(Game_object* obj, int sx, int sy) {
 		const Shape_info& sinf = obj->get_info();
 		int               kind = 0;
 		bool              pane = false;
-		if (sinf.is_solid() && !sinf.is_floor() && !sinf.is_roof()) {
+		// A loose item is an OBJECT whatever its solid flag says.  A non-solid
+		// one fell through to kind 0 = GROUND and drank the z-blind field at
+		// its own screen position -- bright over the wall it lies against --
+		// while its SOLID neighbours on the same surface keep kind 2 and render
+		// correctly.
+		const bool loose_item = obj->is_dragable();
+		if ((sinf.is_solid() || loose_item) && !sinf.is_floor() && !sinf.is_roof()) {
 			// Panes and open door leaves stay GROUND: they glow with the
 			// light behind them.  They still need FEET: their glow belongs to
 			// the light at their own tile, not to whatever their sprite hangs
@@ -1555,16 +1577,16 @@ void Game_window::update_roof_mask(Game_object* obj, int sx, int sy) {
 			const int f0y = sy + 4 * obj->get_lift();
 			const int xts = sinf.get_3d_xtiles(obj->get_framenum());
 			const int yts = sinf.get_3d_ytiles(obj->get_framenum());
-			// Snap to the centre of the footprint tile under the pixel, so a
-			// long wall fades per tile instead of by its single anchor.
-			auto snap = [](int p, int f0, int nt) {
-				int i = (f0 - p) >> 3;    // c_tilesize == 8
-				if (i < 0) {
-					i = 0;
-				} else if (i >= nt) {
-					i = nt - 1;
-				}
-				return f0 - i * c_tilesize - c_tilesize / 2;
+			// The footprint tile under the pixel, WITHOUT collapsing to its
+			// centre: the splat's blend needs the pixel's position inside its
+			// tile, and snapping threw it away, so a wall top rendered one flat
+			// value per tile -- the staircase of lit blocks along a lit wall.
+			// The phase cannot be recovered downstream: within a tile the snapped
+			// offset runs a sawtooth whose origin is the sprite's own elevation,
+			// so one offset cannot carry both the tile and the place in it.
+			auto foot_clamp = [](int p, int f0, int nt) {
+				const int lo = f0 - (nt - 1) * c_tilesize - (c_tilesize - 1);
+				return p < lo ? lo : (p > f0 ? f0 : p);
 			};
 			// Elevated art is drawn up-LEFT 4px per z, so a face pixel stands
 			// over a ground point DOWN-RIGHT of it along the diagonal.  Snapping
@@ -1602,9 +1624,9 @@ void Game_window::update_roof_mask(Game_object* obj, int sx, int sy) {
 					if (px < 0 || px >= W) {
 						continue;
 					}
-					const int s                                     = shear(px, py);
-					int       ddx                                   = snap(px + s, f0x, xts) - px;
-					int       ddy                                   = snap(py + s, f0y, yts) - py;
+					const int s   = shear(px, py);
+					int       ddx = foot_clamp(px + s, f0x, xts) - px;
+					int       ddy = foot_clamp(py + s, f0y, yts) - py;
 					ddx                                             = ddx < -128 ? -128 : (ddx > 127 ? 127 : ddx);
 					ddy                                             = ddy < -128 ? -128 : (ddy > 127 ? 127 : ddy);
 					kbits[static_cast<size_t>(py) * klw + px]       = static_cast<unsigned char>(kind);
@@ -1753,13 +1775,20 @@ void Game_window::update_roof_mask(Game_object* obj, int sx, int sy) {
 	// structure's solid mass (the city wall beside the east facade) both
 	// count as outdoors.  Interior walls' camera sides are roofed rooms.
 	auto faces_exterior = [&](bool doors_anchor = true, bool* out_south_in = nullptr, bool* out_east_in = nullptr,
-							  uint32_t* out_south_bits = nullptr, uint32_t* out_east_bits = nullptr) {
+							  uint32_t* out_south_bits = nullptr, uint32_t* out_east_bits = nullptr,
+							  uint32_t* out_south_open = nullptr, uint32_t* out_east_open = nullptr) {
 		const TileRect ft = obj->get_footprint();
 		if (out_south_bits != nullptr) {
 			*out_south_bits = 0;
 		}
 		if (out_east_bits != nullptr) {
 			*out_east_bits = 0;
+		}
+		if (out_south_open != nullptr) {
+			*out_south_open = 0;
+		}
+		if (out_east_open != nullptr) {
+			*out_east_open = 0;
 		}
 		if (out_south_in != nullptr) {
 			*out_south_in = false;
@@ -1865,6 +1894,12 @@ void Game_window::update_roof_mask(Game_object* obj, int sx, int sy) {
 		auto face_interior = [&](int tx, int ty) {
 			return !static_solid_at(tx, ty, obj->get_lift() + 2, obj->get_lift() + 2) && !open_sky_tile(tx, ty);
 		};
+		// The mirror test: walkable and UNROOFED, i.e. the face looks at the
+		// street.  Distinct from "not interior", which also covers a face
+		// buried against solid mass -- and those two must not be treated alike.
+		auto face_outdoor = [&](int tx, int ty) {
+			return !static_solid_at(tx, ty, obj->get_lift() + 2, obj->get_lift() + 2) && open_sky_tile(tx, ty);
+		};
 		bool south_in = false;
 		for (int i = 0; i < ft.w; ++i) {
 			if (face_interior(ft.x + i, ft.y + ft.h)) {
@@ -1872,6 +1907,8 @@ void Game_window::update_roof_mask(Game_object* obj, int sx, int sy) {
 				if (out_south_bits != nullptr && i < 32) {
 					*out_south_bits |= 1u << i;
 				}
+			} else if (out_south_open != nullptr && i < 32 && face_outdoor(ft.x + i, ft.y + ft.h)) {
+				*out_south_open |= 1u << i;
 			}
 		}
 		bool east_in = false;
@@ -1881,6 +1918,8 @@ void Game_window::update_roof_mask(Game_object* obj, int sx, int sy) {
 				if (out_east_bits != nullptr && i < 32) {
 					*out_east_bits |= 1u << i;
 				}
+			} else if (out_east_open != nullptr && i < 32 && face_outdoor(ft.x + ft.w, ft.y + i)) {
+				*out_east_open |= 1u << i;
 			}
 		}
 		if (out_south_in != nullptr) {
@@ -1966,6 +2005,8 @@ void Game_window::update_roof_mask(Game_object* obj, int sx, int sy) {
 	bool     shell_e_in   = false;
 	uint32_t shell_s_bits = 0;
 	uint32_t shell_e_bits = 0;
+	uint32_t shell_s_open = 0;
+	uint32_t shell_e_open = 0;
 	// With the roof hidden, every upper-storey surface on screen is an INTERIOR
 	// one (140 + storey): only its own storey may light it, so a ground-floor
 	// torch cannot wash the floor above.  From outside the same surfaces are the
@@ -1977,7 +2018,8 @@ void Game_window::update_roof_mask(Game_object* obj, int sx, int sy) {
 	// stays CLEAR so the room's field washes it like the interior walls'
 	// tops -- the faces stay dark wall.  (A 128+storey top mark fails the
 	// room's own storey gate and would stay dark.)
-	auto paint_shell_face = [&](bool lit_top, uint32_t south_bits = 0, uint32_t east_bits = 0) {
+	auto paint_shell_face = [&](bool lit_top, uint32_t south_bits = 0, uint32_t east_bits = 0, bool shell = true,
+								bool mark_top = true, uint32_t south_open = 0, uint32_t east_open = 0) {
 		frame->paint_rle_transformed(roof_light_mask.get(), sx, sy, roof_face);
 		if (!lit_top) {
 			return;
@@ -2048,7 +2090,7 @@ void Game_window::update_roof_mask(Game_object* obj, int sx, int sy) {
 					continue;
 				}
 				const bool is_top = u < bw - strip && v < bh - strip;
-				if (is_top) {
+				if (is_top && mark_top) {
 					// 134 = shell wall TOP: horizontal, so it has no viewer
 					// side.  Left CLEAR it read as an interior face and took
 					// the viewer-gated arrivals, which for an outside light
@@ -2057,15 +2099,44 @@ void Game_window::update_roof_mask(Game_object* obj, int sx, int sy) {
 					mbits[static_cast<size_t>(py) * mlw + px] = 134;
 				} else {
 					// 135 / 136 = interior-facing wall face, lit only from the
-					// room on its SOUTH / EAST side.  Which side that is, is
-					// known here and nowhere else; left as a plain 0 the splat
-					// had to guess it from the avatar's position, and the guess
-					// flipped mid-wall and punched dark blobs at the flip.
-					const bool     south = u - v < diag;
-					const uint32_t bits  = south ? south_bits : east_bits;
-					const int      j     = tidx(px, py, !south);
-					if (j < 32 && (bits & (1u << j)) != 0) {
-						mbits[static_cast<size_t>(py) * mlw + px] = south ? 135 : 136;
+					// room on its SOUTH / EAST side.  Which that is, is known
+					// here and nowhere else; left as a plain 0 the splat had to
+					// guess it from the avatar's position, and the guess flipped
+					// mid-wall and punched dark blobs at the flip.
+					// A triangle whose OWN side has no room (the sprite's end cap,
+					// or a face buried against the next wall) takes the side that
+					// does: marking it for a non-room side sent the splat walking
+					// along the wall until it surfaced outdoors, which lit the
+					// inside faces of a shut cabin from the street.  But only if it
+					// is BURIED -- a face looking at the street is a real exterior
+					// face and keeps 132, or the outside south face of a wall whose
+					// east side is a room lit up with that room's light.
+					const bool south      = u - v < diag;
+					const int  js         = tidx(px, py, false);
+					const int  je         = tidx(px, py, true);
+					const bool s_room     = js < 32 && (south_bits & (1u << js)) != 0;
+					const bool e_room     = je < 32 && (east_bits & (1u << je)) != 0;
+					const bool own_room   = south ? s_room : e_room;
+					const bool own_open   = south ? (js < 32 && (south_open & (1u << js)) != 0)
+												  : (je < 32 && (east_open & (1u << je)) != 0);
+					const bool other_room = south ? e_room : s_room;
+					int        side_mark  = -1;
+					if (own_room) {
+						side_mark = south ? 135 : 136;
+					} else if (own_open) {
+						side_mark = -1;    // Faces the street: the 132 shell mask stands.
+					} else if (other_room) {
+						side_mark = south ? 136 : 135;
+					} else if (!shell) {
+						// An interior corner walled in on BOTH sides borrows the
+						// nearest room through the splat's side walk; left on 132 it
+						// lit from outside, and cleared to 0 it was the masked sliver.
+						// South first: the walk falls back to east by itself, and
+						// going east first can run along the wall out into the street.
+						side_mark = 135;
+					}
+					if (side_mark > 0) {
+						mbits[static_cast<size_t>(py) * mlw + px] = static_cast<unsigned char>(side_mark);
 					}
 				}
 			}
@@ -2160,7 +2231,8 @@ void Game_window::update_roof_mask(Game_object* obj, int sx, int sy) {
 				// (dark under lights; panes take the glass rule), a CLOSED
 				// door is shell like the wall it fills, an OPEN leaf stays
 				// unmarked; anything else falls through clear.
-				const bool shell = faces_exterior(true, &shell_s_in, &shell_e_in, &shell_s_bits, &shell_e_bits);
+				const bool shell = faces_exterior(
+						true, &shell_s_in, &shell_e_in, &shell_s_bits, &shell_e_bits, &shell_s_open, &shell_e_open);
 				if (shell && obj->get_info().is_door() && !obj->is_closed_door()) {
 					return;
 				}
@@ -2172,7 +2244,7 @@ void Game_window::update_roof_mask(Game_object* obj, int sx, int sy) {
 					// onto a room somewhere; ring_side_dist finds which.  Leaving
 					// such a face on 132 made it all-sides and lit it from the
 					// OUTSIDE, which lights a sealed room's walls.
-					paint_shell_face(true, shell ? shell_s_bits : ~0u, shell ? shell_e_bits : ~0u);
+					paint_shell_face(true, shell_s_bits, shell_e_bits, shell, true, shell_s_open, shell_e_open);
 					return;
 				}
 			}
@@ -2188,23 +2260,44 @@ void Game_window::update_roof_mask(Game_object* obj, int sx, int sy) {
 			tall_storey   = storey_of(obj->get_lift());
 		} else if (!roof_like && top >= 5 && !open_sky_above(top) && !is_in_dungeon()) {
 			// Ground shell walls below the render skip (see the branch above).
-			const bool shell = faces_exterior(true, &shell_s_in, &shell_e_in, &shell_s_bits, &shell_e_bits);
+			const bool shell = faces_exterior(
+					true, &shell_s_in, &shell_e_in, &shell_s_bits, &shell_e_bits, &shell_s_open, &shell_e_open);
 			if (shell && obj->get_info().is_door() && !obj->is_closed_door()) {
 				return;
 			}
 			if ((shell || !obj->get_info().is_door())
 				&& (NaturalLight::Object_is_wall_face(obj) || NaturalLight::Object_passes_light(obj))) {
-				paint_shell_face(true, shell ? shell_s_bits : ~0u, shell ? shell_e_bits : ~0u);
+				paint_shell_face(true, shell_s_bits, shell_e_bits, shell, true, shell_s_open, shell_e_open);
 				return;
 			}
 		} else if (
 				!roof_like && top < 5 && !open_sky_above(top) && obj->get_info().is_solid() && !obj->get_info().is_door()
-				&& !obj->is_dragable() && !is_in_dungeon() && faces_exterior(false)) {
+				&& !obj->is_dragable() && !is_in_dungeon()) {
 			// Low shell trim (battlement pieces beside a window), as outside.
 			// Door anchors excluded: a threshold step in front of the doorway
 			// is part of the fan's ground, not the shell.
-			frame->paint_rle_transformed(roof_light_mask.get(), sx, sy, roof_face);
-			return;
+			// Stamped through paint_shell_face so its faces get the same
+			// 134/135/136 the wall around it gets.  Gated on faces_exterior it
+			// fell through for a building the avatar is not in, kept mask 0 and
+			// drank the z-blind field -- another house's halfwall lit up inside.
+			const bool shell = faces_exterior(
+					false, &shell_s_in, &shell_e_in, &shell_s_bits, &shell_e_bits, &shell_s_open, &shell_e_open);
+			// Low TRIM sits on the wall line; a table or a torch bracket is
+			// furniture standing in the room, and painting it as shell art gave
+			// it 135/136 + kind 2, so wall_obj lit it as a wall face.  The two
+			// are told apart by the shell verdict itself, which this branch
+			// previously used only to pick the mark value.  Unlike the 132/134
+			// fall-through that motivated dropping the gate, a piece that falls
+			// through now keeps kind 2 and takes object_alpha at its OWN tile,
+			// not the z-blind field.
+			if (shell && !obj->get_info().is_light_source()) {
+				// mark_top = false: a sill's flat surface sits INSIDE the room, so
+				// it takes the room like its faces.  As an exposed wall top (134)
+				// it drew all-side arrivals and lit from the street, and on a low
+				// piece that band is most of the sprite.
+				paint_shell_face(true, shell_s_bits, shell_e_bits, shell, false, shell_s_open, shell_e_open);
+				return;
+			}
 		}
 	} else {
 		const bool is_roof_shape = obj->get_info().is_roof();
@@ -2244,8 +2337,14 @@ void Game_window::update_roof_mask(Game_object* obj, int sx, int sy) {
 				if (winfo.is_door() && !obj->is_closed_door()) {
 					return;
 				}
-				paint_shell_face(false);
-				return;
+				// A LIGHT SOURCE is never shell.  132 is unconditionally dark
+				// under both light kinds, so a torch standing under an eave
+				// masked itself out.  Object_is_wall_face cannot serve here:
+				// the wall course under a window is kind 2 as well.
+				if (!winfo.is_light_source()) {
+					paint_shell_face(false);
+					return;
+				}
 			}
 		} else if (
 				!roof_like && !open_sky_above(top) && obj->get_info().is_solid() && !obj->get_info().is_door()
@@ -2253,8 +2352,12 @@ void Game_window::update_roof_mask(Game_object* obj, int sx, int sy) {
 			// A LOW solid under cover (battlement trim beside a window):
 			// part of the wall shell too -- left clear, its pixels z-blind
 			// sample the interior field (the lit strip beneath a window).
-			frame->paint_rle_transformed(roof_light_mask.get(), sx, sy, roof_face);
-			return;
+			// A LIGHT SOURCE is not shell: 132 is unconditionally dark and a
+			// torch at a doorway masked itself out.
+			if (!obj->get_info().is_light_source()) {
+				frame->paint_rle_transformed(roof_light_mask.get(), sx, sy, roof_face);
+				return;
+			}
 		}
 	}
 	frame->paint_rle_transformed(
@@ -2373,7 +2476,6 @@ void Game_window::build_light_layers() {
 	const int            foot_lw = kindpix ? static_cast<int>(light_kind_mask->get_width()) : 0;
 	const unsigned char* footdxp = kindpix ? light_foot_dx.data() : nullptr;
 	const unsigned char* footdyp = kindpix ? light_foot_dy.data() : nullptr;
-
 	// INSIDE, the room mask applies to every light (the roof mask on top so
 	// nothing spills onto a still-drawn roof).  OUTSIDE, it still applies to a
 	// light itself under a roof (lr.mask_roof) so its walls contain it, while
@@ -2525,7 +2627,6 @@ void Game_window::build_light_layers() {
 		}
 		unsigned char* dstpix = dst->get_bits();
 		const int      dst_lw = static_cast<int>(dst->get_line_width());
-
 		// This tier's radial-alpha (coverage) mask holds the STATIC
 		// (world-pinned) lights only.  It persists between frames: while the
 		// static signature holds, a still view reuses it as-is and a scrolled
@@ -2656,7 +2757,8 @@ void Game_window::build_light_layers() {
 						!is_in_dungeon() && lr.ring.size() == static_cast<size_t>(2 * grid_rt + 1) * (2 * grid_rt + 1) * 4
 								? lr.ring.data()
 								: nullptr,
-						av_fx, av_fy);
+						av_fx, av_fy, light_sprite_boxes.empty() ? nullptr : light_sprite_boxes.data(),
+						static_cast<int>(light_sprite_boxes.size()));
 			}
 			// Match Splat_radial_light's reach: only an ELEVATED spill's
 			// dome extends sqrt(r^2 + 2*r*bias), capped at 1.5r.
@@ -2677,6 +2779,9 @@ void Game_window::build_light_layers() {
 				by0 = std::min(by0, grid_fy - lr.radius - c_tilesize);
 				by1 = std::max(by1, grid_fy + lr.radius + c_tilesize);
 			}
+			NaturalLight::Reach_extend_box(
+					bx0, by0, bx1, by1, light_sprite_boxes.empty() ? nullptr : light_sprite_boxes.data(),
+					static_cast<int>(light_sprite_boxes.size()));
 			return TileRect(bx0, by0, bx1 - bx0 + 1, by1 - by0 + 1);
 		};
 
@@ -2947,7 +3052,7 @@ void Game_window::build_light_layers() {
 				// A roofed light's sprite is hidden behind the shell from
 				// outside: don't lift it (this replaces the occluder erase,
 				// whose binary paint-order compare wrongly wiped visible
-							// sconces).
+				// sconces -- [lift] foot_a>0 lifted=0).
 				if (!inside && lr2.mask_roof) {
 					continue;
 				}
@@ -3126,7 +3231,15 @@ void Game_window::build_light_layers() {
 						}
 						if (own_test) {
 							const unsigned char kb = kindpix[static_cast<size_t>(y) * kind_lw + x];
-							if (kb == 1 || kb == 2) {
+							if (kb == 1) {
+								// A WALL FACE is the topmost sprite here, so the wall
+								// (or the door filling it) is drawn in front of the
+								// lamp.  The foot test alone cannot catch it when the
+								// wall stands on the lamp's OWN tile -- the feet match
+								// and the lamp's silhouette bled through the mask.
+								continue;
+							}
+							if (kb == 2) {
 								const size_t fi  = static_cast<size_t>(y) * foot_lw + x;
 								const int    dfx = own_f0x - (x + static_cast<int>(footdxp[fi]) - 128);
 								const int    dfy = own_f0y - (y + static_cast<int>(footdyp[fi]) - 128);
