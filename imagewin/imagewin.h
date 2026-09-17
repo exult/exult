@@ -83,6 +83,8 @@ public:
 		UiLayerFullScreenBilinear,
 		// Layer is drawn fullscreen with point fill scaling
 		UiLayerFullScreenPoint,
+		// Layer is drawn using the same scaler configuration as the game workd
+		UiLayerLikeGameWorld,
 
 		NumUiLayerKinds
 	};

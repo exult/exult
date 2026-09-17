@@ -766,6 +766,7 @@ bool Image_window::create_scale_surfaces(int w, int h, int bpp) {
 
 	set_ui_layer_config(UiLayerFullScreenBilinear, w, h, NoScaler, Fill, bilinear, true);
 	set_ui_layer_config(UiLayerFullScreenPoint, w, h, NoScaler, Fill, point, true);
+	set_ui_layer_config(UiLayerLikeGameWorld, draw_width, draw_height, scaler, fill_mode, fill_scaler, true);
 
 	return true;
 }
