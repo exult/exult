@@ -2130,7 +2130,7 @@ int Clouds_effect::GetCloudLayer(const ShapeID sid, bool force_refresh) {
 			layername, shape->get_width() + blur_size4, shape->get_height() + blur_size4, 255, 0, layer_z + sid.get_framenum());
 	shape_layers.emplace(sid, layer);
 
-	gwin->layer_set_ui_kind(layer, blur_size ? Image_window::UiLayerFullScreenBilinear : Image_window::UiLayerFullScreenPoint);
+	gwin->layer_set_ui_kind(layer, blur_size ? Image_window::UiLayerFullScreenBilinear : Image_window::UiLayerLikeGameWorld);
 	ibuf                     = gwin->get_layer_ibuf(layer);
 	Image_buffer8* prev_ibuf = gwin->push_render_target(ibuf);
 
@@ -2141,7 +2141,7 @@ int Clouds_effect::GetCloudLayer(const ShapeID sid, bool force_refresh) {
 
 	gwin->pop_render_target(prev_ibuf);
 
-	// Apply an inplace 5x5 blur to the ibuf starting from (2,2)
+	// Apply an inplace blur to the ibuf starting
 	// inplace blur only changes lower 7 bits, the top bit is used to determine the original unblurred state of the pixel
 	// Bit 7 set = was transparent
 	// Bit 7 clear = was opaque
@@ -2208,7 +2208,7 @@ int Clouds_effect::GetCloudLayer(const ShapeID sid, bool force_refresh) {
 		blur_palette[i] = v << 24;
 	}
 	gwin->layer_set_index_argb(layer, blur_palette, true);
-	gwin->layer_set_opaque(layer, true);
+	gwin->layer_set_opaque(layer, false);
 	gwin->layer_set_alpha(layer, base_alpha);
 	gwin->layer_set_blendmode(layer, GetSDLBlendMode(BLEND::ADD_BOTH));
 	gwin->get_win()->layer_set_sdl_render_target(layer, rt_layers[0]);
