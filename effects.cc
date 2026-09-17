@@ -1837,11 +1837,12 @@ void Clouds_effect::handle_event(
 	if (curtime >= stop_time) {
 		// Time to stop.
 		auto ownHandle = eman->remove_effect(this);
+		alpha          = 0;
 		gwin->set_all_dirty();
 		return;
 		// Ending soon so fade out
 	} else if ((stop_time - curtime) < fade_time) {
-		alpha = ((fade_time - (stop_time - curtime)) * base_alpha) / fade_time;
+		alpha = (((stop_time - curtime)) * base_alpha) / fade_time;
 	} else {
 		alpha = base_alpha;
 	}
