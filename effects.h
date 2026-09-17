@@ -390,7 +390,7 @@ public:
 class Clouds_effect : public Weather_effect {
 	int                                 num_clouds;
 	int                                 alpha     = 255;    // Clouds owned by this effect are drawn with this alpha
-	static inline const int             fade_time = 2000;
+	static inline const uint32          fade_time = 2000;
 	std::vector<std::unique_ptr<Cloud>> clouds;
 	bool                                overcast;
 
