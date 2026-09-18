@@ -60,6 +60,7 @@
 #include "gamewin.h"
 #include "gump_utils.h"
 #include "ignore_unused_variable_warning.h"
+#include "istring.h"
 #include "items.h"
 #include "keyactions.h"
 #include "keys.h"
@@ -2809,7 +2810,7 @@ void make_screenshot(bool silent) {
 	} else {
 		SDL_IOStream* dst = SDL_IOFromFile(fn, "wb");
 
-		if (gwin->get_win()->screenshot(dst)) {
+		if (gwin->get_win()->screenshot(dst, false)) {
 			cout << "Screenshot saved in " << fn << endl;
 			if (!silent) {
 				eman->center_text(get_text_msg(0x741 - msg_file_start));    // "Screenshot"
@@ -2901,7 +2902,7 @@ void BuildGameMap(BaseGameInfo* game, int mapnum) {
 				snprintf(fn, strsize, "%s/u7map%02x." EXULT_IMAGE_SUFFIX, savegamepath.c_str(), (12 * y) + x);
 				SDL_IOStream* dst = SDL_IOFromFile(fn, "wb");
 				cerr << x << "," << y << ": ";
-				gwin->get_win()->screenshot(dst);
+				gwin->get_win()->screenshot(dst, true);
 			}
 		}
 		cout << "--buildmap saved the map screenshots in " << savegamepath << endl;

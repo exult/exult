@@ -62,16 +62,16 @@ using std::endl;
  * http://www.libpng.org/pub/png/src/libpng-LICENSE.txt
  */
 
-#	if SDL_BYTEORDER == SDL_LIL_ENDIAN
-#		define rmask 0x000000FF
-#		define gmask 0x0000FF00
-#		define bmask 0x00FF0000
-#		define amask 0xFF000000
+// Choose correct Pixel Masks for the SDL Surface so it has the byte order libpng expects.
+// PNG expects bytes in RGB order
+#	if SDL_BYTEORDER == SDL_BIG_ENDIAN
+constexpr static const Uint32 Rmask = 0x00FF0000U;
+constexpr static const Uint32 Gmask = 0x0000FF00U;
+constexpr static const Uint32 Bmask = 0x000000FFU;
 #	else
-#		define rmask 0xFF000000
-#		define gmask 0x00FF0000
-#		define bmask 0x0000FF00
-#		define amask 0x000000FF
+constexpr static const Uint32 Rmask = 0x000000FFU;
+constexpr static const Uint32 Gmask = 0x0000FF00U;
+constexpr static const Uint32 Bmask = 0x00FF0000U;
 #	endif
 
 /* libpng callbacks */
@@ -86,16 +86,17 @@ static void png_write_SDL(png_structp png_ptr, png_bytep data, png_size_t length
 }
 
 static bool save_image(SDL_Surface* surface, SDL_IOStream* dst, int guardband) {
-	png_structp  png_ptr;
-	png_infop    info_ptr;
-	png_colorp   pal_ptr;
-	SDL_Palette* pal;
-	int          i, colortype;
-	png_bytep*   row_pointers;
-	const int    width  = surface->w - 2 * guardband;
-	const int    height = surface->h - 2 * guardband;
-	const int    pitch  = surface->pitch;
-	auto*        pixels = static_cast<png_bytep>(surface->pixels) + guardband + pitch * guardband;
+	png_structp                   png_ptr;
+	png_infop                     info_ptr;
+	png_colorp                    pal_ptr;
+	SDL_Palette*                  pal;
+	int                           i, colortype;
+	png_bytep*                    row_pointers;
+	const int                     width          = surface->w - 2 * guardband;
+	const int                     height         = surface->h - 2 * guardband;
+	const int                     pitch          = surface->pitch;
+	const SDL_PixelFormatDetails* surface_format = SDL_GetPixelFormatDetails(surface->format);
+	auto* pixels = static_cast<png_bytep>(surface->pixels) + guardband * surface_format->bytes_per_pixel + pitch * guardband;
 
 	/* err_ptr, err_fn, warn_fn */
 	png_ptr = png_create_write_struct(PNG_LIBPNG_VER_STRING, nullptr, png_error_SDL, nullptr);
@@ -120,8 +121,7 @@ static bool save_image(SDL_Surface* surface, SDL_IOStream* dst, int guardband) {
 	png_set_write_fn(png_ptr, dst, png_write_SDL, nullptr);
 
 	/* Prepare chunks */
-	colortype                                    = PNG_COLOR_MASK_COLOR;
-	const SDL_PixelFormatDetails* surface_format = SDL_GetPixelFormatDetails(surface->format);
+	colortype = PNG_COLOR_MASK_COLOR;
 	if ((surface_format->bytes_per_pixel > 0) && (surface_format->bytes_per_pixel <= 8) && (pal = SDL_GetSurfacePalette(surface))) {
 		colortype |= PNG_COLOR_MASK_PALETTE;
 		pal_ptr = static_cast<png_colorp>(malloc(pal->ncolors * sizeof(png_color)));
@@ -160,11 +160,17 @@ static bool save_image(SDL_Surface* surface, SDL_IOStream* dst, int guardband) {
 #	if SDL_BYTEORDER == SDL_LIL_ENDIAN
 #		define qtohl(x) (x)
 #		define qtohs(x) (x)
+constexpr static const Uint32 Rmask = 0x00FF0000U;
+constexpr static const Uint32 Gmask = 0x0000FF00U;
+constexpr static const Uint32 Bmask = 0x000000FFU;
 #	else
 #		define qtohl(x)                                                                       \
 			((Uint32)((((Uint32)(x) & 0x000000ffU) << 24) | (((Uint32)(x) & 0x0000ff00U) << 8) \
 					  | (((Uint32)(x) & 0x00ff0000U) >> 8) | (((Uint32)(x) & 0xff000000U) >> 24)))
 #		define qtohs(x) ((Uint16)((((Uint16)(x) & 0x00ff) << 8) | (((Uint16)(x) & 0xff00) >> 8)))
+constexpr static const Uint32 Rmask = 0x000000FFU;
+constexpr static const Uint32 Gmask = 0x0000FF00U;
+constexpr static const Uint32 Bmask = 0x00FF0000U;
 #	endif
 #	define htoql(x) qtohl(x)
 #	define htoqs(x) qtohs(x)
@@ -231,20 +237,20 @@ static void save_24(SDL_IOStream* dst, int width, int height, int pitch, const U
 }
 
 static bool save_image(SDL_Surface* surface, SDL_IOStream* dst, int guardband) {
-	Uint8* cmap   = nullptr;
-	int    colors = 0;
-	int    width  = surface->w - 2 * guardband;
-	int    height = surface->h - 2 * guardband;
-	int    pitch  = surface->pitch;
-	auto*  pixels = static_cast<Uint8*>(surface->pixels) + guardband + pitch * guardband;
+	Uint8*                        cmap           = nullptr;
+	int                           colors         = 0;
+	int                           width          = surface->w - 2 * guardband;
+	int                           height         = surface->h - 2 * guardband;
+	int                           pitch          = surface->pitch;
+	const SDL_PixelFormatDetails* surface_format = SDL_GetPixelFormatDetails(surface->format);
+	auto* pixels = static_cast<Uint8*>(surface->pixels) + guardband * surface_format->bytes_per_pixel + pitch * guardband;
 
 	PCX_Header header;
 	header.manufacturer = 0x0a;
 	header.version      = 5;
 	header.compression  = 1;
 
-	const SDL_PixelFormatDetails* surface_format  = SDL_GetPixelFormatDetails(surface->format);
-	const SDL_Palette*            surface_palette = SDL_GetSurfacePalette(surface);
+	const SDL_Palette* surface_palette = SDL_GetSurfacePalette(surface);
 	if (surface_palette && surface_format->bits_per_pixel == 8) {
 		colors = surface_palette->ncolors;
 		cmap   = new Uint8[3 * colors];
@@ -312,15 +318,6 @@ bool SaveIMG_RW(SDL_Surface* saveme, SDL_IOStream* dst, bool freedst, int guardb
 	cout << "Taking screenshot...";
 
 	surface = nullptr;
-#if SDL_BYTEORDER == SDL_LIL_ENDIAN
-	constexpr const Uint32 Rmask = 0x00FF0000U;
-	constexpr const Uint32 Gmask = 0x0000FF00U;
-	constexpr const Uint32 Bmask = 0x000000FFU;
-#else
-	constexpr const Uint32 Rmask = 0x000000FFU;
-	constexpr const Uint32 Gmask = 0x0000FF00U;
-	constexpr const Uint32 Bmask = 0x00FF0000U;
-#endif
 	const SDL_PixelFormatDetails* saveme_format = SDL_GetPixelFormatDetails(saveme->format);
 	if (dst) {
 		if (SDL_GetSurfacePalette(saveme)) {

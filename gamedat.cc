@@ -36,6 +36,7 @@
 #include "gamewin.h"
 #include "listfiles.h"
 #include "party.h"
+#include "scene_layer.h"
 #include "span.h"
 #include "utils.h"
 #include "version.h"
@@ -235,6 +236,7 @@ void Game_window::restore_gamedat(const char* fname    // Name of savegame file.
 	cout.flush();
 
 	load_palette_timer = 0;
+	load_screen_layer.reset();
 
 	if (user_ignored_identity_mismatch) {
 		// create new identity file if user agreed to open
@@ -999,6 +1001,7 @@ bool Game_window::restore_gamedat_zip(const char* fname    // Name of savegame f
 	cout.flush();
 
 	load_palette_timer = 0;
+	load_screen_layer.reset();
 
 	return true;
 }

@@ -28,14 +28,29 @@
  *  An 8-bit image buffer:
  */
 class Image_buffer8 : public Image_buffer {
+	bool bits_owned;
+
 	// Private ctor. for Image_window8.
-	Image_buffer8(unsigned int w, unsigned int h, Image_buffer*) : Image_buffer(w, h, 8) {}
+	Image_buffer8(unsigned int w, unsigned int h, Image_buffer*) : Image_buffer(w, h, 8), bits_owned(false) {}
 
 public:
-	Image_buffer8(unsigned int w, unsigned int h) : Image_buffer(w, h, 8) {
+	Image_buffer8(unsigned int w, unsigned int h) : Image_buffer(w, h, 8), bits_owned(true) {
 		bits = new unsigned char[w * h];
 	}
 	friend class Image_window8;
+
+	// for Image_window::Layer to create a buffer backed by a SDL_Surface with a guard band
+	Image_buffer8(unsigned int w, unsigned int h, unsigned int pitch, unsigned char* bits, int guard_band)
+			: Image_buffer(w - guard_band * 2, h - guard_band * 2, 8), bits_owned(false) {
+		this->line_width = pitch;
+		this->bits       = bits + guard_band + pitch * guard_band;
+	}
+
+	~Image_buffer8() {
+		if (!bits_owned) {
+			bits = nullptr;
+		}
+	}
 
 	/*
 	 *  Depth-independent methods:

@@ -28,6 +28,10 @@ Exult Release Checklist
         (CFBundleShortVersionString)
   - tools/aseprite_plugin/package.json
         (version)
+  - desktop/info.exult.exult.metainfo.xml
+        (<releases>)
+  - desktop/info.exult.exult.studio.metainfo.xml
+        (<releases>)
 
 * make sure the Windows installers doesn't refer to a Git snapshot
   (tools/scripts/update_version_number.sh can be used for this)

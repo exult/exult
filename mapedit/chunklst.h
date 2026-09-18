@@ -89,10 +89,6 @@ class Chunk_chooser : public Object_browser, public Shape_draw {
 	void setup_info(bool savepos = true) override;
 	void setup_shapes_info();
 
-	void set_background_color(guint32 c) override {
-		Shape_draw::set_background_color(c);
-	}
-
 	int get_selected_id() override {
 		return selected < 0 ? -1 : info[selected].num;
 	}

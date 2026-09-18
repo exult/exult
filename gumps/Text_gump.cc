@@ -30,6 +30,60 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 using std::strchr;
 
+bool Text_gump::begin_layer_paint(int drawx, int drawy, int& ox, int& oy, int& w, int& h, Image_buffer8*& prev_target) {
+	Game_window* gwin = Game_window::get_instance();
+	if (!gwin) {
+		return false;
+	}
+	const TileRect r = get_rect();
+	w                = r.w;
+	h                = r.h;
+	if (w <= 0 || h <= 0) {
+		return false;
+	}
+	if (render_layer < 0 || layer_bounds.w != w || layer_bounds.h != h) {
+		if (render_layer >= 0) {
+			gwin->destroy_layer(render_layer);
+			render_layer = -1;
+		}
+		render_layer = gwin->create_layer(typeid(*this).name(), w, h, 255, 0, text_gump_layer_z);
+		if (render_layer < 0) {
+			return false;
+		}
+		gwin->layer_set_ui_kind(render_layer, Image_window::UiLayerTextGumps);
+	}
+	layer_bounds = TileRect(0, 0, w, h);
+	gwin->layer_set_z(render_layer, text_gump_layer_z);
+
+	auto* lbuf = gwin->get_layer_ibuf(render_layer);
+	if (!lbuf) {
+		return false;
+	}
+	lbuf->clear_clip();
+	lbuf->fill8(255);
+	prev_target = gwin->push_render_target(lbuf);
+	ox          = drawx - r.x;
+	oy          = drawy - r.y;
+	return true;
+}
+
+void Text_gump::end_layer_paint(int w, int h, Image_buffer8* prev_target) {
+	Game_window* gwin = Game_window::get_instance();
+	if (!gwin || render_layer < 0) {
+		return;
+	}
+	gwin->pop_render_target(prev_target);
+	Image_window* iwin = gwin->get_win();
+	const float   f    = iwin->get_ui_scale_factor(Image_window::UiLayerTextGumps);
+	const float   dw   = static_cast<float>(w) * f;
+	const float   dh   = static_cast<float>(h) * f;
+	const float   dx   = (static_cast<float>(iwin->get_display_width()) - dw) / 2.0f;
+	const float   dy   = (static_cast<float>(iwin->get_display_height()) - dh) / 2.0f;
+	gwin->layer_set_dest(render_layer, static_cast<int>(dx), static_cast<int>(dy), static_cast<int>(dw), static_cast<int>(dh));
+	gwin->layer_set_visible(render_layer, true);
+	gwin->layer_set_dirty(render_layer);
+}
+
 Text_gump::~Text_gump() {
 	delete[] text;
 	free_render_layer();

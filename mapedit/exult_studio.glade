@@ -27786,7 +27786,7 @@
         <property name="margin-bottom">2</property>
         <property name="orientation">vertical</property>
         <child>
-          <!-- n-columns=2 n-rows=5 -->
+          <!-- n-columns=2 n-rows=7 -->
           <object class="GtkGrid" id="table23">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
@@ -27798,6 +27798,7 @@
             <property name="margin-bottom">1</property>
             <property name="hexpand">False</property>
             <property name="vexpand">False</property>
+            <property name="row-homogeneous">True</property>            
             <child>
               <object class="GtkFrame" id="frame122">
                 <property name="visible">True</property>
@@ -28192,6 +28193,222 @@
               <packing>
                 <property name="left-attach">1</property>
                 <property name="top-attach">4</property>
+                <property name="width">1</property>
+                <property name="height">1</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkFrame" id="frame_prefs_transl_label">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="halign">fill</property>
+                <property name="valign">fill</property>
+                <property name="margin-start">0</property>
+                <property name="margin-end">2</property>
+                <property name="margin-top">1</property>
+                <property name="margin-bottom">0</property>
+                <property name="hexpand">False</property>
+                <property name="vexpand">True</property>
+                <property name="label-xalign">0</property>
+                <child>
+                  <object class="GtkLabel" id="label_prefs_transl">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="margin-start">4</property>
+                    <property name="margin-end">4</property>
+                    <property name="margin-top">2</property>
+                    <property name="margin-bottom">2</property>
+                    <property name="label" translatable="yes">Translucent Rendering:</property>
+                    <property name="xalign">0.100</property>
+                  </object>
+                </child>
+              </object>
+              <packing>
+                <property name="left-attach">0</property>
+                <property name="top-attach">5</property>
+                <property name="width">1</property>
+                <property name="height">1</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkFrame" id="frame_prefs_transl">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="halign">fill</property>
+                <property name="valign">fill</property>
+                <property name="margin-start">2</property>
+                <property name="margin-end">0</property>
+                <property name="margin-top">1</property>
+                <property name="margin-bottom">0</property>
+                <property name="hexpand">False</property>
+                <property name="vexpand">False</property>
+                <property name="label-xalign">0</property>
+                <child>
+                  <object class="GtkCheckButton" id="prefs_transl">
+                    <property name="label" translatable="yes"></property>
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="receives-default">False</property>
+                    <property name="halign">fill</property>
+                    <property name="valign">center</property>
+                    <property name="margin-start">0</property>
+                    <property name="margin-end">2</property>
+                    <property name="margin-top">0</property>
+                    <property name="margin-bottom">1</property>
+                    <property name="hexpand">False</property>
+                    <property name="vexpand">False</property>
+                    <property name="use-underline">True</property>
+                    <property name="draw-indicator">True</property>
+                  </object>
+                </child>
+              </object>
+              <packing>
+                <property name="left-attach">1</property>
+                <property name="top-attach">5</property>
+                <property name="width">1</property>
+                <property name="height">1</property>
+              </packing>
+            </child>
+           <child>
+              <object class="GtkFrame" id="frame_prefs_palcyc_label">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="halign">fill</property>
+                <property name="valign">fill</property>
+                <property name="margin-start">0</property>
+                <property name="margin-end">2</property>
+                <property name="margin-top">1</property>
+                <property name="margin-bottom">0</property>
+                <property name="hexpand">False</property>
+                <property name="vexpand">True</property>
+                <property name="label-xalign">0</property>
+                <child>
+                  <object class="GtkLabel" id="label_prefs_palcyc">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="margin-start">4</property>
+                    <property name="margin-end">4</property>
+                    <property name="margin-top">2</property>
+                    <property name="margin-bottom">2</property>
+                    <property name="label" translatable="yes">Palette Cycling:</property>
+                    <property name="xalign">0.100</property>
+                  </object>
+                </child>
+              </object>
+              <packing>
+                <property name="left-attach">0</property>
+                <property name="top-attach">6</property>
+                <property name="width">1</property>
+                <property name="height">1</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkFrame" id="frame_prefs_palcyc">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="halign">fill</property>
+                <property name="valign">fill</property>
+                <property name="margin-start">2</property>
+                <property name="margin-end">0</property>
+                <property name="margin-top">1</property>
+                <property name="margin-bottom">0</property>
+                <property name="hexpand">False</property>
+                <property name="vexpand">False</property>
+                <property name="label-xalign">0</property>
+                <child>
+                  <object class="GtkCheckButton" id="prefs_palcyc">
+                    <property name="label" translatable="yes"></property>
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="receives-default">False</property>
+                    <property name="halign">fill</property>
+                    <property name="valign">center</property>
+                    <property name="margin-start">0</property>
+                    <property name="margin-end">2</property>
+                    <property name="margin-top">0</property>
+                    <property name="margin-bottom">1</property>
+                    <property name="hexpand">False</property>
+                    <property name="vexpand">False</property>
+                    <property name="use-underline">True</property>
+                    <property name="draw-indicator">True</property>
+                  </object>
+                </child>
+              </object>
+              <packing>
+                <property name="left-attach">1</property>
+                <property name="top-attach">6</property>
+                <property name="width">1</property>
+                <property name="height">1</property>
+              </packing>
+            </child>
+           <child>
+              <object class="GtkFrame" id="frame_prefs_animsh_label">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="halign">fill</property>
+                <property name="valign">fill</property>
+                <property name="margin-start">0</property>
+                <property name="margin-end">2</property>
+                <property name="margin-top">1</property>
+                <property name="margin-bottom">0</property>
+                <property name="hexpand">False</property>
+                <property name="vexpand">True</property>
+                <property name="label-xalign">0</property>
+                <child>
+                  <object class="GtkLabel" id="label_prefs_animsh">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="margin-start">4</property>
+                    <property name="margin-end">4</property>
+                    <property name="margin-top">2</property>
+                    <property name="margin-bottom">2</property>
+                    <property name="label" translatable="yes">Shape Animations:</property>
+                    <property name="xalign">0.100</property>
+                  </object>
+                </child>
+              </object>
+              <packing>
+                <property name="left-attach">0</property>
+                <property name="top-attach">7</property>
+                <property name="width">1</property>
+                <property name="height">1</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkFrame" id="frame_prefs_animsh">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="halign">fill</property>
+                <property name="valign">fill</property>
+                <property name="margin-start">2</property>
+                <property name="margin-end">0</property>
+                <property name="margin-top">1</property>
+                <property name="margin-bottom">0</property>
+                <property name="hexpand">False</property>
+                <property name="vexpand">False</property>
+                <property name="label-xalign">0</property>
+                <child>
+                  <object class="GtkCheckButton" id="prefs_animsh">
+                    <property name="label" translatable="yes"></property>
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="receives-default">False</property>
+                    <property name="halign">fill</property>
+                    <property name="valign">center</property>
+                    <property name="margin-start">0</property>
+                    <property name="margin-end">2</property>
+                    <property name="margin-top">0</property>
+                    <property name="margin-bottom">1</property>
+                    <property name="hexpand">False</property>
+                    <property name="vexpand">False</property>
+                    <property name="use-underline">True</property>
+                    <property name="draw-indicator">True</property>
+                  </object>
+                </child>
+              </object>
+              <packing>
+                <property name="left-attach">1</property>
+                <property name="top-attach">7</property>
                 <property name="width">1</property>
                 <property name="height">1</property>
               </packing>

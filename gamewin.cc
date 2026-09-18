@@ -73,6 +73,7 @@
 #include "objiter.h"
 #include "party.h"
 #include "paths.h"
+#include "scene_layer.h"
 #include "schedule.h"
 #include "spellbook.h"
 #include "touchui.h"
@@ -515,7 +516,6 @@ Game_window::~Game_window() {
 	dragging = nullptr;
 	delete effects;
 	effects = nullptr;
-	delete win;
 	delete pal;
 	for (auto* map : maps) {
 		if (map) {
@@ -523,6 +523,7 @@ Game_window::~Game_window() {
 		}
 	}
 	delete usecode;
+	delete win;
 	delete clock;
 	delete npc_prox;
 	delete render;
@@ -2922,6 +2923,7 @@ void Game_window::setup_game(bool map_editing) {
 	pal->fade_out(c_fade_out_time);
 	clear_screen(true);
 	load_palette_timer = 0;
+	load_screen_layer.reset();
 
 	// note: we had to stop the plasma here already, because init_readied
 	// and activate_eggs may update the screen through usecode functions
@@ -3163,7 +3165,51 @@ void Game_window::setup_load_palette() {
 	if (GAME_BG) {
 		pal->load(INTROPAL_DAT, PATCH_INTROPAL, 2);
 	} else if (GAME_SI) {
-		pal->load(MAINSHP_FLX, PATCH_MAINSHP, 1);
+		Shape_frame* loadscreen = game->get_menu_shapes()->get_shape(0, 0);
+
+		// Show the loadscreen on a full screen scene layer
+		if (loadscreen) {
+			load_screen_layer = std::make_unique<Scene_layer>(320, 200);
+			load_screen_layer->begin_frame();
+			loadscreen->paint(0, 0);
+			load_screen_layer->end_frame();
+		}
+
+		// SI Beta doesn't have the load screen palette so create an appropriate one for the plasma
+		if (GAME_SIB) {
+			// The needed colour ranges are created by interpolating between these colours
+			uint8 colours[][3] = {
+					{00,   00, 0xFC}, 
+                    {00, 0x2C, 0xFC},
+                    {00, 0x5C, 0xFC},
+                    {00, 0x90, 0xFC},
+                    {00, 0x90, 0xFC},
+                    {00, 0x44, 0xFC},
+			}, rgb[3] = {};
+
+			for (int i = 0; i < SI_PLASMA_CYCLE_RANGE; i++) {
+				int range = std::min<int>(std::size(colours) - 1, i / 16);
+
+				// Next range is valid to interpolate the colour
+				if (range < 5) {
+					for (int c = 0; c < 3; c++) {
+						int a  = colours[range][c];
+						int b  = colours[range + 1][c];
+						rgb[c] = ((b << 4) + (a - b) * (i & 0xF)) >> 4;
+					}
+				}
+				// next range is not valid so just use this ranges start colour
+				else {
+					for (int c = 0; c < 3; c++) {
+						rgb[c] = colours[range][c];
+					}
+				}
+				pal->set_color(i + SI_PLASMA_START_COLOR, (rgb[0] >> 2) & 0x3F, (rgb[1] >> 2) & 0x3F, (rgb[2] >> 2) & 0x3F);
+			}
+
+		} else {
+			pal->load(MAINSHP_FLX, PATCH_MAINSHP, 1);
+		}
 	}
 
 	pal->apply();

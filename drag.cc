@@ -333,7 +333,7 @@ void Dragging_info::paint_obj_to_layer() {
 			gwin->destroy_layer(item_layer);
 			item_layer = -1;
 		}
-		item_layer = gwin->create_layer(w, h, 255, 0, item_layer_z);
+		item_layer = gwin->create_layer("item", w, h, 255, 0, item_layer_z);
 		if (item_layer < 0) {
 			return;
 		}

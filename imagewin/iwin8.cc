@@ -48,6 +48,7 @@ Boston, MA  02111-1307, USA.
 #include <algorithm>
 #include <climits>
 #include <cstring>
+#include <iostream>
 
 using std::make_unique;
 using std::rotate;
@@ -248,6 +249,30 @@ uint32 Image_window8::layer_argb_pixel(const Layer& layer, unsigned char p) cons
 		   | static_cast<uint32>(pal[3 * p + 2]);
 }
 
+static void fill_guardband(void* buffer, int width, int height, int pitch, int gbsize, uint32 val) {
+	uint8* buffer8 = reinterpret_cast<uint8*>(buffer);
+	if (gbsize < 0) {
+		buffer8 += gbsize + pitch * gbsize;
+		gbsize = -gbsize;
+	}
+
+	// left and right guardbands
+	for (int y = 0; y < height; y++) {
+		uint32* row = reinterpret_cast<uint32*>(buffer8 + y * pitch);
+		std::fill_n(row, gbsize, val);
+		std::fill_n(row + width + gbsize, gbsize, val);
+	}
+	// top and bottom guardbands
+	for (int y = 0; y < gbsize; y++) {
+		// Top guardband
+		uint32* row = reinterpret_cast<uint32*>(buffer8 + y * pitch);
+		std::fill_n(row, width + gbsize * 2, val);
+		// Bottom guardband
+		row = reinterpret_cast<uint32*>(buffer8 + (gbsize + height + y) * pitch);
+		std::fill_n(row, width + gbsize * 2, val);
+	}
+}
+
 /*
  *  Convert a layer's 8-bit paletted pixels into its ARGB texture,
  *  using the current palette.  The layer's transparent index is written as
@@ -260,20 +285,40 @@ void Image_window8::refresh_layer(Layer& layer) {
 	if (layer.render_scale > 1 && refresh_layer_scaled(layer, layer.render_scale)) {
 		return;
 	}
-	const int            w      = layer.get_width();
-	const int            h      = layer.get_height();
-	Image_buffer*        b      = layer.get_ibuf();
-	const unsigned char* src    = b->get_bits();
-	const int            pitch  = static_cast<int>(b->get_line_width());
-	auto                 pixels = make_unique<uint32[]>(static_cast<size_t>(w) * h);
+	const int            w            = layer.get_width();
+	const int            h            = layer.get_height();
+	SDL_Surface*         s            = layer.surface;
+	const size_t         spitch       = s->pitch;
+	const unsigned char* src          = reinterpret_cast<unsigned char*>(s->pixels) + spitch * guard_band + guard_band;
+	char*                pixels       = nullptr;
+	int                  pixels_pitch = 0;
+
+	if (!SDL_LockTexture(layer.texture, nullptr, reinterpret_cast<void**>(&pixels), &pixels_pitch)) {
+		const char* err = SDL_GetError();
+		std::cerr << "refresh_layer: SDL_LockTexture failed trying to lock texture for layer " << layer.get_name() << ":"
+				  << (err ? err : "") << std::endl;
+		return;
+	}
+
+	fill_guardband(pixels, w, h, pixels_pitch, guard_band, 0);
+
+	uint32 palette[256];
+	for (int i = 0; i < 256; i++) {
+		palette[i] = layer_argb_pixel(layer, i);
+	}
+
+	const size_t ppitch = pixels_pitch;
+	pixels += ppitch * guard_band + guard_band * sizeof(uint32);
 	for (int y = 0; y < h; y++) {
-		const unsigned char* srow = src + static_cast<size_t>(y) * pitch;
-		uint32*              drow = pixels.get() + static_cast<size_t>(y) * w;
-		for (int x = 0; x < w; x++) {
-			drow[x] = layer_argb_pixel(layer, srow[x]);
+		const unsigned char* srow = src + y * spitch;
+		uint32*              drow = reinterpret_cast<uint32*>(pixels + y * ppitch);
+		uint32*              end  = drow + w;
+
+		while (drow != end) {
+			*drow++ = palette[*srow++];
 		}
 	}
-	SDL_UpdateTexture(layer.texture, nullptr, pixels.get(), w * static_cast<int>(sizeof(uint32)));
+	SDL_UnlockTexture(layer.texture);
 }
 
 /*
@@ -284,20 +329,62 @@ void Image_window8::refresh_layer(Layer& layer) {
  *  source so it stays crisp and masks any colour bleed at transparent edges.
  */
 bool Image_window8::refresh_layer_scaled(Layer& layer, int factor) {
-	const int            gb     = guard_band;    // Scaler reads a padded border.
 	const int            logw   = layer.get_width();
 	const int            logh   = layer.get_height();
-	Image_buffer*        b      = layer.get_ibuf();
-	const unsigned char* src    = b->get_bits();
-	const int            spitch = static_cast<int>(b->get_line_width());
-	const unsigned char  transp = layer.get_transparent();
-	const bool           has_ov = !layer.index_argb.empty();
-	const uint32*        ov     = has_ov ? layer.index_argb.data() : nullptr;
-	const int            tex_w  = logw * factor;
-	const int            tex_h  = logh * factor;
+	SDL_Surface*         lsurf  = layer.surface;
+	const size_t         spitch = static_cast<size_t>(lsurf->pitch);
+	unsigned char* const src    = reinterpret_cast<unsigned char*>(lsurf->pixels) + guard_band + guard_band * spitch;
+
+	const unsigned char transp = layer.get_transparent();
+	const bool          has_ov = !layer.index_argb.empty();
+	const uint32*       ov     = has_ov ? layer.index_argb.data() : nullptr;
+	const int           tex_w  = logw * factor;
+	const int           tex_h  = logh * factor;
+	const int           ssw    = ((logw + 3) & ~3) + 2 * guard_band;
+	const int           ssh    = logh + 2 * guard_band;
+
+	// Copy edge pixels into Source surface guardband
+
+	// left and right guardbands
+	for (int y = 0; y < logh; y++) {
+		uint8* row = src + y * spitch;
+		memset(row - guard_band, *row, guard_band);
+		memset(row + logw, row[logw - 1], guard_band);
+	}
+	// top and bottom guardbands
+	for (int y = 0; y < guard_band; y++) {
+		// Top guardband
+		uint8* drow = reinterpret_cast<unsigned char*>(lsurf->pixels) + y * spitch;
+		uint8* srow = reinterpret_cast<unsigned char*>(lsurf->pixels) + guard_band * spitch;
+		memcpy(drow, srow, lsurf->w);
+		// Bottom guardband
+		srow = reinterpret_cast<unsigned char*>(lsurf->pixels) + (guard_band + logh - 1) * spitch;
+		drow = reinterpret_cast<unsigned char*>(lsurf->pixels) + (guard_band + logh + y) * spitch;
+		memcpy(drow, srow, lsurf->w);
+	}
+
 	// Fixed-palette override for this layer, if any (else the live palette).
 	const std::vector<unsigned char>& pal_ov      = get_ui_cfg(layer.ui_kind).ui_palette_colors;
 	const unsigned char*              palette_rgb = pal_ov.empty() ? colors : pal_ov.data();
+
+	SDL_Palette* sdl_pal = SDL_GetSurfacePalette(lsurf);
+	if (!sdl_pal) {
+		return false;
+	}
+	SDL_Color cols[256];
+	for (int i = 0; i < 256; i++) {
+		if (has_ov && ov[i] != 0) {    // Translucent slot -> blend colour.
+			cols[i].r = GammaRed[(ov[i] >> 16) & 0xff];
+			cols[i].g = GammaGreen[(ov[i] >> 8) & 0xff];
+			cols[i].b = GammaBlue[ov[i] & 0xff];
+		} else {
+			cols[i].r = palette_rgb[3 * i];
+			cols[i].g = palette_rgb[3 * i + 1];
+			cols[i].b = palette_rgb[3 * i + 2];
+		}
+		cols[i].a = 255;
+	}
+	SDL_SetPaletteColors(sdl_pal, cols, 0, 256);
 
 	// A fully opaque layer (a full-screen scene) has no transparent index and no
 	// translucency, so skip the transparency matting entirely: scale the colours
@@ -305,190 +392,141 @@ bool Image_window8::refresh_layer_scaled(Layer& layer, int factor) {
 	// scene's legitimate use of the 'transparent' index (e.g. index 255 in an
 	// FLI frame) would be matted away to see-through.
 	if (layer.is_opaque()) {
-		const int    ossw  = ((logw + 3) & ~3) + 2 * gb;
-		const int    ossh  = logh + 2 * gb;
-		SDL_Surface* osrc8 = SDL_CreateSurface(ossw, ossh, SDL_PIXELFORMAT_INDEX8);
-		SDL_Surface* odst  = SDL_CreateSurface(ossw * factor, ossh * factor, SDL_PIXELFORMAT_ARGB8888);
-		bool         done  = false;
-		if (osrc8 && odst) {
-			SDL_Palette* sdl_pal = SDL_CreateSurfacePalette(osrc8);
-			if (sdl_pal) {
-				SDL_Color cols[256];
-				for (int i = 0; i < 256; i++) {
-					cols[i].r = palette_rgb[3 * i];
-					cols[i].g = palette_rgb[3 * i + 1];
-					cols[i].b = palette_rgb[3 * i + 2];
-					cols[i].a = 255;
-				}
-				SDL_SetPaletteColors(sdl_pal, cols, 0, 256);
-				uint8*    sp       = static_cast<uint8*>(osrc8->pixels);
-				const int sp_pitch = osrc8->pitch;
-				// Copy content at (gb,gb), replicating edge pixels into the guard
-				// band so the scaler does not bleed a stray colour at the border.
-				for (int y = 0; y < logh; y++) {
-					uint8*               drow = sp + static_cast<size_t>(y + gb) * sp_pitch;
-					const unsigned char* srow = src + static_cast<size_t>(y) * spitch;
-					memset(drow, srow[0], gb);
-					memcpy(drow + gb, srow, logw);
-					memset(drow + gb + logw, srow[logw - 1], ossw - gb - logw);
-				}
-				for (int y = 0; y < gb; y++) {
-					memcpy(sp + static_cast<size_t>(y) * sp_pitch, sp + static_cast<size_t>(gb) * sp_pitch, ossw);
-				}
-				for (int y = logh + gb; y < ossh; y++) {
-					memcpy(sp + static_cast<size_t>(y) * sp_pitch, sp + static_cast<size_t>(logh + gb - 1) * sp_pitch, ossw);
-				}
-				if (scale_layer_color(layer, osrc8, logw, logh, odst)) {
-					auto          texpix = make_unique<uint32[]>(static_cast<size_t>(tex_w) * tex_h);
-					const uint32* pix    = static_cast<const uint32*>(odst->pixels);
-					const size_t  dpitch = static_cast<size_t>(odst->pitch) / sizeof(uint32);
-					const size_t  sgb    = static_cast<size_t>(factor) * gb;
-					for (int y = 0; y < tex_h; y++) {
-						const uint32* row  = pix + (static_cast<size_t>(y) + sgb) * dpitch + sgb;
-						uint32*       trow = texpix.get() + static_cast<size_t>(y) * tex_w;
-						for (int x = 0; x < tex_w; x++) {
-							trow[x] = 0xff000000u | (row[x] & 0x00ffffffu);
-						}
-					}
-					SDL_UpdateTexture(layer.texture, nullptr, texpix.get(), tex_w * static_cast<int>(sizeof(uint32)));
-					done = true;
-				}
-			}
+		SDL_Surface* odst = nullptr;
+		if (!SDL_LockTextureToSurface(layer.texture, nullptr, &odst) || !odst) {
+			const char* err = SDL_GetError();
+			std::cerr << "SDL_LockTextureToSurface failed trying to lock texture for layer " << layer.get_name() << ":"
+					  << (err ? err : "") << std::endl;
+
+			return false;
 		}
-		if (odst) {
-			SDL_DestroySurface(odst);
+		if (odst->w < ssw * factor || odst->h < ssh * factor) {
+			std::cerr << " odst surface size too small after locking texture for layer '" << layer.get_name() << "' expected "
+					  << (ssw * factor) << "x" << (ssh * factor) << " got " << odst->w << "x" << odst->h << std::endl;
+			SDL_UnlockTexture(layer.texture);
+			return false;
 		}
-		if (osrc8) {
-			SDL_DestroySurface(osrc8);
+		fill_guardband(odst->pixels, tex_w, tex_h, odst->pitch, guard_band * factor, 0);
+		bool done = false;
+		if (scale_layer_color(layer, lsurf, logw, logh, odst)) {
+			auto texpix = make_unique<uint32[]>(static_cast<size_t>(tex_w) * tex_h);
+
+			done = true;
 		}
+
+		SDL_UnlockTexture(layer.texture);
 		if (done) {
 			return true;
 		}
 		// If the fast path failed, fall through to the normal (matting) path.
 	}
 
-	// Guard-banded 8-bit source (content at (gb,gb)) and a scaled 32-bit dest.
-	const int    ssw    = ((logw + 3) & ~3) + 2 * gb;
-	const int    ssh    = logh + 2 * gb;
-	SDL_Surface* src8   = SDL_CreateSurface(ssw, ssh, SDL_PIXELFORMAT_INDEX8);
-	SDL_Surface* dst32  = SDL_CreateSurface(ssw * factor, ssh * factor, SDL_PIXELFORMAT_ARGB8888);
-	SDL_Surface* dst32b = SDL_CreateSurface(ssw * factor, ssh * factor, SDL_PIXELFORMAT_ARGB8888);
+	SDL_Surface* dst32  = get_layer_dst32_surface(0, ssw * factor, ssh * factor);
+	SDL_Surface* dst32b = get_layer_dst32_surface(1, ssw * factor, ssh * factor);
 	SDL_Surface* dst32c = nullptr;
 	bool         ok     = false;
 	bool         have3  = false;
-	if (src8 && dst32 && dst32b) {
-		SDL_Palette* sdl_pal = SDL_CreateSurfacePalette(src8);
-		if (sdl_pal) {
-			SDL_Color cols[256];
-			for (int i = 0; i < 256; i++) {
-				if (has_ov && ov[i] != 0) {    // Translucent slot -> blend colour.
-					cols[i].r = GammaRed[(ov[i] >> 16) & 0xff];
-					cols[i].g = GammaGreen[(ov[i] >> 8) & 0xff];
-					cols[i].b = GammaBlue[ov[i] & 0xff];
-				} else {
-					cols[i].r = palette_rgb[3 * i];
-					cols[i].g = palette_rgb[3 * i + 1];
-					cols[i].b = palette_rgb[3 * i + 2];
-				}
-				cols[i].a = 255;
-			}
-			SDL_SetPaletteColors(sdl_pal, cols, 0, 256);
-			// Pad with the transparent index, then copy the content.
-			uint8*    sp       = static_cast<uint8*>(src8->pixels);
-			const int sp_pitch = src8->pitch;
-			for (int y = 0; y < ssh; y++) {
-				memset(sp + static_cast<size_t>(y) * sp_pitch, transp, ssw);
-			}
-			for (int y = 0; y < logh; y++) {
-				memcpy(sp + static_cast<size_t>(y + gb) * sp_pitch + gb, src + static_cast<size_t>(y) * spitch, logw);
-			}
-			// CONSENSUS DIFFERENCE MATTING: run the colour scaler with a pure
-			// red, then a pure green fill under the transparent index. Wherever
-			// the two outputs differ, the difference measures how much
-			// transparent colour the scaler mixed into that pixel; from that we
-			// recover the TRUE un-bled colour and the scaler's own smooth edge
-			// coverage. Two passes are enough when they agree everywhere; only
-			// if some pixel disagrees (the shape contains a colour close to red
-			// or green, making the edge-directed scalers branch differently in
-			// that pass) do we run a THIRD pass with a blue fill, and each
-			// pixel then picks whichever PAIR of passes agrees best. So the
-			// common case costs two scaler runs, and tricky shapes three.
-			SDL_Color fill;
-			fill.a = 255;
-			fill.r = 255;
-			fill.g = 0;
-			fill.b = 0;    // Pass 1: red under transparency.
-			SDL_SetPaletteColors(sdl_pal, &fill, transp, 1);
-			const bool ok1 = scale_layer_color(layer, src8, logw, logh, dst32);
-			fill.r         = 0;
-			fill.g         = 255;
-			fill.b         = 0;    // Pass 2: green under transparency.
-			SDL_SetPaletteColors(sdl_pal, &fill, transp, 1);
-			const bool ok2 = scale_layer_color(layer, src8, logw, logh, dst32b);
-			ok             = ok1 && ok2;
-			if (ok) {
-				// Pre-scan: do the red/green passes disagree anywhere? (Early
-				// exit on the first such pixel; this is far cheaper than an
-				// unconditional third scaler run.)
-				const uint32* pix1             = static_cast<const uint32*>(dst32->pixels);
-				const uint32* pix2             = static_cast<const uint32*>(dst32b->pixels);
-				const size_t  dpitch           = static_cast<size_t>(dst32->pitch) / sizeof(uint32);
-				const size_t  scaled_guardband = static_cast<size_t>(factor) * static_cast<size_t>(gb);
-				bool          needs3           = false;
-				for (int y = 0; y < tex_h && !needs3; y++) {
-					const size_t  roff = (static_cast<size_t>(y) + scaled_guardband) * dpitch + scaled_guardband;
-					const uint32* row1 = pix1 + roff;
-					const uint32* row2 = pix2 + roff;
-					for (int x = 0; x < tex_w; x++) {
-						const uint32 p1   = row1[x];
-						const uint32 p2   = row2[x];
-						const int    t12a = static_cast<int>((p1 >> 16) & 0xff) - static_cast<int>((p2 >> 16) & 0xff);
-						const int    t12b = static_cast<int>((p2 >> 8) & 0xff) - static_cast<int>((p1 >> 8) & 0xff);
-						if (std::abs(t12a - t12b) > 96) {
-							needs3 = true;
-							break;
-						}
+	if (dst32 && dst32b) {
+		// CONSENSUS DIFFERENCE MATTING: run the colour scaler with a pure
+		// red, then a pure green fill under the transparent index. Wherever
+		// the two outputs differ, the difference measures how much
+		// transparent colour the scaler mixed into that pixel; from that we
+		// recover the TRUE un-bled colour and the scaler's own smooth edge
+		// coverage. Two passes are enough when they agree everywhere; only
+		// if some pixel disagrees (the shape contains a colour close to red
+		// or green, making the edge-directed scalers branch differently in
+		// that pass) do we run a THIRD pass with a blue fill, and each
+		// pixel then picks whichever PAIR of passes agrees best. So the
+		// common case costs two scaler runs, and tricky shapes three.
+		SDL_Color fill;
+		fill.a = 255;
+		fill.r = 255;
+		fill.g = 0;
+		fill.b = 0;    // Pass 1: red under transparency.
+		SDL_SetPaletteColors(sdl_pal, &fill, transp, 1);
+		const bool ok1 = scale_layer_color(layer, lsurf, logw, logh, dst32);
+		fill.r         = 0;
+		fill.g         = 255;
+		fill.b         = 0;    // Pass 2: green under transparency.
+		SDL_SetPaletteColors(sdl_pal, &fill, transp, 1);
+		const bool ok2 = scale_layer_color(layer, lsurf, logw, logh, dst32b);
+		ok             = ok1 && ok2;
+		if (ok) {
+			// Pre-scan: do the red/green passes disagree anywhere? (Early
+			// exit on the first such pixel; this is far cheaper than an
+			// unconditional third scaler run.)
+			const uint32* pix1   = static_cast<const uint32*>(dst32->pixels);
+			const uint32* pix2   = static_cast<const uint32*>(dst32b->pixels);
+			const size_t  dpitch = static_cast<size_t>(dst32->pitch) / sizeof(uint32);
+			bool          needs3 = false;
+			for (int y = 0; y < tex_h && !needs3; y++) {
+				const size_t  roff = (static_cast<size_t>(y)) * dpitch;
+				const uint32* row1 = pix1 + roff;
+				const uint32* row2 = pix2 + roff;
+				for (int x = 0; x < tex_w; x++) {
+					const uint32 p1   = row1[x];
+					const uint32 p2   = row2[x];
+					const int    t12a = static_cast<int>((p1 >> 16) & 0xff) - static_cast<int>((p2 >> 16) & 0xff);
+					const int    t12b = static_cast<int>((p2 >> 8) & 0xff) - static_cast<int>((p1 >> 8) & 0xff);
+					if (std::abs(t12a - t12b) > 96) {
+						needs3 = true;
+						break;
 					}
 				}
-				if (needs3) {
-					dst32c = SDL_CreateSurface(ssw * factor, ssh * factor, SDL_PIXELFORMAT_ARGB8888);
-					if (dst32c) {
-						fill.r = 0;
-						fill.g = 0;
-						fill.b = 255;    // Pass 3: blue under transparency.
-						SDL_SetPaletteColors(sdl_pal, &fill, transp, 1);
-						have3 = scale_layer_color(layer, src8, logw, logh, dst32c);
-					}
+			}
+			if (needs3) {
+				dst32c = get_layer_dst32_surface(2, ssw * factor, ssh * factor);
+				if (dst32c) {
+					fill.r = 0;
+					fill.g = 0;
+					fill.b = 255;    // Pass 3: blue under transparency.
+					SDL_SetPaletteColors(sdl_pal, &fill, transp, 1);
+					have3 = scale_layer_color(layer, lsurf, logw, logh, dst32c);
 				}
 			}
 		}
 	}
 
-	auto texpix = make_unique<uint32[]>(static_cast<size_t>(tex_w) * tex_h);
+	int   texpix_pitch;
+	char* texpix = nullptr;
+	if (!SDL_LockTexture(layer.texture, nullptr, reinterpret_cast<void**>(&texpix), &texpix_pitch)) {
+		const char* err = SDL_GetError();
+		std::cerr << "SDL_LockTexture failed trying to lock texture for layer " << layer.get_name() << ":" << (err ? err : "")
+				  << std::endl;
+
+		return false;
+	}
+	fill_guardband(texpix, tex_w, tex_h, texpix_pitch, guard_band * factor, 0);
+
 	if (ok) {
-		const uint32* pix1             = static_cast<const uint32*>(dst32->pixels);
-		const uint32* pix2             = static_cast<const uint32*>(dst32b->pixels);
-		const uint32* pix3             = have3 ? static_cast<const uint32*>(dst32c->pixels) : nullptr;
-		const size_t  dpitch           = static_cast<size_t>(dst32->pitch) / sizeof(uint32);
-		const size_t  scaled_guardband = static_cast<size_t>(factor) * static_cast<size_t>(gb);
+		const uint32* pix1    = static_cast<const uint32*>(dst32->pixels);
+		const uint32* pix2    = static_cast<const uint32*>(dst32b->pixels);
+		const uint32* pix3    = have3 ? static_cast<const uint32*>(dst32c->pixels) : nullptr;
+		const size_t  dpitch  = static_cast<size_t>(dst32->pitch) / sizeof(uint32);
+		const size_t  dpitchb = static_cast<size_t>(dst32b->pitch) / sizeof(uint32);
+		const size_t  dpitchc = have3 ? static_cast<size_t>(dst32c->pitch) / sizeof(uint32) : 0;
 		for (int y = 0; y < tex_h; y++) {
-			const int            sy   = y / factor;
-			const size_t         roff = (static_cast<size_t>(y) + scaled_guardband) * dpitch + scaled_guardband;
-			const uint32*        row1 = pix1 + roff;
-			const uint32*        row2 = pix2 + roff;
-			const uint32*        row3 = have3 ? pix3 + roff : nullptr;
-			const unsigned char* srow = src + static_cast<size_t>(sy) * spitch;
-			uint32*              trow = texpix.get() + static_cast<size_t>(y) * tex_w;
+			int                  realy = y + factor * guard_band;
+			const int            sy    = y / factor;
+			const size_t         roff1 = (static_cast<size_t>(realy)) * dpitch;
+			const size_t         roff2 = (static_cast<size_t>(realy)) * dpitchb;
+			const size_t         roff3 = (static_cast<size_t>(realy)) * dpitchc;
+			const uint32*        row1  = pix1 + roff1;
+			const uint32*        row2  = pix2 + roff2;
+			const uint32*        row3  = have3 ? pix3 + roff3 : nullptr;
+			const unsigned char* srow  = src + static_cast<size_t>(sy) * spitch;
+			uint32*              trow  = reinterpret_cast<uint32*>(texpix + static_cast<size_t>(realy) * texpix_pitch);
 			for (int x = 0; x < tex_w; x++) {
-				const unsigned char idx = srow[x / factor];
-				const uint32        p1  = row1[x];
-				const uint32        p2  = row2[x];
-				const int           r1  = (p1 >> 16) & 0xff;
-				const int           g1  = (p1 >> 8) & 0xff;
-				const int           b1  = p1 & 0xff;
-				const int           r2  = (p2 >> 16) & 0xff;
-				const int           g2  = (p2 >> 8) & 0xff;
-				const int           b2  = p2 & 0xff;
+				int                 realx = x + factor * guard_band;
+				const unsigned char idx   = srow[x / factor];
+				const uint32        p1    = row1[realx];
+				const uint32        p2    = row2[realx];
+				const int           r1    = (p1 >> 16) & 0xff;
+				const int           g1    = (p1 >> 8) & 0xff;
+				const int           b1    = p1 & 0xff;
+				const int           r2    = (p2 >> 16) & 0xff;
+				const int           g2    = (p2 >> 8) & 0xff;
+				const int           b2    = p2 & 0xff;
 				// For each pair of passes, two independent estimates of the
 				// transparent fraction t (0..255) from the channels where the
 				// fills differ by 255. If a pair's estimates agree, both its
@@ -499,7 +537,7 @@ bool Image_window8::refresh_layer_scaled(Layer& layer, int factor) {
 				int       use   = 1;                         // Which pass to un-blend from (1 or 2).
 				int       sbest = std::abs(t12a - t12b);
 				if (have3) {
-					const uint32 p3   = row3[x];
+					const uint32 p3   = row3[realx];
 					const int    r3   = (p3 >> 16) & 0xff;
 					const int    g3   = (p3 >> 8) & 0xff;
 					const int    b3   = p3 & 0xff;
@@ -560,31 +598,20 @@ bool Image_window8::refresh_layer_scaled(Layer& layer, int factor) {
 					intrinsic = 255;    // Opaque (or an outer AA pixel).
 				}
 				const uint32 a = static_cast<uint32>(cov * intrinsic / 255);
-				trow[x]        = (a << 24) | rgb;
+				trow[realx]    = (a << 24) | rgb;
 			}
 		}
 	} else {
 		// Fallback: nearest-neighbour upscale of the 1:1 conversion.
 		for (int y = 0; y < tex_h; y++) {
 			const unsigned char* srow = src + static_cast<size_t>(y / factor) * spitch;
-			uint32*              trow = texpix.get() + static_cast<size_t>(y) * tex_w;
+			uint32*              trow = reinterpret_cast<uint32*>(texpix + static_cast<size_t>(y) * texpix_pitch);
 			for (int x = 0; x < tex_w; x++) {
 				trow[x] = layer_argb_pixel(layer, srow[x / factor]);
 			}
 		}
 	}
-	SDL_UpdateTexture(layer.texture, nullptr, texpix.get(), tex_w * static_cast<int>(sizeof(uint32)));
-	if (dst32c) {
-		SDL_DestroySurface(dst32c);
-	}
-	if (dst32b) {
-		SDL_DestroySurface(dst32b);
-	}
-	if (dst32) {
-		SDL_DestroySurface(dst32);
-	}
-	if (src8) {
-		SDL_DestroySurface(src8);
-	}
+	SDL_UnlockTexture(layer.texture);
+
 	return true;
 }

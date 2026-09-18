@@ -544,7 +544,10 @@ Gump_button* UIOptions_gump::on_button(int mx, int my) {
 
 void UIOptions_gump::build_buttons() {
 	for (int i = id_first_setting; i < id_count; ++i) {
-		buttons[i].reset();
+		// Don't kill the universal button as it may have called us
+		if (i != id_universal) {
+			buttons[i].reset();
+		}
 	}
 
 	std::vector<std::string> size_text = {Strings::Full320x200_(), Strings::Medium420x263_(), Strings::Auto0x0_()};
@@ -581,9 +584,15 @@ void UIOptions_gump::build_buttons() {
 			get_button_pos_for_label(Strings::Fillscaler_()), yForRow(row_fill_scl), 108);
 
 	const std::vector<std::string> yes_no = {Strings::No(), Strings::Yes()};
-	buttons[id_universal]                 = std::make_unique<UIOptions_toggle>(
-            this, &UIOptions_gump::toggle_universal, yes_no, universal ? 1 : 0, get_button_pos_for_label(Strings::AllLayers_()),
-            yForRow(row_universal), 44);
+	// Only create the button if it doesn't exist
+	// If it does exist just change the frame
+	if (auto button = dynamic_cast<UIOptions_toggle*>(buttons[id_universal].get())) {
+		button->set_frame(universal ? 1 : 0);
+	} else {
+		buttons[id_universal] = std::make_unique<UIOptions_toggle>(
+				this, &UIOptions_gump::toggle_universal, yes_no, universal ? 1 : 0, get_button_pos_for_label(Strings::AllLayers_()),
+				yForRow(row_universal), 44);
+	}
 
 	buttons[id_palette] = std::make_unique<UIOptions_toggle>(
 			this, &UIOptions_gump::toggle_palette, palette_options(), palette_to_selection(global_cfg.palette),

@@ -78,6 +78,12 @@ public:
 		UiLayerDisplayMap,
 		UiLayerTextEffects,
 		UiLayerFullScreenScene,
+
+		// Layer is drawn fullscreen with bilinear fill scaling.
+		UiLayerFullScreenBilinear,
+		// Layer is drawn fullscreen with point fill scaling
+		UiLayerFullScreenPoint,
+
 		NumUiLayerKinds
 	};
 
@@ -142,6 +148,8 @@ public:
 		int      scaler      = 0;
 		FillMode fill_mode   = Fit;
 		int      fill_scaler = 0;
+		bool     protect     = false;    // Protect flag is used to prevent this config from being changed by set_ui_config and
+										 // set_ui_layer_config
 		// Optional fixed palette for the layer (see UiPaletteMode).
 		int                        ui_palette = UiPaletteDisabled;
 		std::vector<unsigned char> ui_palette_colors;    // 768 gamma RGB, empty = none.
@@ -167,6 +175,7 @@ public:
 	class Layer {
 		friend class Image_window;
 		friend class Image_window8;
+		SDL_Surface*                  surface = nullptr;    // SDL Surface for buf
 		std::unique_ptr<Image_buffer> buf;                  // 8-bit drawing buffer.
 		struct SDL_Texture*           texture = nullptr;    // GPU cache (rebuilt on resize).
 		int                           logw;                 // Logical (game-pixel) width.
@@ -176,11 +185,11 @@ public:
 		bool                          opaque = false;       // If set, NO index is transparent (a
 															// full-screen opaque scene: every pixel
 															// is drawn, even the 'transparent' index).
-		bool        visible  = true;
-		bool        dirty    = true;     // Buffer changed => re-upload.
-		int         z        = 0;        // Composite order (higher = on top).
-		bool        has_dest = false;    // Explicit destination override?
-		SDL_FRect   dest{};              // Destination rect (display coords).
+		bool                   visible = true;
+		bool                   dirty   = true;    // Buffer changed => re-upload.
+		int                    z       = 0;       // Composite order (higher = on top).
+		std::vector<SDL_FRect> dest    = {};      // Destination rects to paint layer. If more than 1 the layer is painted multiple
+												  // tines, if 0 default foe UIConfog is used
 		UiLayerKind ui_kind      = UiLayerDefault;
 		int         render_scale = 1;    // 1 = 1:1 upload; >1 = pre-scaled by
 										 // the game's scaler at this factor.
@@ -189,10 +198,16 @@ public:
 		// entry is used verbatim (with its own alpha) instead of the opaque
 		// palette colour, letting a layer draw translucent pixels.
 		std::vector<uint32> index_argb;
+		std::vector<uint32> gamma_argb;
+		double              gamma_r = 0;
+		double              gamma_g = 0;
+		double              gamma_b = 0;
+
+		std::string name;
 
 	public:
-		Layer(std::unique_ptr<Image_buffer> b, int w, int h, unsigned char transp, int fscale, int zorder)
-				: buf(std::move(b)), logw(w), logh(h), fixed_scale(fscale), transparent(transp), z(zorder) {}
+		~Layer();
+		Layer(SDL_Surface* surface, int w, int h, unsigned char transp, int fscale, int zorder, std::string&& name);
 
 		Image_buffer* get_ibuf() const {
 			return buf.get();
@@ -229,6 +244,10 @@ public:
 		bool is_visible() const {
 			return visible;
 		}
+
+		const std::string& get_name() const {
+			return name;
+		}
 	};
 
 private:
@@ -255,33 +274,37 @@ public:
 	struct ScalerConst {
 		const char* const Name;
 
+	private:
+		mutable ScalerType scaler_type = NoScaler;
+
+	public:
 		ScalerConst(const char* name) : Name(name) {}
 
 		operator ScalerType() const {
 			if (Name == nullptr) {
-				return Scalers.size();
+				return (Scalers.size());
 			}
-			return get_scaler_for_name(Name);
+			return scaler_type != NoScaler ? scaler_type : (scaler_type = get_scaler_for_name(Name));
 		}
 	};
 
-	static const ScalerType  NoScaler;
-	static const ScalerConst point;
-	static const ScalerConst interlaced;
-	static const ScalerConst bilinear;
-	static const ScalerConst BilinearPlus;
-	static const ScalerConst SaI;
-	static const ScalerConst SuperEagle;
-	static const ScalerConst Super2xSaI;
-	static const ScalerConst Scale2x;
-	static const ScalerConst Hq2x;
-	static const ScalerConst Hq3x;
-	static const ScalerConst Hq4x;
-	static const ScalerConst _2xBR;
-	static const ScalerConst _3xBR;
-	static const ScalerConst _4xBR;
-	static const ScalerConst SDLScaler;
-	static const ScalerConst NumScalers;
+	constexpr static ScalerType NoScaler = -1;
+	static const ScalerConst    point;
+	static const ScalerConst    interlaced;
+	static const ScalerConst    bilinear;
+	static const ScalerConst    BilinearPlus;
+	static const ScalerConst    SaI;
+	static const ScalerConst    SuperEagle;
+	static const ScalerConst    Super2xSaI;
+	static const ScalerConst    Scale2x;
+	static const ScalerConst    Hq2x;
+	static const ScalerConst    Hq3x;
+	static const ScalerConst    Hq4x;
+	static const ScalerConst    _2xBR;
+	static const ScalerConst    _3xBR;
+	static const ScalerConst    _4xBR;
+	static const ScalerConst    SDLScaler;
+	static const ScalerConst    NumScalers;
 
 	// Gets the draw surface and intersurface dims.
 	// if (inter_surface.wh != (dw*scale,dh*scale))
@@ -325,11 +348,13 @@ protected:
 	int active_scene_layer = -1;
 	int inter_width;
 	int inter_height;
+	int display_width;
+	int display_height;
 	// Guardband around the edge of the draw surface to allow scalers to run
 	// without per pixel bounds checking and to allow rounding up to
 	// multiples of 4. It should  not be less than 4 and there is no reason for
 	// it to be bigger.
-	const int guard_band = 4;
+	constexpr static int guard_band = 4;
 
 	FillMode fill_mode;
 	int      fill_scaler;
@@ -365,21 +390,30 @@ protected:
 	static SDL_DisplayMode desktop_displaymode;
 	struct SDL_Window*     screen_window;
 	struct SDL_Renderer*   screen_renderer;
-	struct SDL_Texture*    screen_texture;
-	void                   UpdateRect(SDL_Surface* surf);
+	struct SDL_Texture*
+			screen_texture;    // Output of scalers gets drawn here. This may contain partial frames if there is no inter_surface
+	struct SDL_Texture* screen_texture_a;    // What gets drawn to the screen by SDL. The is the accumulation of all updates to
+											 // screen_texture and contains the current full frame being displayed
+
+	// Update screen_texture_a with the dirtyRect changes made to screen_texture and render fullRect of screen_texture_a
+	void UpdateRect(SDL_FRect* dirtyRect, SDL_FRect* fullRect, bool for_screenshot);
 
 	SDL_Surface* paletted_surface;    // Surface that palette is set on (Example
-									  // res)
-	SDL_Surface* display_surface;     // Final surface that is displayed  (1024x1024)
-	SDL_Surface* inter_surface;       // Post scaled/pre stretch surface  (960x600)
-	SDL_Surface* draw_surface;        // Pre scaled surface               (320x200)
+									  // res) - Never null
+	SDL_Surface* inter_surface;    // Post scaled/pre stretch surface  (960x600) - can be null if there is no stretching being dome
+	SDL_Surface* draw_surface;     // Pre scaled surface               (320x200) - Never null
 
 	// Layers composited on top of the main image (see class Layer).
 	std::vector<std::unique_ptr<Layer>> layers;
+	// Scaling layers can need upto 3 dst32 surfaces. Layer dst32 Surfaces aren't persistent and shared between all layers as needed
+	SDL_Surface* layer_dst32_surfaces[3] = {nullptr, nullptr, nullptr};
+
+	// Get one of the 3 layer dst32 surfaces making sure it's size is at least w x h
+	SDL_Surface* get_layer_dst32_surface(unsigned index, int w, int h);
 
 	// Compute a layer's on-screen destination rect (in display coords, which
 	// match the renderer's logical presentation).
-	void get_layer_dest(const Layer& layer, struct SDL_FRect& dst);
+	bool get_layer_dest(const Layer& layer, struct SDL_FRect& dst, int num = 0);
 	// Place a logw x logh layer on the display using the UI fill mode / scale.
 	void compute_layer_fill_dest(int logw, int logh, struct SDL_FRect& dst) const;
 	void compute_layer_fill_dest(int logw, int logh, struct SDL_FRect& dst, UiLayerKind kind) const;
@@ -537,7 +571,7 @@ public:
 			FillMode fmode = AspectCorrectCentre, int fillsclr = point)
 			: ibuf(ib), scale(scl), scaler(sclr), uses_palette(true), fullscreen(fs), game_width(gamew), game_height(gameh),
 			  saved_game_width(gamew), saved_game_height(gameh), fill_mode(fmode), fill_scaler(fillsclr), screen_window(nullptr),
-			  screen_renderer(nullptr), screen_texture(nullptr), paletted_surface(nullptr), display_surface(nullptr),
+			  screen_renderer(nullptr), screen_texture(nullptr), screen_texture_a(nullptr), paletted_surface(nullptr),
 			  inter_surface(nullptr), draw_surface(nullptr) {
 		static_init();
 		create_surface(w, h);
@@ -551,8 +585,13 @@ public:
 		return scale;
 	}
 
-	int get_display_width();
-	int get_display_height();
+	int get_display_width() {
+		return display_width;
+	}
+
+	int get_display_height() {
+		return display_height;
+	}
 
 	void screen_to_game(int sx, int sy, bool fast, int& gx, int& gy);
 
@@ -659,7 +698,7 @@ public:
 	// constant on-screen size independent of the world scaling), otherwise it
 	// is drawn at the given integer scale.  'z' orders layers: higher values
 	// are composited on top.
-	int           create_layer(int w, int h, unsigned char transparent = 255, int fixed_scale = 0, int z = 0);
+	int           create_layer(std::string&& name, int w, int h, unsigned char transparent = 255, int fixed_scale = 0, int z = 0);
 	void          destroy_layer(int handle);
 	Image_buffer* get_layer_ibuf(int handle);
 	// Mark a layer's buffer as changed so it is re-uploaded before the next
@@ -672,7 +711,7 @@ public:
 	// Give a layer an explicit destination rectangle (in display coords),
 	// overriding the centred auto-fit placement.  Used to position a layer
 	// (e.g. the mouse cursor) freely. layer_clear_dest() restores auto-fit.
-	void layer_set_dest(int handle, int x, int y, int w, int h);
+	void layer_set_dest(int handle, int x, int y, int w, int h, bool add = false);
 	void layer_clear_dest(int handle);
 	void layer_set_ui_kind(int handle, UiLayerKind kind);
 	// Set (or clear, with nullptr) a layer's 256-entry ARGB override table.
@@ -688,7 +727,8 @@ public:
 	// placed. width/height set a fixed UI layout size in game pixels. A value
 	// of 0,0 means Auto (use game area size).
 	void set_ui_config(int width, int height, int scaler, FillMode fmode, int fill_scaler);
-	void set_ui_layer_config(UiLayerKind kind, int width, int height, int scaler, FillMode fmode, int fill_scaler);
+	void set_ui_layer_config(
+			UiLayerKind kind, int width, int height, int scaler, FillMode fmode, int fill_scaler, bool protect = false);
 	// -------- Layer fixed palette --------
 	// Which fixed palette (if any) a layer uses when the game's live
 	// palette is not the day palette. Values are UiPaletteMode; the mapping to
@@ -766,7 +806,7 @@ public:
 			return false;
 		}
 		// Only if actually scaling
-		if (draw_surface == display_surface) {
+		if (draw_surface->w == screen_texture->w && draw_surface->h == screen_texture->h) {
 			return false;
 		}
 
@@ -776,9 +816,9 @@ public:
 			return false;
 		}
 
-		// if inter is the same as display the scaling is only being done by
+		// if no inter surface the scaling is only being done by
 		// scaler and if is point we don't need to do this
-		if (display_surface == inter_surface && point == scaler) {
+		if (!inter_surface && point == scaler) {
 			return false;
 		}
 
@@ -909,6 +949,6 @@ public:
 		ibuf->put(src, destx, desty);
 	}
 
-	bool screenshot(SDL_IOStream* dst);
+	bool screenshot(SDL_IOStream* dst, bool paletted);
 };
 #endif /* INCL_IMAGEWIN    */

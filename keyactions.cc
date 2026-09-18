@@ -51,6 +51,7 @@
 #include "mouse.h"
 #include "palette.h"
 #include "party.h"
+#include "perf.h"
 #include "ucmachine.h"
 #include "version.h"
 
@@ -978,4 +979,8 @@ void ActionTest(const int* params) {
 
 void ActionToggleBBoxes(const int* /*params*/) {
 	Game_window::get_instance()->get_render()->increment_bbox_index();
+}
+
+void ActionPerfMetrics(const int* /*params*/) {
+	PerformanceTimer::IncMode();
 }

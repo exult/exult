@@ -169,8 +169,9 @@ class Game_window {
 	long check_time_stopped();
 
 	// Red plasma animation during game load
-	uint32 load_palette_timer;
-	int    plasma_start_color, plasma_cycle_range;
+	uint32                             load_palette_timer;
+	std::unique_ptr<class Scene_layer> load_screen_layer;
+	int                                plasma_start_color, plasma_cycle_range;
 
 public:
 	friend class Game_render;
@@ -426,8 +427,8 @@ public:
 		return win;
 	}
 
-	int create_layer(int w, int h, unsigned char transparent = 255, int fixed_scale = 0, int z = 0) {
-		return win->create_layer(w, h, transparent, fixed_scale, z);
+	int create_layer(std::string&& name, int w, int h, unsigned char transparent = 255, int fixed_scale = 0, int z = 0) {
+		return win->create_layer(std::move(name), w, h, transparent, fixed_scale, z);
 	}
 
 	void destroy_layer(int handle) {
@@ -458,8 +459,8 @@ public:
 		win->layer_set_z(handle, z);
 	}
 
-	void layer_set_dest(int handle, int x, int y, int w, int h) {
-		win->layer_set_dest(handle, x, y, w, h);
+	void layer_set_dest(int handle, int x, int y, int w, int h, bool add = false) {
+		win->layer_set_dest(handle, x, y, w, h, add);
 	}
 
 	void layer_clear_dest(int handle) {
@@ -484,8 +485,9 @@ public:
 	}
 
 	void set_ui_layer_config(
-			Image_window::UiLayerKind kind, int width, int height, int scaler, Image_window::FillMode fmode, int fill_scaler) {
-		win->set_ui_layer_config(kind, width, height, scaler, fmode, fill_scaler);
+			Image_window::UiLayerKind kind, int width, int height, int scaler, Image_window::FillMode fmode, int fill_scaler,
+			bool protect = false) {
+		win->set_ui_layer_config(kind, width, height, scaler, fmode, fill_scaler, protect);
 	}
 
 	void set_ui_layer_palette(Image_window::UiLayerKind kind, int mode) {

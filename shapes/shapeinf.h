@@ -158,7 +158,12 @@ protected:
 	unsigned char tfa[3]            = {0};    // From "tfa.dat".+++++Keep for
 	//   debugging, for now.
 	// 3D dimensions in tiles:
-	unsigned char  dims[3] = {0};               //   (x, y, z)
+	unsigned char dims[3] = {0};    //   (x, y, z)
+
+	// If true the shape has more than 31 real frames so do not swap x and y values in dims This is not
+	// read from disk but is automatically set as needed if a shape has more than 31 frames
+	bool no_bit5_frame_reflection = false;
+
 	unsigned char  weight = 0, volume = 0;      // From "wgtvol.dat".
 	unsigned char  shpdims[2]     = {0};        // From "shpdims.dat".
 	unsigned char* weapon_offsets = nullptr;    // From "wihh.dat": pixel offsets
@@ -747,15 +752,19 @@ public:
 	// Get tile dims., flipped for
 	//   reflected (bit 5) frames.
 	int get_3d_xtiles(unsigned int framenum) const {
-		return dims[(framenum >> 5) & 1];
+		return dims[(framenum >> 5) & int(!no_bit5_frame_reflection)];
 	}
 
 	int get_3d_ytiles(unsigned int framenum) const {
-		return dims[1 ^ ((framenum >> 5) & 1)];
+		return dims[1 ^ ((framenum >> 5) & int(!no_bit5_frame_reflection))];
 	}
 
 	int get_3d_height() const {    // Height (in lifts?).
 		return dims[2];
+	}
+
+	void set_no_bit5_frame_reflection() {
+		no_bit5_frame_reflection = true;
 	}
 
 	void set_3d(int xt, int yt, int zt);

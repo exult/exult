@@ -622,7 +622,7 @@ void Cheat::toggle_infravision() {
 	} else {
 		eman->center_text(Strings::InfravisionDisabled());
 	}
-	gclock->set_palette();
+	gclock->reset_palette();
 }
 
 void Cheat::toggle_pickpocket() {
@@ -1256,7 +1256,7 @@ public:
 			return;
 		}
 		if (layer < 0) {
-			layer = gwin->create_layer(w, h, 255, 0, display_map_layer_z);
+			layer = gwin->create_layer("map", w, h, 255, 0, display_map_layer_z);
 			if (layer < 0) {
 				return;
 			}

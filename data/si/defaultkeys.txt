@@ -64,6 +64,7 @@ Shift-F3	write_minimap
 Alt-F4		quit
 Alt-Enter	toggle_fullscreen
 Alt-1		sound_tester
+Alt-2       perf_metrics
 Ctrl-Alt-B		toggle_bboxes
 Ctrl-B		shape_browser
 B		useitem			761	# Show spellbook

@@ -1,4 +1,4 @@
-// !$*UTF8*$!
+﻿// !$*UTF8*$!
 {
 	archiveVersion = 1;
 	classes = {
@@ -70,6 +70,7 @@
 		8AE5D3C21D2A0D9601379947 /* cheat_screen_actors.cc in Sources */ = {isa = PBXBuildFile; fileRef = 8ADFFDF825DE791000FC4D3A /* cheat_screen_actors.cc */; };
 		8AE8B9BE2E400B740094DF3C /* SDL3.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8AE8B9BC2E400B4F0094DF3C /* SDL3.framework */; };
 		8AE8B9BF2E400B740094DF3C /* SDL3.framework in Embedd SDL3 Framework */ = {isa = PBXBuildFile; fileRef = 8AE8B9BC2E400B4F0094DF3C /* SDL3.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		8AEBA98E1475A21C0172E554 /* perf.cc in Sources */ = {isa = PBXBuildFile; fileRef = 8ADFFDFA25DE791000FC4D3A /* perf.cc */; };
 		8AF2AFDF2016708100696E08 /* joypad-glass-southwest.png in Resources */ = {isa = PBXBuildFile; fileRef = 8AF2AFD62016707F00696E08 /* joypad-glass-southwest.png */; };
 		8AF2AFE02016708100696E08 /* joypad-glass-north.png in Resources */ = {isa = PBXBuildFile; fileRef = 8AF2AFD72016708000696E08 /* joypad-glass-north.png */; };
 		8AF2AFE12016708100696E08 /* joypad-glass.png in Resources */ = {isa = PBXBuildFile; fileRef = 8AF2AFD82016708000696E08 /* joypad-glass.png */; };
@@ -430,6 +431,8 @@
 		8ADFFDF525DE791000FC4D3A /* verify.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = verify.h; path = ../verify.h; sourceTree = "<group>"; };
 		8ADFFDF725DE791000FC4D3A /* cheat_screen_strings.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = cheat_screen_strings.h; path = ../cheat_screen_strings.h; sourceTree = "<group>"; };
 		8ADFFDF825DE791000FC4D3A /* cheat_screen_actors.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = cheat_screen_actors.cc; path = ../cheat_screen_actors.cc; sourceTree = "<group>"; };
+		8ADFFDF925DE791000FC4D3A /* perf.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = perf.h; path = ../perf.h; sourceTree = "<group>"; };
+		8ADFFDFA25DE791000FC4D3A /* perf.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = perf.cc; path = ../perf.cc; sourceTree = "<group>"; };
 		8AE3D1093001610500BCB1FF /* scene_layer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = scene_layer.h; path = ../scene_layer.h; sourceTree = SOURCE_ROOT; };
 		8AE8B9BC2E400B4F0094DF3C /* SDL3.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = SDL3.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		8AF2AFD62016707F00696E08 /* joypad-glass-southwest.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "joypad-glass-southwest.png"; sourceTree = "<group>"; };
@@ -1119,6 +1122,8 @@
 				8ADFFDF525DE791000FC4D3A /* verify.h */,
 				8ADFFDF725DE791000FC4D3A /* cheat_screen_strings.h */,
 				8ADFFDF825DE791000FC4D3A /* cheat_screen_actors.cc */,
+				8ADFFDF925DE791000FC4D3A /* perf.h */,
+				8ADFFDFA25DE791000FC4D3A /* perf.cc */,
 				E700DC341A6E30A7006C8BE4 /* actions.cc */,
 				E700DC351A6E30A7006C8BE4 /* actions.h */,
 				E700DC361A6E30A7006C8BE4 /* actorio.cc */,
@@ -1970,6 +1975,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				8AEBA98E1475A21C0172E554 /* perf.cc in Sources */,
 				8AE5D3C21D2A0D9601379947 /* cheat_screen_actors.cc in Sources */,
 				8AC797C81C8D0E4F001AF014 /* zip.cc in Sources */,
 				E700DF441A6E34C6006C8BE4 /* debugserver.cc in Sources */,

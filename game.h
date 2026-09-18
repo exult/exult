@@ -141,16 +141,21 @@ public:
 		return menustring;
 	}
 
-	virtual void                      play_intro()                             = 0;
-	virtual void                      end_game(bool success, bool within_game) = 0;
-	virtual void                      top_menu()                               = 0;
-	virtual void                      show_quotes()                            = 0;
-	virtual void                      show_credits()                           = 0;
-	virtual bool                      new_game(Vga_file& shapes)               = 0;
-	virtual int                       get_start_tile_x()                       = 0;
-	virtual int                       get_start_tile_y()                       = 0;
-	virtual void                      show_journey_failed()                    = 0;
-	virtual Shape_frame*              get_menu_shape()                         = 0;
+	virtual void         play_intro()                             = 0;
+	virtual void         end_game(bool success, bool within_game) = 0;
+	virtual void         top_menu()                               = 0;
+	virtual void         show_quotes()                            = 0;
+	virtual void         show_credits()                           = 0;
+	virtual bool         new_game(Vga_file& shapes)               = 0;
+	virtual int          get_start_tile_x()                       = 0;
+	virtual int          get_start_tile_y()                       = 0;
+	virtual void         show_journey_failed()                    = 0;
+	virtual Shape_frame* get_menu_shape()                         = 0;
+
+	Vga_file* get_menu_shapes() {
+		return &menushapes;
+	}
+
 	void                              show_congratulations(Palette* pal0);
 	virtual std::vector<unsigned int> get_congratulations_messages() = 0;
 

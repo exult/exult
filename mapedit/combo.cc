@@ -402,12 +402,13 @@ void Combo::draw(
 		if (!shape) {
 			continue;
 		}
+		const auto& info = shapes_file->get_info(m->shapenum);
 		// But draw_shape uses top-left.
 		x -= shape->get_xleft();
 		y -= shape->get_yabove();
 		x += xoff;
 		y += yoff;    // Add offset within area.
-		draw->draw_shape(shape, x, y);
+		draw->draw_shape(shape, x, y, info.has_translucency());
 		if (it - members.begin() == selected) {
 			selx     = x;    // Save coords for selected.
 			sely     = y;

@@ -202,7 +202,7 @@ bool Mouse::ensure_mouse_layer() {
 	if (layer_w <= 0 || layer_h <= 0) {
 		return false;
 	}
-	mouse_layer = gwin->create_layer(layer_w, layer_h, 255, 0, mouse_layer_z);
+	mouse_layer = gwin->create_layer("mouse", layer_w, layer_h, 255, 0, mouse_layer_z);
 	if (mouse_layer < 0) {
 		return false;
 	}

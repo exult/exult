@@ -32,11 +32,13 @@
 #include "chunks.h"
 #include "drag.h"
 #include "effects.h"
+#include "font.h"
 #include "gameclk.h"
 #include "gamemap.h"
 #include "gamewin.h"
 #include "ignore_unused_variable_warning.h"
 #include "objiter.h"
+#include "perf.h"
 
 #include <algorithm>
 #include <cstdio>
@@ -326,6 +328,8 @@ void Game_render::increment_bbox_index() {
 void Game_window::paint(
 		int x, int y, int w, int h    // Rectangle to cover.
 ) {
+	auto perftimer = PerformanceTimer::GetScopedPerfTimer(__func__);
+
 	if (!win->ready()) {
 		return;
 	}

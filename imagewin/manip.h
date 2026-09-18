@@ -59,11 +59,11 @@ public:
 
 class ManipBase {
 protected:
-	static const SDL_PixelFormatDetails* fmt;            // Format of dest. pixels (and src for rgb src).
-	static SDL_Color                     colors[256];    // Palette for source window.
+	static SDL_PixelFormatDetails fmt;            // Format of dest. pixels (and src for rgb src).
+	static SDL_Color              colors[256];    // Palette for source window.
 
 	ManipBase(SDL_Color* c, const SDL_PixelFormatDetails* f) {
-		fmt = f;
+		fmt = *f;
 		if (c) {
 			std::memcpy(colors, c, sizeof(colors));
 		}
@@ -85,14 +85,14 @@ public:
 	using uintD = typename color_d::T;
 
 	static uintD rgb(unsigned int r, unsigned int g, unsigned int b) {
-		return ((r >> (8 - fmt->Rbits)) << fmt->Rshift) | ((g >> (8 - fmt->Gbits)) << fmt->Gshift)
-			   | ((b >> (8 - fmt->Bbits)) << fmt->Bshift);
+		return ((r >> (8 - fmt.Rbits)) << fmt.Rshift) | ((g >> (8 - fmt.Gbits)) << fmt.Gshift)
+			   | ((b >> (8 - fmt.Bbits)) << fmt.Bshift);
 	}
 
 	static void split_dest(uintD pix, unsigned int& r, unsigned int& g, unsigned int& b) {
-		r = ((pix & fmt->Rmask) >> fmt->Rshift) << (8 - fmt->Rbits);
-		g = ((pix & fmt->Gmask) >> fmt->Gshift) << (8 - fmt->Gbits);
-		b = ((pix & fmt->Bmask) >> fmt->Bshift) << (8 - fmt->Bbits);
+		r = ((pix & fmt.Rmask) >> fmt.Rshift) << (8 - fmt.Rbits);
+		g = ((pix & fmt.Gmask) >> fmt.Gshift) << (8 - fmt.Gbits);
+		b = ((pix & fmt.Bmask) >> fmt.Bshift) << (8 - fmt.Bbits);
 	}
 };
 
@@ -102,7 +102,7 @@ class ManipBaseDest<color_555> : public ManipBase {
 protected:
 	ManipBaseDest(SDL_Color* c, const SDL_PixelFormatDetails* f) : ManipBase(nullptr, f) {
 		if (c) {
-			if (fmt->Rmask == 0x7c00 && fmt->Gmask == 0x03e0 && fmt->Bmask == 0x001f) {
+			if (fmt.Rmask == 0x7c00 && fmt.Gmask == 0x03e0 && fmt.Bmask == 0x001f) {
 				std::memcpy(colors, c, sizeof(colors));
 			} else {
 				SDL_Color*       dst = colors;
@@ -138,7 +138,7 @@ class ManipBaseDest<color_565> : public ManipBase {
 protected:
 	ManipBaseDest(SDL_Color* c, const SDL_PixelFormatDetails* f) : ManipBase(nullptr, f) {
 		if (c) {
-			if (fmt->Rmask == 0xf800 && fmt->Gmask == 0x7e0 && fmt->Bmask == 0x1f) {
+			if (fmt.Rmask == 0xf800 && fmt.Gmask == 0x7e0 && fmt.Bmask == 0x1f) {
 				std::memcpy(colors, c, sizeof(colors));
 			} else {
 				SDL_Color*       dst = colors;
@@ -214,15 +214,15 @@ public:
 	using uintS = typename color_s::T;
 
 	static void split_source(uintS pix, unsigned int& r, unsigned int& g, unsigned int& b) {
-		r = ((pix & ManipBase::fmt->Rmask) >> ManipBase::fmt->Rshift) << (8 - ManipBase::fmt->Rbits);
-		g = ((pix & ManipBase::fmt->Gmask) >> ManipBase::fmt->Gshift) << (8 - ManipBase::fmt->Gbits);
-		b = ((pix & ManipBase::fmt->Bmask) >> ManipBase::fmt->Bshift) << (8 - ManipBase::fmt->Bbits);
+		r = ((pix & ManipBase::fmt.Rmask) >> ManipBase::fmt.Rshift) << (8 - ManipBase::fmt.Rbits);
+		g = ((pix & ManipBase::fmt.Gmask) >> ManipBase::fmt.Gshift) << (8 - ManipBase::fmt.Gbits);
+		b = ((pix & ManipBase::fmt.Bmask) >> ManipBase::fmt.Bshift) << (8 - ManipBase::fmt.Bbits);
 	}
 
 	static void split_source(uintS pix, uint8& r, uint8& g, uint8& b) {
-		r = ((pix & ManipBase::fmt->Rmask) >> ManipBase::fmt->Rshift) << (8 - ManipBase::fmt->Rbits);
-		g = ((pix & ManipBase::fmt->Gmask) >> ManipBase::fmt->Gshift) << (8 - ManipBase::fmt->Gbits);
-		b = ((pix & ManipBase::fmt->Bmask) >> ManipBase::fmt->Bshift) << (8 - ManipBase::fmt->Bbits);
+		r = ((pix & ManipBase::fmt.Rmask) >> ManipBase::fmt.Rshift) << (8 - ManipBase::fmt.Rbits);
+		g = ((pix & ManipBase::fmt.Gmask) >> ManipBase::fmt.Gshift) << (8 - ManipBase::fmt.Gbits);
+		b = ((pix & ManipBase::fmt.Bmask) >> ManipBase::fmt.Bshift) << (8 - ManipBase::fmt.Bbits);
 	}
 };
 
