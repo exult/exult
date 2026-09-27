@@ -1398,7 +1398,10 @@ void Game_window::update_roof_mask(Game_object* obj, int sx, int sy) {
 	// on the next frame.
 	const TileRect sprite_box(sx - frame->get_xleft(), sy - frame->get_yabove(), frame->get_width(), frame->get_height());
 	{
-		bool touched = false;
+		// not left stale, it is left UNSTAMPED (mask 0 = clear ground), which
+		// drinks the z-blind field and renders bright -- so anything the rects
+		// miss becomes a lit copy of the wall face it should have masked.
+		bool              touched      = false;
 		for (const TileRect& r : light_mask_rects) {
 			if (sprite_box.intersects(r)) {
 				touched = true;
@@ -1465,6 +1468,23 @@ void Game_window::update_roof_mask(Game_object* obj, int sx, int sy) {
 		Xform_palette x;
 		for (int i = 0; i < 256; ++i) {
 			x.colors[i] = 132;
+		}
+		return x;
+	}();
+	// Kind stamps for a slab edge painted as facade: 132 with kind 0 is the
+	// PANE rule (window glass, lit by whatever is behind it), so the edge has
+	// to read as a wall FACE.  Floors stamp no kind of their own.
+	static const Xform_palette kind_wall_face = [] {
+		Xform_palette x;
+		for (int i = 0; i < 256; ++i) {
+			x.colors[i] = 1;
+		}
+		return x;
+	}();
+	static const Xform_palette kind_ground = [] {
+		Xform_palette x;
+		for (int i = 0; i < 256; ++i) {
+			x.colors[i] = 0;
 		}
 		return x;
 	}();
@@ -1537,14 +1557,20 @@ void Game_window::update_roof_mask(Game_object* obj, int sx, int sy) {
 		// one fell through to kind 0 = GROUND and drank the z-blind field at
 		// its own screen position -- bright over the wall it lies against --
 		// while its SOLID neighbours on the same surface keep kind 2 and render
-		// correctly.
-		const bool loose_item = obj->is_dragable();
-		if ((sinf.is_solid() || loose_item) && !sinf.is_floor() && !sinf.is_roof()) {
-			// Panes and open door leaves stay GROUND: they glow with the
-			// light behind them.  They still need FEET: their glow belongs to
-			// the light at their own tile, not to whatever their sprite hangs
-			// over up-screen.
-			if ((sinf.is_door() && !obj->is_closed_door()) || NaturalLight::Object_passes_light(obj)) {
+		const bool        loose_item   = obj->is_dragable();
+		// Panes and open door leaves stay GROUND: they glow with the light
+		// behind them.
+		const bool pane_shape
+				= (sinf.is_door() && !obj->is_closed_door()) || NaturalLight::Object_passes_light(obj);
+		// A shutter leaf is NON-solid, so the solid gate skipped the whole
+		// block and it stamped no FEET at all -- every one of its pixels kept
+		// the previous sprite's, and a neighbour's kind-2 unit stamp handed
+		// half the leaf one far-away anchor cell.  That is the hard-edged band
+		// down a shutter, at the boundary of the other sprite's box.
+		if ((sinf.is_solid() || loose_item || pane_shape) && !sinf.is_floor() && !sinf.is_roof()) {
+			// They still need FEET: their glow belongs to the light at their
+			// own tile, not to whatever their sprite hangs over up-screen.
+			if (pane_shape) {
 				pane = true;
 			} else {
 				kind = NaturalLight::Object_is_wall_face(obj) ? 1 : 2;
@@ -1577,7 +1603,7 @@ void Game_window::update_roof_mask(Game_object* obj, int sx, int sy) {
 			const int f0y = sy + 4 * obj->get_lift();
 			const int xts = sinf.get_3d_xtiles(obj->get_framenum());
 			const int yts = sinf.get_3d_ytiles(obj->get_framenum());
-			// The footprint tile under the pixel, WITHOUT collapsing to its
+			// Same footprint tile as `snap` picks, but WITHOUT collapsing to its
 			// centre: the splat's blend needs the pixel's position inside its
 			// tile, and snapping threw it away, so a wall top rendered one flat
 			// value per tile -- the staircase of lit blocks along a lit wall.
@@ -1596,7 +1622,16 @@ void Game_window::update_roof_mask(Game_object* obj, int sx, int sy) {
 			// at the doorway (arrival 9), which is the seam down an inside wall
 			// face.  A wall's THIN axis pins the shear: its ground strip is one
 			// tile wide, so the offset from that edge IS the elevation.
-			const int zshear = 4 * sinf.get_3d_height();
+			// The cap is how far up-left the art may sit from f0, and f0 is the
+			// z=0 anchor, so it spans the LIFT as well as the shape's height.
+			// At 4*height alone a raised sprite's pixels never shear back as far
+			// as their own footprint and foot_clamp pinned the whole sprite to
+			// its north-west tile: a 1x4 sill read one cell for all four tiles,
+			// so a run of them stepped 155 / 71 / 49 between sprites instead of
+			// fading along the wall.  (Invisible until wall tops began reading
+			// their foot at all -- before that they were on the z-blind field.)
+			const int         zspan = obj->get_lift() + sinf.get_3d_height();
+			const int         zshear = 4 * zspan;
 			auto      shear  = [&](int px, int py) {
                 int s = 0;
                 if (xts == 1) {
@@ -1624,9 +1659,23 @@ void Game_window::update_roof_mask(Game_object* obj, int sx, int sy) {
 					if (px < 0 || px >= W) {
 						continue;
 					}
-					const int s   = shear(px, py);
-					int       ddx = foot_clamp(px + s, f0x, xts) - px;
-					int       ddy = foot_clamp(py + s, f0y, yts) - py;
+					const int s = shear(px, py);
+					// An OBJECT is one unit: every pixel of it answers to its
+					// ANCHOR tile, never to the footprint tile it happens to
+					// hang over.  Per-tile feet make sense for a wall (kind 1),
+					// which really is a different surface each tile, but on a
+					// tree they turn any per-tile step in the field -- the spill
+					// cone's edge, its penumbra bands -- into a straight line
+					// drawn across the crown.
+					// Pinning every pixel of a kind-2 object to its ANCHOR tile
+					// hides the per-cell steps the fan's penumbra leaves across a
+					// tree crown -- but it also hands a half wall its base tile's
+					// value as one flat block, brighter than the ground beside it
+					// and with no falloff at all.  The banding belongs to the
+					// penumbra's whole-tile quantisation, so it is fixed there;
+					// this stays off, as it was before the fan fade existed.
+										int ddx = foot_clamp(px + s, f0x, xts) - px;
+					int ddy = foot_clamp(py + s, f0y, yts) - py;
 					ddx                                             = ddx < -128 ? -128 : (ddx > 127 ? 127 : ddx);
 					ddy                                             = ddy < -128 ? -128 : (ddy > 127 ? 127 : ddy);
 					kbits[static_cast<size_t>(py) * klw + px]       = static_cast<unsigned char>(kind);
@@ -1680,6 +1729,77 @@ void Game_window::update_roof_mask(Game_object* obj, int sx, int sy) {
 		const Tile_coord t = obj->get_tile();
 		return !static_cover_above(t.tx, t.ty, top);
 	};
+	// Is this absolute tile under a roof ABOVE `z`?  The engine's own roof map
+	// -- unlike the blocked-column probes it is not fooled by walls standing on
+	// a deck, and it registers a ceiling however that ceiling is built.
+	auto tile_roofed_at = [&](int tx, int ty, int z) {
+		const int        wtx = ((tx % c_num_tiles) + c_num_tiles) % c_num_tiles;
+		const int        wty = ((ty % c_num_tiles) + c_num_tiles) % c_num_tiles;
+		Map_chunk* const ch  = map->get_chunk_safely(wtx / c_tiles_per_chunk, wty / c_tiles_per_chunk);
+		return ch != nullptr && ch->is_roof(wtx % c_tiles_per_chunk, wty % c_tiles_per_chunk, z) < 31;
+	};
+	// Lowest thing blocking this tile's column at or above `z` (>= 31: none).
+	// is_roof() starts its search 4 ABOVE the lift it is handed, so asking it
+	// about a first-floor wall's own lift steps over that room's ceiling.
+	auto lowest_cover_at = [&](int tx, int ty, int z) {
+		const int        wtx = ((tx % c_num_tiles) + c_num_tiles) % c_num_tiles;
+		const int        wty = ((ty % c_num_tiles) + c_num_tiles) % c_num_tiles;
+		Map_chunk* const ch  = map->get_chunk_safely(wtx / c_tiles_per_chunk, wty / c_tiles_per_chunk);
+		return ch != nullptr ? ch->is_roof(wtx % c_tiles_per_chunk, wty % c_tiles_per_chunk, z - 4) : 255;
+	};
+	// Does a wall-line piece sit EXACTLY on `z`, continuing this column up?
+	// The window capping a half wall is light-passing and non-blocking, so it
+	// never enters the blocked map lowest_cover_at reads.
+	auto column_continued_at = [&](int tx, int ty, int z) {
+		const int        wtx = ((tx % c_num_tiles) + c_num_tiles) % c_num_tiles;
+		const int        wty = ((ty % c_num_tiles) + c_num_tiles) % c_num_tiles;
+		Map_chunk* const ch  = map->get_chunk_safely(wtx / c_tiles_per_chunk, wty / c_tiles_per_chunk);
+		if (ch == nullptr) {
+			return false;
+		}
+		Object_iterator it(ch->get_objects());
+		Game_object*    o;
+		while ((o = it.get_next()) != nullptr) {
+			if (o == obj || o->as_actor() != nullptr || o->is_dragable()) {
+				continue;
+			}
+			const Shape_info& oi = o->get_info();
+			if (oi.is_floor() || oi.is_roof() || oi.get_3d_height() <= 0) {
+				continue;
+			}
+			if (o->get_lift() == z && o->get_footprint().has_world_point(wtx, wty)) {
+				return true;
+			}
+		}
+		return false;
+	};
+	// Is there an OPENING (window glass, grate, open shutter) in the course
+	// just above `z`?  A half wall's top is a sill: light reaches it only
+	// through whatever caps it, so a closed shutter leaves it dark.
+	auto opening_above_at = [&](int tx, int ty, int z) {
+		const int        wtx = ((tx % c_num_tiles) + c_num_tiles) % c_num_tiles;
+		const int        wty = ((ty % c_num_tiles) + c_num_tiles) % c_num_tiles;
+		Map_chunk* const ch  = map->get_chunk_safely(wtx / c_tiles_per_chunk, wty / c_tiles_per_chunk);
+		if (ch == nullptr) {
+			return false;
+		}
+		Object_iterator it(ch->get_objects());
+		Game_object*    o;
+		while ((o = it.get_next()) != nullptr) {
+			if (o == obj || o->as_actor() != nullptr) {
+				continue;
+			}
+			const int olo = o->get_lift();
+			const int ohi = olo + std::max(o->get_info().get_3d_height(), 1);
+			if (ohi <= z || olo >= z + 5) {
+				continue;    // Not in the course resting on this top.
+			}
+			if (NaturalLight::Object_passes_light(o) && o->get_footprint().has_world_point(wtx, wty)) {
+				return true;
+			}
+		}
+		return false;
+	};
 	// Is a real ROOF shape drawn above this object?
 	auto roof_shape_above = [&](int z) {
 		const Tile_coord t   = obj->get_tile();
@@ -1711,6 +1831,7 @@ void Game_window::update_roof_mask(Game_object* obj, int sx, int sy) {
 		return false;
 	};
 	(void)roof_shape_above;
+	(void)static_cover_above;
 	// Solid support from the ground to the object's lift (a crenellation
 	// capping a rampart): it lights with the wall beneath as one whole unit.
 	// A gap below (a deck object -- the room's air under the floor-roof)
@@ -2019,7 +2140,8 @@ void Game_window::update_roof_mask(Game_object* obj, int sx, int sy) {
 	// tops -- the faces stay dark wall.  (A 128+storey top mark fails the
 	// room's own storey gate and would stay dark.)
 	auto paint_shell_face = [&](bool lit_top, uint32_t south_bits = 0, uint32_t east_bits = 0, bool shell = true,
-								bool mark_top = true, uint32_t south_open = 0, uint32_t east_open = 0) {
+								bool mark_top = true, uint32_t south_open = 0, uint32_t east_open = 0, int top_mark = 134,
+								bool ext_corner = false) {
 		frame->paint_rle_transformed(roof_light_mask.get(), sx, sy, roof_face);
 		if (!lit_top) {
 			return;
@@ -2095,8 +2217,11 @@ void Game_window::update_roof_mask(Game_object* obj, int sx, int sy) {
 					// side.  Left CLEAR it read as an interior face and took
 					// the viewer-gated arrivals, which for an outside light
 					// seen from inside collapse to the wrap-around path -- dark
-					// tops over a lit face.
-					mbits[static_cast<size_t>(py) * mlw + px] = 134;
+					// tops over a lit face.  An UPPER-storey piece passes its
+					// storey mark instead: having no viewer side, 134 lights
+					// from anywhere, and a window sill one floor up glowed with
+					// the campfire on the far side of its wall.
+					mbits[static_cast<size_t>(py) * mlw + px] = static_cast<unsigned char>(top_mark);
 				} else {
 					// 135 / 136 = interior-facing wall face, lit only from the
 					// room on its SOUTH / EAST side.  Which that is, is known
@@ -2127,12 +2252,16 @@ void Game_window::update_roof_mask(Game_object* obj, int sx, int sy) {
 						side_mark = -1;    // Faces the street: the 132 shell mask stands.
 					} else if (other_room) {
 						side_mark = south ? 136 : 135;
-					} else if (!shell) {
+					} else if (!shell && !ext_corner) {
 						// An interior corner walled in on BOTH sides borrows the
 						// nearest room through the splat's side walk; left on 132 it
 						// lit from outside, and cleared to 0 it was the masked sliver.
 						// South first: the walk falls back to east by itself, and
 						// going east first can run along the wall out into the street.
+						// NOT when the piece's far side fronts OPEN AIR: then it is
+						// the building's OUTER corner, buried only against its own
+						// neighbours, and borrowing a room let the hall's torches
+						// light the outside of the wall.
 						side_mark = 135;
 					}
 					if (side_mark > 0) {
@@ -2160,16 +2289,65 @@ void Game_window::update_roof_mask(Game_object* obj, int sx, int sy) {
 			frame->paint_rle_transformed(roof_light_mask.get(), sx, sy, roof_clear);
 			return;
 		}
-		const Xform_palette& slab_pal = (upper_interior && top_storey >= 1) ? roof_slab[top_storey] : roof_tall[top_storey];
-		if (!inside) {
-			frame->paint_rle_transformed(roof_light_mask.get(), sx, sy, roof_strip[top_storey & 3]);
-		} else {
-			// The clipped paint below covers the slab's TOP only, leaving its
-			// south/right thickness strip unmarked -- and unmarked pixels
-			// z-blind sample the field, so an outdoor light lit that strip
-			// along every slab edge and around every floor hole.
-			frame->paint_rle_transformed(roof_light_mask.get(), sx, sy, slab_pal);
-		}
+		// An upper floor with nothing ROOFING it is an outdoor deck, not this
+		// room's ceiling, even while the viewer is inside: keep it 128 + storey
+		// so only its own storey's lights and spills reach it.  Marked 140 +
+		// storey it was an "interior" slab, and a ground lamp in a tall hall lit
+		// it from underneath -- the z-blind field carried the fill along the
+		// walkway beneath the deck and up through it.
+		// Asked of the chunk's own roof map ABOVE the slab's top: a wall
+		// standing ON the deck is not a roof (which open_sky_above counted), a
+		// hall's ceiling registers here even when it is the storey above's floor
+		// (which roof_shape_above missed), and the deck cannot roof itself.
+		// Asked of EVERY footprint tile, not just the anchor: a 1014 floor is
+		// several tiles and one query for the lot let a slab whose far end lies
+		// under a hall roof call its exposed edge interior too -- the thin lit
+		// stripe of 88.png, one slab bright beside its neighbour that answered
+		// the same question with "deck".  Any tile open to the sky makes the
+		// whole piece a deck.
+		const bool        slab_roofed = [&] {
+            const TileRect fp = obj->get_footprint();
+            const int      z  = obj->get_lift() + zs;
+            for (int dy = 0; dy < fp.h; ++dy) {
+                for (int dx = 0; dx < fp.w; ++dx) {
+                    const int wtx = (((fp.x + dx) % c_num_tiles) + c_num_tiles) % c_num_tiles;
+                    const int wty = (((fp.y + dy) % c_num_tiles) + c_num_tiles) % c_num_tiles;
+                    Map_chunk* const ch = map->get_chunk_safely(wtx / c_tiles_per_chunk, wty / c_tiles_per_chunk);
+                    if (ch == nullptr) {
+                        return false;
+                    }
+                    const int rz = ch->is_roof(wtx % c_tiles_per_chunk, wty % c_tiles_per_chunk, z);
+                    if (rz >= 31) {
+                        return false;
+                    }
+                }
+            }
+            return true;
+		}();
+		const bool           deck_outdoors = !slab_roofed;
+		const Xform_palette& slab_pal
+				= (upper_interior && top_storey >= 1 && !deck_outdoors) ? roof_slab[top_storey] : roof_tall[top_storey];
+		// Which way the thickness strip LOOKS decides it: the strip is the
+		// slab's south/east edge, so it faces the tiles just beyond them.  Over
+		// a stairwell hole those are still inside the room and the edge lights
+		// with it; on the building's rim they are open ground, and that edge is
+		// part of the facade -- 132, dark to the room's light like the wall
+		// below it.  Nothing in the splat can tell the two apart: same light,
+		// storey, mask and delivery path.
+		const TileRect slab_fp = obj->get_footprint();
+		// At the slab's OWN height, not z=0: a deck ROOFS the ground beneath
+		// it, so at ground level every deck neighbour reads as covered and no
+		// deck edge ever classified as facade.  Above the deck, an outdoor
+		// neighbour is open sky while a stairwell hole still has the hall's
+		// roof over it.
+		const bool s_edge = tile_roofed_at(slab_fp.x + slab_fp.w - 1, slab_fp.y + slab_fp.h, obj->get_lift() + zs);
+		const bool e_edge = tile_roofed_at(slab_fp.x + slab_fp.w, slab_fp.y + slab_fp.h - 1, obj->get_lift() + zs);
+		const bool     strip_exterior = !s_edge || !e_edge;
+		// The strip always carries its own mark: it is the slab's DOWN-facing
+		// edge and only a light below the slab's storey can see it, which the
+		// splat cannot tell once the strip reads as the top.
+		frame->paint_rle_transformed(
+				roof_light_mask.get(), sx, sy, strip_exterior ? roof_face : roof_strip[top_storey & 3]);
 		Image_buffer::ClipRectSave clipsave(roof_light_mask.get());
 		const TileRect             top_rect(
                 sx - frame->get_xleft(), sy - frame->get_yabove(), frame->get_width() - strip, frame->get_height() - strip);
@@ -2177,6 +2355,17 @@ void Game_window::update_roof_mask(Game_object* obj, int sx, int sy) {
 		if (r.w > 0 && r.h > 0) {
 			roof_light_mask->set_clip(r.x, r.y, r.w, r.h);
 			frame->paint_rle_transformed(roof_light_mask.get(), sx, sy, slab_pal);
+		}
+		if (strip_exterior && light_kind_mask) {
+			// Whole sprite as wall face, then the TOP back to ground: only the
+			// strip keeps kind 1, so the deck surface still samples the field.
+			frame->paint_rle_transformed(light_kind_mask.get(), sx, sy, kind_wall_face);
+			Image_buffer::ClipRectSave ksave(light_kind_mask.get());
+			const TileRect             kr = top_rect.intersect(ksave.Rect());
+			if (kr.w > 0 && kr.h > 0) {
+				light_kind_mask->set_clip(kr.x, kr.y, kr.w, kr.h);
+				frame->paint_rle_transformed(light_kind_mask.get(), sx, sy, kind_ground);
+			}
 		}
 		return;
 	} else if (inside) {
@@ -2236,6 +2425,11 @@ void Game_window::update_roof_mask(Game_object* obj, int sx, int sy) {
 				if (shell && obj->get_info().is_door() && !obj->is_closed_door()) {
 					return;
 				}
+				// Pane rule, as in the ground and upper shell branches.
+				if (NaturalLight::Object_passes_light(obj)) {
+					paint_shell_face(false);
+					return;
+				}
 				if ((shell || !obj->get_info().is_door())
 					&& (NaturalLight::Object_is_wall_face(obj) || NaturalLight::Object_passes_light(obj))) {
 					// A wall facing no outdoors still has a flat TOP, and a top
@@ -2256,6 +2450,185 @@ void Game_window::update_roof_mask(Game_object* obj, int sx, int sy) {
 			if (inherits_mark) {
 				return;
 			}
+			// An upper-storey wall fronting the open air is facade: send it
+			// through the shell painter so it carries 132 and stays dark under
+			// a room below, instead of a storey mark the slab exception washes.
+			// The verdict comes from the ROOF MAP beyond its south/east faces,
+			// not faces_exterior -- that reasons from ground-level geometry and
+			// calls these walls interior, after which they read as 135/136 and
+			// light from the room underneath, the same defect one storey up.
+			// A course that another solid continues straight up is part of that
+			// wall's face even though its own top falls short of the ceiling --
+			// which is how the half-wall under a window is built.  Judged per
+			// SHAPE, Object_is_wall_face calls it a crate on a deck, and the
+			// splat then masks it out of the facade around it.
+			// Only for pieces that test REJECTS: a wall already reaching the
+			// ceiling has the roof itself continuing its column, and raising
+			// face_z to the roof made faces_open_air answer about the sky --
+			// every interior wall then certified as facade and went black.
+			// An open shutter LEAF takes the PANE mark (132 + kind 0), the one
+			// classification both lights reach: the indoor one because pane_px
+			// skips the veto block, the outdoor one through the shell dome.
+			// The storey mark it falls back to is lit from inside but gated
+			// off an outdoor torch, and every shell mark is vetoed from inside.
+			const bool        open_leaf
+					= false;
+			const bool shape_face
+					= !open_leaf
+					  && (NaturalLight::Object_is_wall_face(obj) || NaturalLight::Object_passes_light(obj));
+			const Tile_coord utile = obj->get_tile();
+			const int        uwtop = obj->get_lift() + obj->get_info().get_3d_height();
+			const bool       wall_column
+					= !open_leaf && !shape_face
+					  && (lowest_cover_at(utile.tx, utile.ty, uwtop) == uwtop
+						  || column_continued_at(utile.tx, utile.ty, uwtop));
+			// Its own lift sits below the opening the wall is built around, so
+			// ask about the open air at the height the column reaches.
+			// Certify the two visible faces SEPARATELY, from the roof map at
+			// this sprite's own height.  Handing both the shell's all-side
+			// arrivals lit the inside face of a west wall -- the face the room
+			// shows the camera -- from a campfire standing outside it.
+			// faces_exterior cannot supply the bits: it reasons from
+			// ground-level geometry and a storey up that answer is wrong.
+			uint32_t          up_s_bits       = 0;
+			uint32_t          up_e_bits       = 0;
+			uint32_t          up_s_open       = 0;
+			uint32_t          up_e_open       = 0;
+			uint32_t          up_s_bur        = 0;
+			uint32_t          up_e_bur        = 0;
+			// Open air on the sides the camera CANNOT see.  Only the facade
+			// verdict reads these: a west or north wall shows the room its
+			// S/E sides front, so its top would never qualify as shell from
+			// the two camera-facing sides alone.
+			bool              up_far_open     = false;
+			{
+				const TileRect ufp = obj->get_footprint();
+				const int      uz  = obj->get_lift();
+				// 1 = a ROOM behind this face (a ceiling clears the wall's own
+				// top), 0 = open air, -1 = buried against neighbouring mass,
+				// which is neither and takes no bit.
+				auto side_of = [&](int tx, int ty) {
+					const int b = lowest_cover_at(tx, ty, uz);
+					return b >= 31 ? 0 : (b >= uwtop ? 1 : -1);
+				};
+				for (int i = 0; i < ufp.w && i < 32; ++i) {
+					const int s = side_of(ufp.x + i, ufp.y + ufp.h);
+					if (s == 1) {
+						up_s_bits |= 1u << i;
+					} else if (s == 0) {
+						up_s_open |= 1u << i;
+					} else {
+						up_s_bur |= 1u << i;
+					}
+				}
+				for (int i = 0; i < ufp.h && i < 32; ++i) {
+					const int s = side_of(ufp.x + ufp.w, ufp.y + i);
+					if (s == 1) {
+						up_e_bits |= 1u << i;
+					} else if (s == 0) {
+						up_e_open |= 1u << i;
+					} else {
+						up_e_bur |= 1u << i;
+					}
+				}
+				// side_of alone is not enough here: it reads "nothing blocking
+				// above uz", and a FLOOR SLAB ceiling sets no blocked flag, so an
+				// ordinary interior tile answers open sky.  Require the neighbour
+				// to be unroofed from the GROUND as well -- the standard outdoors
+				// test -- or a sill's course certifies as facade.
+				auto far_open_at = [&](int tx, int ty) {
+					return side_of(tx, ty) == 0 && !tile_roofed_at(tx, ty, 0);
+				};
+				for (int i = 0; i < ufp.w && i < 32 && !up_far_open; ++i) {
+					up_far_open = far_open_at(ufp.x + i, ufp.y - 1);
+				}
+				for (int i = 0; i < ufp.h && i < 32 && !up_far_open; ++i) {
+					up_far_open = far_open_at(ufp.x - 1, ufp.y + i);
+				}
+				// A tile buried against neighbouring mass is neither room nor
+				// street, but it still DRAWS, and uncertified it keeps the
+				// facade default 132 -- black from inside under every light.
+				// Most of a wall line reads buried (its own continuation), so
+				// that default blackened whole walls.  One room tile anywhere
+				// makes the piece interior masonry along its whole length.
+				// With NO room tile it stays uncertified on purpose: buried on
+				// every side is no face at all and belongs to the storey mark
+				// below.  Calling it open air instead made a junction piece
+				// facade, and the campfire outside lit it through the wall.
+				if ((up_s_bits | up_e_bits) != 0) {
+					up_s_bits |= up_s_bur;
+					up_e_bits |= up_e_bur;
+				}
+			}
+			// The GATE is whether either visible face got certified at all.
+			// faces_open_air used to decide this with one OR over two roof
+			// queries, and both of its answers were wrong somewhere: it barred
+			// an interior upper wall that wanted 135/136 and it admitted a wall
+			// buried on both sides, which then kept the facade default 132 --
+			// black from inside under every light.  Buried on both sides is no
+			// face at all, so fall through to the storey mark as before.
+			// `up_far_open` counts: a west or north wall buried against its own
+			// neighbours on both visible sides has no S/E bit at all, and
+			// without it those pieces fell through to the storey mark -- a
+			// two-tile black gap mid-run where the wall happens to be split
+			// into 1x1 sprites.
+			const bool face_certified
+					= (up_s_bits | up_e_bits | up_s_open | up_e_open) != 0 || up_far_open;
+			if (!is_in_dungeon() && (shape_face || wall_column)
+				&& (!obj->get_info().is_door() || obj->is_closed_door())
+				&& face_certified) {
+				// A PANE (open shutter, grate, glass) glows with whatever is
+				// behind it, which the splat keys on 132 + kind 0.  Certifying
+				// its faces interior overwrote that with 136 on the face band
+				// and the storey top mark on the top band -- both dark to the
+				// light outside, split down the middle of one sprite.
+				if (NaturalLight::Object_passes_light(obj)) {
+					paint_shell_face(false);
+					return;
+				}
+				// A top fronting OPEN AIR on ANY side is the building's outer
+				// shell and takes the ground shell's 134.  All four sides
+				// count: a west or north wall's exterior side is the one the
+				// camera cannot see, and testing only S/E cut its top off
+				// mid-run at the first corner piece that happened to face the
+				// street.  Fronting rooms all round is an interior partition
+				// and keeps the storey mark, so no light reaches its top
+				// through the wall.
+				const int         up_storey     = storey_of(obj->get_lift());
+				// A piece carrying another course on its top (wall_column) shows
+				// a SILL, not a crown: light reaches it only through whatever
+				// caps it, so an open shutter or glass lights it and a closed
+				// one leaves it on the storey mark.
+				const bool        up_sill_lit
+						= !wall_column || opening_above_at(utile.tx, utile.ty, uwtop);
+				const bool        up_fronts_air = (up_s_open | up_e_open) != 0 || up_far_open;
+				const bool        up_facade     = up_sill_lit && up_fronts_air;
+				// A sill under a CLOSED shutter takes no light THROUGH the window,
+				// but it is still exterior masonry facing the street.  132 is lit by
+				// an outdoor light and vetoed by an indoor one, which is exactly that
+				// split; 134 would set top_px and light it from inside as well.
+				// CAMERA-FACING sides only, unlike the top verdict above: a sill
+				// is seen as a face, and a north or west one is on the building's
+				// far side, where lighting it put a bright ledge the viewer
+				// should never see.
+				const bool        up_sill_shell
+						= !up_facade && (up_s_open | up_e_open) != 0;
+				// The FACES are a separate verdict from the top: a top has no
+				// viewer side and may be shell from the far side, but a face
+				// the camera sees is only shell where a CAMERA-FACING side
+				// fronts open air.  Hardcoded true here, a triangle buried on
+				// both sides fell through every branch and kept the 132 base,
+				// which the shell dome lights -- the sill, and every west-wall
+				// piece the far-side test newly certified.
+				const bool        up_shell      = (up_s_open | up_e_open) != 0;
+				paint_shell_face(
+						true, up_s_bits, up_e_bits, up_shell, true, up_s_open, up_e_open,
+						up_facade       ? 134
+						: up_sill_shell ? 132
+										: ((upper_interior && up_storey >= 1) ? 140 : 128) + up_storey,
+						up_far_open);
+				return;
+			}
 			tall_exterior = true;
 			tall_storey   = storey_of(obj->get_lift());
 		} else if (!roof_like && top >= 5 && !open_sky_above(top) && !is_in_dungeon()) {
@@ -2263,6 +2636,16 @@ void Game_window::update_roof_mask(Game_object* obj, int sx, int sy) {
 			const bool shell = faces_exterior(
 					true, &shell_s_in, &shell_e_in, &shell_s_bits, &shell_e_bits, &shell_s_open, &shell_e_open);
 			if (shell && obj->get_info().is_door() && !obj->is_closed_door()) {
+				return;
+			}
+			// Same rule as "upper-shell-face": a PANE glows with what is behind
+			// it, which the splat keys on 132 + kind 0.  The generic call below
+			// certifies its faces interior and stamps a separate top mark, so
+			// one shutter sprite comes out in two differently-masked bands, and
+			// the sill under it keeps a top the torch cannot reach.  Only the
+			// upper storey had this path; the ground floor kept the split.
+			if (NaturalLight::Object_passes_light(obj)) {
+				paint_shell_face(false);
 				return;
 			}
 			if ((shell || !obj->get_info().is_door())
@@ -2295,7 +2678,17 @@ void Game_window::update_roof_mask(Game_object* obj, int sx, int sy) {
 				// it takes the room like its faces.  As an exposed wall top (134)
 				// it drew all-side arrivals and lit from the street, and on a low
 				// piece that band is most of the sprite.
-				paint_shell_face(true, shell_s_bits, shell_e_bits, shell, false, shell_s_open, shell_e_open);
+				// EXCEPT on a sill: a low piece with an OPENING (window, glass,
+				// shutter) in the course resting on it.  Unmarked, its band is
+				// 132 + kind 2, which is neither pane_px nor top_px nor face_px
+				// under an interior light, so it falls into the veto block and
+				// is cut -- the torch in the room never reached its own sills.
+				// 134 sets top_px, which skips that block; the street view is
+				// unchanged, since shell_dome already covers 132 and 134 alike.
+				const Tile_coord  ltile          = obj->get_tile();
+				const bool        sill_top
+						= opening_above_at(ltile.tx, ltile.ty, obj->get_lift() + obj->get_info().get_3d_height());
+				paint_shell_face(true, shell_s_bits, shell_e_bits, shell, sill_top, shell_s_open, shell_e_open);
 				return;
 			}
 		}
@@ -2360,9 +2753,20 @@ void Game_window::update_roof_mask(Game_object* obj, int sx, int sy) {
 			}
 		}
 	}
+	{
+	}
+	// A tall EXTERIOR piece with OPEN SKY above it is outdoors -- a battlement
+	// on the castle wall -- not an upper floor.  Giving it the slab mark while
+	// the viewer is inside also gives it the slab's exemption in the veto
+	// block (slab_s < light_top_storey admits "the upper room's own floor"),
+	// so a torch in the room below lit the battlements through the wall.  The
+	// slab path already draws this distinction with deck_outdoors.
+	const bool        tall_slab
+			= upper_interior && tall_storey >= 1
+			  && !open_sky_above(obj->get_lift() + obj->get_info().get_3d_height());
 	frame->paint_rle_transformed(
 			roof_light_mask.get(), sx, sy,
-			tall_exterior ? ((upper_interior && tall_storey >= 1) ? roof_slab[tall_storey] : roof_tall[tall_storey])
+			tall_exterior ? (tall_slab ? roof_slab[tall_storey] : roof_tall[tall_storey])
 						  : (roof_like ? roof_set : roof_clear));
 }
 
@@ -2476,6 +2880,9 @@ void Game_window::build_light_layers() {
 	const int            foot_lw = kindpix ? static_cast<int>(light_kind_mask->get_width()) : 0;
 	const unsigned char* footdxp = kindpix ? light_foot_dx.data() : nullptr;
 	const unsigned char* footdyp = kindpix ? light_foot_dy.data() : nullptr;
+	{
+	}
+
 	// INSIDE, the room mask applies to every light (the roof mask on top so
 	// nothing spills onto a still-drawn roof).  OUTSIDE, it still applies to a
 	// light itself under a roof (lr.mask_roof) so its walls contain it, while
@@ -2627,6 +3034,7 @@ void Game_window::build_light_layers() {
 		}
 		unsigned char* dstpix = dst->get_bits();
 		const int      dst_lw = static_cast<int>(dst->get_line_width());
+
 		// This tier's radial-alpha (coverage) mask holds the STATIC
 		// (world-pinned) lights only.  It persists between frames: while the
 		// static signature holds, a still view reuses it as-is and a scrolled
@@ -2686,6 +3094,43 @@ void Game_window::build_light_layers() {
 			// storey) is hidden and would paint only its z-shifted
 			// wall-ring seam over the slab sides / exterior ground.
 			bool hidden_room = lr.mask_roof && lr.ltz >= skip_above_actor;
+			// ...but a TALL HALL is ONE room from floor to ceiling: stepping
+			// under a lower roof cuts the render above the Avatar's head while
+			// the hall's floor is still on screen and still lit, so dropping
+			// its torches blacked out the whole hall.  The case this guards
+			// against is a real upper STOREY, where a slab separates the light
+			// from the ground.  Ask an OPEN tile of the light's own room, not
+			// the light's tile -- a wall sconce stands IN the masonry, where
+			// the query answers with the wall itself (roof_0=9 for a hall whose
+			// ceiling is 11).  Same roof from the ground as from the light's
+			// height => no slab between => one room.
+			if (hidden_room && !lr.is_spill && !lr.lit.empty()) {
+				const int gside = 2 * lr.rt + 1;
+				int       otx = -1, oty = -1, bestd = 1 << 30;
+				for (int gy = 0; gy < gside; ++gy) {
+					for (int gx = 0; gx < gside; ++gx) {
+						if ((lr.lit[static_cast<size_t>(gy) * gside + gx] & 0x7f) == 0) {
+							continue;
+						}
+						const int d = std::abs(gx - lr.rt) + std::abs(gy - lr.rt);
+						if (d == 0 || d >= bestd) {
+							continue;
+						}
+						bestd = d;
+						otx   = ((lr.ltx - lr.rt + gx) % c_num_tiles + c_num_tiles) % c_num_tiles;
+						oty   = ((lr.lty - lr.rt + gy) % c_num_tiles + c_num_tiles) % c_num_tiles;
+					}
+				}
+				if (otx >= 0
+					&& NaturalLight::Light_room_roof_z(map, otx, oty, 0)
+							   == NaturalLight::Light_room_roof_z(map, otx, oty, lr.ltz)) {
+					hidden_room = false;
+				}
+			}
+			{
+				// log below only prints for lights that survive, so a hidden
+				// one used to leave no trace at all.
+			}
 			if ((inside || lr.mask_roof || lr.is_spill) && !lr.lit.empty()) {
 				grid    = lr.lit.data();
 				grid_rt = lr.rt;
@@ -2745,7 +3190,12 @@ void Game_window::build_light_layers() {
 				// them up-screen), so an outdoor spill keeps them all dark:
 				// spill_floor 0 fails every 129+ storey test while plain 128
 				// (canopies, deck objects) keeps its whole-unit free dome.
-				const int spill_floor = lr.is_spill && inside ? 0 : lr.spill_floor;
+				// A spill placed ON an overlooked floor-roof deck is exempt: that
+				// deck is exterior surface under open sky, and lighting it is the
+				// whole point of a high window's spill.
+				const int spill_floor = (lr.is_spill && inside && !lr.spill_on_deck) ? 0 : lr.spill_floor;
+				{
+				}
 				NaturalLight::Splat_radial_light(
 						covp, dstpix, srcpix, W, H, dst_lw, src_lw, csx, csy, lr.radius, lr.elevation, lr.dist_bias,
 						lr.spill_percent, roofpix, roof_lw, mask_roof, lr.is_spill, spill_floor, light_top_storey, lr.ltz / 5,
@@ -2758,7 +3208,7 @@ void Game_window::build_light_layers() {
 								? lr.ring.data()
 								: nullptr,
 						av_fx, av_fy, light_sprite_boxes.empty() ? nullptr : light_sprite_boxes.data(),
-						static_cast<int>(light_sprite_boxes.size()));
+						static_cast<int>(light_sprite_boxes.size()), lr.spill_on_deck, lr.cone_dx, lr.cone_dy);
 			}
 			// Match Splat_radial_light's reach: only an ELEVATED spill's
 			// dome extends sqrt(r^2 + 2*r*bias), capped at 1.5r.
@@ -2816,6 +3266,7 @@ void Game_window::build_light_layers() {
 			}
 		};
 
+		// if a visual artifact survives this, it is not the coverage cache.
 		// A dragged object is lifted out of the world into its own layer, so
 		// the world render loses it while the cached coverage still carries
 		// its splat: bare ground then shows at the object's alpha as a
@@ -2832,6 +3283,8 @@ void Game_window::build_light_layers() {
 		const bool translate  = sig_ok && !reuse && std::abs(dx) < W && std::abs(dy) < H;
 		bool       has_moving = false;
 		{
+			{
+			}
 			if (reuse) {
 				// Mask unchanged and screen-aligned: just refresh the copied
 				// world pixels and keep last pass's rects.
@@ -3082,6 +3535,8 @@ void Game_window::build_light_layers() {
 				}
 			}
 			const size_t sz = static_cast<size_t>(W) * H;
+			// keep theirs).  A/B switches for "a lamp shows through the sprite
+			// drawn in front of it".
 			for (Game_object* act : subjects) {
 				if (act == nullptr || act->get_flag(Obj_flags::dont_render)) {
 					continue;
@@ -3106,8 +3561,15 @@ void Game_window::build_light_layers() {
 				// has no clear ground at its mount: reach further down-screen
 				// to the floor its own pool lights.
 				const bool           is_actor = act->as_actor() != nullptr;
+				// box: a dark actor tells nothing on its own -- foot_a and the
+				// lifted count say whether it found ground light and reached
+				// its pixels.
 				const unsigned char* rdcov    = has_moving ? light_scratch_cov.data() : cov;
 				int                  foot_a   = 0;
+				// For the trace below: the same window with the mask IGNORED,
+				// and how many clear pixels it offered at all -- "ground is
+				// dark" and "every pixel masked" both end in foot_a 0 and need
+				// opposite fixes.
 				const int wy1        = asy + (is_actor ? c_tilesize / 2 : 2 * c_tilesize);
 				const int wx0        = asx - (is_actor ? c_tilesize : 2 * c_tilesize);
 				const int wx1        = asx + (is_actor ? c_tilesize / 2 : c_tilesize);
@@ -3220,7 +3682,13 @@ void Game_window::build_light_layers() {
 							if (rm == 255) {
 								continue;    // Never light a drawn roof.
 							}
-							if (rm >= 140 && rm <= 143 && own_lift < (rm - 140) * 5) {
+							// An outdoor deck carries 128 + storey, an indoor upper
+							// floor 140 + storey; both are a floor drawn over this
+							// pixel.
+							const int over_storey = (rm >= 140 && rm <= 143) ? rm - 140
+												  : (rm >= 128 && rm <= 131) ? rm - 128
+																			 : -1;
+							if (over_storey > 0 && own_lift < over_storey * 5) {
 								// A floor SLAB is drawn over this pixel and the
 								// subject stands below it: the world hides him
 								// there, so brightening it shows his sprite
@@ -3255,9 +3723,17 @@ void Game_window::build_light_layers() {
 						}
 					}
 				}
+				{
+				}
 			}
 		}
 		{
+			// hands to the layer -- cov (static, cached across frames), mov (the
+			// carried light's overlay) and the composite actually used.  A stripe
+			// visible in one of these is coverage; a stripe in none of them is
+			// the layer upload.
+			{
+			}
 			layer_set_coverage(handle, has_moving ? light_scratch_cov.data() : cov, W, H);
 			// Align the overlay with the world's on-screen rectangle.
 			int gx0 = 0;

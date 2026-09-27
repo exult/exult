@@ -145,6 +145,12 @@ class Game_window {
 		// Spill glows: the source's storey (tz / 5), gating 128 + storey roof
 		// mask pixels in Splat_radial_light.
 		int spill_floor = 0;
+		// Spill placed on an overlooked floor-roof deck: exempt from the
+		// inside-viewer storey veto, that deck is what it exists to light.
+		bool spill_on_deck = false;
+		// The fan's outward axis (unit, one component), as handed to
+		// Build_spill_shadow_grid: the splat needs it to fade the fan's edge.
+		int cone_dx = 0, cone_dy = 0;
 		// True for a light that moves with the Avatar (carried torch and its
 		// spills): splatted fresh every frame on top of the cached static mask
 		// instead of invalidating it.
@@ -604,10 +610,11 @@ public:
 	void add_light_render(
 			int sx, int sy, int radius, int tier, int elevation, int rt, int ltx, int lty, int ltz, std::vector<unsigned char> lit,
 			bool mask_roof = false, int dist_bias = 0, bool is_spill = false, int spill_percent = 100, int spill_floor = 0,
-			bool moving = false, std::vector<unsigned char> ring = {}) {
+			bool moving = false, std::vector<unsigned char> ring = {}, bool spill_on_deck = false, int cone_dx = 0,
+			int cone_dy = 0) {
 		light_renders.push_back(
 				{sx, sy, radius, tier, elevation, rt, ltx, lty, ltz, mask_roof, dist_bias, is_spill, spill_percent, spill_floor,
-				 moving, std::move(lit), std::move(ring)});
+				 spill_on_deck, cone_dx, cone_dy, moving, std::move(lit), std::move(ring)});
 	}
 
 	void build_light_layers();

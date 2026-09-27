@@ -517,7 +517,7 @@ void Game_window::paint(
 					get_shape_location(sp, ssx, ssy);
 					add_light_render(
 							ssx, ssy, spill_radius, tier, elevation, srt, sp.tx, sp.ty, sp.tz, std::move(slit), false, spill_dist,
-							true, spill.percent, spill.floor, true, std::move(sring));
+							true, spill.percent, spill.floor, true, std::move(sring), spill.on_deck, cdx, cdy);
 				}
 			}
 			// Also check light spell.
@@ -811,9 +811,20 @@ int Game_render::paint_chunk_objects(
 				// without it the wash a light-passing window wall shows
 				// (clear pixels, z-blind) loses its wall-line cells and
 				// drifts off the window (inside/outside parity).
-				const bool light_walls
-						= !gwin->is_main_actor_inside()
-						  || gwin->get_main_actor()->get_lift() / 5 == ltile.tz / 5 || !under_roof;
+				// Same ROOM, not same storey: in a tall hall the Avatar on the
+				// floor and a wall torch one storey up share the room, and the
+				// storey test called them strangers -- so the ring went off and
+				// every wall top, sill and half wall around that torch lost its
+				// arrivals.  The carried light never takes this test, which is
+				// why only PLACED sources showed it.  Two tiles are in one room
+				// when the same ceiling closes them.
+				bool same_room = false;
+				if (gwin->get_main_actor() != nullptr) {
+					const Tile_coord avt = gwin->get_main_actor()->get_tile();
+					same_room            = NaturalLight::Light_room_roof_z(gwin->get_map(), ltile.tx, ltile.ty, ltile.tz)
+								== NaturalLight::Light_room_roof_z(gwin->get_map(), avt.tx, avt.ty, avt.tz);
+				}
+				const bool light_walls = !gwin->is_main_actor_inside() || same_room || !under_roof;
 				NaturalLight::Build_light_shadow_grid(light_obj, rt, lit, spills, light_walls, &ringv);
 				if (!suppress_main) {
 					gwin->add_light_render(
@@ -851,7 +862,7 @@ int Game_render::paint_chunk_objects(
 					gwin->get_shape_location(sp, ssx, ssy);
 					gwin->add_light_render(
 							ssx, ssy, spill_radius, tier, elevation, srt, sp.tx, sp.ty, sp.tz, std::move(slit), false, spill_dist,
-							true, spill.percent, spill.floor, false, std::move(sring));
+							true, spill.percent, spill.floor, false, std::move(sring), spill.on_deck, cdx, cdy);
 				}
 			}
 			// Dim once per inside/outside crossing (floored at the lowest lit

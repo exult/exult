@@ -92,6 +92,9 @@ namespace NaturalLight {
 		// The opening's own wall tile (world coords) for window/grate spills;
 		// tx < 0 for doorway/roof-edge/well exits (no pass-through shape).
 		Tile_coord opening = Tile_coord(-1, -1, -1);
+		// Placed ON an overlooked floor-roof deck (exterior surface under open
+		// sky), so the inside-viewer storey veto must not apply to it.
+		bool on_deck = false;
 	};
 
 	// One stamped sprite's screen art box plus its paint origin (the foot).
@@ -149,7 +152,7 @@ namespace NaturalLight {
 			int clip_y0 = 0, int clip_x1 = -1, int clip_y1 = -1, const unsigned char* kindpix = nullptr, int kind_lw = 0,
 			const unsigned char* footdx = nullptr, const unsigned char* footdy = nullptr, int foot_lw = 0,
 			const unsigned char* ring = nullptr, int av_fx = 0, int av_fy = 0, const Sprite_box* sprites = nullptr,
-			int nsprites = 0);
+			int nsprites = 0, bool spill_on_deck = false, int cone_dx = 0, int cone_dy = 0);
 
 	// The dome brightness this light puts on the GROUND of one world tile,
 	// straight from its fill -- no screen mask, no sprite.  For subjects whose
