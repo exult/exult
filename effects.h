@@ -77,6 +77,14 @@ public:
 	void paint();                        // Draw all sprites/proj./weather.
 	void paint_text();                   // Draw text.
 	void init();
+
+	auto begin() const {
+		return effects.begin();
+	}
+
+	auto end() const {
+		return effects.end();
+	}
 };
 
 /*
