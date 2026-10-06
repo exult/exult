@@ -2218,7 +2218,8 @@ int Clouds_effect::GetCloudLayer(const ShapeID sid, bool force_refresh) {
 }
 
 void Clouds_effect::SetCloudParameters(Cloudstyle style, CloudIntensity intensity) {
-	if (!HWCloudsSupported() || Game_window::get_instance()->is_in_exult_menu()) {
+	Game_window* gwin = Game_window::get_instance();
+	if (!HWCloudsSupported() || gwin->is_in_exult_menu()) {
 		return;
 	}
 	switch (style) {
@@ -2239,6 +2240,8 @@ void Clouds_effect::SetCloudParameters(Cloudstyle style, CloudIntensity intensit
 		break;
 	}
 
+	int old_base_alpha = base_alpha ? base_alpha : 100;
+
 	switch (intensity) {
 	case CI_Light:
 		base_alpha = 60;
@@ -2252,6 +2255,16 @@ void Clouds_effect::SetCloudParameters(Cloudstyle style, CloudIntensity intensit
 	default:
 		base_alpha = 100;
 		break;
+	}
+
+	// Update the alpha of all clouds_effect objects to reflect the new base_alpha so the change takes effect immediately and not
+	// only the next time handle_event is called
+	if (base_alpha != old_base_alpha) {
+		for (const auto& effect : *gwin->get_effects()) {
+			if (auto ce = dynamic_cast<Clouds_effect*>(effect.get())) {
+				ce->alpha = (ce->alpha * base_alpha) / old_base_alpha;
+			}
+		}
 	}
 
 	config->set("config/video/clouds/alpha", base_alpha, false);
