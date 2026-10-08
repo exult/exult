@@ -291,7 +291,7 @@ Special_effect::~Special_effect() {
 /**
  *  Paint them all.
  */
-// #define HW_CLOUD_TESTING
+
 void Effects_manager::paint() {
 	Clouds_effect::start_frame();
 	for (auto& effect : effects) {
@@ -2096,6 +2096,9 @@ uint32 Clouds_effect::GetSDLBlendMode(BLEND type) {
 		return SDL_ComposeCustomBlendMode(
 				SDL_BLENDFACTOR_ZERO, SDL_BLENDFACTOR_DST_ALPHA, SDL_BLENDOPERATION_ADD, SDL_BLENDFACTOR_ZERO, SDL_BLENDFACTOR_ONE,
 				SDL_BLENDOPERATION_ADD);
+		
+	default:
+		break;
 	}
 	return 0;
 }
