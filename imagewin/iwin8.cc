@@ -236,11 +236,15 @@ uint32 Image_window8::layer_argb_pixel(const Layer& layer, unsigned char p) cons
 		// Translucent colour: keep its alpha, gamma-correct the RGB so it
 		// matches the (gamma-corrected) opaque colours on screen.
 		const uint32 argb = layer.index_argb[p];
-		const uint32 a    = (argb >> 24) & 0xff;
-		const uint32 r    = GammaRed[(argb >> 16) & 0xff];
-		const uint32 g    = GammaGreen[(argb >> 8) & 0xff];
-		const uint32 b    = GammaBlue[argb & 0xff];
-		return (a << 24) | (r << 16) | (g << 8) | b;
+		if (!layer.no_gammacorrection) {
+			const uint32 a = (argb >> 24) & 0xff;
+			const uint32 r = GammaRed[(argb >> 16) & 0xff];
+			const uint32 g = GammaGreen[(argb >> 8) & 0xff];
+			const uint32 b = GammaBlue[argb & 0xff];
+			return (a << 24) | (r << 16) | (g << 8) | b;
+		} else {
+			return argb;
+		}
 	}
 	// Use the layer's fixed-palette override if one is set, else the live one.
 	const std::vector<unsigned char>& ov  = get_ui_cfg(layer.ui_kind).ui_palette_colors;

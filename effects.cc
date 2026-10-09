@@ -26,6 +26,7 @@
 
 #include "Audio.h"
 #include "AudioMixer.h"
+#include "Configuration.h"
 #include "Gump.h"
 #include "Gump_manager.h"
 #include "Zombie.h"
@@ -56,6 +57,8 @@
 #	pragma GCC diagnostic pop
 #endif    // __GNUC__
 
+#include <cmath>
+
 using namespace Pentagram;
 
 using std::rand;
@@ -71,12 +74,18 @@ namespace {
 	constexpr int text_effect_layer_z = (1 << 18) + (1 << 16);
 }    // namespace
 
+void Effects_manager::init() {
+	Clouds_effect::init_layers(true);
+}
+
 /**
  *  Clean up.
  */
 
 Effects_manager::~Effects_manager() {
 	remove_all_effects(false);
+
+	Clouds_effect::deinit_layers();
 }
 
 /**
@@ -284,9 +293,11 @@ Special_effect::~Special_effect() {
  */
 
 void Effects_manager::paint() {
+	Clouds_effect::start_frame();
 	for (auto& effect : effects) {
 		effect->paint();
 	}
+	Clouds_effect::end_frame();
 }
 
 /**
@@ -1640,9 +1651,9 @@ void Fog_effect::handle_event(unsigned long curtime, uintptr udata) {
 const int CLOUD = 2;    // Shape #.
 
 Cloud::Cloud(
-		short dx, short dy    // Deltas for movement.
-		)
-		: cloud(CLOUD, 0, SF_SPRITES_VGA), wx(0), wy(0), deltax(dx), deltay(dy), count(-1) {
+		short dx, short dy,    // Deltas for movement.
+		Clouds_effect* owner)
+		: cloud(CLOUD, 0, SF_SPRITES_VGA), wx(0), wy(0), deltax(dx), deltay(dy), count(-1), owner(owner) {
 	Game_window* gwin = Game_window::get_instance();
 	// Get abs. values.
 	const int adx = deltax > 0 ? deltax : -deltax;
@@ -1653,6 +1664,8 @@ Cloud::Cloud(
 		max_count = 2 * gwin->get_width() / adx;
 	}
 	start_time = 0;
+
+	fade_out_count = std::max(10, std::min(fade_out_count, max_count / 2));
 }
 
 /**
@@ -1697,6 +1710,7 @@ inline void Cloud::next(
 		unsigned long curtime,    // Current time of day.
 		int w, int h              // Dims. of window.
 ) {
+	last_time = curtime;
 	if (curtime < start_time) {
 		return;    // Not yet.
 	}
@@ -1707,10 +1721,10 @@ inline void Cloud::next(
 	gwin->add_dirty(gwin->clip_to_win(gwin->get_shape_rect(shape, wx - scrollx, wy - scrolly).enlarge(c_tilesize / 2)));
 	if (count <= 0) {    // Time to restart?
 		// Set start time randomly.
-		start_time = curtime + 2000 * randcnt + rand() % 2000;
-		randcnt    = (randcnt + 1) % 4;
-		start_time = Game::get_ticks() + 2000 * randcnt + rand() % 500;
-		count      = max_count;
+		randcnt      = (randcnt + 1) % 4;
+		start_time   = Game::get_ticks() + 2000 * randcnt + rand() % 500 + 100;
+		fade_in_time = start_time - curtime;
+		count        = max_count;
 		cloud.set_frame(rand() % cloud.get_num_frames());
 		int x;
 		int y;    // Get screen pos.
@@ -1732,9 +1746,41 @@ inline void Cloud::next(
 void Cloud::paint() {
 	Game_window* gwin = Game_window::get_instance();
 	if (count > 0) {    // Might not have been started.
-		cloud.paint_shape(
-				wx - gwin->get_scrolltx() * c_tilesize - gwin->get_scrolltx_lo(),
-				wy - gwin->get_scrollty() * c_tilesize - gwin->get_scrollty_lo());
+		int x = wx - gwin->get_scrolltx() * c_tilesize - gwin->get_scrolltx_lo();
+		int y = wy - gwin->get_scrollty() * c_tilesize - gwin->get_scrollty_lo();
+
+// HW_CLOUD_TESTING disables HW rendering of effect clouds
+#ifndef HW_CLOUD_TESTING
+		// layered cloud rendering enabled
+		if (Clouds_effect::blur_size >= 0) {
+			int layer = Clouds_effect::GetCloudLayer(cloud, false);
+
+			Shape_frame* shape = cloud.get_shape();
+
+			int alpha = owner->alpha;
+			int xl, yt, xr, yb;
+			int blur_size2 = Clouds_effect::blur_size * 2;
+			gwin->get_win()->game_to_screen(
+					x - shape->get_xleft() - blur_size2, y - shape->get_yabove() - blur_size2, false, xl, yt);
+			gwin->get_win()->game_to_screen(
+					x + shape->get_xright() + blur_size2, y + shape->get_ybelow() + blur_size2, false, xr, yb);
+
+			// Cloud is about to end so fade it out
+			if (count < fade_out_count) {
+				alpha = (count * alpha) / fade_out_count;
+			}
+			// Cloud is starting so fade it in
+			else if (max_count == count && start_time > last_time) {
+				alpha = ((fade_in_time - (start_time - last_time)) * alpha) / fade_in_time;
+			}
+
+			gwin->layer_set_visible(layer, true);
+			gwin->layer_set_dest(layer, xl, yt, xr - xl, yb - yt, true, std::max(0, alpha));
+		} else
+#endif
+		{
+			cloud.paint_shape(x, y);
+		}
 	}
 }
 
@@ -1774,7 +1820,7 @@ Clouds_effect::Clouds_effect(
 			deltax += deltax / 2;
 			deltay += deltay / 2;
 		}
-		clouds.emplace_back(std::make_unique<Cloud>(deltax, deltay));
+		clouds.emplace_back(std::make_unique<Cloud>(deltax, deltay, this));
 	}
 }
 
@@ -1789,9 +1835,16 @@ void Clouds_effect::handle_event(
 	if (curtime >= stop_time) {
 		// Time to stop.
 		auto ownHandle = eman->remove_effect(this);
+		alpha          = 0;
 		gwin->set_all_dirty();
 		return;
+		// Ending soon so fade out
+	} else if ((stop_time - curtime) < fade_time) {
+		alpha = (((stop_time - curtime)) * base_alpha) / fade_time;
+	} else {
+		alpha = base_alpha;
 	}
+
 	const int w = gwin->get_width();
 	const int h = gwin->get_height();
 	for (auto& cloud : clouds) {
@@ -1800,12 +1853,458 @@ void Clouds_effect::handle_event(
 	gwin->get_tqueue()->add(curtime + delay, this, udata);
 }
 
+std::map<ShapeID, int> Clouds_effect::shape_layers = {};
+int                    Clouds_effect::last_width   = 0;
+int                    Clouds_effect::last_height  = 0;
+int                    Clouds_effect::blur_size    = 0;
+int                    Clouds_effect::base_alpha   = 100;
+int                    Clouds_effect::rt_layers[6] = {-1, -1, -1, -1, -1, -1};
+
+void Clouds_effect::deinit_layers() {
+	auto* gwin = Game_window::get_instance();
+	for (int& l : rt_layers) {
+		gwin->destroy_layer(l);
+		l = -1;
+	}
+
+	for (const auto& pair : shape_layers) {
+		gwin->destroy_layer(pair.second);
+	}
+	shape_layers.clear();
+	last_height = 0;
+	last_width  = 0;
+}
+
+void Clouds_effect::init_layers(bool load_config) {
+	auto* gwin  = Game_window::get_instance();
+	last_width  = gwin->get_win()->get_display_width();
+	last_height = gwin->get_win()->get_display_height();
+
+	if (load_config) {
+		config->value("config/video/clouds/alpha", base_alpha, base_alpha);
+		config->value("config/video/clouds/blur_size", blur_size, blur_size);
+
+		base_alpha = std::max(min_base_alpha, std::min(max_base_alpha, base_alpha));
+		blur_size  = std::max(-1, std::min(max_cloud_blur_size, blur_size));
+		config->set("config/video/clouds/alpha", base_alpha, false);
+		config->set("config/video/clouds/blur_size", blur_size, false);
+		config->write_back();
+	}
+
+	if (!HWCloudsSupported()) {
+		blur_size = -1;
+
+		return;
+	}
+
+	// initialize all the cloud layers
+
+	// Destroy all RenderTarget layers
+	for (int& l : rt_layers) {
+		gwin->destroy_layer(l);
+	}
+	auto   win = gwin->get_win();
+	uint32 palette[256];
+	std::memset(palette, 0, sizeof(palette));
+
+	rt_layers[0] = win->create_sdl_render_target_layer("Cloud_rt", layer_z + 10, SDL_PIXELFORMAT_ARGB8888);
+	gwin->layer_set_blendmode(rt_layers[0], SDL_BLENDMODE_NONE);
+	gwin->layer_set_blendmode(rt_layers[0], GetSDLBlendMode(BLEND::MODCOLOUR_BLEND_PREMULTIPLIED));
+	gwin->layer_set_ui_kind(rt_layers[0], Image_window::UiLayerFullScreenBilinear);
+
+	// Fill layer fills the render target with black
+	rt_layers[1] = win->create_layer("Cloud_rt rgb=0", 4, 4, 0, 0, layer_z - 1);
+	win->layer_set_index_argb(rt_layers[1], palette, true);
+	win->layer_set_sdl_render_target(rt_layers[1], rt_layers[0]);
+	win->layer_set_opaque(rt_layers[1], false);
+	gwin->layer_set_blendmode(rt_layers[1], SDL_BLENDMODE_NONE);
+	gwin->layer_set_ui_kind(rt_layers[1], Image_window::UiLayerFullScreenPoint);
+
+	// Copy alpha to colour and modulate by 0.8. This has the effect of adding a ceiling to the how much darkening that can occur as
+	// higher values are darker
+	// CC in Palette[0] is where the 0.8 comes from
+	rt_layers[2] = win->create_layer("Cloud_rt rgb=da*0.8", 4, 4, 0, 0, layer_z + 4);
+	palette[0]   = 0xffCCCCCC;
+	win->layer_set_index_argb(rt_layers[2], palette, true);
+	win->layer_set_sdl_render_target(rt_layers[2], rt_layers[0]);
+	win->layer_set_opaque(rt_layers[2], true);
+	gwin->layer_set_blendmode(rt_layers[2], GetSDLBlendMode(BLEND::DST_ALPHA_TO_COLOUR));
+
+	gwin->layer_set_ui_kind(rt_layers[2], Image_window::UiLayerFullScreenPoint);
+
+	// Invert colour so lower values are darker and
+	// Palette from previous stage is reused to modulate by 0.8 to darken clouds
+	rt_layers[3] = win->create_layer("Cloud_rt rgb=(1-drgb)*0.8", 4, 4, 0, 0, layer_z + 5);
+	win->layer_set_index_argb(rt_layers[3], palette, true);
+	win->layer_set_sdl_render_target(rt_layers[3], rt_layers[0]);
+	win->layer_set_opaque(rt_layers[3], true);
+	gwin->layer_set_blendmode(rt_layers[3], GetSDLBlendMode(BLEND::INVERT_COLOUR));
+
+	gwin->layer_set_ui_kind(rt_layers[3], Image_window::UiLayerFullScreenPoint);
+
+	// Add dst alpha to itself
+	// This is to setup the alpha channel to be able to mask of the areas that are completely transparent
+	rt_layers[4] = win->create_layer("Cloud_rt a=da*4", 4, 4, 0, 0, layer_z + 7);
+	std::memset(palette, 64, sizeof(palette));
+	palette[0] = 0xffFFFFFF;    // SRC needs to be white for this to work
+	win->layer_set_index_argb(rt_layers[4], palette, true);
+	win->layer_set_sdl_render_target(rt_layers[4], rt_layers[0]);
+	win->layer_set_opaque(rt_layers[4], true);
+	gwin->layer_set_blendmode(rt_layers[4], SDL_BLENDMODE_MOD);
+	gwin->layer_set_blendmode(rt_layers[4], GetSDLBlendMode(BLEND::ADD_DST_ALPHA_TO_DST_ALPHA));
+	gwin->layer_set_ui_kind(rt_layers[4], Image_window::UiLayerFullScreenPoint);
+	// draw it 2 times to multiple the dst Alpha by 4
+	gwin->layer_set_dest(rt_layers[4], 0, 0, win->get_display_width(), win->get_display_height(), true);
+	gwin->layer_set_dest(rt_layers[4], 0, 0, win->get_display_width(), win->get_display_height(), true);
+
+	// Modulate cloud layer by its alpha channel setting up a premodulated blend
+	rt_layers[5] = win->create_layer("Cloud_rt drgb*=da", 4, 4, 0, 0, layer_z + 9);
+	palette[0]   = 0xffffffff;
+	win->layer_set_index_argb(rt_layers[5], palette, true);
+	win->layer_set_sdl_render_target(rt_layers[5], rt_layers[0]);
+	win->layer_set_opaque(rt_layers[5], true);
+	gwin->layer_set_blendmode(rt_layers[5], GetSDLBlendMode(BLEND::MOD_DST_COLOUR_BY_ALPHA));
+	gwin->layer_set_ui_kind(rt_layers[5], Image_window::UiLayerFullScreenPoint);
+
+	// Hide all the layers
+	for (int& l : rt_layers) {
+		gwin->layer_set_visible(l, false);
+	}
+
+	// Destroy all the shape frame layers
+	for (const auto& pair : shape_layers) {
+		gwin->destroy_layer(pair.second);
+	}
+	shape_layers.clear();
+
+	for (int frnum = ShapeID(CLOUD, 0, SF_SPRITES_VGA).get_num_frames() - 1; frnum >= 0; frnum--) {
+		int layer = GetCloudLayer({CLOUD, frnum, SF_SPRITES_VGA}, true);
+
+		gwin->layer_set_visible(layer, false);
+	}
+}
+
+void Clouds_effect::start_frame() {
+	auto gwin = Game_window::get_instance();
+
+	int cur_width  = gwin->get_win()->get_display_width();
+	int cur_height = gwin->get_win()->get_display_height();
+
+	if (last_width != cur_width || last_height != cur_height) {
+		// Resolution changed since last init, so init again
+		init_layers(false);
+	}
+	for (const auto& pair : shape_layers) {
+		gwin->layer_clear_dest(pair.second);
+#ifndef HW_CLOUD_TESTING
+		// Turn off all layers, they will be turned on if used
+		gwin->layer_set_visible(pair.second, false);
+#else
+		// When testing the layers are always shown
+		gwin->layer_set_visible(pair.second, true);
+
+		// Render a 3x2 grid of clouds with increasing overlap from 1 layer to 6 layers
+		// Note assume a screen resolution of at least 1280x600
+		for (int col = 0; col < 3; col++) {
+			for (int row = 0; row < 2; row++) {
+				int x = col * 420;
+				int w = 420;
+				int y = 100 + row * 300;
+				int h = 300;
+
+				if (row >= 1) {
+					gwin->layer_set_dest(pair.second, x, y, w, h, true);
+				}
+
+				if (col >= pair.first.get_framenum()) {
+					gwin->layer_set_dest(pair.second, x, y, w, h, true);
+				}
+			}
+		}
+#endif
+	}
+}
+
+void Clouds_effect::end_frame() {
+	auto gwin = Game_window::get_instance();
+
+	bool clouds_visible = false;
+	for (const auto& pair : shape_layers) {
+		clouds_visible |= gwin->layer_is_visible(pair.second);
+	}
+
+	for (const auto& layer : rt_layers) {
+		gwin->layer_set_visible(layer, clouds_visible);
+	}
+}
+
+bool Clouds_effect::HWCloudsSupported() {
+	// This function just checks to make sure the SDL Renderer supports all the custom blend modes required
+
+	auto win = Game_window::get_instance()->get_win();
+
+	for (int i = 0; i < int(BLEND::COUNT); i++) {
+		SDL_BlendMode blend_mode = GetSDLBlendMode(BLEND(i));
+		if (blend_mode == 0) {
+			break;
+		}
+
+		if (!win->SDLBlendModeSupported(blend_mode)) {
+			return false;
+		}
+	}
+
+	return true;
+}
+
+uint32 Clouds_effect::GetSDLBlendMode(BLEND type) {
+	switch (type) {
+		// Add src colour to dst colour and add src alpha to dst alpha
+	case BLEND::ADD_BOTH:
+		return SDL_ComposeCustomBlendMode(
+				SDL_BLENDFACTOR_ONE, SDL_BLENDFACTOR_ONE, SDL_BLENDOPERATION_ADD, SDL_BLENDFACTOR_ONE, SDL_BLENDFACTOR_ONE,
+				SDL_BLENDOPERATION_ADD);
+
+	// Modulate dst colour with source colour and do a premultiplied blend with dst colour
+	case BLEND::MODCOLOUR_BLEND_PREMULTIPLIED:
+		return SDL_ComposeCustomBlendMode(
+				SDL_BLENDFACTOR_DST_COLOR, SDL_BLENDFACTOR_ONE_MINUS_SRC_ALPHA, SDL_BLENDOPERATION_ADD, SDL_BLENDFACTOR_ZERO,
+				SDL_BLENDFACTOR_ONE, SDL_BLENDOPERATION_ADD);
+
+	// Modulate Src colour with dst alpha
+	case BLEND::DST_ALPHA_TO_COLOUR:
+		return SDL_ComposeCustomBlendMode(
+				SDL_BLENDFACTOR_DST_ALPHA, SDL_BLENDFACTOR_ZERO, SDL_BLENDOPERATION_ADD, SDL_BLENDFACTOR_ZERO, SDL_BLENDFACTOR_ONE,
+				SDL_BLENDOPERATION_ADD);
+
+	// Mod src colour by inverted dst color
+	case BLEND::INVERT_COLOUR:
+		return SDL_ComposeCustomBlendMode(
+				SDL_BLENDFACTOR_ONE_MINUS_DST_COLOR, SDL_BLENDFACTOR_ZERO, SDL_BLENDOPERATION_ADD, SDL_BLENDFACTOR_ZERO,
+				SDL_BLENDFACTOR_ONE, SDL_BLENDOPERATION_ADD);
+
+	// Double dst alpha by adding dst alpha to itself
+	case BLEND::ADD_DST_ALPHA_TO_DST_ALPHA:
+		return SDL_ComposeCustomBlendMode(
+				SDL_BLENDFACTOR_ZERO, SDL_BLENDFACTOR_ONE, SDL_BLENDOPERATION_ADD, SDL_BLENDFACTOR_DST_ALPHA, SDL_BLENDFACTOR_ONE,
+				SDL_BLENDOPERATION_ADD);
+
+	// Premultiply dst Colour by dst alpha
+	case BLEND::MOD_DST_COLOUR_BY_ALPHA:
+		return SDL_ComposeCustomBlendMode(
+				SDL_BLENDFACTOR_ZERO, SDL_BLENDFACTOR_DST_ALPHA, SDL_BLENDOPERATION_ADD, SDL_BLENDFACTOR_ZERO, SDL_BLENDFACTOR_ONE,
+				SDL_BLENDOPERATION_ADD);
+		
+	default:
+		break;
+	}
+	return 0;
+}
+
+int Clouds_effect::GetCloudLayer(const ShapeID sid, bool force_refresh) {
+	const int blur_size2 = blur_size * 2;
+	const int blur_size4 = blur_size * 4;
+	auto      gwin       = Game_window::get_instance();
+	if (!force_refresh && blur_size == -1) {
+		return -1;
+	}
+
+	auto           found = shape_layers.find(sid);
+	int            layer = found != shape_layers.end() ? found->second : -1;
+	Shape_frame*   shape = sid.get_shape();
+	Image_buffer8* ibuf  = gwin->get_layer_ibuf(layer);
+
+	if (force_refresh || layer == -1 || !ibuf || ibuf->get_width() != unsigned(shape->get_width()) + blur_size4
+		|| ibuf->get_height() != unsigned(shape->get_height()) + blur_size4) {
+		gwin->destroy_layer(layer);
+		if (blur_size == -1) {
+			if (found != shape_layers.end()) {
+				shape_layers.erase(found);
+			}
+			return -1;
+		}
+	} else {
+		return layer;
+	}
+	char layername[] = "cloud0";
+	layername[5] += sid.get_framenum();
+	layer = gwin->create_layer(
+			layername, shape->get_width() + blur_size4, shape->get_height() + blur_size4, 255, 0, layer_z + sid.get_framenum());
+	shape_layers.emplace(sid, layer);
+
+	gwin->layer_set_ui_kind(layer, blur_size ? Image_window::UiLayerFullScreenBilinear : Image_window::UiLayerLikeGameWorld);
+	ibuf                     = gwin->get_layer_ibuf(layer);
+	Image_buffer8* prev_ibuf = gwin->push_render_target(ibuf);
+
+	// Draw the shape into the layer with all pixels drawn as 0
+	Xform_palette xfpal;
+	std::memset(xfpal.colors, 0, sizeof(xfpal.colors));
+	shape->paint_rle_transformed(blur_size2 + shape->get_xleft(), blur_size2 + shape->get_yabove(), xfpal);
+
+	gwin->pop_render_target(prev_ibuf);
+
+	// Apply an inplace blur to the ibuf starting
+	// inplace blur only changes lower 7 bits, the top bit is used to determine the original unblurred state of the pixel
+	// Bit 7 set = was transparent
+	// Bit 7 clear = was opaque
+
+	int    h      = shape->get_height() + blur_size2;
+	int    w      = shape->get_width() + blur_size2;
+	int    pitch  = ibuf->get_line_width();
+	uint8* pixels = ibuf->get_bits();
+	// blur palette
+	uint32 blur_palette[256];
+	if (blur_size) {
+#ifdef CLOUDS_USE_GAUSSIAN
+		// Standard deviation for Gaussian Blur. Probably not the best choice
+		float g_sd   = blur_size / 6.0;
+		float g_sdsq = g_sd * g_sd;
+#endif
+		for (int y = 0; y < h; y++) {
+			// Blur could be slow so do load screen palette cycling
+			gwin->cycle_load_palette();
+			//
+			uint8* pixel = pixels + (y + blur_size) * pitch + blur_size;
+
+			for (const uint8* const end = pixel + w; end != pixel; ++pixel) {
+				float val   = -1;
+				float total = 0;
+
+				for (int iy = -blur_size; iy <= blur_size; iy++) {
+					auto spixel    = pixel + pitch + iy - blur_size;
+					auto spixelend = spixel + blur_size2 + 1;
+
+#ifdef CLOUDS_USE_GAUSSIAN
+					int ix = -blur_size;
+#endif
+					while (spixel != spixelend) {
+#ifdef CLOUDS_USE_GAUSSIAN
+						float c = expf((ix * ix + iy * iy) / -2.f * g_sdsq)
+								  / sqrt(6.28f * g_sdsq);    // Calculat pixel coefficent for Gaussian blur
+						ix++;
+#else
+						float c = 1;    // Pixel coefficent for a box blur.
+#endif
+						val += (*spixel++ & 0x80) * c;
+						total += c;
+					}
+				}
+
+				*pixel = (*pixel & 0x80) + int(val / total);
+			}
+		}
+	}
+
+	// Create the correct ARGB palette for the blurred pixels
+	// index 0 = alpha 255
+	// ...
+	// index 127 = alpha 0
+	// index 128 = alpha 255
+	// ...
+	// index 255 = alpha 0
+	//
+	for (int i = 0; i < 256; i++) {
+		// 7 bits of blur alpha
+		uint32 v = (0xFf - (i & 0x7f) * 2) & 0xff;
+
+		blur_palette[i] = v << 24;
+	}
+	gwin->layer_set_index_argb(layer, blur_palette, true);
+	gwin->layer_set_opaque(layer, false);
+	gwin->layer_set_alpha(layer, base_alpha);
+	gwin->layer_set_blendmode(layer, GetSDLBlendMode(BLEND::ADD_BOTH));
+	gwin->get_win()->layer_set_sdl_render_target(layer, rt_layers[0]);
+	gwin->layer_set_visible(layer, false);
+	return layer;
+}
+
+void Clouds_effect::SetCloudParameters(Cloudstyle style, CloudIntensity intensity) {
+	Game_window* gwin = Game_window::get_instance();
+	if (!HWCloudsSupported() || gwin->is_in_exult_menu()) {
+		return;
+	}
+	switch (style) {
+	case CS_Hard:
+		blur_size = 0;
+		break;
+	case CS_Soft:
+		blur_size = 2;
+		break;
+	case CS_Softer:
+		blur_size = 4;
+		break;
+	case CS_VerySoft:
+		blur_size = 8;
+		break;
+	default:
+		blur_size = -1;
+		break;
+	}
+
+	int old_base_alpha = base_alpha ? base_alpha : 100;
+
+	switch (intensity) {
+	case CI_Light:
+		base_alpha = 60;
+		break;
+	case CI_Dark:
+		base_alpha = 120;
+		break;
+	case CI_Darker:
+		base_alpha = 140;
+		break;
+	default:
+		base_alpha = 100;
+		break;
+	}
+
+	// Update the alpha of all clouds_effect objects to reflect the new base_alpha so the change takes effect immediately and not
+	// only the next time handle_event is called
+	if (base_alpha != old_base_alpha) {
+		for (const auto& effect : *gwin->get_effects()) {
+			if (auto ce = dynamic_cast<Clouds_effect*>(effect.get())) {
+				ce->alpha = (ce->alpha * base_alpha) / old_base_alpha;
+			}
+		}
+	}
+
+	config->set("config/video/clouds/alpha", base_alpha, false);
+	config->set("config/video/clouds/blur_size", blur_size, false);
+	config->write_back();
+	init_layers(false);
+}
+
+bool Clouds_effect::GetCloudParameters(int& style, int& intensity) {
+	if (base_alpha > 120) {
+		intensity = CI_Darker;
+	} else if (base_alpha > 100) {
+		intensity = CI_Dark;
+	} else if (base_alpha < 100) {
+		intensity = CI_Light;
+	} else {
+		intensity = CI_Normal;
+	}
+	if (blur_size >= 8) {
+		style = CS_VerySoft;
+	} else if (blur_size >= 4) {
+		style = CS_Softer;
+	} else if (blur_size >= 2) {
+		style = CS_Soft;
+	} else if (blur_size == 0) {
+		style = CS_Hard;
+	} else {
+		style = CS_Original;
+	}
+
+	return HWCloudsSupported() && !Game_window::get_instance()->is_in_exult_menu();
+}
+
 /**
  *  Render.
  */
 
 void Clouds_effect::paint() {
-	if (!gwin->is_main_actor_inside() && !gumpman->showing_gumps(true)) {
+	if (!gwin->is_main_actor_inside()) {
 		for (auto& cloud : clouds) {
 			cloud->paint();
 		}

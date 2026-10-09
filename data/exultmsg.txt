@@ -221,15 +221,26 @@
 0x5D9:Original
 0x5DA:Serif
 
+0x05DB:Cloud Style
+0x05DC:Cloud Intensity
+0x05DD:Light
+0x05DE:Normal
+0x05DF:Dark
+0x05E0:Darker
+0x05E1:Hard
+0x05E2:Soft
+0x05E3:Softer
+0x05E4:Very Soft
+
 # Gamemenu_gump.cc
-0x5E0:Load/Save Game
-0x5E1:Video Options
-0x5E2:Audio Options
-0x5E3:Game Display
-0x5E4:Game Engine
-0x5E5:Game Input
-0x5E6:Quit
-0x5E7:UI Options
+0x5E8:Load/Save Game
+0x5E9:Video Options
+0x5EA:Audio Options
+0x5EB:Game Display
+0x5EC:Game Engine
+0x5ED:Game Input
+0x5EE:Quit
+0x5EF:UI Options
 
 #AdvancedOptions_gump.cc
 0x5F0:Apply anyway?

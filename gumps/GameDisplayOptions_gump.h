@@ -42,6 +42,10 @@ private:
 	int                      paperdolls;
 	int                      language;
 	int                      fonts;
+	int                      cloud_style;
+	int                      cloud_intensity;
+	bool                     have_hw_clouds;
+	bool                     clouds_changed = false;
 
 	enum button_ids {
 		id_first = 0,
@@ -62,6 +66,8 @@ private:
 		id_android_autolaunch,
 		id_language,
 		id_fonts,
+		id_cloud_style,
+		id_cloud_intensity,
 
 		id_count
 	};
@@ -100,6 +106,17 @@ public:
 
 	void toggle_fonts(int state) {
 		fonts = state;
+	}
+
+	void toggle_cloud_style(int state) {
+		cloud_style    = state;
+		clouds_changed = true;
+		build_buttons();
+	}
+
+	void toggle_cloud_intensity(int state) {
+		clouds_changed  = true;
+		cloud_intensity = state;
 	}
 
 	void toggle_sb_hide_missing(int state) {

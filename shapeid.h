@@ -380,6 +380,42 @@ public:
 	}
 
 	uint8* Get_palette_transform_table(uint8 table[256]) const;
+
+	int compare(const ShapeID& other) const {
+		if (other.shapefile != shapefile) {
+			return shapefile - other.shapefile;
+		} else if (other.shapenum != shapenum) {
+			return shapenum - other.shapenum;
+		} else if (other.framenum != framenum) {
+			return framenum - other.framenum;
+		}
+
+		return 0;
+	}
+
+	bool operator<(const ShapeID& other) const {
+		return compare(other) < 0;
+	}
+
+	bool operator<=(const ShapeID& other) const {
+		return compare(other) <= 0;
+	}
+
+	bool operator>(const ShapeID& other) const {
+		return compare(other) > 0;
+	}
+
+	bool operator>=(const ShapeID& other) const {
+		return compare(other) >= 0;
+	}
+
+	bool operator==(const ShapeID& other) const {
+		return compare(other) == 0;
+	}
+
+	bool operator!=(const ShapeID& other) const {
+		return compare(other) != 0;
+	}
 };
 
 /*
