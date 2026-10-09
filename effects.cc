@@ -1746,7 +1746,6 @@ inline void Cloud::next(
 void Cloud::paint() {
 	Game_window* gwin = Game_window::get_instance();
 	if (count > 0) {    // Might not have been started.
-
 		int x = wx - gwin->get_scrolltx() * c_tilesize - gwin->get_scrolltx_lo();
 		int y = wy - gwin->get_scrollty() * c_tilesize - gwin->get_scrollty_lo();
 
@@ -1777,7 +1776,6 @@ void Cloud::paint() {
 
 			gwin->layer_set_visible(layer, true);
 			gwin->layer_set_dest(layer, xl, yt, xr - xl, yb - yt, true, std::max(0, alpha));
-
 		} else
 #endif
 		{
