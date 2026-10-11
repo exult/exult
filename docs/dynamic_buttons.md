@@ -63,7 +63,7 @@ Gump_Base
 | `clicked_frame` | int | Frame displayed when pushed |
 | `sound_fx` | int | SFX index on click (-1 = none) |
 | `usecode_fn` | int | Shape number for usecode lookup (-1 = none) |
-| `action_type` | int | 0=nothing, 1=close gump after activate, 2=toggle |
+| `action_type` | int | 0=nothing, 1=close gump (only when `usecode_fn` is -1), 2=toggle |
 | `visibility_flag` | int | Global flag controlling visibility (-1 = always visible) |
 | `usecode_param` | int | Legacy field, read but unused at runtime |
 | `toggled` | bool | Current toggle state (action_type 2 only) |
@@ -92,7 +92,7 @@ dynamic_buttons
 | `clicked_frame` | Frame when pushed (typically 1) |
 | `sound_fx` | SFX index on click (-1 = none) |
 | `usecode_fn` | Shape number for usecode lookup (-1 = no callback) |
-| `action_type` | 0=nothing, 1=close gump after callback, 2=toggle |
+| `action_type` | 0=nothing, 1=close gump, 2=toggle. Close only happens when `usecode_fn` is -1; if the button has a usecode callback, the callback must close the gump itself with `UI_close_gump2(item)` |
 | `visibility_flag` | Global flag index for visibility (-1 = always visible) |
 | `usecode_param` | Legacy, read but unused (event is always `double_click`) |
 
@@ -102,18 +102,18 @@ A gump with a confirm button and a cancel button:
 
 ```
 dynamic_buttons
-; Confirm button — closes gump after callback
-:200/130/10/120/0/1/-1/1300/1/-1/0
-; Cancel button — closes gump after callback
-:200/131/60/120/0/1/-1/1301/1/-1/0
+; Confirm button — usecode callback, which closes the gump itself
+:200/130/10/120/0/1/-1/1300/0/-1/0
+; Cancel button — no callback, engine closes the gump
+:200/131/60/120/0/1/-1/-1/1/-1/0
 ; Toggle button — stays open, toggles state
 :200/132/110/120/0/1/67/1302/2/-1/0
 ```
 
 In this example:
 - Gump shape 200 has three buttons
-- The confirm button (shape 130) calls usecode shape 1300 then closes the gump (`action_type=1`)
-- The cancel button (shape 131) calls usecode shape 1301 then closes the gump
+- The confirm button (shape 130) calls usecode shape 1300; the callback closes the gump with `UI_close_gump2(item)` when it is done
+- The cancel button (shape 131) has no callback (`usecode_fn=-1`), so `action_type=1` makes the engine close the gump
 - The toggle button (shape 132) plays SFX 67, calls usecode shape 1302, and toggles visual state (`action_type=2`)
 
 ---
@@ -137,8 +137,10 @@ When `activate()` is called after a successful click:
 1. Play `sound_fx` if >= 0
 2. Toggle visual state if `action_type == 2`
 3. Resolve `usecode_fn` to function ID via `ucm->get_shape_fun(usecode_fn)` — this consults the symbol table, supporting `#autonumber` mods
-4. Call `ucm->call_usecode(fn_id, item, double_click)` where `item` is the gump's container object
-5. Close gump if `action_type == 1`
+4. Call `ucm->call_usecode(fn_id, item, double_click)` where `item` is the gump's container object, then **return immediately** — the usecode may have closed the gump and destroyed the button, so no member is touched after the call
+5. Only if no usecode was called (`usecode_fn` is -1): close gump if `action_type == 1`
+
+**Important:** `action_type=1` has no effect on a button that has a usecode callback. To close the gump from such a button, call `UI_close_gump2(item)` in the callback.
 
 **Important:** Buttons always fire with `Usecode_machine::double_click` as the event. The `usecode_param` field is read from config but not used at runtime. To distinguish between buttons, assign each a unique `usecode_fn`.
 

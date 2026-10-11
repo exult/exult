@@ -56,6 +56,8 @@ Gump_Base
 | `field_id` | int | Unique ID for usecode addressing |
 | `font_num` | int | Font index from `fonts.vga` (changeable at runtime) |
 | `text` | string | Current display text (per-instance, initially empty) |
+| `halign` | int | Horizontal alignment: 0=left, 1=right, 2=center (default 0) |
+| `valign` | int | Vertical alignment: 0=top, 1=bottom, 2=center (default 0) |
 
 **Constructor:** Uses shape number -1 (no background shape), positioned at `(pos_x, pos_y)` relative to the parent gump.
 
@@ -69,8 +71,10 @@ Text fields are defined in the `dynamic_texts` section:
 
 ```
 dynamic_texts
-:gump_shape/field_id/pos_x/pos_y/font_num
+:gump_shape/field_id/pos_x/pos_y/font_num[/halign[/valign]]
 ```
+
+`halign` and `valign` are optional. Omit them for top-left aligned text (the default). `valign` can only be given if `halign` is also given.
 
 ### Field Reference
 
@@ -80,6 +84,10 @@ dynamic_texts
 | `field_id` | Unique identifier used by `UI_set_gump_text()` and `UI_set_gump_text_font()` |
 | `pos_x` / `pos_y` | Position relative to gump origin |
 | `font_num` | Default font index from `fonts.vga` (e.g., 2 for standard, 19 for highlight) |
+| `halign` | Optional horizontal alignment. 0 = left (default; `pos_x` is the left edge), 1 = right (`pos_x` is the right edge), 2 = center (`pos_x` is the center point) |
+| `valign` | Optional vertical alignment. 0 = top (default; `pos_y` is the top edge), 1 = bottom (`pos_y` is the bottom edge), 2 = center (`pos_y` is the middle) |
+
+Values outside 0-2 fall back to 0 (left / top).
 
 ### Example Configuration
 
@@ -106,13 +114,23 @@ dynamic_texts
 :200/31/180/25/2
 :200/32/180/40/2
 :200/33/180/55/2
+; Quantity column, right-aligned so numbers line up on x=230 (field_ids 40-41)
+:200/40/230/10/2/1
+:200/41/230/25/2/1
+; Title centered on x=120 (field_id 50)
+:200/50/120/0/2/2
 ```
 
 ---
 
 ## Paint Behaviour
 
-`paint()` calls `Shape_manager::get_instance()->paint_text(font_num, text.c_str(), sx, sy)` after converting widget-local coordinates to screen coordinates. When `text` is empty, painting is skipped entirely — no blank space is rendered.
+`paint()` converts widget-local coordinates to screen coordinates, then applies alignment:
+
+- **Vertical:** `valign=1` moves `sy` up by the font's text height; `valign=2` moves it up by half the text height.
+- **Horizontal:** `halign=0` paints with `Shape_manager::paint_text()`; `halign=1` uses `Font::paint_text_right_aligned()`; `halign=2` uses `Font::center_text()`.
+
+When `text` is empty, painting is skipped entirely — no blank space is rendered.
 
 This means all text fields appear empty when the gump first opens. Your on-open usecode handler must populate them.
 

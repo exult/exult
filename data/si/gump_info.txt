@@ -233,18 +233,23 @@
 # clicked_frame   = Frame displayed when pushed (normally 1)
 # sound_fx        = SFX index on click (-1 = none)
 # usecode_fn      = Usecode function to call (-1 = none)
-# action_type     = 0=nothing, 1=close gump, 2=toggle pushed state
+# action_type     = 0=nothing, 1=close gump (only when usecode_fn is -1; a button
+#                   with a usecode callback must close via UI_close_gump2), 2=toggle pushed state
 # visibility_flag = Global flag controlling visibility (-1 = always visible)
-# usecode_param   = Event parameter passed to usecode (-1 = default double_click)
+# usecode_param   = Legacy, read but unused (event is always double_click; use -1)
 #
 %%endsection
 
 %%section dynamic_texts
-# Format: :gump_shape/field_id/pos_x/pos_y/font_num
+# Format: :gump_shape/field_id/pos_x/pos_y/font_num[/halign[/valign]]
 #
 # field_id   = Unique integer ID for usecode to address this field
 # pos_x/pos_y = Position relative to gump origin
 # font_num   = Font number from fonts.vga (0=normal, 2=small, 5=tiny)
+# halign     = Optional: 0=left (default, pos_x is left edge), 1=right (pos_x is
+#              right edge), 2=center (pos_x is center)
+# valign     = Optional: 0=top (default, pos_y is top edge), 1=bottom (pos_y is
+#              bottom edge), 2=center (pos_y is middle). Needs halign.
 #
 # Text is set at runtime via UI_set_gump_text(item, field_id, "text")
 #
