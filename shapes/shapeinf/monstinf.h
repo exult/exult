@@ -144,6 +144,10 @@ public:
 
 	static const Monster_info* get_default();
 
+	static void clear_equip() {
+		equip.clear();
+	}
+
 	static void reserve_equip(int cnt) {
 		equip.reserve(cnt);
 	}

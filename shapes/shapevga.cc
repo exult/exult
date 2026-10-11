@@ -855,6 +855,7 @@ bool Shapes_vga_file::read_info(
 	}
 
 	// Get 'equip.dat'.
+	Monster_info::clear_equip();
 	if (IExultDataSource mfile(EQUIP, PATCH_EQUIP, 0); mfile.good()) {
 		// Get # entries (with Exult extension).
 		const int num_recs = Read_count(mfile);
