@@ -291,10 +291,12 @@ void Shapes_vga_file::Write_Gumpinf_text_data_file(Exult_Game game) {
 	std::map<int, const Gump_info*> container_data;
 	std::map<int, const Gump_info*> checkmark_data;
 	std::map<int, const Gump_info*> special_data;
+	std::map<int, const Gump_info*> snapzones_data;
 	std::map<int, const Gump_info*> dynbuttons_data;
 	std::map<int, const Gump_info*> dyntexts_data;
 	std::map<int, const Gump_info*> dynshapes_data;
 	std::map<int, const Gump_info*> dynsliders_data;
+	std::map<int, const Gump_info*> gumpname_data;
 
 	for (const auto& [shapenum, gumpinf] : Gump_info::gump_info_map) {
 		if (gumpinf.has_area && gumpinf.is_container_dirty()) {
@@ -305,6 +307,9 @@ void Shapes_vga_file::Write_Gumpinf_text_data_file(Exult_Game game) {
 		}
 		if (gumpinf.is_special && gumpinf.is_special_dirty()) {
 			special_data[shapenum] = &gumpinf;
+		}
+		if (gumpinf.has_snap_zones() && gumpinf.is_snapzones_dirty()) {
+			snapzones_data[shapenum] = &gumpinf;
 		}
 		if (gumpinf.has_dynamic_buttons() && gumpinf.is_dynbuttons_dirty()) {
 			dynbuttons_data[shapenum] = &gumpinf;
@@ -318,10 +323,14 @@ void Shapes_vga_file::Write_Gumpinf_text_data_file(Exult_Game game) {
 		if (gumpinf.has_dynamic_sliders() && gumpinf.is_dynsliders_dirty()) {
 			dynsliders_data[shapenum] = &gumpinf;
 		}
+		if (gumpinf.has_gump_name() && gumpinf.is_gumpname_dirty()) {
+			gumpname_data[shapenum] = &gumpinf;
+		}
 	}
 
-	if (container_data.empty() && checkmark_data.empty() && special_data.empty() && dynbuttons_data.empty() && dyntexts_data.empty()
-		&& dynshapes_data.empty() && dynsliders_data.empty()) {
+	if (container_data.empty() && checkmark_data.empty() && special_data.empty() && snapzones_data.empty()
+		&& dynbuttons_data.empty() && dyntexts_data.empty() && dynshapes_data.empty() && dynsliders_data.empty()
+		&& gumpname_data.empty()) {
 		return;
 	}
 
@@ -340,7 +349,11 @@ void Shapes_vga_file::Write_Gumpinf_text_data_file(Exult_Game game) {
 		out << "%%section container_area" << std::endl;
 		for (const auto& [shapenum, info] : container_data) {
 			out << ":" << shapenum << "/" << info->container_x << "/" << info->container_y << "/" << info->container_w << "/"
-				<< info->container_h << std::endl;
+				<< info->container_h;
+			if (info->debug_flags != 0) {
+				out << "/" << info->debug_flags;
+			}
+			out << std::endl;
 		}
 		out << "%%endsection" << std::endl;
 	}
@@ -360,6 +373,19 @@ void Shapes_vga_file::Write_Gumpinf_text_data_file(Exult_Game game) {
 		out << "%%section special" << std::endl;
 		for (const auto& [shapenum, info] : special_data) {
 			out << ":" << shapenum << std::endl;
+		}
+		out << "%%endsection" << std::endl;
+	}
+
+	// snap_zones
+	if (!snapzones_data.empty()) {
+		out << "%%section snap_zones" << std::endl;
+		for (const auto& [shapenum, info] : snapzones_data) {
+			for (const auto& zone : info->snap_zones) {
+				out << ":" << shapenum << "/" << zone.zone_id << "/" << zone.zone_x << "/" << zone.zone_y << "/" << zone.zone_w
+					<< "/" << zone.zone_h << "/" << zone.snap_x << "/" << zone.snap_y << "/" << zone.priority << "/"
+					<< zone.zone_type << std::endl;
+			}
 		}
 		out << "%%endsection" << std::endl;
 	}
@@ -410,6 +436,15 @@ void Shapes_vga_file::Write_Gumpinf_text_data_file(Exult_Game game) {
 					<< def.inc_shape << "/" << def.thumb_shape << "/" << def.min_val << "/" << def.max_val << "/" << def.step << "/"
 					<< def.default_val << "/" << def.extent << "/" << def.usecode_fn << "/" << def.orientation << std::endl;
 			}
+		}
+		out << "%%endsection" << std::endl;
+	}
+
+	// gump_name
+	if (!gumpname_data.empty()) {
+		out << "%%section gump_name" << std::endl;
+		for (const auto& [shapenum, info] : gumpname_data) {
+			out << ":" << shapenum << "/" << info->gump_name << std::endl;
 		}
 		out << "%%endsection" << std::endl;
 	}
