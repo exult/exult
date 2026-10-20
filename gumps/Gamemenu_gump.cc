@@ -47,35 +47,35 @@ using std::string;
 class Strings : public GumpStrings {
 public:
 	static auto LoadSaveGame() {
-		return get_text_msg(0x5E0 - msg_file_start);
+		return get_text_msg(0x5E8 - msg_file_start);
 	}
 
 	static auto VideoOptions() {
-		return get_text_msg(0x5E1 - msg_file_start);
+		return get_text_msg(0x5E9 - msg_file_start);
 	}
 
 	static auto AudioOptions() {
-		return get_text_msg(0x5E2 - msg_file_start);
+		return get_text_msg(0x5EA - msg_file_start);
 	}
 
 	static auto UIOptions() {
-		return get_text_msg(0x5E7 - msg_file_start);
+		return get_text_msg(0x5EF - msg_file_start);
 	}
 
 	static auto GameDisplay() {
-		return get_text_msg(0x5E3 - msg_file_start);
+		return get_text_msg(0x5EB - msg_file_start);
 	}
 
 	static auto GameEngine() {
-		return get_text_msg(0x5E4 - msg_file_start);
+		return get_text_msg(0x5EC - msg_file_start);
 	}
 
 	static auto GameInput() {
-		return get_text_msg(0x5E5 - msg_file_start);
+		return get_text_msg(0x5ED - msg_file_start);
 	}
 
 	static auto Quit() {
-		return get_text_msg(0x5E6 - msg_file_start);
+		return get_text_msg(0x5EE - msg_file_start);
 	}
 };
 

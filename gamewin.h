@@ -459,8 +459,8 @@ public:
 		win->layer_set_z(handle, z);
 	}
 
-	void layer_set_dest(int handle, int x, int y, int w, int h, bool add = false) {
-		win->layer_set_dest(handle, x, y, w, h, add);
+	void layer_set_dest(int handle, int x, int y, int w, int h, bool add = false, int alpha = -1) {
+		win->layer_set_dest(handle, x, y, w, h, add, alpha);
 	}
 
 	void layer_clear_dest(int handle) {
@@ -471,12 +471,16 @@ public:
 		win->layer_set_ui_kind(handle, kind);
 	}
 
-	void layer_set_index_argb(int handle, const uint32* argb256) {
-		win->layer_set_index_argb(handle, argb256);
+	void layer_set_index_argb(int handle, const uint32* argb256, bool nogc = false) {
+		win->layer_set_index_argb(handle, argb256, nogc);
 	}
 
 	void layer_set_alpha(int handle, unsigned char a) {
 		win->layer_set_alpha(handle, a);
+	}
+
+	void layer_set_blendmode(int handle, SDL_BlendMode blendmode) {
+		win->layer_set_blendmode(handle, blendmode);
 	}
 
 	// Overlay-layer ("UI") scaling config (see Image_window::set_ui_config).
