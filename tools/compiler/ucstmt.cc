@@ -429,8 +429,7 @@ void Uc_dowhile_statement::gen(
  *  Delete.
  */
 
-Uc_infinite_loop_statement::~Uc_infinite_loop_statement() {
-}
+Uc_infinite_loop_statement::~Uc_infinite_loop_statement() {}
 
 /*
  *  Generate code.
@@ -470,8 +469,7 @@ void Uc_infinite_loop_statement::gen(
 
 	if (past_loop->is_orphan() && num_end == end->predecessor_count()) {
 		// Need to do this *before* setting fallthrough for nobreak statements.
-		error("Error: Infinite loop without any 'abort', 'break', or 'return' "
-			  "statements");
+		error("infinite loop has no reachable 'abort', 'break', or 'return' statement");
 	}
 
 	if (nobreak != nullptr) {
@@ -484,12 +482,11 @@ void Uc_infinite_loop_statement::gen(
 
 		if (nobreak_block->is_orphan()) {
 			if (next_block == nobreak_block) {
-				warning("No statements in 'nobreak' block will never execute");
+				nobreak->warning(Uc_location::Warning::unreachable_code, "statements in 'nobreak' block are unreachable");
 			} else {
 				// There may be a label somewhere in the block.
 				if (!nobreak_block->is_empty_block()) {
-					warning("Some statements in 'nobreak' block will never "
-							"execute");
+					nobreak->warning(Uc_location::Warning::unreachable_code, "some statements in 'nobreak' block are unreachable");
 				}
 			}
 		}
@@ -628,7 +625,7 @@ void Uc_arrayloop_attend_statement::gen(
 	ignore_unused_variable_warning(fun, end, break_continue);
 	auto it = labels.find(label);
 	if (it == labels.end()) {
-		error("Undeclared label: '%s'", label.c_str());
+		error("use of undeclared label '%s'", label.c_str());
 		return;
 	}
 	// The start of a loop is a jump target and needs
@@ -699,7 +696,7 @@ void Uc_break_statement::gen(
 	const Uc_loop_data& ld = [&]() -> const Uc_loop_data& {
 		const auto result = break_continue.find(loop_name);
 		if (!result.has_value()) {
-			error("Undeclared loop: '%s'", loop_name.c_str());
+			error("no enclosing loop or breakable statement named '%s'", loop_name.c_str());
 			return break_continue.back();
 		}
 		return result.unsafe_get();
@@ -722,7 +719,7 @@ void Uc_continue_statement::gen(
 	const Uc_loop_data& ld = [&]() -> const Uc_loop_data& {
 		const auto result = break_continue.find(loop_name);
 		if (!result.has_value()) {
-			error("Undeclared loop: '%s'", loop_name.c_str());
+			error("no enclosing loop or breakable statement named '%s'", loop_name.c_str());
 			return break_continue.back();
 		}
 		return result.unsafe_get();
@@ -772,7 +769,7 @@ void Uc_goto_statement::gen(
 		curr = new Basic_block();
 		blocks.push_back(curr);
 	} else {
-		error("Undeclared label: '%s'", label.c_str());
+		error("use of undeclared label '%s'", label.c_str());
 	}
 }
 
@@ -1012,7 +1009,7 @@ void Uc_converse_case_attend_statement::gen(
 	ignore_unused_variable_warning(break_continue);
 	auto it = labels.find(label);
 	if (it == labels.end()) {
-		error("Undeclared label: '%s'", label.c_str());
+		error("use of undeclared label '%s'", label.c_str());
 		return;
 	}
 	// New basic block for CASE body.
@@ -1255,7 +1252,7 @@ void Uc_converse_attend_statement::gen(
 	// a new basic block.
 	auto it = labels.find(label);
 	if (it == labels.end()) {
-		error("Undeclared label: '%s'", label.c_str());
+		error("use of undeclared label '%s'", label.c_str());
 		return;
 	}
 	auto* conv_top = new Basic_block();
@@ -1331,14 +1328,15 @@ Uc_switch_statement::~Uc_switch_statement() {
  */
 
 Uc_switch_statement::Uc_switch_statement(Uc_expression* v, std::vector<Uc_statement*>* cs) : cond(v), cases(*cs) {
-	bool has_default = false;
+	Uc_switch_case_statement* previous_default = nullptr;
 	for (auto* it : cases) {
 		auto* stmt = static_cast<Uc_switch_case_statement*>(it);
 		if (stmt->is_default()) {
-			if (has_default) {
-				error("switch statement already has a default case.");
+			if (previous_default) {
+				stmt->error("multiple default labels in one switch statement");
+				previous_default->note("previous default label is here");
 			} else {
-				has_default = true;
+				previous_default = stmt;
 			}
 		}
 	}

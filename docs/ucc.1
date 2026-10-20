@@ -6,6 +6,7 @@ ucc \- UseCode Compiler for Exult
 
 .SH SYNOPSIS
 .B ucc
+.RI [ OPTIONS ]
 .RI [ FILE ]
 
 .SH DESCRIPTION
@@ -17,6 +18,64 @@ is Usecode.
 
 .B ucc
 is a compiler that targets this machine language.
+
+.SH OPTIONS
+.TP
+.B \-h
+Display detailed help, including all warning categories, defaults, and examples,
+then exit successfully without compiling or writing output.
+.TP
+.BI \-o " FILE"
+Write bytecode to FILE. Compilation errors preserve any previous output.
+Without this option, the input extension is replaced by .uco (or .uco is
+appended if there is no extension). Standard input defaults to a.ucout.
+.TP
+.BI \-I " DIRECTORY"
+Add an include search directory. May be repeated.
+The UCC_INCLUDE environment variable adds one further include directory.
+.TP
+.B \-s
+Select Serpent Isle intrinsics unless overridden by a #game directive.
+.TP
+.B \-b
+Omit the symbol table.
+.TP
+.BI \-c " MODE"
+Use colored diagnostics always, never, or auto (the default).
+.TP
+.BI \-W NAME
+Enable a warning category. Use \-Wno\-NAME to disable it.
+Categories are goto, integer\-coercion, shape\-to\-function,
+constant\-condition, unreachable\-code, implicit\-return\-type,
+implicit\-function\-kind, autonumber, missing\-game, missing\-itemref,
+constructor\-arguments, unknown\-directives, unknown\-escape\-sequence,
+function\-id\-alias, and general.
+All categories except function\-id\-alias are enabled by default.
+The function\-id\-alias category warns about compatible declarations that
+give different names to the same explicit function ID. Both names remain
+usable. Incompatible declarations and multiple definitions remain errors.
+.TP
+.B \-Wall, \-Wno\-all
+Enable or disable all warning categories.
+.TP
+.B \-Werror, \-Wno\-error
+Treat enabled warnings as errors, or restore ordinary warning severity.
+Use \-Werror=NAME to enable and promote an individual category, and
+\-Wno\-error=NAME to exempt it from promotion.
+.TP
+.B \-u
+Disable all warning categories. Hard errors remain enabled.
+.TP
+.B \-\-
+End options, allowing an input filename beginning with a hyphen.
+
+.SH DIAGNOSTICS
+Diagnostics are written to standard error and include the source filename,
+line, byte column, and a source excerpt when available. Warning messages
+identify their controlling \-W option. Standard output contains compilation
+status messages. The exit status is zero on success and nonzero on failure.
+If FILE is omitted, source is read from standard input.
+Command-line option and argument errors suggest using \-h for help.
 
 .SH AUTHOR
 This manpage was written by Robert Bihlmeyer. It may be freely

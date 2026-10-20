@@ -129,6 +129,22 @@ Uc_symbol* Uc_function::search_up(const char* nm) {
 	return globals.search(nm);
 }
 
+Uc_symbol* Uc_function::suggest_symbol(const char* nm) const {
+	unsigned local_distance, global_distance;
+	auto*    local  = cur_scope->find_similar(nm, local_distance);
+	auto*    global = globals.find_similar(nm, global_distance);
+	if (local_distance < global_distance) {
+		return local;
+	}
+	if (global_distance < local_distance) {
+		return global;
+	}
+	if (local && global && std::string(local->get_name()) == global->get_name()) {
+		return local;
+	}
+	return nullptr;
+}
+
 /*
  *  Add a new variable to the current scope.
  *
@@ -193,6 +209,7 @@ Uc_var_symbol* Uc_function::add_symbol(const char* nm, Uc_struct_symbol* s, bool
  */
 
 Uc_var_symbol* Uc_function::add_symbol(Uc_var_symbol* var) {
+	Uc_location::Context diagnostic_context(*var);
 	if (cur_scope->is_dup(var->get_name())) {
 		return nullptr;
 	}
@@ -403,6 +420,7 @@ int Uc_function::add_string(char* text) {
 	text_data = new_text_data;
 	text_data_size += textlen;
 	text_map[text] = offset;    // Store map entry.
+	string_locations.emplace(text, Uc_location());
 	return offset;
 }
 
@@ -420,15 +438,15 @@ int Uc_function::find_string_prefix(
 	// Find 1st entry >= text.
 	auto exist = text_map.lower_bound(text);
 	if (exist == text_map.end() || strncmp(text, exist->first.c_str(), len) != 0) {
-		std::string buf(len + 100, '\0');
-		loc.error(buf, "Prefix '%s' matches no string in this function", text);
+		loc.error("string prefix '%s' matches no string in this function", text);
 		return 0;
 	}
 	auto next = exist;
 	++next;
 	if (next != text_map.end() && strncmp(text, next->first.c_str(), len) == 0) {
-		std::string buf(len + 100, '\0');
-		loc.error(buf, "Prefix '%s' matches more than one string", text);
+		loc.error("string prefix '%s' is ambiguous in this function", text);
+		string_locations.at(exist->first).note("candidate string starts here");
+		string_locations.at(next->first).note("candidate string starts here");
 	}
 	return exist->second;    // Return offset.
 }
@@ -863,8 +881,7 @@ constexpr const std::array sibeta_intrinsic_table{
 
 void Uc_function::set_intrinsics() {
 	if (intrinsic_type == unset) {
-		Uc_location::yywarning(
-				"Use '#game \"[blackgate|serpentisle|serpentbeta]\" to specify intrinsics to use (default = blackgate).");
+		Uc_location::yywarning(Uc_location::Warning::missing_game, "no #game directive specified; assuming 'blackgate'");
 		intrinsic_type = bg;
 	}
 	tcb::span<const std::string_view> table;
