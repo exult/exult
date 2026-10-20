@@ -3637,12 +3637,31 @@ void Game_window::build_light_layers() {
 					Game_object_vector occ;
 					act->find_nearby(occ, c_any_shapenum, 10, 0x80);
 					Ordering_info aord(this, act);
+					const TileRect abox(abx0, aby0, abw, abh);
+					// compare() is 0 both for "no screen overlap" and for the
+					// UNDECIDED pair (x apart one way, y the other -- a tree
+					// south-west of him): the renderer still paints one of them
+					// last, and the canopy that covered him was skipped here, so
+					// his lit silhouette showed through it.  For an undecided
+					// pair that does overlap on screen take the deeper tile
+					// (greater tx + ty) as the one in front.
+					const Tile_coord atile = act->get_tile();
 					for (Game_object* obj : occ) {
 						if (obj == nullptr || obj->as_actor() != nullptr) {
 							continue;
 						}
-						if (Game_object::compare(aord, obj) != -1) {
-							continue;    // Paints before him, or no overlap.
+						const int cmp = Game_object::compare(aord, obj);
+						if (cmp == 1) {
+							continue;    // Paints before him.
+						}
+						if (cmp == 0) {
+							if (!get_shape_rect(obj).intersects(abox)) {
+								continue;
+							}
+							const Tile_coord ot = obj->get_tile();
+							if (ot.tx + ot.ty < atile.tx + atile.ty) {
+								continue;    // Behind him.
+							}
 						}
 						Shape_frame* ofr = obj->get_shape();
 						if (ofr == nullptr) {

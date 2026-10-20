@@ -398,6 +398,16 @@ namespace {
 								const int r = ch->is_roof(wtx % c_tiles_per_chunk, wty % c_tiles_per_chunk, floor_z);
 								return (r < 31 && r > floor_z) ? r : roof_z;
 							}();
+							// A free-standing solid is an OBJECT, not a room wall:
+							// outdoors roof_z falls back to floor_z + 5, which any tree
+							// clears (shape 453 is h=7), so each one sealed the fill and
+							// threw a wedge of shadow across the spill fan.  Ask the
+							// same verdict the kind channel uses -- ch->is_roof() is
+							// NOT a substitute, it reports a roof over the tree's own
+							// tile and kept every tree a wall.
+							if (!NaturalLight::Object_is_wall_face(obj)) {
+								continue;
+							}
 							if (lift > floor_z) {
 								// Starts above the floor.  A hung object (shield,
 								// tapestry, sign) has open space beneath it and light
@@ -1238,8 +1248,9 @@ namespace NaturalLight {
 		std::vector<unsigned char> ceilcover;
 		// One-pass cover-map builder shared by the ceiling and floor well
 		// tests: marks the grid tiles over/under which a solid or floor piece
-		// anchors with its lift in [band_lo, band_hi).
-		auto build_cover = [&](std::vector<unsigned char>& cover, int band_lo, int band_hi) {
+		// anchors with its lift in [band_lo, band_hi).  `accept(info, lift)`
+		// overrides that test for other cover kinds (real roof shapes below).
+		auto build_cover_if = [&](std::vector<unsigned char>& cover, auto&& accept) {
 			cover.assign(static_cast<size_t>(side) * side, 0);
 			const int tx0 = Light_tile_norm(lt.tx - rt);
 			const int ty0 = Light_tile_norm(lt.ty - rt);
@@ -1259,12 +1270,8 @@ namespace NaturalLight {
 							continue;    // Bodies and loose items are not cover.
 						}
 						const Shape_info& info = obj->get_info();
-						if (!info.is_solid() && !info.is_floor()) {
+						if (!accept(info, obj->get_lift())) {
 							continue;
-						}
-						const int ol = obj->get_lift();
-						if (ol < band_lo || ol >= band_hi) {
-							continue;    // Not in the cover band.
 						}
 						const TileRect fp = obj->get_footprint();
 						for (int fty = fp.y; fty < fp.y + fp.h; ++fty) {
@@ -1284,11 +1291,32 @@ namespace NaturalLight {
 				}
 			}
 		};
+		auto build_cover = [&](std::vector<unsigned char>& cover, int band_lo, int band_hi) {
+			build_cover_if(cover, [&](const Shape_info& info, int ol) {
+				return (info.is_solid() || info.is_floor()) && ol >= band_lo && ol < band_hi;
+			});
+		};
 		auto ceil_open = [&](int gx, int gy) -> bool {
 			if (ceilcover.empty()) {
 				build_cover(ceilcover, roof_z, roof_z + 4);
 			}
 			return ceilcover[static_cast<size_t>(gy) * side + gx] == 0;
+		};
+		// REAL roof over a tile: a roof shape, or an upper storey's floor slab.
+		// The chunk is_roof column used by roofed() counts ANY solid taller
+		// than 4 standing on the tile -- a tree, a free-standing wall --
+		// so the fan's inside test called the tile under such an object a
+		// foreign interior and stripped it, with everything the fill reached
+		// through it: a dark line on the ground right before a garden wall,
+		// and a shadow wedge behind every tree in the fan.
+		std::vector<unsigned char> roofcover;
+		auto                       real_roofed = [&](int gx, int gy) -> bool {
+            if (roofcover.empty()) {
+                build_cover_if(roofcover, [&](const Shape_info& info, int ol) {
+                    return (info.is_roof() && ol > 0) || (info.is_floor() && ol >= 5);
+                });
+            }
+            return roofcover[static_cast<size_t>(gy) * side + gx] != 0;
 		};
 		// Floor-well spill candidates (an elevated room's stairwell / ladder
 		// hole DOWN to the storey below): reached tiles whose own floor band
@@ -1326,6 +1354,12 @@ namespace NaturalLight {
 		// cell -- crossed a roof boundary or passed a light-passes opening?
 		// Robust against eaves over walkways, unlike per-cell roofed-ness.
 		std::vector<unsigned char> esc(static_cast<size_t>(side) * side, start_roofed ? 0 : 1);
+		// A SPILL grid is built with spills == nullptr, so start_roofed is false
+		// by construction and the esc strip below can never run for it -- the fan
+		// paints straight into any building it reaches.  Track the mirror image
+		// instead: once the fill crosses from open sky under a roof it is INSIDE
+		// a foreign building, and stays so.
+		std::vector<unsigned char> insid(static_cast<size_t>(side) * side, 0);
 		// Record a tile's path distance (+1), keeping the smallest when a wall
 		// face is reached again from another direction.
 		auto set_dist = [&](size_t idx, int dist) {
@@ -1449,6 +1483,13 @@ namespace NaturalLight {
 					if (along < 0 ? (along < -4 || perp > 1) : perp > along + 1) {
 						continue;
 					}
+					// The corridor is for a DOORWAY mouth (bare gap).  Through a
+					// window it walks the fan back in through its own glass and
+					// lights the room behind -- the apex sits one tile out, so the
+					// first step back is always along -1.
+					if (along < 0 && opening(nx, ny) > 0) {
+						continue;
+					}
 				}
 				const size_t nidx = static_cast<size_t>(ny) * side + nx;
 				if (tall(nx, ny)) {
@@ -1554,6 +1595,13 @@ namespace NaturalLight {
 				}
 				visited[nidx] = 1;
 				set_dist(nidx, gdist + 1);
+				// An OPENING is the legitimate way in (window, grate, doorway), so a
+				// crossing through one is not "inside": only a roof the fan reached
+				// with no opening at the crossing counts.
+				insid[nidx] = (insid[static_cast<size_t>(gy) * side + gx] != 0
+							   || (!real_roofed(gx, gy) && real_roofed(nx, ny) && opening(nx, ny) == 0 && opening(gx, gy) == 0))
+									  ? 1
+									  : 0;
 				esc[nidx] = esc[static_cast<size_t>(gy) * side + gx] != 0 || opening(gx, gy) > 0
 											|| (start_roofed && roofed(gx, gy) && !roofed(nx, ny))
 									? 1
@@ -1586,6 +1634,9 @@ namespace NaturalLight {
 					if (along < 0 ? (along < -4 || perp > 1) : perp > along + 1) {
 						continue;
 					}
+					if (along < 0 && opening(nx, ny) > 0) {
+						continue;
+					}
 				}
 				const size_t nidx = static_cast<size_t>(ny) * side + nx;
 				if (tall(nx, ny)) {
@@ -1602,6 +1653,10 @@ namespace NaturalLight {
 				}
 				visited[nidx] = 1;
 				set_dist(nidx, gdist + 1);
+				insid[nidx] = (insid[static_cast<size_t>(gy) * side + gx] != 0
+							   || (!real_roofed(gx, gy) && real_roofed(nx, ny) && opening(nx, ny) == 0 && opening(gx, gy) == 0))
+									  ? 1
+									  : 0;
 				esc[nidx] = esc[static_cast<size_t>(gy) * side + gx] != 0 || opening(gx, gy) > 0
 											|| (start_roofed && roofed(gx, gy) && !roofed(nx, ny))
 									? 1
@@ -1904,6 +1959,19 @@ namespace NaturalLight {
 				}
 			}
 		}
+		// The fan's own interior strip: the mirror of the esc strip below,
+		// which a spill grid can never reach.  A wall the fan merely stands
+		// against keeps its face read (that lives in the ring, untouched);
+		// what goes is the fill the fan carried INSIDE a neighbouring
+		// building, which an exterior lamp never paints because it renders
+		// from outside without a room grid at all.
+		if (spills == nullptr) {
+			for (size_t i = 0; i < lit.size(); ++i) {
+				if (insid[i] != 0) {
+					lit[i] &= 0x80;
+				}
+			}
+		}
 		// The MAIN fill's ESCAPED cells (through openings, wrapped outside)
 		// exist for spill detection and the ring's arrival data only: drop
 		// them from the PAINTED field, or the room light shows outdoors as a
@@ -1942,6 +2010,23 @@ namespace NaturalLight {
 					// the ground here, so flag it (ring byte 1's high bit, unused
 					// on open cells) for consumers that read a cell by geometry.
 					(*ring)[i * 4 + 1] |= 0x80;
+				}
+			}
+			// A WALL cell the fill touched only AFTER escaping (ring byte 2 set,
+			// byte 3 clear -- a neighbour's facade, or this building's own
+			// outside) is never visited, so the loop above skips it and its
+			// painted value survives the strip while the ground around it is
+			// gone.  A veto light's field has no per-side wall values, so the
+			// bilinear ramps from that lone lit cell into the dark cells beside
+			// it: a 6px gradient on the ground on the FAR side of the
+			// neighbour's wall, with the shutters shut.  Only the painted value
+			// goes; the ring arrivals stay for the face and top reads.
+			if (ring != nullptr) {
+				for (size_t i = 0; i < lit.size(); ++i) {
+					const unsigned char* rc = ring->data() + i * 4;
+					if ((rc[0] & 0x80) != 0 && (rc[2] & 0x80) != 0 && (rc[3] & 0x80) == 0) {
+						lit[i] &= 0x80;
+					}
 				}
 			}
 		}
@@ -3160,6 +3245,19 @@ namespace NaturalLight {
 				const int fd = ring_face_dist_gated(cu, cv);
 				return fd == 0 ? 0 : cell_dome(cidx, fd);
 			}
+			// The walk is for the deck BEHIND a rampart the fan hits head on.
+			// From a cell outside the fan's own support it only finds the fan
+			// sideways: a tree beside the window, never in the cone, lit from
+			// the cells it walked into.
+			if (d == 0 && max_walk > 0 && (cone_dx != 0 || cone_dy != 0)) {
+				const int relx  = cu - grid_rt;
+				const int rely  = cv - grid_rt;
+				const int along = relx * cone_dx + rely * cone_dy;
+				const int perp  = std::abs(relx * cone_dy - rely * cone_dx);
+				if (along < 0 ? (along < -4 || perp > 1) : perp > along + 1) {
+					return 0;
+				}
+			}
 			for (int step = 0; d == 0 && step < max_walk; ++step) {
 				// Dominant axis only: a diagonal walk drifts along the wall
 				// toward the light and lands on CLOSER edge cells, lighting
@@ -3530,14 +3628,26 @@ namespace NaturalLight {
 								}
 							}
 							bypass_field = false;
-						} else if (roofrow[x] == 132 || roofrow[x] - 128 > spill_floor) {
-							// Wall faces stay dark under a spill: their ring
-							// arrivals run the whole length of the wall line (a
-							// rampart's merlon gaps each emit their own fan, so
-							// the fans union into a flat full-height band with no
-							// falloff).  Crenellations are lit as whole-unit
-							// OBJECTS below instead.  Higher-storey marks too.
-							continue;
+						} else if (roofrow[x] == 132) {
+							// A facade across the street just STANDS in the fan, so
+							// skipping every shell face left it black.  Keep it on the
+							// ring read below, whose cell_dome is cone-gated.
+							// The wall the spill EXITED stands on the cone's apex
+							// plane, where cone_fade is deliberately 1 -- the mouth
+							// must not taper -- so nothing else holds the fan off its
+							// own facade, and the half wall under the window lit from
+							// the light behind it.  Only what the fan travels TO can
+							// be lit by it.
+							const int fci = (face_data && grid != nullptr && ring != nullptr) ? foot_cell(x, y) : -1;
+							if (fci >= 0 && (cone_dx != 0 || cone_dy != 0)) {
+								const int along
+										= (fci % side - grid_rt) * cone_dx + (fci / side - grid_rt) * cone_dy;
+								if (along <= 0) {
+									continue;
+								}
+							}
+						} else if (roofrow[x] - 128 > spill_floor) {
+							continue;    // Higher-storey whole-unit marks.
 						}
 						if (roofrow[x] < 129) {
 							// Plain 128: a standing deck object or a rampart's
@@ -3562,14 +3672,133 @@ namespace NaturalLight {
 								// walkway behind it borrows that arrival, charged by
 								// the distance walked so it still fades.  The limit
 								// is how far a deck may extend behind its face.
+								// The ring read is for a solid that IS a wall cell.  A
+								// tree is a passable tile now, and face_alpha's step
+								// back onto an adjacent wall handed it that wall's
+								// arrival: the half of the crown whose feet lean
+								// toward the house lit, the other half stayed dark.
+								const int  uci        = footdx != nullptr ? foot_cell(x, y) : -1;
+								const bool ring_solid = ring != nullptr && uci >= 0 && wall_cell(uci % side, uci / side);
 								int forced = footdx != nullptr ? object_alpha(x, y, 10) : 0;
-								if (ring != nullptr && footdx != nullptr) {
+								// ONE unit, ONE cell.  The stamped feet of a crown spread
+								// over the footprint (and shear past it), so with the
+								// trunk's tile in the fan half the crown's feet still
+								// fell in cells outside it: a tree lit in two.  Light the
+								// whole unit by its ANCHOR tile -- the sprite's paint
+								// foot, which the reach pass already records -- and keep
+								// the per-pixel read only as a floor (a rampart's
+								// walkway still fades along its length).
+								bool anchored = false;
+								if (sprites != nullptr && footdx != nullptr) {
+									const size_t ufi  = static_cast<size_t>(y) * foot_lw + x;
+									const int    pfx  = x + static_cast<int>(footdx[ufi]) - 128;
+									const int    pfy  = y + static_cast<int>(footdy[ufi]) - 128;
+									int          best = -1;
+									int          bd   = 1 << 30;
+									for (int i = 0; i < nsprites; ++i) {
+										const Sprite_box& s = sprites[i];
+										if (x < s.x0 || x > s.x1 || y < s.y0 || y > s.y1) {
+											continue;
+										}
+										// The stamped foot lies in the owner's footprint,
+										// up-left of its anchor foot.
+										const int ddx = s.fx - pfx;
+										const int ddy = s.fy - pfy;
+										if (ddx < 0 || ddy < 0 || ddx >= 4 * c_tilesize || ddy >= 4 * c_tilesize) {
+											continue;
+										}
+										if (ddx + ddy <= bd) {
+											bd   = ddx + ddy;
+											best = i;
+										}
+									}
+									if (best >= 0) {
+										anchored        = true;
+										const int   afx = sprites[best].fx;
+										const int   afy = sprites[best].fy;
+										const float au  = (static_cast<float>(afx - foot_shift) - grid_u) * inv_cell;
+										const float av  = (static_cast<float>(afy - foot_shift) - grid_v) * inv_cell;
+										const int   acu = pos_cell(au);
+										const int   acv = pos_cell(av);
+										if (acu >= 0 && acv >= 0 && acu < side && acv < side) {
+											int aa = object_cell_alpha(acv * side + acu, 10);
+											// A crown spreads a tile or so around its trunk, so
+											// the light that hits it is the light on the ground
+											// it covers, not the trunk tile alone: the trunk on
+											// the fan's quarter band under a crown over the full
+											// pool read 39 against 171 on the grass beneath it.
+											// Brightest reached open cell of the 3x3 around the
+											// anchor; the trunk must be reached at all for any
+											// of it to count.
+											if (aa > 0) {
+												for (int dv_ = -1; dv_ <= 1; ++dv_) {
+													for (int du_ = -1; du_ <= 1; ++du_) {
+														const int nu_ = acu + du_;
+														const int nv_ = acv + dv_;
+														if (nu_ < 0 || nv_ < 0 || nu_ >= side || nv_ >= side) {
+															continue;
+														}
+														const int ni_ = nv_ * side + nu_;
+														if (apron_cell(ni_) || (ring != nullptr && wall_cell(nu_, nv_))) {
+															continue;
+														}
+														const int na_ = cell_dome(ni_, grid[static_cast<size_t>(ni_)] & 0x7f);
+														if (na_ > aa) {
+															aa = na_;
+														}
+													}
+												}
+											}
+											if (aa > forced) {
+												forced = aa;
+											}
+											// The ground light AT the trunk, bilinear-smoothed: the
+											// same field sample the clear pixel at its foot takes.
+											if (forced > 0 && ftmpl != nullptr && afy >= 0 && afy < H) {
+												const int ty_ = afy - sy - ftmpl->y0;
+												const int tx_ = afx - sx - ftmpl->x0;
+												if (ty_ >= 0 && ty_ < ftmpl->h && tx_ >= 0 && tx_ < ftmpl->w) {
+													const int fa_ = ftmpl->alpha[static_cast<size_t>(ty_) * ftmpl->w + tx_];
+													if (fa_ > forced) {
+														forced = fa_;
+													}
+												}
+											}
+										}
+									}
+								}
+								if (ring_solid && ring != nullptr && footdx != nullptr) {
 									const int ra = face_alpha(x, y, true);
 									if (ra > forced) {
 										forced = ra;
 									}
 								}
-								if (ftmpl != nullptr && trow != nullptr) {
+								// The z-blind field at the pixel's OWN screen position is
+								// the ground 3-4 tiles down-screen of where a crown
+								// really hangs.  A crown over LIT ground takes it (a
+								// tree beside the pool glows where it overhangs it);
+								// but the template's bilinear fringes half a cell past
+								// the fan into unreached cells, and a crown over the
+								// house wall beside the window took the mouth's fringe.
+								// So the cell UNDER the pixel on screen must itself be
+								// lit GROUND, unless the unit's own cell already is.
+								// Ground only: the wall pieces beside the window are
+								// reached cells too (their ring arrival), and the crown
+								// over them took the mouth's fringe just the same.
+								// An ANCHORED unit under a coned fan took its one value
+								// above; the per-pixel overlap would split the crown again
+								// (119 over the mouth, 39 beside it).
+								bool trow_ok = forced > 0 && !(anchored && (cone_dx != 0 || cone_dy != 0));
+								if (!trow_ok && !anchored && grid != nullptr) {
+									const int scu = static_cast<int>(std::lround((static_cast<float>(x) - grid_u) * inv_cell));
+									const int scv = static_cast<int>(std::lround((static_cast<float>(y) - grid_v) * inv_cell));
+									if (scu >= 0 && scv >= 0 && scu < side && scv < side) {
+										const int sci = scv * side + scu;
+										trow_ok       = (grid[static_cast<size_t>(sci)] & 0x7f) != 0 && !apron_cell(sci)
+												  && (ring == nullptr || !wall_cell(scu, scv));
+									}
+								}
+								if (trow_ok && ftmpl != nullptr && trow != nullptr) {
 									const int ttx = x - sx - ftmpl->x0;
 									if (ttx >= 0 && ttx < ftmpl->w && trow[x] > forced) {
 										forced = trow[x];
@@ -3643,6 +3872,80 @@ namespace NaturalLight {
 					// 132 = certified shell face: whole-unit, all-side arrivals;
 					// 135/136 = interior face, its own room side only.
 					a     = face_alpha(x, y, roofrow != nullptr && (roofrow[x] == 132 || roofrow[x] == 134), top_px, iside_px);
+					// Same arrival-only blind spot the veto top read documents below: a
+					// sill spans its window's own open fill cells, which carry
+					// no arrival, so the TOP read is 0 right across the opening.
+					// That branch is veto-only, so under a SPILL this one owns
+					// the sill and it rendered black against its lit wall.
+					// Shell marks only (iside < 0): an interior face must keep
+					// reading its own room's side.
+					if (a <= 0 && top_px && iside_px < 0) {
+						a = face_alpha(x, y, true);
+					}
+					// Arrivals along a wall line are CONSTANT -- 4 across the
+					// whole lit band, then 0 -- so a fan landing on a facade
+					// rendered as a flat slab ending in a cliff, while the same
+					// light entering a window is soft because the field carries
+					// the fan's distance.  A facade has no such field (the fill
+					// stops at it), so take the fan's GEOMETRY instead: the
+					// radial dome for the gradient, cone_fade for the taper, and
+					// the fill's own `perp <= along + 1` support so it stops at
+					// the cone edge rather than washing round the corner (which
+					// is what the bare dome did).
+					if (is_spill && iside_px < 0 && (cone_dx != 0 || cone_dy != 0)
+						&& face_data && grid != nullptr && ring != nullptr && roofrow != nullptr
+						&& (roofrow[x] == 132 || roofrow[x] == 134)) {
+						const int fci = foot_cell(x, y);
+						if (fci >= 0 && a > 0) {
+							// Sub-tile, from the pixel's own foot: a per-CELL perp
+							// is an integer, so the taper landed in flat diagonal
+							// bands across the wall.  And the fan is only
+							// `along + 1` tiles wide, which 2 tiles out is 3 --
+							// narrower than a fixed 3-tile penumbra, so a constant
+							// width ramped the whole facade instead of its edge.
+							const size_t ffi   = static_cast<size_t>(y) * foot_lw + x;
+							const float  ffx   = static_cast<float>(x + static_cast<int>(footdx[ffi]) - 128 - foot_shift);
+							const float  ffy   = static_cast<float>(y + static_cast<int>(footdy[ffi]) - 128 - foot_shift);
+							const float  frelx = (ffx - grid_u) * inv_cell - static_cast<float>(grid_rt);
+							const float  frely = (ffy - grid_v) * inv_cell - static_cast<float>(grid_rt);
+							const float  along = frelx * static_cast<float>(cone_dx) + frely * static_cast<float>(cone_dy);
+							const float  perp
+									= std::fabs(frelx * static_cast<float>(cone_dy) - frely * static_cast<float>(cone_dx));
+							const float half_w = 0.5f * (along + 1.0f);
+							const float band   = half_w < 1.0f ? 1.0f : half_w;
+							float       taper  = (along + 1.0f - perp) / band;
+							if (taper < 0.0f) {
+								taper = 0.0f;
+							} else if (taper > 1.0f) {
+								taper = 1.0f;
+							}
+							int dome_a = 0;
+							if (along > 0.0f && taper > 0.0f) {
+								const int   ddx   = x - sx;
+								const float dist2 = static_cast<float>(ddx) * static_cast<float>(ddx) + dy2;
+								if (dist2 <= rr) {
+									float dome;
+									if (euclid_spill) {
+										dome = 1.0f - (dist2 + bias * bias + e2) / dome_dn;
+									} else {
+										float total2 = dist2;
+										if (bias > 0.0f) {
+											const float tot = std::sqrt(dist2) + bias;
+											total2          = tot * tot;
+										}
+										dome = 1.0f - (total2 + e2) / rf2;
+									}
+									if (dome > 0.0f) {
+										dome_a = static_cast<int>(amp * dome * taper + 0.5f);
+									}
+								}
+							}
+							// The arrival read keeps the SUPPORT (only it knows
+							// about occlusion); the taper supplies the edge and
+							// the dome the gradient.
+							a = dome_a < a ? dome_a : a;
+						}
+					}
 				} else if (surf_px && !bypass_field) {
 					// Whole-unit 128 marks keep the free-dome bypass: a tree
 					// crown near the lamp glows even though its trunk stands

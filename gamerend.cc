@@ -778,6 +778,12 @@ int Game_render::paint_chunk_objects(
 			// and walking room to room must not toggle a tree lit through a
 			// window.  Only the main splat is suppressed.
 			const bool suppress_main = blocked && NaturalLight::Light_beneath_roof(light_obj);
+			// EXCEPT when the viewer's own enclosure is light-tight: then he
+			// sees no exterior geometry at all, so another building's escaped
+			// light showed as a glow around its openings from inside a sealed,
+			// unlit room.  Not the general blocked case -- that one is exactly
+			// what the spills must survive.
+			const bool suppress_spills = avatar_sealed && !viewer_outside && blocked && vis.interior_source;
 			// Spatial lighting: record this (unblocked) source so
 			// build_light_layers can brighten the world around it. Radius and
 			// palette tier scale with the light's intrinsic brightness (not the
@@ -833,6 +839,9 @@ int Game_render::paint_chunk_objects(
 				}
 				// Spill glow per reached opening (see the carried-light site).
 				for (const NaturalLight::Light_spill& spill : spills) {
+					if (suppress_spills) {
+						break;
+					}
 					const Tile_coord& sp = spill.tile;
 					// Path-distance budget (see the carried-light site).
 					const int spill_dist   = std::max(ltile.distance_2d(sp), spill.path) * c_tilesize;
