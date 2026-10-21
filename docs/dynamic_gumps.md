@@ -287,8 +287,8 @@ Seven new usecode intrinsic functions were added to enable programmatic control 
 ```usecode
 var pos = UI_get_item_gump_position(item);
 if (pos) {
-    var x = pos[0];
-    var y = pos[1];
+    var x = pos[1];    // Usecode arrays are 1-based
+    var y = pos[2];
 }
 ```
 
@@ -464,7 +464,7 @@ Data-driven clickable buttons configured via `gump_info.txt`. Each button has an
 | `clicked_frame` | int | Frame displayed when pushed |
 | `sound_fx` | int | SFX index on click (-1 = none) |
 | `usecode_fn` | int | Shape number for usecode lookup (-1 = none) |
-| `action_type` | int | 0=nothing, 1=close gump after activate, 2=toggle |
+| `action_type` | int | 0=nothing, 1=close gump (only when `usecode_fn` is -1), 2=toggle |
 | `visibility_flag` | int | Global flag controlling visibility (-1 = always) |
 | `usecode_param` | int | Legacy field, no longer used at runtime (always fires `double_click`) |
 | `toggled` | bool | Current toggle state (action_type 2 only) |
@@ -479,8 +479,8 @@ Data-driven clickable buttons configured via `gump_info.txt`. Each button has an
 1. Play `sound_fx` if >= 0
 2. Toggle state if `action_type == 2`
 3. Resolve `usecode_fn` to function ID via `ucm->get_shape_fun(usecode_fn)` (consults symbol table for `#autonumber` mods)
-4. Call `ucm->call_usecode(fn_id, item, double_click)` where `item` is the gump's container
-5. Close gump if `action_type == 1`
+4. Call `ucm->call_usecode(fn_id, item, double_click)` where `item` is the gump's container, then return immediately (the usecode may have destroyed the gump)
+5. Only if no usecode was called (`usecode_fn` is -1): close gump if `action_type == 1`. Buttons with a callback must close the gump from usecode via `UI_close_gump2(item)`
 
 **Note:** Buttons always fire with `Usecode_machine::double_click` as the event, consistent with `Dynamic_slider`. Each button needing distinct behaviour must use a unique `usecode_fn`.
 
@@ -506,10 +506,12 @@ Displays text at a fixed position using a configurable font. Text content is set
 | `field_id` | int | Unique ID for usecode addressing |
 | `font_num` | int | Font from `fonts.vga` (changeable at runtime via `set_font()`) |
 | `text` | string | Current display text (per-instance, initially empty) |
+| `halign` | int | Horizontal alignment: 0=left, 1=right, 2=center (default 0) |
+| `valign` | int | Vertical alignment: 0=top, 1=bottom, 2=center (default 0) |
 
 **Constructor:** Uses shape number -1 (no shape), positioned at `(pos_x, pos_y)` relative to parent gump.
 
-**`paint()`:** Calls `Shape_manager::get_instance()->paint_text(font_num, text.c_str(), sx, sy)` after converting to screen coordinates. Skips painting when text is empty.
+**`paint()`:** Converts to screen coordinates, adjusts `sy` for `valign` (bottom: up by the font's text height; center: up by half), then paints left-aligned via `Shape_manager::paint_text()`, right-aligned via `Font::paint_text_right_aligned()`, or centered via `Font::center_text()` according to `halign`. Skips painting when text is empty.
 
 ---
 
@@ -717,14 +719,16 @@ All configuration is stored in `gump_info.txt`, reusing the existing file and `R
 | `clicked_frame` | Frame when pushed (typically 1) |
 | `sound_fx` | SFX index on click (-1 = none) |
 | `usecode_fn` | Shape number for usecode lookup (-1 = none) |
-| `action_type` | 0=nothing, 1=close gump, 2=toggle |
+| `action_type` | 0=nothing, 1=close gump (only when `usecode_fn` is -1; otherwise close via `UI_close_gump2`), 2=toggle |
 | `visibility_flag` | Global flag for visibility (-1 = always) |
 | `usecode_param` | Legacy field, read but unused at runtime (event is always `double_click`) |
 
 ### dynamic_texts
 ```
-:gump_shape/field_id/pos_x/pos_y/font_num
+:gump_shape/field_id/pos_x/pos_y/font_num[/halign[/valign]]
 ```
+`halign` (optional): 0 = left (default, `pos_x` is the left edge), 1 = right (`pos_x` is the right edge), 2 = center (`pos_x` is the center)
+`valign` (optional): 0 = top (default, `pos_y` is the top edge), 1 = bottom (`pos_y` is the bottom edge), 2 = center (`pos_y` is the middle)
 
 ### dynamic_shapes
 ```

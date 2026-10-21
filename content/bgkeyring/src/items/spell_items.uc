@@ -512,7 +512,7 @@ var spellitemGetTalkHeal (var npcnum) {
 	}
 }
 
-extern void spellitemGetNPCIndex(var npcnum);
+extern var spellitemGetNPCIndex(var npcnum);
 void spellitemInit() {
 	global_spells_unknown = [0, 0, 0, 0, 0, 0, 0];
 	global_fav_spells = [0, 0, 0, 0, 0, 0, 0];

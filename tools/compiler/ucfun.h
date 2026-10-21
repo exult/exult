@@ -51,13 +51,15 @@ class Uc_function : public Uc_design_unit {
 	int                 num_locals;     // Counts locals.
 	int                 num_statics;    // Counts local statics.
 	// Links to called functions:
-	std::vector<Uc_function_symbol*> links;
-	std::set<std::string>            labels;
-	char*                            text_data;    // All strings.
-	int                              text_data_size;
+	std::vector<Uc_function_symbol*>   links;
+	std::set<std::string>              labels;
+	std::map<std::string, Uc_location> label_locations;
+	char*                              text_data;    // All strings.
+	int                                text_data_size;
 	// Map string to its offset.
-	std::map<std::string, int> text_map;
-	Uc_statement*              statement;    // Statement(s) in function.
+	std::map<std::string, int>         text_map;
+	std::map<std::string, Uc_location> string_locations;
+	Uc_statement*                      statement;    // Statement(s) in function.
 public:
 	enum Intrinsic_type {
 		unset,
@@ -91,6 +93,10 @@ public:
 		statement = s;
 	}
 
+	const Uc_location& declaration_location() const {
+		return *proto;
+	}
+
 	const char* get_name() {
 		return proto->get_name();
 	}
@@ -117,6 +123,10 @@ public:
 
 	int get_method_num() {
 		return proto->get_method_num();
+	}
+
+	bool has_valid_return_type() const {
+		return proto->has_valid_return_type();
 	}
 
 	bool has_ret() const {
@@ -151,8 +161,18 @@ public:
 		cur_scope = cur_scope->get_parent();
 	}
 
+	Uc_scope* get_scope() const {
+		return cur_scope;
+	}
+
+	// Restore a checkpoint after discarding an incomplete statement.
+	void restore_scope(Uc_scope* scope) {
+		cur_scope = scope;
+	}
+
 	Uc_symbol* search(const char* nm);
 	Uc_symbol* search_up(const char* nm);
+	Uc_symbol* suggest_symbol(const char* nm) const;
 
 	static Uc_symbol* search_globals(const char* nm) {
 		return globals.search(nm);
@@ -242,6 +262,11 @@ public:
 	// Start/end loop.
 	void add_label(char* nm) {
 		labels.insert(nm);
+		label_locations.emplace(nm, Uc_location());
+	}
+
+	const Uc_location& label_location(const char* nm) const {
+		return label_locations.at(nm);
 	}
 
 	bool search_label(char* nm) {

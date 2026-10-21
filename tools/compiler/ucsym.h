@@ -31,7 +31,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "ignore_unused_variable_warning.h"
 #include "opcodes.h"
+#include "ucloc.h"
 
+#include <cstdint>
 #include <iostream>
 #include <map>
 #include <string>
@@ -45,6 +47,12 @@ class Uc_class;
 class Uc_struct_symbol;
 class Uc_scope;
 class Basic_block;
+
+// Usecode arithmetic wraps at 32 bits. Do not rely on signed host overflow
+// while folding constants (or on implementation-defined unsigned casts).
+inline int usecode_int32(uint32_t value) {
+	return value <= INT32_MAX ? static_cast<int>(value) : static_cast<int>(static_cast<int64_t>(value) - (INT64_C(1) << 32));
+}
 
 inline bool is_int_32bit(int val) {
 	const int high = val >> 16;
@@ -66,10 +74,12 @@ public:
 /*
  *  A formal parameter or local symbol within a function.
  */
-class Uc_symbol {
+class Uc_symbol : public Uc_location {
 protected:
 	std::string name;    // This will be the key.
 public:
+	bool error_placeholder = false;    // Do not suggest names created for recovery.
+
 	enum Sym_types {
 		Generic = 0,
 		Constant,
@@ -396,8 +406,9 @@ public:
  */
 class Uc_struct_symbol : public Uc_symbol {
 	using Var_map = std::map<std::string, int>;
-	Var_map vars;
-	int     num_vars;    // # member variables.
+	Var_map                            vars;
+	std::map<std::string, Uc_location> member_locations;
+	int                                num_vars;    // # member variables.
 public:
 	Uc_struct_symbol(const char* nm) : Uc_symbol(nm), num_vars(0) {}
 
@@ -409,6 +420,7 @@ public:
 		}
 		// Add struct variable.
 		vars[nm] = ++num_vars;
+		member_locations.emplace(nm, Uc_location());
 		return num_vars;
 	}
 
@@ -586,6 +598,11 @@ public:
 
 private:
 	static Sym_nums nums_used;
+	// Aliases retain their own names and parameters, but share an ID/signature.
+	Uc_function_symbol* id_declaration = nullptr;
+	Uc_function_symbol* definition     = nullptr;
+	Uc_location         definition_location;
+	bool                id_declaration_valid = true;
 	// Note:  offset = Usecode fun. #.
 	std::vector<Uc_var_symbol*> parms;          // Parameters.
 	int                         usecode_num;    // Usecode function #.
@@ -594,6 +611,8 @@ private:
 	bool                        externed;
 	bool                        inherited;
 	Function_ret                ret_type;
+	bool                        return_declared   = false;
+	bool                        return_type_valid = true;
 	Ret_symbol                  ret_sym;
 	bool                        high_id;
 	Function_kind               type;
@@ -681,18 +700,13 @@ public:
 		return ret_type;
 	}
 
-	virtual void set_ret_type(bool var) {
-		ret_type = var ? var_ret : no_ret;
-	}
+	virtual void set_ret_type(bool var);
+	virtual void set_ret_type(Uc_class* c);
+	virtual void set_ret_type(Uc_struct_symbol* s);
+	bool         check_return_type(Function_ret type, Uc_class* cls = nullptr, Uc_struct_symbol* structure = nullptr);
 
-	virtual void set_ret_type(Uc_class* c) {
-		ret_type    = class_ret;
-		ret_sym.cls = c;
-	}
-
-	virtual void set_ret_type(Uc_struct_symbol* s) {
-		ret_type    = struct_ret;
-		ret_sym.str = s;
+	bool has_valid_return_type() const {
+		return return_type_valid;
 	}
 
 	Uc_class* get_cls() const override {
@@ -737,6 +751,7 @@ public:
 
 	// Search upwards through scopes.
 	Uc_symbol* search_up(const char* nm);
+	Uc_symbol* find_similar(const char* nm, unsigned& distance) const;
 
 	void add(Uc_symbol* sym) {    // Add (does NOT check for dups.)
 		symbols[sym->name.c_str()] = sym;

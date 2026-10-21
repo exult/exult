@@ -465,6 +465,9 @@ fi
 # Check for pkg-config
 # ---------------------------------------------------------------------
 
+m4_ifndef([PKG_PROG_PKG_CONFIG],
+	[m4_fatal([pkg.m4 not found; install pkg-config and rerun autoreconf.])])
+
 if test x$enable_android_apk = xno; then
 	PKG_PROG_PKG_CONFIG
 	if test x$PKG_CONFIG = x; then

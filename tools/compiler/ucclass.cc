@@ -134,7 +134,8 @@ void Uc_class::add_method(Uc_function* m) {
 				method = m;
 				return;
 			} else {
-				Uc_location::yyerror("Duplicate decl. of virtual member function '%s'.", m->get_name());
+				m->declaration_location().error("redefinition of member function '%s'", m->get_name());
+				method->declaration_location().note("previous declaration is here");
 				return;
 			}
 		}
