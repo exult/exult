@@ -407,6 +407,7 @@ public:
 		}
 	}
 
+	// Is shape an 8x8 flat?
 	bool is_flat(int shapenum) {
 		if (shapenum < 0 || shapenum >= get_num_shapes()) {
 			return false;
