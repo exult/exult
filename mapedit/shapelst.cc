@@ -70,7 +70,26 @@ using std::unique_ptr;
 std::vector<std::unique_ptr<Editing_file>> Shape_chooser::editing_files;
 int                                        Shape_chooser::check_editing_timer = -1;
 
-#define IS_FLAT(shnum) ((shnum) < c_first_obj_shape)
+/*
+ *  Is a shape in 'shapes.vga' an 8x8 flat?  Empty shapes go by number.
+ */
+
+static bool Is_flat(Shape_file_info* finfo, int shnum) {
+	ExultStudio* studio = ExultStudio::get_instance();
+	Vga_file*    ifile  = finfo != nullptr ? finfo->get_ifile() : nullptr;
+	if (ifile == nullptr || finfo != studio->get_vgafile() || shnum < 0) {
+		return false;
+	}
+	if (shnum < ifile->get_num_shapes() && ifile->get_num_frames(shnum) > 0) {
+		const bool flat = ifile->is_flat(shnum);
+		// TEMP-FLATS DEBUG: REMOVE BEFORE PR. Logs where data and old shape-number rule disagree.
+		if (flat != (shnum < c_first_obj_shape)) {
+			cerr << "TEMP-FLATS Is_flat: shape " << shnum << " data says " << (flat ? "flat" : "RLE") << endl;
+		}
+		return flat;
+	}
+	return shnum < c_first_obj_shape;
+}
 
 /*
  *  Callback for when a shape is dropped on our draw area.
@@ -729,10 +748,9 @@ time_t Shape_chooser::export_tiled_png(
 		bool        bycols    // Write tiles columns-first.
 ) {
 	assert(selected >= 0);
-	const int    shnum  = info[selected].shapenum;
-	ExultStudio* studio = ExultStudio::get_instance();
-	// Low shape in 'shapes.vga'?
-	assert(IS_FLAT(shnum) && file_info == studio->get_vgafile());
+	const int shnum = info[selected].shapenum;
+	// Flat in 'shapes.vga'?
+	assert(Is_flat(file_info, shnum));
 	Shape* shape = ifile->extract_shape(shnum);
 	assert(shape != nullptr);
 	cout << "Writing " << fname << " tiled" << (bycols ? ", by cols" : ", by rows") << " first" << endl;
@@ -1085,8 +1103,8 @@ static void Import_png(
 	// Convert to game palette.
 	Convert_indexed_image(pixels, h * rowsize, oldpal, palsize, pal);
 	delete[] oldpal;
-	// Low shape in 'shapes.vga'?
-	const bool flat = IS_FLAT(shapenum) && finfo == studio->get_vgafile();
+	// Flat in 'shapes.vga'?
+	const bool flat = Is_flat(finfo, shapenum);
 	int        xleft;
 	int        yabove;
 	if (flat) {
@@ -1373,7 +1391,7 @@ void Shape_chooser::import_all_pngs(const char* fname, int shnum) {
 		return;
 	}
 	ExultStudio* studio = ExultStudio::get_instance();
-	if (IS_FLAT(shnum) && file_info == studio->get_vgafile()) {
+	if (Is_flat(file_info, shnum)) {
 		// The shape is an 8x8 tile from shapes.vga, check the size of the png
 		int i = 0;
 		int f = 0;
@@ -1474,9 +1492,8 @@ void Shape_chooser::import_shape(const char* fname, gpointer user_data) {
 		if (chooser->selected < 0) {
 			return;    // Shouldn't happen.
 		}
-		ExultStudio* studio = ExultStudio::get_instance();
-		// Low shape in 'shapes.vga'?
-		const bool      flat = IS_FLAT(chooser->info[chooser->selected].shapenum) && chooser->file_info == studio->get_vgafile();
+		// Flat in 'shapes.vga'?
+		const bool      flat = Is_flat(chooser->file_info, chooser->info[chooser->selected].shapenum);
 		IFileDataSource ds(fname);
 		const int       size = ds.getSize();
 		// Check to see if it is a valid shape file, Flat to Flat, RLE to RLE.
@@ -1521,9 +1538,9 @@ void Shape_chooser::new_frame() {
 		frnum > shape->get_num_frames()) {
 		return;
 	}
-	// Low shape in 'shapes.vga'?
+	// Flat in 'shapes.vga'?
 	ExultStudio* studio = ExultStudio::get_instance();
-	const bool   flat   = IS_FLAT(shnum) && file_info == studio->get_vgafile();
+	const bool   flat   = Is_flat(file_info, shnum);
 	int          w      = 0;
 	int          h      = 0;
 	int          xleft;
@@ -1680,7 +1697,7 @@ void Shape_chooser::new_shape() {
 	gtk_adjustment_set_value(adj, shstart);
 	spin            = studio->get_widget("new_shape_nframes");
 	adj             = gtk_spin_button_get_adjustment(GTK_SPIN_BUTTON(spin));
-	const bool flat = IS_FLAT(shnum) && file_info == studio->get_vgafile();
+	const bool flat = shnum < c_first_obj_shape && file_info == studio->get_vgafile();
 	if (flat) {
 		gtk_adjustment_set_upper(adj, 31);
 	} else {
@@ -1734,7 +1751,7 @@ void Shape_chooser::create_new_shape() {
 		return;
 	}
 	// Create frames.
-	const bool flat     = IS_FLAT(shnum) && file_info == studio->get_vgafile();
+	const bool flat     = shnum < c_first_obj_shape && file_info == studio->get_vgafile();
 	bool       use_font = false;
 #ifdef HAVE_FREETYPE2
 	// Want to create from a font?
@@ -2302,7 +2319,7 @@ GtkWidget* Shape_chooser::create_popup() {
 		Add_menu_item(popup, "Info...", G_CALLBACK(on_shapes_popup_info_activate), this);
 		if (studio->get_image_editor()) {
 			Add_menu_item(popup, "Edit...", G_CALLBACK(on_shapes_popup_edit_activate), this);
-			if (IS_FLAT(info[selected].shapenum) && file_info == studio->get_vgafile()) {
+			if (Is_flat(file_info, info[selected].shapenum)) {
 				Add_menu_item(popup, "Edit tiled...", G_CALLBACK(on_shapes_popup_edtiles_activate), this);
 			}
 		}

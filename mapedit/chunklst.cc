@@ -245,7 +245,7 @@ void Chunk_chooser::render_chunk(
 				Shape_frame* s      = ifile->get_shape(shapenum, framenum);
 				auto         shinfo = shapes ? &shapes->get_info(shapenum) : nullptr;
 				// First pass over non RLE flats :
-				//  8x8 tiles, shapenum < 150,
+				//  8x8 tiles,
 				//  Default origin -1, -1 to be reset,
 				//  Not clickable nor Hack-Movable.
 				if (s && pass == 1 && !s->is_rle()) {
@@ -256,7 +256,7 @@ void Chunk_chooser::render_chunk(
 					}
 				}
 				// Second pass over RLE flats :
-				//  Larger than 8*8 tiles, shapenum >= 150,
+				//  Larger than 8*8 tiles,
 				//  Valid origin,
 				//  Clikable show Name and Outline, Hack-Movable.
 				if (s && pass == 2 && s->is_rle()) {
