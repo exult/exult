@@ -2537,9 +2537,10 @@ void ExultStudio::show_unused_shapes(
 	GtkEditable* ed  = GTK_EDITABLE(text);
 	Insert_text(ed, "The following shapes were not found.\n", pos);
 	Insert_text(ed, "Note that some may be created by usecode (script)\n\n", pos);
-	// Ignore flats (<0x96).
+	Vga_file* ifile = vgafile != nullptr ? vgafile->get_ifile() : nullptr;
+	// Ignore flats.
 	for (int i = c_first_obj_shape; i < nshapes; i++) {
-		if (!(data[i / 8] & (1 << (i % 8)))) {
+		if (!(data[i / 8] & (1 << (i % 8))) && (ifile == nullptr || !ifile->is_flat(i))) {
 			const char* nm  = get_shape_name(i);
 			char*       msg = g_strdup_printf("  Shape %4d:    %s\n", i, nm ? nm : "");
 			Insert_text(ed, msg, pos);

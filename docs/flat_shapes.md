@@ -15,10 +15,11 @@ Flat shapes are the 8x8 terrain tiles painted into chunks. The original games ke
 1. [Helper: Vga_file::is_flat](#helper-vga_fileis_flat)
 2. [Exult Studio: Shape Browser](#exult-studio-shape-browser)
 3. [Exult Studio: Object Shape Fields](#exult-studio-object-shape-fields)
-4. [Guards](#guards)
-5. [Known Limits](#known-limits)
-6. [Status](#status)
-7. [Testing](#testing)
+4. [Unused Shapes Report](#unused-shapes-report)
+5. [Guards](#guards)
+6. [Known Limits](#known-limits)
+7. [Status](#status)
+8. [Testing](#testing)
 
 ---
 
@@ -99,6 +100,18 @@ They use `Vga_file::is_flat()` directly, not `is_object_shape()`, because the la
 
 ---
 
+## Unused Shapes Report
+
+Exult's map editor can list object shapes that aren't used anywhere in the game (`Game_map::find_unused_shapes`, `gamemap.cc`). It sends the result to Exult Studio as a bit set, which Studio shows in its message window (`ExultStudio::show_unused_shapes`, `mapedit/studio.cc`). Both lists used to skip flats by starting at `c_first_obj_shape`. Flats at 150 or above are never placed as objects, so they would have been listed as unused.
+
+Both lists still start at `c_first_obj_shape`, and now also skip a shape when `Vga_file::is_flat()` says it is a flat:
+- Exult checks its own `shapes.vga` (`Shape_manager::get_shapes()`).
+- Studio checks its own `shapes.vga`, and if none is loaded it lists the shape as before.
+
+The bit set sent between them is unchanged, so a new Studio works with an older Exult and the other way round. The "found" bit is tested first, so `is_flat()` only runs for shapes that would otherwise be listed.
+
+---
+
 ## Guards
 
 | Guard | Where | Protects against |
@@ -115,6 +128,9 @@ They use `Vga_file::is_flat()` directly, not `is_object_shape()`, because the la
 | Flat shapes refused on save | `save_obj_window`, `save_cont_window` | Sending a flat typed into the shape field to Exult as an object |
 | Flat shapes refused on save, nothing else | `save_npc_window`, `save_egg_window` (Monster) | Creating an NPC or monster egg with a flat shape, without adding a new limit on other shapes |
 | Null `vgafile` or `Vga_file` skips the egg check | `save_egg_window` | A null dereference in a check that didn't exist before |
+| Unused-shapes lists keep starting at `c_first_obj_shape` | `Game_map::find_unused_shapes`, `ExultStudio::show_unused_shapes` | Empty slots below 150 suddenly being listed as unused |
+| Each side tests its own `shapes.vga`; the bit set is unchanged | Same | Breaking a newer Studio with an older Exult, or the other way round |
+| Studio lists the shape if no `shapes.vga` is loaded | `ExultStudio::show_unused_shapes` | A null dereference |
 
 More guards are added as the change goes on (see [Status](#status)).
 
@@ -137,7 +153,7 @@ More guards are added as the change goes on (see [Status](#status)).
 | `Vga_file::is_flat` helper | Done |
 | Exult Studio: replace `IS_FLAT` (`mapedit/shapelst.cc`) | Done (new-shape creation still by number) |
 | Exult Studio: object, NPC, egg, container and weapon/ammo validators | Done (150 floor kept) |
-| "Unused shapes" reports (`gamemap.cc`, `mapedit/studio.cc`) | To do |
+| "Unused shapes" reports (`gamemap.cc`, `mapedit/studio.cc`) | Done |
 | Comment fix in `mapedit/chunklst.cc` | Done |
 | Exult Studio: new empty shape type, mixed frames, 32-frame limit, RLE-misdetection warning | To do |
 
@@ -155,11 +171,12 @@ More guards are added as the change goes on (see [Status](#status)).
 - Editing an object or container and pressing Apply still saves.
 - Saving an NPC, or a Monster egg, with a creature shape still works.
 - Typing a shape 0–149 into the NPC window or a Monster egg and saving shows the alert; on master it was accepted.
+- The unused-shapes list (in Exult Studio's message window and Exult's `stdout.txt`) is the same as on master: no shapes below 150, and the same object shapes listed.
 
 **New flat at shape 150 or above**
 - Paint it as terrain, save, check that the chunks were written as v2, reload and confirm it renders.
 - It can't be placed as an object, NPC, egg or container.
 - Dragging it onto any object shape field is refused.
 - Typing its number into the object or container window and pressing Apply shows "You must set a valid object shape #." and nothing is sent to Exult.
-- It doesn't show up as an unused object shape.
+- It doesn't show up in either unused-shapes list.
 - Water, solid and poison flags behave the same as on original flats.
