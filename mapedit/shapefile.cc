@@ -130,6 +130,23 @@ static bool Frames_match(const Shape* shape) {
 }
 
 /*
+ *  Would a flat be read back as an RLE shape?  The loader takes a shape
+ *  as RLE if its first 4 bytes equal its length, or its length - 1.
+ */
+
+static bool Flat_looks_rle(const Shape* shape) {
+	const int    nframes = shape->get_num_frames();
+	Shape_frame* frame0  = nframes > 0 ? shape->get_frame(0) : nullptr;
+	if (frame0 == nullptr || frame0->is_rle() || frame0->get_data() == nullptr) {
+		return false;
+	}
+	const uint32         len  = nframes * c_num_tile_bytes;
+	const unsigned char* ptr  = frame0->get_data();
+	const uint32         dlen = little_endian::Read4(ptr);
+	return dlen == len || dlen == len - 1;
+}
+
+/*
  *  Write out if modified.  May throw exception.
  */
 
@@ -152,6 +169,19 @@ void Image_file_info::flush() {
 					"Shape %d has missing frames, or mixes 8x8 flat and RLE frames, so '%s' was not saved.", shnum,
 					basename.c_str());
 			return;
+		}
+		if (written && Flat_looks_rle(shapes[shnum])) {
+			char* msg = g_strdup_printf(
+					"Shape %d is an 8x8 flat, but its first 4 pixels happen to match the header of an RLE shape. "
+					"Exult would load it back as an RLE shape, and it would show up wrong.\n\n"
+					"To fix it, change any one of the first 4 pixels of frame 0 (the left end of its top row).\n\n"
+					"Save anyway?",
+					shnum);
+			const int answer = EStudio::Prompt(msg, "Yes", "No");
+			g_free(msg);
+			if (answer != 0) {
+				return;
+			}
 		}
 	}
 	modified = false;

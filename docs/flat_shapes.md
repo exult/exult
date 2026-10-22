@@ -131,6 +131,15 @@ All frames of a shape must be the same type: `Shape::write()` asserts that every
 
 **Safety net on save.** `Image_file_info::flush` (`mapedit/shapefile.cc`) checks every shape it is about to write. If a shape has a missing frame or mixes flat and RLE frames, it shows "Shape N has missing frames, or mixes 8x8 flat and RLE frames, so 'file' was not saved." and writes nothing. The file stays marked as modified, so no edits are lost. It checks exactly the shapes `write_file` writes: modified or patched shapes in a FLEX file, and shape 0 in a single-shape file.
 
+**Flats that would load back as RLE.** The loader (`Shape_frame::read`) decides a shape is RLE when its first 4 bytes, read as a little-endian number, equal the shape's length, or the length minus 1 (a flat's length is always even). For a flat, those 4 bytes are frame 0's first 4 pixels, and its length is 64 bytes per frame. So a 1-frame flat starting with pixels `64, 0, 0, 0` or `63, 0, 0, 0` would come back as a broken RLE shape. In the same check, `flush` uses `Flat_looks_rle()` and asks:
+
+> Shape N is an 8x8 flat, but its first 4 pixels happen to match the header of an RLE shape. Exult would load it back as an RLE shape, and it would show up wrong.
+>
+> To fix it, change any one of the first 4 pixels of frame 0 (the left end of its top row).
+>
+> Save anyway?
+
+**Yes** saves as it is. **No** writes nothing and leaves the file marked as modified, so you can change a pixel and save again. Only shapes being written are checked, so unchanged original data never triggers it.
 ---
 
 ## Guards
@@ -157,6 +166,8 @@ All frames of a shape must be the same type: `Shape::write()` asserts that every
 | No more than 32 frames on a flat | `Shape_chooser::new_frame`, `Shape_chooser::import_all_pngs` | Frame 32 and up being read back as frames 0–31 |
 | Check frames before writing; refuse the save instead | `Image_file_info::flush` | Studio crashing on `Shape::write()`'s assert |
 | File stays modified after a refused save | `Image_file_info::flush` | Losing unsaved edits |
+| Ask before saving a flat that would load back as RLE; "No" writes nothing | `Image_file_info::flush`, `Flat_looks_rle` | A flat silently turning into a broken RLE shape after a save |
+| Only flats with a frame 0 and pixel data are tested | `Flat_looks_rle` | A null dereference on an empty shape or frame |
 | Same shapes checked as `write_file` writes | `Image_file_info::flush` | Blocking a save over a shape that wouldn't be written |
 | "8x8 flat" defaults from the shape number | `Shape_chooser::new_shape_num_changed` | Changing how new shapes are created unless you ask |
 | "8x8 flat" only for `shapes.vga` | `Shape_chooser::new_shape_num_changed`, `Shape_chooser::create_new_shape` | Creating flats in faces, gumps or other files |
@@ -174,7 +185,7 @@ More guards are added as the change goes on (see [Status](#status)).
 | Limit | Source | Notes |
 |-------|--------|-------|
 | A flat has at most 32 frames | `shapes/vgafile.cc` (`framenum &= 31` in the flat loader) | Not tied to shape number; Exult Studio enforces it |
-| A flat whose first 4 bytes, read as a little-endian number, equal its byte length, or that length minus 1, loads as RLE | `Shape_frame::read`, `shapes/vgafile.cc` | Rare; Exult Studio should warn when saving such a flat |
+| A flat whose first 4 bytes, read as a little-endian number, equal its byte length, or that length minus 1, loads as RLE | `Shape_frame::read`, `shapes/vgafile.cc` | Rare; Exult Studio asks before saving such a flat |
 | All frames of a shape must be the same type | `Shape::write`, `shapes/vgafile.cc` (assert) | Exult Studio keeps them the same and refuses to save otherwise |
 
 ---
@@ -190,7 +201,7 @@ More guards are added as the change goes on (see [Status](#status)).
 | Comment fix in `mapedit/chunklst.cc` | Done |
 | Exult Studio: frame types (import all frames, 32-frame limit, save check) | Done |
 | Exult Studio: "8x8 flat" checkbox in the new-shape dialog | Done |
-| Exult Studio: RLE-misdetection warning on save | To do |
+| Exult Studio: RLE-misdetection warning on save | Done |
 
 ---
 
@@ -224,3 +235,5 @@ More guards are added as the change goes on (see [Status](#status)).
 - Typing its number into the object or container window and pressing Apply shows "You must set a valid object shape #." and nothing is sent to Exult.
 - It doesn't show up in either unused-shapes list.
 - Water, solid and poison flags behave the same as on original flats.
+- Give its frame 0 the first pixels `N, 0, 0, 0`, where N is 64 × its frame count (or that minus 1), and save: the "Save anyway?" prompt appears. "No" writes nothing and keeps the edit; "Yes" saves. Changing one of those pixels and saving gives no prompt.
+- Saving any other edit gives no prompt.
