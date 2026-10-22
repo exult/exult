@@ -120,50 +120,7 @@ class Game_window {
 	// Spatial light overlays: per-frame list of light sources (in ibuf
 	// game-pixel coords) that the light layers brighten around, plus the three
 	// tier layer handles and a reusable coverage (radial-alpha) scratch buffer.
-	struct Light_render_info {
-		int sx, sy;    // Center of the light in game-pixel (ibuf) coords.
-		int radius;    // Radius in game pixels.
-		int tier;      // 0 = candle, 1 = single light, 2 = many lights.
-		// Emitter height above the floor in game px; rounds the dome falloff
-		// in Splat_radial_light.
-		int elevation = 0;
-		// Radius in tiles (grid half-size); 0 when there is no occlusion grid.
-		int rt = 0;
-		// The light's own tile (world coords): anchors the room-fill grid on
-		// screen so the mask stays fixed to the walls as the light moves.
-		int ltx = 0, lty = 0, ltz = 0;
-		// True if the light is itself under a roof (Light_beneath_roof): roof
-		// pixels stay dark for it.
-		bool mask_roof = false;
-		// Spill glows: distance (game px) already travelled to the spill
-		// point; the splat continues the source's falloff.  0 for real sources.
-		int dist_bias = 0;
-		// True for a spill glow (semantics in Splat_radial_light).
-		bool is_spill = false;
-		// The opening's transmission percent (1..100); real sources pass 100.
-		int spill_percent = 100;
-		// Spill glows: the source's storey (tz / 5), gating 128 + storey roof
-		// mask pixels in Splat_radial_light.
-		int spill_floor = 0;
-		// Spill placed on an overlooked floor-roof deck: exempt from the
-		// inside-viewer storey veto, that deck is what it exists to light.
-		bool spill_on_deck = false;
-		// The fan's outward axis (unit, one component), as handed to
-		// Build_spill_shadow_grid: the splat needs it to fade the fan's edge.
-		int cone_dx = 0, cone_dy = 0;
-		// True for a light that moves with the Avatar (carried torch and its
-		// spills): splatted fresh every frame on top of the cached static mask
-		// instead of invalidating it.
-		bool moving = false;
-		// Room-fill grid ((2*rt+1) square) from Build_light_shadow_grid: light
-		// floods the room bounded by tall walls.  Empty = no gating.
-		std::vector<unsigned char> lit;
-		// Per-wall-cell face arrival distances (4 bytes/cell [S,E,N,W]; see
-		// Flood_room_grid), consumed by the splat's face/object rules.
-		std::vector<unsigned char> ring;
-	};
-
-	std::vector<Light_render_info> light_renders;
+	std::vector<NaturalLight::Light_render_info> light_renders;
 	int                            light_layer_handles[3] = {-1, -1, -1};
 	int                            light_layer_w          = -1;
 	int                            light_layer_h          = -1;
@@ -186,9 +143,6 @@ class Game_window {
 	int      light_tier_anchor_y[3] = {0, 0, 0};
 	uint64_t light_tier_sig[3]      = {0, 0, 0};
 	uint64_t light_tier_stamp[3]    = {0, 0, 0};
-	// The tier's last rebuild sampled a roof mask stamped under the PREVIOUS
-	// frame's light rects (a light appeared/moved sets this): rebuild once
-	// more next frame with the then-complete mask.
 	// Rebuild countdown after the static set changes: the roof mask needs a
 	// paint->build round per step to converge under new coverage (see
 	// build_light_layers), so more than one forced rebuild is required.
@@ -212,9 +166,9 @@ class Game_window {
 	// only paints the mask where a sprite touches one of them.
 	std::vector<TileRect> light_mask_rects;
 	// Surface-identity channels, stamped beside the roof mask in painter's
-	// order: per-pixel owner KIND (0 ground, 1 wall face, 2 object) plus the
+	// order: per-pixel owner KIND (NaturalLight::Kind) plus the
 	// screen offset from the pixel to its owner's per-tile foot at z=0 (one
-	// byte each, offset+128).  Consumed by Splat_radial_light.
+	// byte each, offset + NaturalLight::Foot_bias).  Consumed by Splat_radial_light.
 	std::unique_ptr<Image_buffer8> light_kind_mask;
 	std::vector<unsigned char>     light_foot_dx, light_foot_dy;
 	// This frame's stamped sprite art boxes: a tall sprite's crown sits far
@@ -611,10 +565,10 @@ public:
 			int sx, int sy, int radius, int tier, int elevation, int rt, int ltx, int lty, int ltz, std::vector<unsigned char> lit,
 			bool mask_roof = false, int dist_bias = 0, bool is_spill = false, int spill_percent = 100, int spill_floor = 0,
 			bool moving = false, std::vector<unsigned char> ring = {}, bool spill_on_deck = false, int cone_dx = 0,
-			int cone_dy = 0) {
+			int cone_dy = 0, int cone_mouth = 0) {
 		light_renders.push_back(
 				{sx, sy, radius, tier, elevation, rt, ltx, lty, ltz, mask_roof, dist_bias, is_spill, spill_percent, spill_floor,
-				 spill_on_deck, cone_dx, cone_dy, moving, std::move(lit), std::move(ring)});
+				 spill_on_deck, cone_dx, cone_dy, cone_mouth, moving, std::move(lit), std::move(ring)});
 	}
 
 	void build_light_layers();

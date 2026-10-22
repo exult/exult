@@ -475,50 +475,9 @@ void Game_window::paint(
 				NaturalLight::Build_light_shadow_grid(main_actor, rt, lit, spills, light_walls, &ringv);
 				// moving = true: the torch follows the Avatar every frame.
 				add_light_render(
-						asx, asy, radius, tier, elevation, rt, ltile.tx, ltile.ty, ltile.tz, std::move(lit), under_roof, 0, false,
-						100, 0, true, std::move(ringv));
-				// Each opening the fill reached gets the source's own bubble
-				// poking through it: remaining radius, continued falloff
-				// (dist_bias), gated by its own spill grid, dimmed by the
-				// opening's transmission percent (see Light_spill).
-				for (const NaturalLight::Light_spill& spill : spills) {
-					const Tile_coord& sp = spill.tile;
-					// Budget by the fill's PATH to the opening, not the straight
-					// line: the wrap-around fill also exits under other buildings'
-					// eaves, where the light has already spent its whole reach.
-					const int spill_dist   = std::max(ltile.distance_2d(sp), spill.path) * c_tilesize;
-					const int spill_radius = radius - spill_dist;
-					if (spill_radius <= 0) {
-						continue;
-					}
-					// +7: rounding slack plus the wall-top anchor shift (see rt).
-					const int                  srt = spill_radius / c_tilesize + 7;
-					std::vector<unsigned char> slit;
-					std::vector<unsigned char> sring;
-					// Outward fan axis: window spills exit through their opening
-					// wall tile; doorway/well exits fall back to the light->exit
-					// dominant axis.  (0,0) = unconstrained.
-					int cdx = spill.opening.tx >= 0 ? Tile_coord::delta(spill.opening.tx, sp.tx)
-													: Tile_coord::delta(ltile.tx, sp.tx);
-					int cdy = spill.opening.tx >= 0 ? Tile_coord::delta(spill.opening.ty, sp.ty)
-													: Tile_coord::delta(ltile.ty, sp.ty);
-					if (std::abs(cdx) >= std::abs(cdy)) {
-						cdx = cdx > 0 ? 1 : (cdx < 0 ? -1 : 0);
-						cdy = 0;
-					} else {
-						cdy = cdy > 0 ? 1 : -1;
-						cdx = 0;
-					}
-					// Walls in the grid for any viewer: the shell is stamped from
-					// inside too, so the ring cannot wash interior faces.
-					NaturalLight::Build_spill_shadow_grid(sp, srt, slit, true, &sring, cdx, cdy);
-					int ssx = 0;
-					int ssy = 0;
-					get_shape_location(sp, ssx, ssy);
-					add_light_render(
-							ssx, ssy, spill_radius, tier, elevation, srt, sp.tx, sp.ty, sp.tz, std::move(slit), false, spill_dist,
-							true, spill.percent, spill.floor, true, std::move(sring), spill.on_deck, cdx, cdy);
-				}
+						asx, asy, radius, tier, elevation, rt, ltile.tx, ltile.ty, ltile.tz, std::move(lit), under_roof, 0,
+						false, 100, 0, true, std::move(ringv));
+				NaturalLight::Queue_spill_renders(ltile, radius, tier, elevation, spills, true);
 			}
 			// Also check light spell.
 			if (special_light && clock->get_total_minutes() > special_light) {
@@ -529,7 +488,6 @@ void Game_window::paint(
 			// Light sources no longer tint the global palette; it stays purely
 			// time-of-day (incl. dawn/dusk). The spatial light layers do the local
 			// brightening around each source instead.
-			(void)light_sources;
 			clock->set_light_source(0, in_dungeon);
 			build_light_layers();
 		} else {
@@ -732,12 +690,6 @@ int Game_render::paint_chunk_objects(
 		// Computed once per frame in paint_map (sealed = no light_passes_through
 		// object AND no passable gap in the walls).
 		const bool avatar_sealed = avatar_enclosure_sealed;
-		// Per-crossing light dimming. Each inside/outside boundary a light
-		// crosses divides its strength by this factor (one darker palette step)
-		// but it is floored so an escaping light never drops below the lowest
-		// lit palette (candle) -- it is never dimmed to full darkness.
-		constexpr int light_pass_dim_divisor  = 3;
-		constexpr int light_pass_min_strength = 1;
 		for (const auto& light_obj : lights) {
 			const Shape_info& info = light_obj->get_info();
 			// get_object_light is the authoritative test: it covers flagged
@@ -746,32 +698,22 @@ int Game_render::paint_chunk_objects(
 			if (info.get_object_light(light_obj->get_framenum()) <= 0) {
 				continue;
 			}
-			const int strength = get_light_strength(light_obj, main_actor);
-			// Natural lights have their own bounded glow radius; only cull
-			// distance-decayed (strength 0) lights when natural light is off.
-			if (strength <= 0 && !natural) {
-				continue;
-			}
 			if (!natural) {
 				// Vanilla legacy behaviour: every in-range light counts fully.
-				light_sources += strength;
+				const int strength = get_light_strength(light_obj, main_actor);
+				if (strength > 0) {
+					light_sources += strength;
+				}
 				continue;
 			}
-			// Decide whether this source reaches the viewer, and how many
-			// inside/outside boundaries its light crosses on the way.
+			// Decide whether this source reaches the viewer.
 			const NaturalLight::LightVisibility vis = NaturalLight::Evaluate_light_visibility(
 					light_obj, olist, main_actor, viewer_outside, same_chunk, avatar_sealed, chunk_has_opening);
-			const bool blocked   = vis.blocked;
-			const int  crossings = vis.crossings;
-
+			const bool blocked = vis.blocked;
 			// An EXTERIOR light's containment is the field's job: keep
 			// splatting it even when it cannot reach the viewer (stepping a
 			// chunk over inside the barn used to vanish the lamppost pool seen
-			// through the door).  Blocked lights still never count toward the
-			// legacy global palette below.
-			if (blocked && day_palette) {
-				continue;
-			}
+			// through the door).
 			// A blocked INTERIOR light keeps its outdoor SPILLS: escaped light
 			// is exterior geometry, visible from anywhere -- the blocked
 			// verdict is a viewer-relative heuristic (avatar chunk / enclosure)
@@ -837,57 +779,10 @@ int Game_render::paint_chunk_objects(
 							lsx, lsy, radius, tier, elevation, rt, ltile.tx, ltile.ty, ltile.tz, std::move(lit), under_roof, 0,
 							false, 100, 0, false, std::move(ringv));
 				}
-				// Spill glow per reached opening (see the carried-light site).
-				for (const NaturalLight::Light_spill& spill : spills) {
-					if (suppress_spills) {
-						break;
-					}
-					const Tile_coord& sp = spill.tile;
-					// Path-distance budget (see the carried-light site).
-					const int spill_dist   = std::max(ltile.distance_2d(sp), spill.path) * c_tilesize;
-					const int spill_radius = radius - spill_dist;
-					if (spill_radius <= 0) {
-						continue;
-					}
-					// +7: rounding slack plus the wall-top anchor shift (see rt).
-					const int                  srt = spill_radius / c_tilesize + 7;
-					std::vector<unsigned char> slit;
-					std::vector<unsigned char> sring;
-					// Outward fan axis (see the carried-light site).
-					int cdx = spill.opening.tx >= 0 ? Tile_coord::delta(spill.opening.tx, sp.tx)
-													: Tile_coord::delta(ltile.tx, sp.tx);
-					int cdy = spill.opening.tx >= 0 ? Tile_coord::delta(spill.opening.ty, sp.ty)
-													: Tile_coord::delta(ltile.ty, sp.ty);
-					if (std::abs(cdx) >= std::abs(cdy)) {
-						cdx = cdx > 0 ? 1 : (cdx < 0 ? -1 : 0);
-						cdy = 0;
-					} else {
-						cdy = cdy > 0 ? 1 : -1;
-						cdx = 0;
-					}
-					NaturalLight::Build_spill_shadow_grid(sp, srt, slit, true, &sring, cdx, cdy);
-					int ssx = 0;
-					int ssy = 0;
-					gwin->get_shape_location(sp, ssx, ssy);
-					gwin->add_light_render(
-							ssx, ssy, spill_radius, tier, elevation, srt, sp.tx, sp.ty, sp.tz, std::move(slit), false, spill_dist,
-							true, spill.percent, spill.floor, false, std::move(sring), spill.on_deck, cdx, cdy);
+				// Spill glow per reached opening.
+				if (!suppress_spills) {
+					NaturalLight::Queue_spill_renders(ltile, radius, tier, elevation, spills, false);
 				}
-			}
-			// Dim once per inside/outside crossing (floored at the lowest lit
-			// palette, never to darkness).  Only strength > 0 contributes: a
-			// distance-culled light kept for its spatial glow must not inflate
-			// the legacy global light count.
-			if (strength > 0 && !blocked) {
-				int effective = strength;
-				for (int i = 0; i < crossings; ++i) {
-					effective /= light_pass_dim_divisor;
-				}
-				if (crossings > 0 && effective < light_pass_min_strength) {
-					effective = light_pass_min_strength;
-				}
-				// Count light sources.
-				light_sources += effective;
 			}
 		}
 	}
