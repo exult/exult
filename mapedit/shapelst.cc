@@ -1622,6 +1622,28 @@ C_EXPORT void on_new_shape_font_toggled(GtkToggleButton* btn, gpointer user_data
 	chooser->from_font_toggled(on);
 }
 
+// Toggled '8x8 flat' button:
+C_EXPORT void on_new_shape_flat_toggled(GtkToggleButton* btn, gpointer user_data) {
+	ignore_unused_variable_warning(user_data);
+	const bool on      = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(btn));
+	GtkWidget* win     = gtk_widget_get_toplevel(GTK_WIDGET(btn));
+	auto*      chooser = static_cast<Shape_chooser*>(g_object_get_data(G_OBJECT(win), "user_data"));
+	if (chooser != nullptr) {
+		chooser->new_shape_flat_toggled(on);
+	}
+}
+
+// Changed shape #:
+C_EXPORT void on_new_shape_num_changed(GtkSpinButton* btn, gpointer user_data) {
+	ignore_unused_variable_warning(user_data);
+	const int  shnum   = gtk_spin_button_get_value_as_int(btn);
+	GtkWidget* win     = gtk_widget_get_toplevel(GTK_WIDGET(btn));
+	auto*      chooser = static_cast<Shape_chooser*>(g_object_get_data(G_OBJECT(win), "user_data"));
+	if (chooser != nullptr) {
+		chooser->new_shape_num_changed(shnum);
+	}
+}
+
 gboolean Shape_chooser::on_new_shape_font_color_draw_expose_event(
 		GtkWidget* widget,    // The draw area.
 		cairo_t*   cairo,
@@ -1676,6 +1698,36 @@ void Shape_chooser::from_font_toggled(bool on) {
 }
 
 /*
+ *  '8x8 flat' toggled in 'New shape' dialog.
+ */
+
+void Shape_chooser::new_shape_flat_toggled(bool on) {
+	ExultStudio*   studio = ExultStudio::get_instance();
+	GtkWidget*     spin   = studio->get_widget("new_shape_nframes");
+	GtkAdjustment* adj    = gtk_spin_button_get_adjustment(GTK_SPIN_BUTTON(spin));
+	gtk_adjustment_set_upper(adj, on ? c_max_flat_frames : 255);
+	if (gtk_adjustment_get_value(adj) > gtk_adjustment_get_upper(adj)) {
+		gtk_adjustment_set_value(adj, gtk_adjustment_get_upper(adj));
+	}
+	if (on) {    // Flats can't come from a font.
+		studio->set_toggle("new_shape_font", false, false);
+	}
+#ifdef HAVE_FREETYPE2
+	studio->set_sensitive("new_shape_font", !on);
+#endif
+}
+
+/*
+ *  Shape # changed in 'New shape' dialog:  default '8x8 flat' to match.
+ */
+
+void Shape_chooser::new_shape_num_changed(int shnum) {
+	ExultStudio* studio = ExultStudio::get_instance();
+	const bool   vga    = file_info == studio->get_vgafile();
+	studio->set_toggle("new_shape_flat", vga && shnum < c_first_obj_shape, vga);
+}
+
+/*
  *  Add a new shape.
  */
 
@@ -1707,14 +1759,6 @@ void Shape_chooser::new_shape() {
 		}
 	}
 	gtk_adjustment_set_value(adj, shstart);
-	spin            = studio->get_widget("new_shape_nframes");
-	adj             = gtk_spin_button_get_adjustment(GTK_SPIN_BUTTON(spin));
-	const bool flat = shnum < c_first_obj_shape && file_info == studio->get_vgafile();
-	if (flat) {
-		gtk_adjustment_set_upper(adj, 31);
-	} else {
-		gtk_adjustment_set_upper(adj, 255);
-	}
 	spin = studio->get_widget("new_shape_font_height");
 	studio->set_sensitive("new_shape_font_height", false);
 	adj = gtk_spin_button_get_adjustment(GTK_SPIN_BUTTON(spin));
@@ -1730,6 +1774,8 @@ void Shape_chooser::new_shape() {
 #ifndef HAVE_FREETYPE2 /* No freetype?  No fonts.  */
 	studio->set_sensitive("new_shape_font", false);
 #endif
+	new_shape_num_changed(shstart);
+	new_shape_flat_toggled(studio->get_toggle("new_shape_flat"));
 	// Store our pointer in color drawer.
 	GtkWidget* draw = studio->get_widget("new_shape_font_color_draw");
 	g_object_set_data(G_OBJECT(draw), "user_data", this);
@@ -1763,8 +1809,11 @@ void Shape_chooser::create_new_shape() {
 		return;
 	}
 	// Create frames.
-	const bool flat     = shnum < c_first_obj_shape && file_info == studio->get_vgafile();
+	const bool flat     = file_info == studio->get_vgafile() && studio->get_toggle("new_shape_flat");
 	bool       use_font = false;
+	if (flat && nframes > c_max_flat_frames) {
+		nframes = c_max_flat_frames;
+	}
 #ifdef HAVE_FREETYPE2
 	// Want to create from a font?
 	use_font             = studio->get_toggle("new_shape_font");

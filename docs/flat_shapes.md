@@ -63,7 +63,13 @@ It is used where Studio works on an existing shape:
 | `Shape_chooser::import_shape` | A `.shp` file must match the shape's type (flat to flat, RLE to RLE) |
 | `Shape_chooser::new_frame` | A new frame in a flat is an 8x8 tile |
 
-**New shapes still go by number.** `Shape_chooser::new_shape` (the dialog's frame-count limit) and `Shape_chooser::create_new_shape` (the frames it creates) keep `shnum < c_first_obj_shape`. There is no data to test there: the slot is empty, or `Vga_file::new_shape()` has just reset it. A later step replaces this with a "tile or object?" choice.
+**New shapes: "8x8 flat (terrain tile)" checkbox.** A new shape has no data to test: the slot is empty, or `Vga_file::new_shape()` has just reset it. So the new-shape dialog (`new_shape_window` in `mapedit/exult_studio.glade`) has a checkbox that decides it:
+- Its default follows the shape number in the dialog: ticked below `c_first_obj_shape`, unticked from there up (`Shape_chooser::new_shape_num_changed`). Creating shapes works as before unless you change it. Changing the number resets it to the default.
+- It's only enabled for `shapes.vga`; in other files it's unticked and greyed out.
+- Ticking it limits the frame count to 32 and turns off and greys out "From font" (`Shape_chooser::new_shape_flat_toggled`).
+- `Shape_chooser::create_new_shape` creates 8x8 flat frames when it's ticked and the file is `shapes.vga`, and caps the frame count at 32.
+
+This also fixes a bug on master: the dialog's frame limit came from the shape **selected in the browser**, while the shape was created from the number **in the dialog**, so the two could disagree.
 
 ---
 
@@ -152,6 +158,12 @@ All frames of a shape must be the same type: `Shape::write()` asserts that every
 | Check frames before writing; refuse the save instead | `Image_file_info::flush` | Studio crashing on `Shape::write()`'s assert |
 | File stays modified after a refused save | `Image_file_info::flush` | Losing unsaved edits |
 | Same shapes checked as `write_file` writes | `Image_file_info::flush` | Blocking a save over a shape that wouldn't be written |
+| "8x8 flat" defaults from the shape number | `Shape_chooser::new_shape_num_changed` | Changing how new shapes are created unless you ask |
+| "8x8 flat" only for `shapes.vga` | `Shape_chooser::new_shape_num_changed`, `Shape_chooser::create_new_shape` | Creating flats in faces, gumps or other files |
+| Frame count capped at 32 for a new flat | `Shape_chooser::new_shape_flat_toggled`, `Shape_chooser::create_new_shape` | A new flat with more frames than the loader can read |
+| No "From font" for a new flat | `Shape_chooser::new_shape_flat_toggled` | Font frames (RLE) in a flat shape |
+| Sensitivity passed to `ExultStudio::set_toggle()` explicitly, and the flat state applied after the font set-up | `Shape_chooser::new_shape_num_changed`, `Shape_chooser::new_shape_flat_toggled`, `Shape_chooser::new_shape` | `set_toggle()`'s `sensitive` argument defaults to `true`, which would re-enable the checkbox in other files and "From font" for a flat |
+| Handlers do nothing if the dialog has no chooser yet | `on_new_shape_flat_toggled`, `on_new_shape_num_changed` | A null dereference if a signal fires before `new_shape()` sets it |
 
 More guards are added as the change goes on (see [Status](#status)).
 
@@ -172,12 +184,12 @@ More guards are added as the change goes on (see [Status](#status)).
 | Step | State |
 |------|-------|
 | `Vga_file::is_flat` helper | Done |
-| Exult Studio: replace `IS_FLAT` (`mapedit/shapelst.cc`) | Done (new-shape creation still by number) |
+| Exult Studio: replace `IS_FLAT` (`mapedit/shapelst.cc`) | Done |
 | Exult Studio: object, NPC, egg, container and weapon/ammo validators | Done (150 floor kept) |
 | "Unused shapes" reports (`gamemap.cc`, `mapedit/studio.cc`) | Done |
 | Comment fix in `mapedit/chunklst.cc` | Done |
 | Exult Studio: frame types (import all frames, 32-frame limit, save check) | Done |
-| Exult Studio: "8x8 flat" checkbox in the new-shape dialog | To do |
+| Exult Studio: "8x8 flat" checkbox in the new-shape dialog | Done |
 | Exult Studio: RLE-misdetection warning on save | To do |
 
 ---
@@ -200,8 +212,12 @@ More guards are added as the change goes on (see [Status](#status)).
 - "Import all frames" into a flat refuses PNGs that aren't 8x8, and more than 32 PNGs.
 - "New frame" on a flat with 32 frames shows "A flat can't have more than 32 frames."
 - Saving `shapes.vga` after these edits works, and Exult loads the changed flats as tiles.
+- New-shape dialog: "8x8 flat (terrain tile)" is ticked for a number below 150 and unticked from 150 up, and changing the number updates it. A new shape is created as before with the default.
+- New-shape dialog in another file (faces, gumps): the checkbox is unticked and greyed out.
+- Ticking it limits "Initial number of frames" to 32 and greys out "From font"; unticking restores both.
 
 **New flat at shape 150 or above**
+- Create it with "8x8 flat (terrain tile)" ticked. It shows as 8x8 tiles, "Edit tiled..." is offered, and it reloads as a flat after saving.
 - Paint it as terrain, save, reload and confirm it renders. If its shape number is above 1023 (`0x3ff`), check that the chunks were written as v2.
 - It can't be placed as an object, NPC, egg or container.
 - Dragging it onto any object shape field is refused.
