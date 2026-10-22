@@ -108,6 +108,28 @@ Object_browser* Image_file_info::create_browser(
 }
 
 /*
+ *  Are all of a shape's frames present, and all flat or all RLE?
+ */
+
+static bool Frames_match(const Shape* shape) {
+	const int nframes = shape->get_num_frames();
+	if (nframes == 0) {
+		return true;
+	}
+	const Shape_frame* frame0 = shape->get_frame(0);
+	if (frame0 == nullptr) {
+		return false;
+	}
+	for (int i = 1; i < nframes; i++) {
+		const Shape_frame* frame = shape->get_frame(i);
+		if (frame == nullptr || frame->is_rle() != frame0->is_rle()) {
+			return false;
+		}
+	}
+	return true;
+}
+
+/*
  *  Write out if modified.  May throw exception.
  */
 
@@ -115,13 +137,24 @@ void Image_file_info::flush() {
 	if (!modified) {
 		return;
 	}
-	modified               = false;
 	const int      nshapes = ifile->get_num_shapes();
 	int            shnum;    // First read all entries.
 	vector<Shape*> shapes(nshapes);
 	for (shnum = 0; shnum < nshapes; shnum++) {
 		shapes[shnum] = ifile->extract_shape(shnum);
 	}
+	// Shape::write() asserts on a missing frame or mixed frame types.
+	const bool single = !ifile->is_flex();
+	for (shnum = 0; shnum < nshapes; shnum++) {
+		const bool written = single ? shnum == 0 : shapes[shnum]->get_modified() || shapes[shnum]->get_from_patch();
+		if (written && !Frames_match(shapes[shnum])) {
+			EStudio::Alert(
+					"Shape %d has missing frames, or mixes 8x8 flat and RLE frames, so '%s' was not saved.", shnum,
+					basename.c_str());
+			return;
+		}
+	}
+	modified = false;
 	string filestr("<PATCH>/");    // Always write to 'patch'.
 	filestr += basename;
 	// !flex means single-shape.

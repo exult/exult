@@ -70,6 +70,8 @@ using std::unique_ptr;
 std::vector<std::unique_ptr<Editing_file>> Shape_chooser::editing_files;
 int                                        Shape_chooser::check_editing_timer = -1;
 
+constexpr int c_max_flat_frames = 32;    // Flats are read with frame # & 31.
+
 /*
  *  Is a shape in 'shapes.vga' an 8x8 flat?  Empty shapes go by number.
  */
@@ -1391,7 +1393,8 @@ void Shape_chooser::import_all_pngs(const char* fname, int shnum) {
 		return;
 	}
 	ExultStudio* studio = ExultStudio::get_instance();
-	if (Is_flat(file_info, shnum)) {
+	const bool   flat   = Is_flat(file_info, shnum);
+	if (flat) {
 		// The shape is an 8x8 tile from shapes.vga, check the size of the png
 		int i = 0;
 		int f = 0;
@@ -1411,7 +1414,7 @@ void Shape_chooser::import_all_pngs(const char* fname, int shnum) {
 			}
 			delete[] oldpal;
 			delete[] pixels;
-			if ((w != c_tilesize) || (h != c_tilesize)) {
+			if ((w != c_tilesize) || (h != c_tilesize) || (rowsize != c_tilesize)) {
 				f++;
 			}
 			i++;
@@ -1423,6 +1426,11 @@ void Shape_chooser::import_all_pngs(const char* fname, int shnum) {
 			msg += "\tThere are " + std::to_string(f) + " frames among ";
 			msg += std::to_string(i) + " \n\twith a size not 8px * 8px";
 			studio->prompt(msg.c_str(), "OK", nullptr, nullptr);
+			delete[] fullname;
+			return;
+		}
+		if (i > c_max_flat_frames) {
+			Alert("A flat can't have more than %d frames.", c_max_flat_frames);
 			delete[] fullname;
 			return;
 		}
@@ -1452,9 +1460,9 @@ void Shape_chooser::import_all_pngs(const char* fname, int shnum) {
 		// Convert to game palette.
 		Convert_indexed_image(pixels, h * rowsize, oldpal, palsize, pal);
 		delete[] oldpal;
-		const int xleft  = w + xoff - 1;
-		const int yabove = h + yoff - 1;
-		auto      frame  = make_unique<Shape_frame>(pixels, w, h, xleft, yabove, true);
+		const int xleft  = flat ? c_tilesize : w + xoff - 1;
+		const int yabove = flat ? c_tilesize : h + yoff - 1;
+		auto      frame  = make_unique<Shape_frame>(pixels, w, h, xleft, yabove, !flat);
 		if (i < ifile->get_num_frames(shnum)) {
 			shape->set_frame(std::move(frame), i);
 		} else {
@@ -1541,10 +1549,14 @@ void Shape_chooser::new_frame() {
 	// Flat in 'shapes.vga'?
 	ExultStudio* studio = ExultStudio::get_instance();
 	const bool   flat   = Is_flat(file_info, shnum);
-	int          w      = 0;
-	int          h      = 0;
-	int          xleft;
-	int          yabove;
+	if (flat && shape->get_num_frames() >= c_max_flat_frames) {
+		Alert("A flat can't have more than %d frames.", c_max_flat_frames);
+		return;
+	}
+	int w = 0;
+	int h = 0;
+	int xleft;
+	int yabove;
 	if (flat) {
 		w = h = xleft = yabove = c_tilesize;
 	} else {    // Find largest frame.

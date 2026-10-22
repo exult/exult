@@ -16,10 +16,11 @@ Flat shapes are the 8x8 terrain tiles painted into chunks. The original games ke
 2. [Exult Studio: Shape Browser](#exult-studio-shape-browser)
 3. [Exult Studio: Object Shape Fields](#exult-studio-object-shape-fields)
 4. [Unused Shapes Report](#unused-shapes-report)
-5. [Guards](#guards)
-6. [Known Limits](#known-limits)
-7. [Status](#status)
-8. [Testing](#testing)
+5. [Exult Studio: Frame Types](#exult-studio-frame-types)
+6. [Guards](#guards)
+7. [Known Limits](#known-limits)
+8. [Status](#status)
+9. [Testing](#testing)
 
 ---
 
@@ -114,6 +115,18 @@ The bit set sent between them is unchanged, so a new Studio works with an older 
 
 ---
 
+## Exult Studio: Frame Types
+
+All frames of a shape must be the same type: `Shape::write()` asserts that every frame is present and either all flat or all RLE. Once flats can be anywhere, Studio has to keep it that way itself.
+
+**Import all frames (also on master).** `Shape_chooser::import_all_pngs` created every frame as RLE, even when importing into a flat. Importing as many PNGs as the flat had frames silently turned it into an RLE shape; importing fewer left flat and RLE frames mixed, and Studio hit the assert on save. It now creates frames of the shape's own type (flat frames with the 8x8 origin, as `Import_png` does), and its 8x8 check also requires an 8-pixel row size, because a flat frame copies exactly 64 bytes.
+
+**32-frame limit.** The loader reads a flat's frame number as `framenum & 31` (`shapes/vgafile.cc`), so a 33rd frame would come back as frame 0. "New frame" (`Shape_chooser::new_frame`) and "Import all frames" now refuse to go past 32 frames on a flat, with "A flat can't have more than 32 frames." (`c_max_flat_frames` in `mapedit/shapelst.cc`).
+
+**Safety net on save.** `Image_file_info::flush` (`mapedit/shapefile.cc`) checks every shape it is about to write. If a shape has a missing frame or mixes flat and RLE frames, it shows "Shape N has missing frames, or mixes 8x8 flat and RLE frames, so 'file' was not saved." and writes nothing. The file stays marked as modified, so no edits are lost. It checks exactly the shapes `write_file` writes: modified or patched shapes in a FLEX file, and shape 0 in a single-shape file.
+
+---
+
 ## Guards
 
 | Guard | Where | Protects against |
@@ -133,6 +146,12 @@ The bit set sent between them is unchanged, so a new Studio works with an older 
 | Unused-shapes lists keep starting at `c_first_obj_shape` | `Game_map::find_unused_shapes`, `ExultStudio::show_unused_shapes` | Empty slots below 150 suddenly being listed as unused |
 | Each side tests its own `shapes.vga`; the bit set is unchanged | Same | Breaking a newer Studio with an older Exult, or the other way round |
 | Studio lists the shape if no `shapes.vga` is loaded | `ExultStudio::show_unused_shapes` | A null dereference |
+| Imported frames match the shape's type | `Shape_chooser::import_all_pngs` | Turning a flat into an RLE shape, or mixing frame types |
+| 8x8 check includes the PNG's row size | `Shape_chooser::import_all_pngs` | Copying the wrong 64 bytes into a flat frame |
+| No more than 32 frames on a flat | `Shape_chooser::new_frame`, `Shape_chooser::import_all_pngs` | Frame 32 and up being read back as frames 0–31 |
+| Check frames before writing; refuse the save instead | `Image_file_info::flush` | Studio crashing on `Shape::write()`'s assert |
+| File stays modified after a refused save | `Image_file_info::flush` | Losing unsaved edits |
+| Same shapes checked as `write_file` writes | `Image_file_info::flush` | Blocking a save over a shape that wouldn't be written |
 
 More guards are added as the change goes on (see [Status](#status)).
 
@@ -142,9 +161,9 @@ More guards are added as the change goes on (see [Status](#status)).
 
 | Limit | Source | Notes |
 |-------|--------|-------|
-| A flat has at most 32 frames | `shapes/vgafile.cc` (`framenum &= 31` in the flat loader) | Not tied to shape number |
+| A flat has at most 32 frames | `shapes/vgafile.cc` (`framenum &= 31` in the flat loader) | Not tied to shape number; Exult Studio enforces it |
 | A flat whose first 4 bytes, read as a little-endian number, equal its byte length, or that length minus 1, loads as RLE | `Shape_frame::read`, `shapes/vgafile.cc` | Rare; Exult Studio should warn when saving such a flat |
-| All frames of a shape must be the same type | `Shape::write`, `shapes/vgafile.cc` (assert) | Exult Studio must refuse mixed frames |
+| All frames of a shape must be the same type | `Shape::write`, `shapes/vgafile.cc` (assert) | Exult Studio keeps them the same and refuses to save otherwise |
 
 ---
 
@@ -157,7 +176,9 @@ More guards are added as the change goes on (see [Status](#status)).
 | Exult Studio: object, NPC, egg, container and weapon/ammo validators | Done (150 floor kept) |
 | "Unused shapes" reports (`gamemap.cc`, `mapedit/studio.cc`) | Done |
 | Comment fix in `mapedit/chunklst.cc` | Done |
-| Exult Studio: new empty shape type, mixed frames, 32-frame limit, RLE-misdetection warning | To do |
+| Exult Studio: frame types (import all frames, 32-frame limit, save check) | Done |
+| Exult Studio: "8x8 flat" checkbox in the new-shape dialog | To do |
+| Exult Studio: RLE-misdetection warning on save | To do |
 
 ---
 
@@ -175,9 +196,13 @@ More guards are added as the change goes on (see [Status](#status)).
 - Typing a shape 0–149 into the NPC window or a Monster egg and saving shows the alert; on master it was accepted.
 - The unused-shapes list (in Exult Studio's message window and Exult's `stdout.txt`) is the same as on master: no shapes below 150, and the same object shapes listed.
 - Exult Studio's message window now shows the unused-shapes list, and `studio_err.txt` has no `gtk_editable_insert_text` criticals.
+- "Import all frames" of 8x8 PNGs into a shape 0–149 keeps it a flat ("Edit tiled..." still offered); importing into an object shape works as before.
+- "Import all frames" into a flat refuses PNGs that aren't 8x8, and more than 32 PNGs.
+- "New frame" on a flat with 32 frames shows "A flat can't have more than 32 frames."
+- Saving `shapes.vga` after these edits works, and Exult loads the changed flats as tiles.
 
 **New flat at shape 150 or above**
-- Paint it as terrain, save, check that the chunks were written as v2, reload and confirm it renders.
+- Paint it as terrain, save, reload and confirm it renders. If its shape number is above 1023 (`0x3ff`), check that the chunks were written as v2.
 - It can't be placed as an object, NPC, egg or container.
 - Dragging it onto any object shape field is refused.
 - Typing its number into the object or container window and pressing Apply shows "You must set a valid object shape #." and nothing is sent to Exult.
