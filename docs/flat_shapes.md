@@ -110,6 +110,8 @@ Both lists still start at `c_first_obj_shape`, and now also skip a shape when `V
 
 The bit set sent between them is unchanged, so a new Studio works with an older Exult and the other way round. The "found" bit is tested first, so `is_flat()` only runs for shapes that would otherwise be listed.
 
+**Display fix (also on master).** Studio's message window showed nothing: `show_unused_shapes` cast its `GtkTextView` to `GtkEditable`, which a text view isn't in GTK3, so every line failed with `Gtk-CRITICAL: gtk_editable_insert_text: assertion 'GTK_IS_EDITABLE (editable)' failed` in `studio_err.txt`. The file's `Insert_text` helper now writes through the view's `GtkTextBuffer` with `gtk_text_buffer_insert_at_cursor()`, the same call `mapedit/execbox.cc` uses. It was the only user of the helper and the only place that made this cast.
+
 ---
 
 ## Guards
@@ -172,6 +174,7 @@ More guards are added as the change goes on (see [Status](#status)).
 - Saving an NPC, or a Monster egg, with a creature shape still works.
 - Typing a shape 0–149 into the NPC window or a Monster egg and saving shows the alert; on master it was accepted.
 - The unused-shapes list (in Exult Studio's message window and Exult's `stdout.txt`) is the same as on master: no shapes below 150, and the same object shapes listed.
+- Exult Studio's message window now shows the unused-shapes list, and `studio_err.txt` has no `gtk_editable_insert_text` criticals.
 
 **New flat at shape 150 or above**
 - Paint it as terrain, save, check that the chunks were written as v2, reload and confirm it renders.

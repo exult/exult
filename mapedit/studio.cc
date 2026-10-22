@@ -2510,14 +2510,11 @@ void ExultStudio::set_edit_mode(int md    // 0-2 (drag, paint, pick.
 }
 
 /*
- *  Insert 0-delimited text into an edit box.
+ *  Insert 0-delimited text into a text buffer at the cursor.
  */
 
-static void Insert_text(
-		GtkEditable* ed, const char* text,
-		int& pos    // Where to insert.  Updated.
-) {
-	gtk_editable_insert_text(ed, text, strlen(text), &pos);
+static void Insert_text(GtkTextBuffer* buffer, const char* text) {
+	gtk_text_buffer_insert_at_cursor(buffer, text, strlen(text));
 }
 
 /*
@@ -2533,17 +2530,15 @@ void ExultStudio::show_unused_shapes(
 	GtkTextBuffer* buffer  = gtk_text_view_get_buffer(text);
 	gtk_text_buffer_set_text(buffer, "", 0);    // Clear out old text
 	set_visible("msg_win", true);               // Show message window.
-	int          pos = 0;
-	GtkEditable* ed  = GTK_EDITABLE(text);
-	Insert_text(ed, "The following shapes were not found.\n", pos);
-	Insert_text(ed, "Note that some may be created by usecode (script)\n\n", pos);
+	Insert_text(buffer, "The following shapes were not found.\n");
+	Insert_text(buffer, "Note that some may be created by usecode (script)\n\n");
 	Vga_file* ifile = vgafile != nullptr ? vgafile->get_ifile() : nullptr;
 	// Ignore flats.
 	for (int i = c_first_obj_shape; i < nshapes; i++) {
 		if (!(data[i / 8] & (1 << (i % 8))) && (ifile == nullptr || !ifile->is_flat(i))) {
 			const char* nm  = get_shape_name(i);
 			char*       msg = g_strdup_printf("  Shape %4d:    %s\n", i, nm ? nm : "");
-			Insert_text(ed, msg, pos);
+			Insert_text(buffer, msg);
 			g_free(msg);
 		}
 	}
