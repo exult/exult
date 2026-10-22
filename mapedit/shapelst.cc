@@ -83,12 +83,7 @@ static bool Is_flat(Shape_file_info* finfo, int shnum) {
 		return false;
 	}
 	if (shnum < ifile->get_num_shapes() && ifile->get_num_frames(shnum) > 0) {
-		const bool flat = ifile->is_flat(shnum);
-		// TEMP-FLATS DEBUG: REMOVE BEFORE PR. Logs where data and old shape-number rule disagree.
-		if (flat != (shnum < c_first_obj_shape)) {
-			cerr << "TEMP-FLATS Is_flat: shape " << shnum << " data says " << (flat ? "flat" : "RLE") << endl;
-		}
-		return flat;
+		return ifile->is_flat(shnum);
 	}
 	return shnum < c_first_obj_shape;
 }
