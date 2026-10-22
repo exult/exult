@@ -4,9 +4,9 @@
 
 Flat shapes are the 8x8 terrain tiles painted into chunks. The original games keep them at shapes 0–149 (`c_first_obj_shape` = `0x96`), and parts of Exult, mostly Exult Studio, still assume that range. This change lets a flat live at any shape number by testing the **shape data** (is frame 0 an 8x8 flat or an RLE shape?) instead of the shape number.
 
-**Design Philosophy:** The shape data is the single source of truth. The loader already tells flats from RLE shapes (`Shape_frame::read`, `shapes/vgafile.cc`), and the engine already branches on `is_rle()` when it renders and edits terrain. No new shape info flag is added, because it would store the same fact twice and the two could disagree. `c_first_obj_shape` stays only where a file format needs it, such as the `shpdims.dat` offset.
+The shape data is the single source of truth. The loader already tells flats from RLE shapes (`Shape_frame::read`, `shapes/vgafile.cc`), and the engine already branches on `is_rle()` when it renders and edits terrain. No new shape info flag is added, because it would store the same fact twice and the two could disagree. `c_first_obj_shape` is no longer used to decide whether a shape is a flat. It still marks where the original games' object shapes start: the `shpdims.dat` offset, the default for new and empty shapes, the lower limit for object shape fields, and where the unused-shapes lists start.
 
-**Compatibility:** Shapes 0–149 in BG and SI already load as flats, so the data-based test gives the same answer for original data. Chunk files already support 16-bit shape numbers (v2 chunks are written automatically when a terrain shape number is above `0x3ff`).
+Shapes 0–149 in BG and SI already load as flats, so the data-based test gives the same answer for original data. Chunk files already support 16-bit shape numbers (v2 chunks are written automatically when a terrain shape number is above `0x3ff`).
 
 ---
 
@@ -66,7 +66,7 @@ It is used where Studio works on an existing shape:
 **New shapes: "8x8 flat (terrain tile)" checkbox.** A new shape has no data to test: the slot is empty, or `Vga_file::new_shape()` has just reset it. So the new-shape dialog (`new_shape_window` in `mapedit/exult_studio.glade`) has a checkbox that decides it:
 - Its default follows the shape number in the dialog: ticked below `c_first_obj_shape`, unticked from there up (`Shape_chooser::new_shape_num_changed`). Creating shapes works as before unless you change it. Changing the number resets it to the default.
 - It's only enabled for `shapes.vga`; in other files it's unticked and greyed out.
-- Ticking it limits the frame count to 32 and turns off and greys out "From font" (`Shape_chooser::new_shape_flat_toggled`).
+- Ticking it limits the frame count to 32 and turns off and greys out "From font" (`Shape_chooser::new_shape_flat_toggled`). The old limit for flats was 31, one short of what the loader allows.
 - `Shape_chooser::create_new_shape` creates 8x8 flat frames when it's ticked and the file is `shapes.vga`, and caps the frame count at 32.
 
 This also fixes a bug on master: the dialog's frame limit came from the shape **selected in the browser**, while the shape was created from the number **in the dialog**, so the two could disagree.
@@ -97,7 +97,7 @@ Defined in `mapedit/studio.cc`. Returns `true` when `shnum` is in `c_first_obj_s
 
 The egg missile shape keeps its own rule (`shnum >= 0`) and is unchanged.
 
-**Saving.** The object and container windows let you type a shape number from `c_first_obj_shape` up. Before this change, every number in that range was an object; now a flat can be there too. `save_obj_window` and `save_cont_window` therefore check `is_object_shape()` before sending to Exult, and refuse with "You must set a valid object shape #." This copies the existing range check in `save_npc_window`.
+**Saving.** The object and container windows let you type a shape number from `c_first_obj_shape` up. Before this change, every number in that range was an object; now a flat can be there too. `save_obj_window` and `save_cont_window` therefore check `is_object_shape()` before sending to Exult, and refuse with "You must set a valid object shape #." This also refuses numbers past `c_max_shapes`, which the windows' spin buttons allow (up to 8096). This copies the existing range check in `save_npc_window`.
 
 The NPC and egg windows let you type any shape number from 0, so a flat could be saved there too (true on master as well). Their save paths refuse flats only, so no other shape that saves today is refused:
 - `save_npc_window` adds `is_flat()` to its existing range check and keeps its "You must set a valid shape #." message.
@@ -140,6 +140,7 @@ All frames of a shape must be the same type: `Shape::write()` asserts that every
 > Save anyway?
 
 **Yes** saves as it is. **No** writes nothing and leaves the file marked as modified, so you can change a pixel and save again. Only shapes being written are checked, so unchanged original data never triggers it.
+
 ---
 
 ## Guards
@@ -152,7 +153,7 @@ All frames of a shape must be the same type: `Shape::write()` asserts that every
 | Null file or missing `Vga_file` is "not flat" | `Is_flat` (`mapedit/shapelst.cc`) | A null dereference if a browser has no file loaded |
 | Negative shape number is "not flat" | `Is_flat` (`mapedit/shapelst.cc`) | The old macro returned `true` for any negative number |
 | Range check before `get_num_frames()` | `Is_flat` (`mapedit/shapelst.cc`) | `Vga_file::get_num_frames()` has no bounds check either |
-| Empty slot falls back to `shnum < c_first_obj_shape` | `Is_flat` (`mapedit/shapelst.cc`) | Changing how Studio treats empty slots before the "tile or object?" step exists |
+| Empty slot falls back to `shnum < c_first_obj_shape` | `Is_flat` (`mapedit/shapelst.cc`) | Changing how Studio treats existing empty slots (new shapes use the "8x8 flat" checkbox) |
 | Object fields keep the `c_first_obj_shape` floor | `ExultStudio::is_object_shape` | Accepting shapes below 150 that were refused before |
 | Missing `shapes.vga` keeps the range test alone | `ExultStudio::is_object_shape` | A null dereference, and rejecting every shape when no file is loaded |
 | Flat shapes refused on save | `save_obj_window`, `save_cont_window` | Sending a flat typed into the shape field to Exult as an object |
@@ -176,8 +177,6 @@ All frames of a shape must be the same type: `Shape::write()` asserts that every
 | Sensitivity passed to `ExultStudio::set_toggle()` explicitly, and the flat state applied after the font set-up | `Shape_chooser::new_shape_num_changed`, `Shape_chooser::new_shape_flat_toggled`, `Shape_chooser::new_shape` | `set_toggle()`'s `sensitive` argument defaults to `true`, which would re-enable the checkbox in other files and "From font" for a flat |
 | Handlers do nothing if the dialog has no chooser yet | `on_new_shape_flat_toggled`, `on_new_shape_num_changed` | A null dereference if a signal fires before `new_shape()` sets it |
 
-More guards are added as the change goes on (see [Status](#status)).
-
 ---
 
 ## Known Limits
@@ -198,6 +197,7 @@ More guards are added as the change goes on (see [Status](#status)).
 | Exult Studio: replace `IS_FLAT` (`mapedit/shapelst.cc`) | Done |
 | Exult Studio: object, NPC, egg, container and weapon/ammo validators | Done (150 floor kept) |
 | "Unused shapes" reports (`gamemap.cc`, `mapedit/studio.cc`) | Done |
+| Exult Studio: unused-shapes message window display fix | Done |
 | Comment fix in `mapedit/chunklst.cc` | Done |
 | Exult Studio: frame types (import all frames, 32-frame limit, save check) | Done |
 | Exult Studio: "8x8 flat" checkbox in the new-shape dialog | Done |
@@ -235,5 +235,5 @@ More guards are added as the change goes on (see [Status](#status)).
 - Typing its number into the object or container window and pressing Apply shows "You must set a valid object shape #." and nothing is sent to Exult.
 - It doesn't show up in either unused-shapes list.
 - Water, solid and poison flags behave the same as on original flats.
-- Give its frame 0 the first pixels `N, 0, 0, 0`, where N is 64 × its frame count (or that minus 1), and save: the "Save anyway?" prompt appears. "No" writes nothing and keeps the edit; "Yes" saves. Changing one of those pixels and saving gives no prompt.
+- Give its frame 0 first 4 pixels whose palette indices, read as a little-endian number, equal 64 × its frame count (or that minus 1); for example `0, 8, 0, 0` for a 32-frame flat (2048). Save: the "Save anyway?" prompt appears. "No" writes nothing and keeps the edit; "Yes" saves. Changing one of those pixels and saving gives no prompt. When doing this through a PNG exported by Exult Studio, note that the export puts the transparent colour at PNG index 0, so each game palette index is one higher in the PNG (`1, 9, 1, 1` for the example above).
 - Saving any other edit gives no prompt.
