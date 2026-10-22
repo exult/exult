@@ -91,6 +91,12 @@ The egg missile shape keeps its own rule (`shnum >= 0`) and is unchanged.
 
 **Saving.** The object and container windows let you type a shape number from `c_first_obj_shape` up. Before this change, every number in that range was an object; now a flat can be there too. `save_obj_window` and `save_cont_window` therefore check `is_object_shape()` before sending to Exult, and refuse with "You must set a valid object shape #." This copies the existing range check in `save_npc_window`.
 
+The NPC and egg windows let you type any shape number from 0, so a flat could be saved there too (true on master as well). Their save paths refuse flats only, so no other shape that saves today is refused:
+- `save_npc_window` adds `is_flat()` to its existing range check and keeps its "You must set a valid shape #." message.
+- `save_egg_window` (Monster tab) had no shape check. It now refuses a flat with "You must set a valid monster shape #."
+
+They use `Vga_file::is_flat()` directly, not `is_object_shape()`, because the latter's 150 floor would be a new limit on NPC and monster shapes.
+
 ---
 
 ## Guards
@@ -107,6 +113,8 @@ The egg missile shape keeps its own rule (`shnum >= 0`) and is unchanged.
 | Object fields keep the `c_first_obj_shape` floor | `ExultStudio::is_object_shape` | Accepting shapes below 150 that were refused before |
 | Missing `shapes.vga` keeps the range test alone | `ExultStudio::is_object_shape` | A null dereference, and rejecting every shape when no file is loaded |
 | Flat shapes refused on save | `save_obj_window`, `save_cont_window` | Sending a flat typed into the shape field to Exult as an object |
+| Flat shapes refused on save, nothing else | `save_npc_window`, `save_egg_window` (Monster) | Creating an NPC or monster egg with a flat shape, without adding a new limit on other shapes |
+| Null `vgafile` or `Vga_file` skips the egg check | `save_egg_window` | A null dereference in a check that didn't exist before |
 
 More guards are added as the change goes on (see [Status](#status)).
 
@@ -145,6 +153,8 @@ More guards are added as the change goes on (see [Status](#status)).
 - "New frame" on a shape 0–149 still adds an 8x8 tile.
 - Dragging a shape 0–149 onto the object, container, NPC, egg monster or weapon/ammo shape fields is still refused; dragging an object shape still works.
 - Editing an object or container and pressing Apply still saves.
+- Saving an NPC, or a Monster egg, with a creature shape still works.
+- Typing a shape 0–149 into the NPC window or a Monster egg and saving shows the alert; on master it was accepted.
 
 **New flat at shape 150 or above**
 - Paint it as terrain, save, check that the chunks were written as v2, reload and confirm it renders.

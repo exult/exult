@@ -498,6 +498,11 @@ int ExultStudio::save_egg_window() {
 	case 1: {          // Monster:
 		const int shnum = get_num_entry("monst_shape");
 		const int frnum = get_num_entry("monst_frame");
+		Vga_file* ifile = vgafile != nullptr ? vgafile->get_ifile() : nullptr;
+		if (ifile != nullptr && ifile->is_flat(shnum)) {
+			EStudio::Alert("You must set a valid monster shape #.");
+			return 0;
+		}
 		if (shnum >= 1024 or frnum >= 64) {
 			data3 = shnum;
 			data2 = frnum & 0xff;

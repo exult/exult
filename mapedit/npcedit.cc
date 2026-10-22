@@ -645,7 +645,7 @@ int ExultStudio::save_npc_window() {
 	unsigned long xflags     = 0;    // Extra object flags.
 	unsigned long type_flags = 0;    // Movement flags.
 
-	if (shape < 0 || shape >= vgafile->get_ifile()->get_num_shapes()) {
+	if (shape < 0 || shape >= vgafile->get_ifile()->get_num_shapes() || vgafile->get_ifile()->is_flat(shape)) {
 		EStudio::Alert("You must set a valid shape #.");
 		return 0;
 	}
