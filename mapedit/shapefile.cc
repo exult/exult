@@ -108,6 +108,45 @@ Object_browser* Image_file_info::create_browser(
 }
 
 /*
+ *  Are all of a shape's frames present, and all flat or all RLE?
+ */
+
+static bool Frames_match(const Shape* shape) {
+	const int nframes = shape->get_num_frames();
+	if (nframes == 0) {
+		return true;
+	}
+	const Shape_frame* frame0 = shape->get_frame(0);
+	if (frame0 == nullptr) {
+		return false;
+	}
+	for (int i = 1; i < nframes; i++) {
+		const Shape_frame* frame = shape->get_frame(i);
+		if (frame == nullptr || frame->is_rle() != frame0->is_rle()) {
+			return false;
+		}
+	}
+	return true;
+}
+
+/*
+ *  Would a flat be read back as an RLE shape?  The loader takes a shape
+ *  as RLE if its first 4 bytes equal its length, or its length - 1.
+ */
+
+static bool Flat_looks_rle(const Shape* shape) {
+	const int    nframes = shape->get_num_frames();
+	Shape_frame* frame0  = nframes > 0 ? shape->get_frame(0) : nullptr;
+	if (frame0 == nullptr || frame0->is_rle() || frame0->get_data() == nullptr) {
+		return false;
+	}
+	const uint32         len  = nframes * c_num_tile_bytes;
+	const unsigned char* ptr  = frame0->get_data();
+	const uint32         dlen = little_endian::Read4(ptr);
+	return dlen == len || dlen == len - 1;
+}
+
+/*
  *  Write out if modified.  May throw exception.
  */
 
@@ -115,13 +154,54 @@ void Image_file_info::flush() {
 	if (!modified) {
 		return;
 	}
-	modified               = false;
 	const int      nshapes = ifile->get_num_shapes();
 	int            shnum;    // First read all entries.
 	vector<Shape*> shapes(nshapes);
 	for (shnum = 0; shnum < nshapes; shnum++) {
 		shapes[shnum] = ifile->extract_shape(shnum);
 	}
+	// Shape::write() asserts on a missing frame or mixed frame types.
+	const bool  single = !ifile->is_flex();
+	vector<int> rle_lookalikes;
+	for (shnum = 0; shnum < nshapes; shnum++) {
+		const bool written = single ? shnum == 0 : shapes[shnum]->get_modified() || shapes[shnum]->get_from_patch();
+		if (written && !Frames_match(shapes[shnum])) {
+			EStudio::Alert(
+					"Shape %d has missing frames, or mixes 8x8 flat and RLE frames, so '%s' was not saved.", shnum,
+					basename.c_str());
+			return;
+		}
+		if (written && Flat_looks_rle(shapes[shnum])) {
+			rle_lookalikes.push_back(shnum);
+		}
+	}
+	if (!rle_lookalikes.empty()) {
+		string list;
+		for (const int num : rle_lookalikes) {
+			if (!list.empty()) {
+				list += ", ";
+			}
+			list += std::to_string(num);
+		}
+		string msg;
+		if (rle_lookalikes.size() == 1) {
+			msg = "Shape " + list
+				  + " is an 8x8 flat, but its first 4 pixels happen to match the header of an RLE shape. "
+					"Exult would load it back as an RLE shape, and it would show up wrong.\n\n"
+					"To fix it, change any one of the first 4 pixels of frame 0 (the left end of its top row).\n\n";
+		} else {
+			msg = "Shapes " + list
+				  + " are 8x8 flats, but their first 4 pixels happen to match the header of an RLE shape. "
+					"Exult would load them back as RLE shapes, and they would show up wrong.\n\n"
+					"To fix them, change any one of the first 4 pixels of frame 0 (the left end of its top row) "
+					"in each.\n\n";
+		}
+		msg += "Save anyway?";
+		if (EStudio::Prompt(msg.c_str(), "Yes", "No") != 0) {
+			return;
+		}
+	}
+	modified = false;
 	string filestr("<PATCH>/");    // Always write to 'patch'.
 	filestr += basename;
 	// !flex means single-shape.

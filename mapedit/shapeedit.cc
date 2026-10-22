@@ -4012,65 +4012,65 @@ void ExultStudio::open_shape_window(
 		weapon_family_single = new Shape_single(
 				get_widget("shinfo_weapon_ammo_shape"), nullptr,
 				[](int shnum) -> bool {
-					return (shnum >= c_first_obj_shape) && (shnum < c_max_shapes);
+					return ExultStudio::get_instance()->is_object_shape(shnum);
 				},
 				nullptr, U7_SHAPE_SHAPES, vgafile->get_ifile(), palbuf.get(), get_widget("shinfo_weapon_family_draw"), true);
 		weapon_projectile_single = new Shape_single(
 				get_widget("shinfo_weapon_proj"), nullptr,
 				[](int shnum) -> bool {
-					return (shnum >= c_first_obj_shape) && (shnum < c_max_shapes);
+					return ExultStudio::get_instance()->is_object_shape(shnum);
 				},
 				nullptr, U7_SHAPE_SHAPES, vgafile->get_ifile(), palbuf.get(), get_widget("shinfo_weapon_projectile_draw"), true);
 		ammo_family_single = new Shape_single(
 				get_widget("shinfo_ammo_family"), nullptr,
 				[](int shnum) -> bool {
-					return (shnum >= c_first_obj_shape) && (shnum < c_max_shapes);
+					return ExultStudio::get_instance()->is_object_shape(shnum);
 				},
 				nullptr, U7_SHAPE_SHAPES, vgafile->get_ifile(), palbuf.get(), get_widget("shinfo_ammo_family_draw"));
 		ammo_sprite_single = new Shape_single(
 				get_widget("shinfo_ammo_proj"), nullptr,
 				[](int shnum) -> bool {
-					return (shnum >= c_first_obj_shape) && (shnum < c_max_shapes);
+					return ExultStudio::get_instance()->is_object_shape(shnum);
 				},
 				nullptr, U7_SHAPE_SHAPES, vgafile->get_ifile(), palbuf.get(), get_widget("shinfo_ammo_sprite_draw"), true);
 		cntrules_shape_single = new Shape_single(
 				get_widget("shinfo_cntrules_shape_num"), nullptr,
 				[](int shnum) -> bool {
-					return (shnum >= c_first_obj_shape) && (shnum < c_max_shapes);
+					return ExultStudio::get_instance()->is_object_shape(shnum);
 				},
 				nullptr, U7_SHAPE_SHAPES, vgafile->get_ifile(), palbuf.get(), get_widget("shinfo_cntrules_shape_draw"), true);
 		frameflags_frame_single = new Shape_single(
 				get_widget("shinfo_shape"), nullptr,
 				[](int shnum) -> bool {
-					return (shnum >= c_first_obj_shape) && (shnum < c_max_shapes);
+					return ExultStudio::get_instance()->is_object_shape(shnum);
 				},
 				get_widget("shinfo_frameflags_frame_num"), U7_SHAPE_SHAPES, vgafile->get_ifile(), palbuf.get(),
 				get_widget("shinfo_frameflags_frame_draw"), true, Shape_single::TA_type::widget, Shape_single::TA_type::Disabled);
 		effhps_frame_single = new Shape_single(
 				get_widget("shinfo_shape"), nullptr,
 				[](int shnum) -> bool {
-					return (shnum >= c_first_obj_shape) && (shnum < c_max_shapes);
+					return ExultStudio::get_instance()->is_object_shape(shnum);
 				},
 				get_widget("shinfo_effhps_frame_num"), U7_SHAPE_SHAPES, vgafile->get_ifile(), palbuf.get(),
 				get_widget("shinfo_effhps_frame_draw"), true, Shape_single::TA_type::widget, Shape_single::TA_type::Disabled);
 		framenames_frame_single = new Shape_single(
 				get_widget("shinfo_shape"), nullptr,
 				[](int shnum) -> bool {
-					return (shnum >= c_first_obj_shape) && (shnum < c_max_shapes);
+					return ExultStudio::get_instance()->is_object_shape(shnum);
 				},
 				get_widget("shinfo_framenames_frame_num"), U7_SHAPE_SHAPES, vgafile->get_ifile(), palbuf.get(),
 				get_widget("shinfo_framenames_frame_draw"), true, Shape_single::TA_type::widget, Shape_single::TA_type::Disabled);
 		frameusecode_frame_single = new Shape_single(
 				get_widget("shinfo_shape"), nullptr,
 				[](int shnum) -> bool {
-					return (shnum >= c_first_obj_shape) && (shnum < c_max_shapes);
+					return ExultStudio::get_instance()->is_object_shape(shnum);
 				},
 				get_widget("shinfo_frameusecode_frame_num"), U7_SHAPE_SHAPES, vgafile->get_ifile(), palbuf.get(),
 				get_widget("shinfo_frameusecode_frame_draw"), true, Shape_single::TA_type::widget, Shape_single::TA_type::Disabled);
 		objpaperdoll_wframe_single = new Shape_single(
 				get_widget("shinfo_shape"), nullptr,
 				[](int shnum) -> bool {
-					return (shnum >= c_first_obj_shape) && (shnum < c_max_shapes);
+					return ExultStudio::get_instance()->is_object_shape(shnum);
 				},
 				get_widget("shinfo_objpaperdoll_wframe"), U7_SHAPE_SHAPES, vgafile->get_ifile(), palbuf.get(),
 				get_widget("shinfo_objpaperdoll_wframe_draw"), true, Shape_single::TA_type::widget,
@@ -4078,21 +4078,21 @@ void ExultStudio::open_shape_window(
 		objpaperdoll_spotframe_single = new Shape_single(
 				get_widget("shinfo_shape"), nullptr,
 				[](int shnum) -> bool {
-					return (shnum >= c_first_obj_shape) && (shnum < c_max_shapes);
+					return ExultStudio::get_instance()->is_object_shape(shnum);
 				},
 				get_widget("shinfo_objpaperdoll_spotframe"), U7_SHAPE_SHAPES, vgafile->get_ifile(), palbuf.get(),
 				get_widget("shinfo_objpaperdoll_spotframe_draw"), true);
 		brightness_frame_single = new Shape_single(
 				get_widget("shinfo_shape"), nullptr,
 				[](int shnum) -> bool {
-					return (shnum >= c_first_obj_shape) && (shnum < c_max_shapes);
+					return ExultStudio::get_instance()->is_object_shape(shnum);
 				},
 				get_widget("shinfo_brightness_frame_num"), U7_SHAPE_SHAPES, vgafile->get_ifile(), palbuf.get(),
 				get_widget("shinfo_brightness_frame_draw"), true, Shape_single::TA_type::widget, Shape_single::TA_type::Disabled);
 		warmth_frame_single = new Shape_single(
 				get_widget("shinfo_shape"), nullptr,
 				[](int shnum) -> bool {
-					return (shnum >= c_first_obj_shape) && (shnum < c_max_shapes);
+					return ExultStudio::get_instance()->is_object_shape(shnum);
 				},
 				get_widget("shinfo_warmth_frame_num"), U7_SHAPE_SHAPES, vgafile->get_ifile(), palbuf.get(),
 				get_widget("shinfo_warmth_frame_draw"), true, Shape_single::TA_type::widget, Shape_single::TA_type::Disabled);

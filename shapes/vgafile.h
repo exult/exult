@@ -407,6 +407,15 @@ public:
 		}
 	}
 
+	// Is shape an 8x8 flat?
+	bool is_flat(int shapenum) {
+		if (shapenum < 0 || shapenum >= get_num_shapes()) {
+			return false;
+		}
+		Shape_frame* frame = get_shape(shapenum, 0);
+		return frame != nullptr && !frame->is_rle();
+	}
+
 	// Create new shape (or del old).
 	virtual Shape* new_shape(int shapenum);
 };

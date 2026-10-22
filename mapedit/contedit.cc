@@ -143,7 +143,7 @@ void ExultStudio::open_cont_window(
 			cont_single = new Shape_single(
 					get_widget("cont_shape"), get_widget("cont_name"),
 					[](int shnum) -> bool {
-						return (shnum >= c_first_obj_shape) && (shnum < c_max_shapes);
+						return ExultStudio::get_instance()->is_object_shape(shnum);
 					},
 					get_widget("cont_frame"), U7_SHAPE_SHAPES, vgafile->get_ifile(), palbuf.get(), get_widget("cont_draw"));
 		}
@@ -255,6 +255,10 @@ int ExultStudio::save_cont_window() {
 	const unsigned char res      = get_spin("cont_resistance");
 	const bool          invis    = get_toggle("cont_invisible");
 	const bool          can_take = get_toggle("cont_okay_to_take");
+	if (!is_object_shape(shape)) {
+		EStudio::Alert("You must set a valid object shape #.");
+		return 0;
+	}
 
 	if (Container_out(server_socket, addr, tx, ty, tz, shape, frame, quality, name, res, invis, can_take) == -1) {
 		cout << "Error sending container data to server" << endl;
