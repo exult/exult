@@ -276,7 +276,7 @@ void ExultStudio::open_npc_window(
 			npc_single = new Shape_single(
 					get_widget("npc_shape"), nullptr,
 					[](int shnum) -> bool {
-						return (shnum >= c_first_obj_shape) && (shnum < c_max_shapes);
+						return ExultStudio::get_instance()->is_object_shape(shnum);
 					},
 					get_widget("npc_frame"), U7_SHAPE_SHAPES, vgafile->get_ifile(), palbuf.get(), get_widget("npc_draw"), false,
 					Shape_single::TA_type::Enabled);    // Exult always draws NPCs translucent so doing the same here

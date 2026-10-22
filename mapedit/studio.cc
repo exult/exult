@@ -1213,6 +1213,18 @@ const char* ExultStudio::get_shape_name(int shnum) {
 }
 
 /*
+ *  Can shape be used for an object (not an 8x8 flat)?
+ */
+
+bool ExultStudio::is_object_shape(int shnum) {
+	if (shnum < c_first_obj_shape || shnum >= c_max_shapes) {
+		return false;
+	}
+	Vga_file* ifile = vgafile != nullptr ? vgafile->get_ifile() : nullptr;
+	return ifile == nullptr || !ifile->is_flat(shnum);
+}
+
+/*
  *  Get current groups.
  */
 

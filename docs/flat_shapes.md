@@ -14,10 +14,11 @@ Flat shapes are the 8x8 terrain tiles painted into chunks. The original games ke
 
 1. [Helper: Vga_file::is_flat](#helper-vga_fileis_flat)
 2. [Exult Studio: Shape Browser](#exult-studio-shape-browser)
-3. [Guards](#guards)
-4. [Known Limits](#known-limits)
-5. [Status](#status)
-6. [Testing](#testing)
+3. [Exult Studio: Object Shape Fields](#exult-studio-object-shape-fields)
+4. [Guards](#guards)
+5. [Known Limits](#known-limits)
+6. [Status](#status)
+7. [Testing](#testing)
 
 ---
 
@@ -64,6 +65,34 @@ It is used where Studio works on an existing shape:
 
 ---
 
+## Exult Studio: Object Shape Fields
+
+Fields that must hold an object shape (not a flat) use a shared test:
+
+```cpp
+bool ExultStudio::is_object_shape(int shnum);
+```
+
+Defined in `mapedit/studio.cc`. Returns `true` when `shnum` is in `c_first_obj_shape`..`c_max_shapes - 1` **and** is not a flat according to `Vga_file::is_flat()`. If `shapes.vga` isn't loaded, it keeps the range test alone.
+
+**The 150 floor stays for now.** Keeping `shnum >= c_first_obj_shape` means this step only ever rejects more shapes than before (flats at 150 and above), never fewer. Allowing RLE object shapes below 150 would be a separate change.
+
+**Validators.** Each `Shape_single` takes a validator, a plain function pointer (`bool (*)(int)`), so the lambdas can't capture anything; they call `ExultStudio::get_instance()->is_object_shape(shnum)`. The validator decides whether a dropped shape is accepted (`Shape_single::on_shape_dropped`), whether shape 0 means "none", and the frame count used by the animation preview. A flat at 150 or above is now treated the same as an original flat in all three. Fields using it:
+
+| Editor | Fields |
+|--------|--------|
+| Object (`mapedit/objedit.cc`) | Shape |
+| Container (`mapedit/contedit.cc`) | Shape |
+| NPC (`mapedit/npcedit.cc`) | Shape |
+| Egg (`mapedit/eggedit.cc`) | Monster shape |
+| Shape info (`mapedit/shapeedit.cc`) | Weapon ammo and projectile, ammo family and sprite, container rules shape, and the frame previews for the edited shape (frame flags, hit points, frame names, frame usecode, object paperdoll, brightness, warmth) |
+
+The egg missile shape keeps its own rule (`shnum >= 0`) and is unchanged.
+
+**Saving.** The object and container windows let you type a shape number from `c_first_obj_shape` up. Before this change, every number in that range was an object; now a flat can be there too. `save_obj_window` and `save_cont_window` therefore check `is_object_shape()` before sending to Exult, and refuse with "You must set a valid object shape #." This copies the existing range check in `save_npc_window`.
+
+---
+
 ## Guards
 
 | Guard | Where | Protects against |
@@ -75,6 +104,9 @@ It is used where Studio works on an existing shape:
 | Negative shape number is "not flat" | `Is_flat` (`mapedit/shapelst.cc`) | The old macro returned `true` for any negative number |
 | Range check before `get_num_frames()` | `Is_flat` (`mapedit/shapelst.cc`) | `Vga_file::get_num_frames()` has no bounds check either |
 | Empty slot falls back to `shnum < c_first_obj_shape` | `Is_flat` (`mapedit/shapelst.cc`) | Changing how Studio treats empty slots before the "tile or object?" step exists |
+| Object fields keep the `c_first_obj_shape` floor | `ExultStudio::is_object_shape` | Accepting shapes below 150 that were refused before |
+| Missing `shapes.vga` keeps the range test alone | `ExultStudio::is_object_shape` | A null dereference, and rejecting every shape when no file is loaded |
+| Flat shapes refused on save | `save_obj_window`, `save_cont_window` | Sending a flat typed into the shape field to Exult as an object |
 
 More guards are added as the change goes on (see [Status](#status)).
 
@@ -96,7 +128,7 @@ More guards are added as the change goes on (see [Status](#status)).
 |------|-------|
 | `Vga_file::is_flat` helper | Done |
 | Exult Studio: replace `IS_FLAT` (`mapedit/shapelst.cc`) | Done (new-shape creation still by number) |
-| Exult Studio: object, NPC, egg, container and weapon/ammo validators | To do |
+| Exult Studio: object, NPC, egg, container and weapon/ammo validators | Done (150 floor kept) |
 | "Unused shapes" reports (`gamemap.cc`, `mapedit/studio.cc`) | To do |
 | Comment fix in `mapedit/chunklst.cc` | Done |
 | Exult Studio: new empty shape type, mixed frames, 32-frame limit, RLE-misdetection warning | To do |
@@ -111,9 +143,13 @@ More guards are added as the change goes on (see [Status](#status)).
 - Exult Studio's shape browser: "Edit tiled..." appears for shapes 0–149 in `shapes.vga`, not for shapes 150 and above, and never in other files (faces, gumps, sprites).
 - Importing a PNG that isn't 8x8 into a shape 0–149 is still refused; importing any size into an object shape still works.
 - "New frame" on a shape 0–149 still adds an 8x8 tile.
+- Dragging a shape 0–149 onto the object, container, NPC, egg monster or weapon/ammo shape fields is still refused; dragging an object shape still works.
+- Editing an object or container and pressing Apply still saves.
 
 **New flat at shape 150 or above**
 - Paint it as terrain, save, check that the chunks were written as v2, reload and confirm it renders.
 - It can't be placed as an object, NPC, egg or container.
+- Dragging it onto any object shape field is refused.
+- Typing its number into the object or container window and pressing Apply shows "You must set a valid object shape #." and nothing is sent to Exult.
 - It doesn't show up as an unused object shape.
 - Water, solid and poison flags behave the same as on original flats.
