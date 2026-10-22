@@ -1044,6 +1044,11 @@ void Actor::use_food() {
 				COUT(get_text_msg(msg_out_of_food));
 				break;
 			}
+			// If food level didn't change exit the loop to prevent an infinite loop if the food has a nutritional value of 0 or the
+			// actor refuses to eat
+			if (food == get_property(static_cast<int>(food_level))) {
+				break;
+			}
 		}
 	}
 	if (food > 9) {
