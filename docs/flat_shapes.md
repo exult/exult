@@ -60,7 +60,7 @@ It is used where Studio works on an existing shape:
 | `Shape_chooser::export_tiled_png` | Assert that the shape is a flat |
 | `Import_png` | A PNG imported into a flat must be 8x8 |
 | `Shape_chooser::import_all_pngs` | All PNGs imported into a flat must be 8x8 |
-| `Shape_chooser::import_shape` | A `.shp` file must match the shape's type (flat to flat, RLE to RLE) |
+| `Shape_chooser::import_shape` | A `.shp` file must match the shape's type (flat to flat, RLE to RLE). An empty slot goes by number, so to import a flat into a new slot at 150 or above, create it with "8x8 flat" first |
 | `Shape_chooser::new_frame` | A new frame in a flat is an 8x8 tile |
 
 **New shapes: "8x8 flat (terrain tile)" checkbox.** A new shape has no data to test: the slot is empty, or `Vga_file::new_shape()` has just reset it. So the new-shape dialog (`new_shape_window` in `mapedit/exult_studio.glade`) has a checkbox that decides it:
@@ -131,7 +131,7 @@ All frames of a shape must be the same type: `Shape::write()` asserts that every
 
 **Safety net on save.** `Image_file_info::flush` (`mapedit/shapefile.cc`) checks every shape it is about to write. If a shape has a missing frame or mixes flat and RLE frames, it shows "Shape N has missing frames, or mixes 8x8 flat and RLE frames, so 'file' was not saved." and writes nothing. The file stays marked as modified, so no edits are lost. It checks exactly the shapes `write_file` writes: modified or patched shapes in a FLEX file, and shape 0 in a single-shape file.
 
-**Flats that would load back as RLE.** The loader (`Shape_frame::read`) decides a shape is RLE when its first 4 bytes, read as a little-endian number, equal the shape's length, or the length minus 1 (a flat's length is always even). For a flat, those 4 bytes are frame 0's first 4 pixels, and its length is 64 bytes per frame. So a 1-frame flat starting with pixels `64, 0, 0, 0` or `63, 0, 0, 0` would come back as a broken RLE shape. In the same check, `flush` uses `Flat_looks_rle()` and asks:
+**Flats that would load back as RLE.** The loader (`Shape_frame::read`) decides a shape is RLE when its first 4 bytes, read as a little-endian number, equal the shape's length, or the length minus 1 (a flat's length is always even). For a flat, those 4 bytes are frame 0's first 4 pixels, and its length is 64 bytes per frame. So a 1-frame flat starting with pixels `64, 0, 0, 0` or `63, 0, 0, 0` would come back as a broken RLE shape. In the same check, `flush` uses `Flat_looks_rle()` to collect every such shape it is about to write, and after checking all shapes asks once:
 
 > Shape N is an 8x8 flat, but its first 4 pixels happen to match the header of an RLE shape. Exult would load it back as an RLE shape, and it would show up wrong.
 >
@@ -139,7 +139,7 @@ All frames of a shape must be the same type: `Shape::write()` asserts that every
 >
 > Save anyway?
 
-**Yes** saves as it is. **No** writes nothing and leaves the file marked as modified, so you can change a pixel and save again. Only shapes being written are checked, so unchanged original data never triggers it.
+If several shapes match, one prompt lists them all ("Shapes 1323, 1330 are 8x8 flats, but their first 4 pixels…"). **Yes** saves as it is. **No** writes nothing and leaves the file marked as modified, so you can change a pixel and save again. The mixed-frame check runs over all shapes first, so its alert never follows a prompt you've already answered. Only shapes being written are checked, so unchanged original data never triggers it.
 
 ---
 
@@ -167,7 +167,7 @@ All frames of a shape must be the same type: `Shape::write()` asserts that every
 | No more than 32 frames on a flat | `Shape_chooser::new_frame`, `Shape_chooser::import_all_pngs` | Frame 32 and up being read back as frames 0–31 |
 | Check frames before writing; refuse the save instead | `Image_file_info::flush` | Studio crashing on `Shape::write()`'s assert |
 | File stays modified after a refused save | `Image_file_info::flush` | Losing unsaved edits |
-| Ask before saving a flat that would load back as RLE; "No" writes nothing | `Image_file_info::flush`, `Flat_looks_rle` | A flat silently turning into a broken RLE shape after a save |
+| Ask once, listing every flat that would load back as RLE; "No" writes nothing | `Image_file_info::flush`, `Flat_looks_rle` | A flat silently turning into a broken RLE shape after a save |
 | Only flats with a frame 0 and pixel data are tested | `Flat_looks_rle` | A null dereference on an empty shape or frame |
 | Same shapes checked as `write_file` writes | `Image_file_info::flush` | Blocking a save over a shape that wouldn't be written |
 | "8x8 flat" defaults from the shape number | `Shape_chooser::new_shape_num_changed` | Changing how new shapes are created unless you ask |
@@ -236,4 +236,5 @@ All frames of a shape must be the same type: `Shape::write()` asserts that every
 - It doesn't show up in either unused-shapes list.
 - Water, solid and poison flags behave the same as on original flats.
 - Give its frame 0 first 4 pixels whose palette indices, read as a little-endian number, equal 64 × its frame count (or that minus 1); for example `0, 8, 0, 0` for a 32-frame flat (2048). Save: the "Save anyway?" prompt appears. "No" writes nothing and keeps the edit; "Yes" saves. Changing one of those pixels and saving gives no prompt. When doing this through a PNG exported by Exult Studio, note that the export puts the transparent colour at PNG index 0, so each game palette index is one higher in the PNG (`1, 9, 1, 1` for the example above).
+- Do the same to two flats and save: one prompt lists both shapes.
 - Saving any other edit gives no prompt.

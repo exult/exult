@@ -161,7 +161,8 @@ void Image_file_info::flush() {
 		shapes[shnum] = ifile->extract_shape(shnum);
 	}
 	// Shape::write() asserts on a missing frame or mixed frame types.
-	const bool single = !ifile->is_flex();
+	const bool  single = !ifile->is_flex();
+	vector<int> rle_lookalikes;
 	for (shnum = 0; shnum < nshapes; shnum++) {
 		const bool written = single ? shnum == 0 : shapes[shnum]->get_modified() || shapes[shnum]->get_from_patch();
 		if (written && !Frames_match(shapes[shnum])) {
@@ -171,17 +172,33 @@ void Image_file_info::flush() {
 			return;
 		}
 		if (written && Flat_looks_rle(shapes[shnum])) {
-			char* msg = g_strdup_printf(
-					"Shape %d is an 8x8 flat, but its first 4 pixels happen to match the header of an RLE shape. "
-					"Exult would load it back as an RLE shape, and it would show up wrong.\n\n"
-					"To fix it, change any one of the first 4 pixels of frame 0 (the left end of its top row).\n\n"
-					"Save anyway?",
-					shnum);
-			const int answer = EStudio::Prompt(msg, "Yes", "No");
-			g_free(msg);
-			if (answer != 0) {
-				return;
+			rle_lookalikes.push_back(shnum);
+		}
+	}
+	if (!rle_lookalikes.empty()) {
+		string list;
+		for (const int num : rle_lookalikes) {
+			if (!list.empty()) {
+				list += ", ";
 			}
+			list += std::to_string(num);
+		}
+		string msg;
+		if (rle_lookalikes.size() == 1) {
+			msg = "Shape " + list
+				  + " is an 8x8 flat, but its first 4 pixels happen to match the header of an RLE shape. "
+					"Exult would load it back as an RLE shape, and it would show up wrong.\n\n"
+					"To fix it, change any one of the first 4 pixels of frame 0 (the left end of its top row).\n\n";
+		} else {
+			msg = "Shapes " + list
+				  + " are 8x8 flats, but their first 4 pixels happen to match the header of an RLE shape. "
+					"Exult would load them back as RLE shapes, and they would show up wrong.\n\n"
+					"To fix them, change any one of the first 4 pixels of frame 0 (the left end of its top row) "
+					"in each.\n\n";
+		}
+		msg += "Save anyway?";
+		if (EStudio::Prompt(msg.c_str(), "Yes", "No") != 0) {
+			return;
 		}
 	}
 	modified = false;
