@@ -45,6 +45,7 @@
 #include <cstring>
 #include <fstream>
 #include <iostream>
+#include <limits>
 #include <set>
 
 // #include <crtdbg.h>
@@ -84,6 +85,46 @@ inline char* formatTicks() {
 #endif
 
 //----- SFX ----------------------------------------------------------
+
+namespace {
+
+	struct Patch_sfx_load_result {
+		string       filename;
+		AudioSample* sample = nullptr;
+		bool         exists = false;
+	};
+
+	/** Loads a numbered WAV override from the active game's or mod's patch folder. */
+	Patch_sfx_load_result load_patch_sfx(int num) {
+		Patch_sfx_load_result result;
+		if (num < 0) {
+			return result;
+		}
+
+		char numbered_filename[16];
+		snprintf(numbered_filename, sizeof(numbered_filename), "%03d.wav", num);
+		result.filename = string("<PATCH>/sfx/") + numbered_filename;
+		result.exists   = U7exists(result.filename);
+		if (!result.exists) {
+			return result;
+		}
+
+		IFileDataSource source(result.filename);
+		if (!source.good()) {
+			return result;
+		}
+
+		const size_t sample_size = source.getSize();
+		if (sample_size > std::numeric_limits<uint32>::max()) {
+			return result;
+		}
+
+		auto sample_data = source.readN(sample_size);
+		result.sample    = AudioSample::createAudioSample(std::move(sample_data), static_cast<uint32>(sample_size));
+		return result;
+	}
+
+}    // namespace
 
 // Tries to locate a sfx in the cache based on sfx num.
 SFX_cache_manager::SFX_cached* SFX_cache_manager::find_sfx(int id) {
@@ -625,11 +666,7 @@ int Audio::play_sound_effect(int num, int volume, int balance, int repeat, int d
 		return -1;
 	}
 #endif
-	// Where sort of sfx are we using????
-	if (sfx_file != nullptr) {    // Digital .wav's?
-		return play_wave_sfx(num, volume, balance, repeat, distance);
-	}
-	return -1;
+	return play_wave_sfx(num, volume, balance, repeat, distance);
 }
 
 /*
@@ -647,15 +684,27 @@ int Audio::play_wave_sfx(
 	cout << formatTicks() << "Audio subsystem request: Wave play " << num << " volume " << volume << " balance " << balance
 		 << " distance " << distance << endl;
 #endif
-	if (!effects_enabled || !sfx_file || !mixer) {
+	if (!effects_enabled || !mixer) {
 		return -1;    // no .wav sfx available
 	}
 
-	if (num < 0 || static_cast<unsigned>(num) >= sfx_file->number_of_objects()) {
-		cerr << "SFX " << num << " is out of range" << endl;
+	const Patch_sfx_load_result patch_sfx = load_patch_sfx(num);
+	AudioSample*                wave      = patch_sfx.sample;
+	if (patch_sfx.exists && !wave) {
+		cerr << "Failed to play patched SFX '" << patch_sfx.filename << "': not readable as audio" << endl;
 		return -1;
 	}
-	AudioSample* wave = sfxs->request(sfx_file.get(), num);
+
+	if (!wave) {
+		if (!sfx_file) {
+			return -1;
+		}
+		if (num < 0 || static_cast<unsigned>(num) >= sfx_file->number_of_objects()) {
+			cerr << "SFX " << num << " is out of range" << endl;
+			return -1;
+		}
+		wave = sfxs->request(sfx_file.get(), num);
+	}
 	if (!wave) {
 		cerr << "Couldn't play sfx '" << num << "'" << endl;
 		return -1;
@@ -664,6 +713,10 @@ int Audio::play_wave_sfx(
 	volume = (volume * sfx_volume) / 100;
 
 	const int instance_id = mixer->playSample(wave, repeat, 0, true, AUDIO_DEF_PITCH, volume, volume);
+	if (patch_sfx.sample) {
+		// The mixer retains playable samples; release this loose file's local reference.
+		wave->Release();
+	}
 	if (instance_id < 0) {
 		CERR("No channel was available to play sfx '" << num << "'");
 		return -1;
