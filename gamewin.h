@@ -77,6 +77,7 @@ class Shape_info;
 class Game_render;
 class Effects_manager;
 class unzFile;
+class Scene_layer;
 using Actor_shared = std::shared_ptr<Actor>;
 
 struct Position2d {
@@ -140,15 +141,15 @@ class Game_window {
 	// Savegames:
 	std::array<std::string, 10> save_names;    // Names of saved games.
 	// Options:
-	bool mouse3rd;    // use third (middle) mouse button
-	bool fastmouse;
-	bool double_click_closes_gumps;
-	int  text_bg;                 // draw a dark background behind text
-	int  step_tile_delta;         // multiplier for the delta in start_actor_alt
-	int  allow_right_pathfind;    // If moving with right click is allowed
-	bool scroll_with_mouse;       // scroll game view with mousewheel
-	bool alternate_drop;          // don't split stacks, can be inverted with a CTRL
-								  // key modifier
+	bool         mouse3rd;    // use third (middle) mouse button
+	bool         fastmouse;
+	bool         double_click_closes_gumps;
+	int          text_bg;                 // draw a dark background behind text
+	int          step_tile_delta;         // multiplier for the delta in start_actor_alt
+	int          allow_right_pathfind;    // If moving with right click is allowed
+	bool         scroll_with_mouse;       // scroll game view with mousewheel
+	bool         alternate_drop;          // don't split stacks, can be inverted with a CTRL
+										  // key modifier
 	bool         allow_autonotes;
 	bool         allow_enhancements;
 	bool         in_exult_menu;      // used for menu options
@@ -169,9 +170,9 @@ class Game_window {
 	long check_time_stopped();
 
 	// Red plasma animation during game load
-	uint32                             load_palette_timer;
-	std::unique_ptr<class Scene_layer> load_screen_layer;
-	int                                plasma_start_color, plasma_cycle_range;
+	uint32                       load_palette_timer;
+	std::unique_ptr<Scene_layer> load_screen_layer;
+	int                          plasma_start_color, plasma_cycle_range;
 
 public:
 	friend class Game_render;
