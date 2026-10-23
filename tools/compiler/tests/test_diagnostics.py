@@ -50,6 +50,53 @@ class Diagnostics(unittest.TestCase):
         self.assert_failed(result, "syntax error")
         self.assertNotIn("\033[", result.stdout)
 
+    def test_raw_script_expressions(self):
+        source = '''#game "blackgate"
+var command 0x901 () { return 0x27; }
+void example 0x900 (var value) {
+ script item {
+  raw(0x27);
+  raw(-1);
+  raw((long) -1);
+  raw((byte) +0x27);
+  raw(value);
+  raw(value + 1);
+  raw(command());
+  raw(UI_get_random(10));
+  raw([0x27, value]);
+ }
+}
+'''
+        result = self.compile(source)
+        self.assertEqual(result.returncode, 0, result.stdout)
+        self.assertTrue(self.output.exists())
+
+    def test_raw_script_expression_bytecode(self):
+        source = '''#game "blackgate"
+var duration 0x901 () { return 2; }
+void example 0x900 (var value) {
+ script item { %s }
+}
+'''
+        result = self.compile(source % 'wait value + duration();')
+        self.assertEqual(result.returncode, 0, result.stdout)
+        expected = self.output.read_bytes()
+        for command in (
+            'raw((byte) 0x27); raw(value + duration());',
+            'raw([(byte) 0x27, value + duration()]);',
+        ):
+            with self.subTest(command=command):
+                result = self.compile(source % command)
+                self.assertEqual(result.returncode, 0, result.stdout)
+                self.assertEqual(self.output.read_bytes(), expected)
+
+    def test_raw_script_void_call(self):
+        result = self.compile('''#game "blackgate"
+void command 0x901 () {}
+void example 0x900 () { script item raw(command()); }
+''')
+        self.assert_failed(result, "void function 'command' does not return a value")
+
     def test_token_column_and_caret(self):
         result = self.compile("void example 0x900 () {\n    var value = ;\n}\n")
         self.assert_failed(result, "input.uc:2:17: error: syntax error, unexpected ';'")

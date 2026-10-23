@@ -2484,7 +2484,7 @@ script_command:
 		result->add($4);    // Then #times to repeat.
 		$$ = result;
 		}
-	| RAW '(' int_literal ')' ';'
+	| RAW '(' nonclass_expr ')' ';'
 		{ $$ = $3; }
 	| NOP  ';'
 		{
@@ -3182,7 +3182,7 @@ primary:
 				$1, !const_opcode.empty() ? const_opcode.back() : UC_PUSHI, @1.loc());
 		$$ = new Uc_int_expression($1, op);
 		}
-	| int_cast INT_LITERAL %prec UCC_CAST
+	| int_cast sign_int_literal %prec UCC_CAST
 		{
 		Uc_location::Context diagnostic_context(@$.loc());
 		$$ = new Uc_int_expression($2, static_cast<UsecodeOps>($1));
