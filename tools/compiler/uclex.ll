@@ -438,6 +438,7 @@ const		return UCC_CONST;
 string		return STRING;
 enum		return ENUM;
 declare		return DECLARE_;
+assume_script	return ASSUME_SCRIPT;
 extern		return EXTERN;
 true		return UCTRUE;
 false		return UCFALSE;

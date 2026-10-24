@@ -97,6 +97,360 @@ void example 0x900 () { script item raw(command()); }
 ''')
         self.assert_failed(result, "void function 'command' does not return a value")
 
+    def script_source(self, setup, command, parameters="var condition"):
+        return '#game "blackgate"\nvoid example 0x900 (' + parameters + ') {\n' + setup + '\n script item { ' + command + ' }\n}\n'
+
+    def assert_script_offset(self, setup, length, command="repeat 3 *s;", options=()):
+        source = self.script_source(setup, command)
+        result = self.compile(source, *options)
+        self.assertEqual(result.returncode, 0, result.stdout)
+        expected = self.output.read_bytes()
+        offset = '(long) %d' % -length if length > 32768 else str(-length)
+        result = self.compile(self.script_source(setup,
+            'raw(s & new script { raw((byte) 0x0b); raw(%s); raw(3); });' % offset), *options)
+        self.assertEqual(result.returncode, 0, result.stdout)
+        self.assertEqual(self.output.read_bytes(), expected)
+
+    def test_script_dereference_offsets(self):
+        for setup, size in (
+            ('var s = new script { nop; };', 1),
+            ('var s = new script { wait 1; nop; };', 3),
+            ('var s = new script { raw([]); };', 0),
+            ('var a = [1, 2]; var b = [a, 3]; var s = new script { raw(b); };', 3),
+            ('var s = new script nop;;', 1),
+            ('var s = new script { nop; }; var t = new script { wait 1; }; s = s & t;', 3),
+            ('var s = new script { nop; }; var t = new script { wait 1; }; s &= t;', 3),
+            ('var s = new script { nop; }; s << { wait 1; } << new script { nop; };', 4),
+            ('var s = new script { nop; }; var alias a = s; a &= new script { wait 1; };', 3),
+            ('var s = new script { nop; }; s[1] = 0x21;', 1),
+            ('var s = new script { nop; }; s[3] = 0x21;', 3),
+            ('var s = new script { nop; }; var t = s; s &= s; s = t;', 1),
+        ):
+            with self.subTest(setup=setup):
+                self.assert_script_offset(setup, size)
+
+    def test_script_dereference_parentheses_and_count(self):
+        setup = 'var s = new script { nop; }; var t = new script { wait 1; };'
+        for expression, count, size in (('s', '3 * 2', 1), ('(s & t)', '(1 + 2)', 3)):
+            source = self.script_source(setup, 'repeat %s *%s;' % (count, expression))
+            result = self.compile(source)
+            self.assertEqual(result.returncode, 0, result.stdout)
+            expected = self.output.read_bytes()
+            result = self.compile(self.script_source(setup,
+                'raw(%s & new script { raw((byte) 0x0b); raw(%d); raw(%s); });' % (expression, -size, count)))
+            self.assertEqual(result.returncode, 0, result.stdout)
+            self.assertEqual(self.output.read_bytes(), expected)
+
+    def test_script_dereference_large_lengths(self):
+        setup = 'var a = [0]; ' + 'a &= a; ' * 15
+        for extra, size in (('', 32768), ('a << 0; ', 32769)):
+            with self.subTest(size=size):
+                self.assert_script_offset(setup + extra + 'var s = new script { raw(a); };', size)
+
+    def test_script_repeat_concat_evaluation_order(self):
+        for setup in ('var s = new script { nop; };', 'static var s; s = new script { nop; };'):
+            result = self.compile(self.script_source(setup, 'repeat UI_get_random(3) *s;'))
+            self.assertEqual(result.returncode, 0, result.stdout)
+            expected = self.output.read_bytes()
+            result = self.compile(self.script_source(setup,
+                'raw(s & new script { raw((byte) 0x0b); raw(-1); raw(UI_get_random(3)); });'))
+            self.assertEqual(result.returncode, 0, result.stdout)
+            self.assertEqual(self.output.read_bytes(), expected)
+
+    def test_script_dereference_control_flow(self):
+        for setup in (
+            'var s; if (condition) { s = new script { nop; }; } else { s = new script { nohalt; }; }',
+            'var s = new script { nop; }; while (condition) { s = new script { nohalt; }; }',
+            'var s = new script { nop; }; do { s = new script { nohalt; }; } while (condition);',
+            'var s = new script { nop; }; again: if (condition) { s = new script { nohalt; }; goto again; }',
+            'var s = new script { nop; }; if (condition) { s = new script { wait 1; }; return; }',
+            'var s; switch (condition) { case 1: s = new script { nop; }; break; default: s = new script { nohalt; }; }',
+        ):
+            with self.subTest(setup=setup):
+                self.assert_script_offset(setup, 1)
+
+    def test_script_dereference_unknown_length(self):
+        for setup in (
+            'var s = new script { raw(condition); };',
+            'var s; if (condition) { s = new script { nop; }; } else { s = new script { wait 1; }; }',
+            'var s = new script { nop; }; if (condition) { s &= new script { nop; }; }',
+            'var s = new script { nop; }; while (condition) { s &= new script { nop; }; }',
+            'var s = new script { nop; }; again: if (condition) { s &= new script { nop; }; goto again; }',
+            'var s = new script { nop; }; s[condition] = 0x21;',
+            'var s; switch (condition) { case 1: s = new script { nop; }; break; default: s = new script { wait 1; }; }',
+            'var s = new script { nop; }; s &= [condition];',
+        ):
+            with self.subTest(setup=setup):
+                result = self.compile(self.script_source(setup, 'repeat 3 *s;'))
+                self.assert_failed(result, "cannot repeat script: array length is unknown")
+
+    def test_script_dereference_requires_script(self):
+        for setup in (
+            'var s = [0x21];',
+            'var s = 0x21;',
+            'var s;',
+            'var s = new script { nop; }; s = [0x21];',
+            'var s = new script { nop; }; if (condition) { s = [0x21]; }',
+            'var s = new script { nop; }; var values = [1]; for (s in values) {}',
+        ):
+            with self.subTest(setup=setup):
+                result = self.compile(self.script_source(setup, 'repeat 3 *s;'))
+                self.assert_failed(result, "script dereference requires a value tracked as a script")
+
+    def test_script_dereference_error_spans(self):
+        for body in ('animationCommands', '(animationCommands)', '(animationCommands & animationCommands)'):
+            for command in ('repeat 2 *%s;', 'repeat 2, 3 *%s;', 'repeat forever *%s;',
+                            'repeat 3 { repeat 2 *%s; };'):
+                with self.subTest(body=body, command=command):
+                    line = '\tvar unusedScriptResult = script item { ' + command % body + ' };'
+                    source = ('#game "blackgate"\nvoid example 0x900 (var value) {\n'
+                              ' var animationCommands = new script { raw(value); };\n' + line + '\n}\n')
+                    result = self.compile(source)
+                    self.assert_failed(result, 'cannot repeat script: array length is unknown')
+                    column = line.index(body) + 1
+                    self.assertIn('input.uc:4:%d: error: cannot repeat script' % column, result.stdout)
+                    expanded = line.expandtabs(8)
+                    start = expanded.index(body)
+                    self.assertIn('  ' + expanded + '\n  ' + ' ' * start + '^' + '~' * (len(body) - 1) + '\n', result.stdout)
+
+    def test_script_dereference_type_error_span(self):
+        line = ' script item { repeat 2 *(commands); }'
+        result = self.compile('#game "blackgate"\nvoid example 0x900 () {\n var commands = [1];\n' + line + '\n}\n')
+        self.assert_failed(result, 'script dereference requires a value tracked as a script')
+        start = line.index('(commands)')
+        self.assertIn('input.uc:4:%d: error: script dereference' % (start + 1), result.stdout)
+        self.assertIn('  ' + line + '\n  ' + ' ' * start + '^~~~~~~~~~\n', result.stdout)
+
+    def test_script_concat_warnings(self):
+        for statement in ('s = s & a;', 's = a & s;', 's &= a;', 's << a;'):
+            with self.subTest(statement=statement):
+                setup = 'var s = new script { nop; }; var a = [1, 2]; ' + statement
+                result = self.compile(self.script_source(setup, 'repeat 3 *s;'))
+                self.assertEqual(result.returncode, 0, result.stdout)
+                self.assertIn('[-Wscript-mismatch]', result.stdout)
+                self.assert_script_offset(setup, 3, options=('-Wno-script-mismatch',))
+                self.output.unlink()
+                result = self.compile(self.script_source(setup, 'repeat 3 *s;'), '-Werror=script-mismatch')
+                self.assert_failed(result, '[-Werror=script-mismatch]')
+
+    def test_script_concat_matching_operands(self):
+        result = self.compile(self.script_source(
+            'var a = [1]; var b = [2]; a &= b; a << b; '
+            'var s = new script { nop; }; var t = new script { nohalt; }; s &= t; s << t;',
+            'repeat 3 *s;'))
+        self.assertEqual(result.returncode, 0, result.stdout)
+        self.assertNotIn('script-mismatch', result.stdout)
+
+    def test_script_concat_warning_spans(self):
+        for expression in (
+            's & [1, 2]',
+            '((s)) & ([1, 2])',
+            '(new script { nop; }) & [1, 2]',
+            '(new script raw((byte) 0x59);) & [1, 2]',
+            's & [(byte) 0x0b, -2, 1]',
+        ):
+            with self.subTest(expression=expression):
+                line = '\tvar value = UI_get_array_size(' + expression + ');'
+                source = '#game "blackgate"\nvoid example 0x900 () {\n var s = new script { nop; };\n' + line + '\n}\n'
+                result = self.compile(source)
+                self.assertEqual(result.returncode, 0, result.stdout)
+                column = line.index(expression) + 1
+                self.assertIn('input.uc:4:%d: warning: concatenating a script' % column, result.stdout)
+                expanded = line.expandtabs(8)
+                start = expanded.index(expression)
+                self.assertIn('  ' + expanded + '\n  ' + ' ' * start + '^' + '~' * (len(expression) - 1) + '\n', result.stdout)
+
+    def test_script_assignment_concat_warning_spans(self):
+        for expression in ('s &= [1, 2]', '(s) << [1, 2]'):
+            with self.subTest(expression=expression):
+                line = ' ' + expression + ';'
+                source = '#game "blackgate"\nvoid example 0x900 () {\n var s = new script { nop; };\n' + line + '\n}\n'
+                result = self.compile(source)
+                self.assertEqual(result.returncode, 0, result.stdout)
+                self.assertIn('input.uc:4:2: warning: concatenating a script', result.stdout)
+                self.assertIn('  ' + line + '\n   ^' + '~' * (len(expression) - 1) + '\n', result.stdout)
+
+    def test_script_concat_multiline_warning_span(self):
+        result = self.compile('''#game "blackgate"
+void example 0x900 () {
+ var value = (new script {
+  nop;
+ }) & [1, 2];
+}
+''')
+        self.assertEqual(result.returncode, 0, result.stdout)
+        self.assertIn('input.uc:3:14: warning: concatenating a script', result.stdout)
+        self.assertIn('   var value = (new script {\n               ^~~~~~~~~~~~~\n', result.stdout)
+
+    def test_script_dereference_nested_repeat(self):
+        setup = 'var s = new script { nop; wait 1; };'
+        result = self.compile(self.script_source(setup, 'repeat 2 { repeat 3 *s; };'))
+        self.assertEqual(result.returncode, 0, result.stdout)
+        expected = self.output.read_bytes()
+        result = self.compile(self.script_source(setup,
+            'raw(s & new script { raw((byte) 0x0b); raw(-3); raw(3); }); '
+            'raw((byte) 0x0b); raw(-6); raw(2);'))
+        self.assertEqual(result.returncode, 0, result.stdout)
+        self.assertEqual(self.output.read_bytes(), expected)
+
+    def test_script_dereference_reset_count_and_forever(self):
+        setup = 'var s = new script { nop; };'
+        for command, reference in (
+            ('repeat 3, 4 *s;', 'raw(s & new script { raw((byte) 0x0c); raw(-1); raw(3); raw(4); });'),
+            ('repeat forever *s;', 'raw(s & new script { raw((byte) 0x0b); raw(-1); raw(255); });'),
+        ):
+            result = self.compile(self.script_source(setup, command))
+            self.assertEqual(result.returncode, 0, result.stdout)
+            expected = self.output.read_bytes()
+            result = self.compile(self.script_source(setup, reference))
+            self.assertEqual(result.returncode, 0, result.stdout)
+            self.assertEqual(self.output.read_bytes(), expected)
+
+    def test_new_script_uses_normal_repeat(self):
+        setup = 'var s = new script { repeat 2 { nop; }; };'
+        result = self.compile(self.script_source(setup, 'raw(s);'))
+        self.assertEqual(result.returncode, 0, result.stdout)
+        expected = self.output.read_bytes()
+        reference = ('var s = new script { nop; raw((byte) 0x0b); '
+                     'raw(-1); raw(2); };')
+        result = self.compile(self.script_source(reference, 'raw(s);'))
+        self.assertEqual(result.returncode, 0, result.stdout)
+        self.assertEqual(self.output.read_bytes(), expected)
+
+    def test_script_dereference_rejects_repeat_bodies(self):
+        for setup in (
+            'var s = new script { repeat 2 { nop; }; };',
+            'var s = new script { repeat 2, 3 { nop; }; };',
+            'var s = new script { repeat 2 { repeat 3 { nop; }; }; };',
+            'var s = new script { nop; repeat 2 { nop; }; nohalt; };',
+            'var t = new script { repeat 2 { nop; }; }; var s = t;',
+            'var t = new script { repeat 2 { nop; }; }; var alias s = t;',
+            'var t = new script { repeat 2 { nop; }; }; var s = new script { nop; }; s &= t;',
+            'var t = new script { repeat 2 { nop; }; }; var s = t & new script { nop; };',
+            'var s = new script { nop; }; s << { repeat 2 { nop; }; };',
+            'var s = new script { nop; nop; nop; nop; }; '
+            'if (condition) { s = new script { repeat 2 { nop; }; }; }',
+            'var s = new script { nop; nop; nop; nop; }; '
+            'while (condition) { s = new script { repeat 2 { nop; }; }; }',
+            'var s = new script { repeat 2 { nop; }; }; s = new script { raw(s); };',
+        ):
+            with self.subTest(setup=setup):
+                result = self.compile(self.script_source(setup, 'repeat 3 *s;'), '-Wno-all')
+                self.assert_failed(result, 'cannot dereference a script containing a repeat inside another repeat')
+
+    def test_script_repeat_metadata_reassignment(self):
+        self.assert_script_offset('var s = new script { repeat 2 { nop; }; }; '
+                                  's = new script { nop; };', 1)
+
+    def test_new_script_repeat_context_recovery(self):
+        result = self.compile('''#game "blackgate"
+void example 0x900 () {
+ var s = new script repeat 2 { raw(; };
+ script item repeat forever { nop; };
+ var following = ;
+}
+''')
+        self.assert_failed(result, 'syntax error')
+        self.assertNotIn("'repeat forever' cannot be nested", result.stdout)
+        self.assertIn('input.uc:5:', result.stdout)
+
+    def test_script_metadata_shared_variables_and_exceptions(self):
+        for setup, message in (
+            ('static var s; s = new script { nop; };', None),
+            ('static var s; s = new script { nop; }; UI_get_random(1);', 'requires a value tracked as a script'),
+            ('var s = new script { nop; }; try { s &= new script { nop; }; } catch () {}', 'requires a value tracked as a script'),
+            ('var s; try { s = new script { nop; }; } catch () { s = new script { nohalt; }; }', None),
+        ):
+            with self.subTest(setup=setup):
+                result = self.compile(self.script_source(setup, 'repeat 3 *s;'), '-Wno-all')
+                if message:
+                    self.assert_failed(result, message)
+                else:
+                    self.assertEqual(result.returncode, 0, result.stdout)
+                    self.output.unlink()
+
+    def test_script_dereference_scope_and_recovery(self):
+        for malformed in ('*s;', 'repeat 3;', 'repeat 3 *;'):
+            with self.subTest(malformed=malformed):
+                result = self.compile(self.script_source('var s = new script { nop; };', malformed))
+                self.assertNotEqual(result.returncode, 0, result.stdout)
+                self.assertFalse(self.output.exists())
+
+    def test_assume_script_preserves_bytecode(self):
+        result = self.compile(self.script_source('assume_script(s, 26);', 'repeat 3 *s;', 'var s'))
+        self.assertEqual(result.returncode, 0, result.stdout)
+        expected = self.output.read_bytes()
+        result = self.compile(self.script_source('',
+            'raw(s & new script { raw((byte) 0x0b); raw(-26); raw(3); });', 'var s'), '-Wno-script-mismatch')
+        self.assertEqual(result.returncode, 0, result.stdout)
+        self.assertEqual(self.output.read_bytes(), expected)
+
+    def test_assume_script_alone_emits_no_code(self):
+        result = self.compile('void example 0x900 (var s) { ; }\n')
+        self.assertEqual(result.returncode, 0, result.stdout)
+        expected = self.output.read_bytes()
+        result = self.compile('void example 0x900 (var s) { assume_script(s, 26); }\n')
+        self.assertEqual(result.returncode, 0, result.stdout)
+        self.assertEqual(self.output.read_bytes(), expected)
+
+    def test_assume_script_refinement(self):
+        for setup, size in (
+            ('declare var s; assume_script(s, 26);', 26),
+            ('var s; assume_script(s, 0);', 0),
+            ('var s = [0x21]; assume_script(s, 1);', 1),
+            ('var s = new script { nop; }; assume_script(s, 1);', 1),
+            ('var s; var alias a = s; assume_script(a, 2);', 2),
+            ('var s; const int length = 13; assume_script(s, length * 2);', 26),
+            ('var s; if (condition) { s = new script { nop; }; } assume_script(s, 1);', 1),
+            ('var s; if (condition) { s = new script { nop; }; } '
+             'else { s = new script { wait 1; }; } assume_script(s, 2);', 2),
+        ):
+            with self.subTest(setup=setup):
+                self.assert_script_offset(setup, size)
+
+    def test_assume_script_contradictions(self):
+        for setup, message in (
+            ('var s = 1; assume_script(s, 1);', "contradicts known scalar value of 's'"),
+            ('var s = [1, 2]; assume_script(s, 1);', "length 1 contradicts known length 2 of 's'"),
+            ('var s = new script { nop; }; assume_script(s, 26);', "length 26 contradicts known length 1 of 's'"),
+            ('var s; assume_script(s, 26); assume_script(s, 1);', "length 1 contradicts known length 26 of 's'"),
+        ):
+            with self.subTest(setup=setup):
+                result = self.compile(self.script_source(setup, 'nop;'), '-Wno-all')
+                self.assert_failed(result, message)
+
+    def test_assume_script_validates_arguments(self):
+        for statement, message in (
+            ('assume_script(s, -1);', 'length must be nonnegative'),
+            ('assume_script(s, condition);', 'length must be a compile-time integer constant'),
+            ('assume_script(s, UI_get_random(3));', 'length must be a compile-time integer constant'),
+            ('assume_script(s, "26");', 'length must be a compile-time integer constant'),
+            ('assume_script(missing, 26);', "use of undeclared identifier 'missing'"),
+            ('assume_script(1, 26);', 'syntax error'),
+            ('assume_script(s, );', 'syntax error'),
+        ):
+            with self.subTest(statement=statement):
+                result = self.compile(self.script_source('var s; ' + statement, 'nop;'))
+                self.assert_failed(result, message)
+        result = self.compile('class Widget {} void example 0x900 () { class<Widget> s; assume_script(s, 0); }\n')
+        self.assert_failed(result, 'assume_script requires a non-class variable')
+
+    def test_assume_script_preserves_repeat_restriction(self):
+        result = self.compile(self.script_source(
+            'var s = new script { repeat 2 { nop; }; }; assume_script(s, 4);', 'repeat 3 *s;'))
+        self.assert_failed(result, 'cannot dereference a script containing a repeat inside another repeat')
+
+    def test_assume_script_follows_control_flow_and_reassignment(self):
+        for setup, message in (
+            ('var s; if (condition) { assume_script(s, 1); }', 'requires a value tracked as a script'),
+            ('var s; if (condition) { assume_script(s, 1); } else { assume_script(s, 2); }', 'array length is unknown'),
+            ('var s; assume_script(s, 26); s = [1];', 'requires a value tracked as a script'),
+            ('static var s; assume_script(s, 26); UI_get_random(1);', 'requires a value tracked as a script'),
+        ):
+            with self.subTest(setup=setup):
+                result = self.compile(self.script_source(setup, 'repeat 3 *s;'))
+                self.assert_failed(result, message)
+
     def test_token_column_and_caret(self):
         result = self.compile("void example 0x900 () {\n    var value = ;\n}\n")
         self.assert_failed(result, "input.uc:2:17: error: syntax error, unexpected ';'")

@@ -719,6 +719,7 @@ void Uc_function::gen(std::ostream& out) {
 		Uc_loop_data_stack break_continue;
 		statement->gen(this, fun_blocks, current, endblock, label_blocks, break_continue);
 	}
+	Analyze_array_shapes(initial);
 	assert(initial->no_parents() && endblock->is_childless());
 	std::set<Basic_block*> freed_blocks;
 	while (!fun_blocks.empty() && fun_blocks.back()->no_parents()) {

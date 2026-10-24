@@ -36,9 +36,260 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "ucloc.h"
 #include "ucsym.h"
 
+#include <algorithm>
 #include <cstdio>
+#include <limits>
 
 using std::vector;
+
+Uc_array_info Uc_array_info::concat(Uc_array_info left, Uc_array_info right) {
+	Uc_array_info result{left.is_script() || right.is_script() ? Kind::script : Kind::array, {}};
+	result.contains_repeat = left.contains_repeat || right.contains_repeat;
+	if (left.length && right.length && *left.length <= std::numeric_limits<int>::max() - *right.length) {
+		result.length = *left.length + *right.length;
+	}
+	return result;
+}
+
+Uc_array_info Uc_array_info::merge(Uc_array_info left, Uc_array_info right) {
+	Uc_array_info result;
+	result.contains_repeat = left.contains_repeat || right.contains_repeat;
+	if (left.kind == right.kind) {
+		result.kind = left.kind;
+	} else if (left.is_array() && right.is_array()) {
+		result.kind = Kind::array;
+	}
+	if (left.length == right.length) {
+		result.length = left.length;
+	}
+	return result;
+}
+
+// Aliases share the facts of their underlying variable, including alias chains.
+static Uc_var_symbol* Array_variable(Uc_var_symbol* var) {
+	while (var->get_sym() != var) {
+		var = static_cast<Uc_var_symbol*>(var->get_sym());
+	}
+	return var;
+}
+
+void Analyze_array_shapes(Basic_block* entry) {
+	std::map<Basic_block*, Uc_array_state> incoming;
+	std::vector<Basic_block*>              pending{entry};
+	std::vector<Basic_block*>              order{entry};
+	incoming[entry] = {};
+	for (size_t cursor = 0; cursor < pending.size(); ++cursor) {
+		auto* block = pending[cursor];
+		auto  state = incoming[block];
+		for (const auto& action : block->array_actions) {
+			action(state, false);
+		}
+		for (auto* next : {block->get_taken(), block->get_ntaken()}) {
+			if (!next) {
+				continue;
+			}
+			auto found = incoming.find(next);
+			if (found == incoming.end()) {
+				incoming[next] = state;
+				order.push_back(next);
+				pending.push_back(next);
+				continue;
+			}
+			auto merged = found->second;
+			for (auto it = merged.begin(); it != merged.end();) {
+				auto other = state.find(it->first);
+				if (other == state.end()) {
+					it = merged.erase(it);
+				} else {
+					it->second = Uc_array_info::merge(it->second, other->second);
+					++it;
+				}
+			}
+			if (merged != found->second) {
+				found->second = std::move(merged);
+				pending.push_back(next);
+			}
+		}
+	}
+	// Emit diagnostics and resolve script offsets only after the fixed point.
+	for (auto* block : order) {
+		auto state = incoming[block];
+		for (const auto& action : block->array_actions) {
+			action(state, true);
+		}
+	}
+}
+
+Uc_array_info Uc_var_expression::array_info(const Uc_array_state& state) const {
+	auto found = state.find(Array_variable(var));
+	return found != state.end() ? found->second : Uc_array_info{};
+}
+
+Uc_array_info Uc_binary_expression::array_info(const Uc_array_state& state) const {
+	if (opcode == UC_ARRA) {
+		return Uc_array_info::concat(left->array_info(state), right->array_info(state));
+	}
+	if (opcode == UC_ADD) {
+		// Addition preserves the other operand when one value is undefined.
+		// Unless a scalar is known, an unknown operand can therefore allow an
+		// array to pass through unchanged.
+		const auto l = left->array_info(state);
+		const auto r = right->array_info(state);
+		if (l.kind != Uc_array_info::Kind::scalar && r.kind != Uc_array_info::Kind::scalar
+			&& (l.kind == Uc_array_info::Kind::unknown || r.kind == Uc_array_info::Kind::unknown)) {
+			return {};
+		}
+	}
+	return Uc_array_info::scalar();
+}
+
+bool Uc_binary_expression::split_script_repeat(Uc_expression*& count, Uc_expression*& body, Uc_location& location) {
+	if (opcode != UC_MUL) {
+		return false;
+	}
+	count = left;
+	body  = right;
+	location = right_location.value_or(static_cast<const Uc_location&>(*right));
+	return true;
+}
+
+std::optional<int> Uc_repeated_script_expression::script_slots(const Uc_array_state& state) const {
+	auto size = body->script_slots(state);
+	if (!size || *size > std::numeric_limits<int>::max() - tail_size) {
+		return {};
+	}
+	return *size + tail_size;
+}
+
+void Uc_repeated_script_expression::gen_value(Basic_block* out) {
+	// The left operand is evaluated before calls in the repeat tail. Preserve
+	// its proven length even if those calls invalidate facts about shared vars.
+	offset->capture_state(out);
+	Uc_binary_expression::gen_value(out);
+}
+
+Uc_array_info Uc_array_expression::array_info(const Uc_array_state& state) const {
+	Uc_array_info result{Uc_array_info::Kind::array, 0};
+	result.contains_repeat = contains_repeat;
+	for (const auto* expr : exprs) {
+		if (expr) {
+			const auto info = expr->array_info(state);
+			result          = Uc_array_info::concat(result, info);
+		}
+	}
+	// An ordinary array literal does not acquire script identity from its elements.
+	result.kind = Uc_array_info::Kind::array;
+	return result;
+}
+
+std::optional<int> Uc_array_expression::script_slots(const Uc_array_state& state) const {
+	int size = 0;
+	for (const auto* expr : exprs) {
+		if (!expr) {
+			continue;
+		}
+		auto slots = expr->script_slots(state);
+		if (!slots || size > std::numeric_limits<int>::max() - *slots) {
+			return {};
+		}
+		size += *slots;
+	}
+	return size;
+}
+
+Uc_array_info Uc_script_expression::array_info(const Uc_array_state& state) const {
+	auto info = body->array_info(state);
+	if (!expanded) {
+		info.kind = Uc_array_info::Kind::script;
+	}
+	return info;
+}
+
+std::optional<int> Uc_script_expression::script_slots(const Uc_array_state& state) const {
+	if (!expanded) {
+		return body->script_slots(state);
+	}
+	auto info = body->array_info(state);
+	return info.is_script() ? info.length : std::optional<int>(0);
+}
+
+void Uc_script_expression::gen_value(Basic_block* out) {
+	if (expanded) {
+		out->array_actions.emplace_back([this](Uc_array_state& state, bool diagnose) {
+			if (!diagnose) {
+				return;
+			}
+			const auto info = body->array_info(state);
+			if (!info.is_script()) {
+				error("script dereference requires a value tracked as a script");
+			} else if (info.contains_repeat) {
+				error("cannot dereference a script containing a repeat inside another repeat");
+			}
+		});
+	}
+	body->gen_value(out);
+}
+
+static void Check_script_concat(const Uc_location& loc, Uc_array_info left, Uc_array_info right) {
+	if (left.is_script() != right.is_script()) {
+		loc.warning(Uc_location::Warning::script_mismatch, "concatenating a script with a value not tracked as a script");
+	}
+}
+
+Uc_array_info Uc_append_expression::array_info(const Uc_array_state& state) const {
+	auto result = left->array_info(state);
+	for (const auto* expr : right->get_exprs()) {
+		result = Uc_array_info::concat(result, expr->array_info(state));
+	}
+	return result;
+}
+
+void Uc_append_expression::gen_value(Basic_block* out) {
+	out->array_actions.emplace_back([this](Uc_array_state& state, bool diagnose) {
+		if (!diagnose) {
+			return;
+		}
+		auto result = left->array_info(state);
+		for (const auto* expr : right->get_exprs()) {
+			auto info = expr->array_info(state);
+			Check_script_concat(*this, result, info);
+			result = Uc_array_info::concat(result, info);
+		}
+	});
+	Uc_array_expression::gen_value(out);
+}
+
+void Uc_script_offset_expression::capture_state(Basic_block* out) {
+	captured_state = std::make_shared<Uc_array_state>();
+	out->array_actions.emplace_back([snapshot = captured_state](Uc_array_state& state, bool) {
+		*snapshot = state;
+	});
+}
+
+void Uc_script_offset_expression::gen_value(Basic_block* out) {
+	WriteOp(out, UC_PUSHI);
+	WriteOpParam2(out, 0);
+	auto* instruction = out->last_instruction();
+	out->array_actions.emplace_back([this, instruction, snapshot = captured_state](Uc_array_state& state, bool diagnose) {
+		if (!diagnose) {
+			return;
+		}
+		int size = 0;
+		for (const auto* expr : body) {
+			auto slots = expr->script_slots(snapshot ? *snapshot : state);
+			if (!slots) {
+				expr->error("cannot repeat script: array length is unknown");
+				return;
+			}
+			if (size > std::numeric_limits<int>::max() - *slots) {
+				expr->error("script array length exceeds the supported range");
+				return;
+			}
+			size += *slots;
+		}
+		instruction->set_integer(-size);
+	});
+}
 
 /*
  *  Default.  Just push the one value.
@@ -75,6 +326,9 @@ Uc_var_symbol* Uc_expression::need_var(Basic_block* out, Uc_function* fun) {
 	}
 	gen_value(out);    // Want to assign this value to it.
 	var->gen_assign(out);
+	out->array_actions.emplace_back([this, var](Uc_array_state& state, bool) {
+		state[Array_variable(var)] = array_info(state);
+	});
 	return var;
 }
 
@@ -183,6 +437,24 @@ void Uc_arrayelem_expression::gen_assign(Basic_block* out) {
 	index->gen_value(out);      // Want index on stack.
 	WriteOp(out, UC_POPARR);    // Opcode, var #.
 	WriteOpParam2(out, array->get_offset());
+	track_assignment(out);
+}
+
+void Uc_arrayelem_expression::track_assignment(Basic_block* out) {
+	out->array_actions.emplace_back([this](Uc_array_state& state, bool) {
+		auto& info = state[Array_variable(array)];
+		int   position;
+		if (!index->eval_const(position) || position > 32767 || position < -32768) {
+			info.length.reset();
+		} else if (position <= 0) {
+			return;    // The VM ignores writes at nonpositive indices.
+		} else if (info.length) {
+			info.length = std::max(*info.length, position);
+		}
+		if (!info.is_script()) {
+			info.kind = Uc_array_info::Kind::array;
+		}
+	});
 }
 
 /*
@@ -209,6 +481,7 @@ void Uc_static_arrayelem_expression::gen_assign(Basic_block* out) {
 	index->gen_value(out);       // Want index on stack.
 	WriteOp(out, UC_POPARRS);    // Opcode, var #.
 	WriteOpParam2(out, array->get_offset());
+	track_assignment(out);
 }
 
 /*
@@ -235,6 +508,7 @@ void Uc_class_arrayelem_expression::gen_assign(Basic_block* out) {
 	index->gen_value(out);         // Want index on stack.
 	WriteOp(out, UC_POPARRTHV);    // Opcode, var #.
 	WriteOpParam2(out, array->get_offset());
+	track_assignment(out);
 }
 
 /*
@@ -303,6 +577,13 @@ int Uc_var_expression::get_string_offset() {
  */
 
 void Uc_binary_expression::gen_value(Basic_block* out) {
+	if (opcode == UC_ARRA) {
+		out->array_actions.emplace_back([this](Uc_array_state& state, bool diagnose) {
+			if (diagnose) {
+				Check_script_concat(*this, left->array_info(state), right->array_info(state));
+			}
+		});
+	}
 	int ival;
 	if (eval_const(ival)) {
 		auto* iexpr = new Uc_int_expression(ival, intop);
@@ -605,6 +886,9 @@ void Uc_array_expression::concat(Uc_expression* e) {
  */
 
 void Uc_array_expression::add_to(Uc_array_expression* arr) {
+	if (contains_repeat) {
+		arr->mark_repeat();
+	}
 	arr->add(exprs);
 	exprs.clear();    // Don't want to delete elements.
 	delete this;      // But this array is history.
@@ -739,6 +1023,18 @@ void Uc_call_expression::check_params() {
  *  Generate code to evaluate expression and leave result on stack.
  */
 
+static void Forget_shared_arrays(Uc_array_state& state, bool) {
+	// Calls can change persistent variables and class members, but cannot
+	// assign the caller's locals (Usecode values have value semantics).
+	for (auto it = state.begin(); it != state.end();) {
+		if (it->first->is_static() || it->first->get_sym_type() == Uc_symbol::Member_var) {
+			it = state.erase(it);
+		} else {
+			++it;
+		}
+	}
+}
+
 void Uc_call_expression::gen_value(Basic_block* out) {
 	Uc_location::Context diagnostic_context(*this);
 	if (ind) {                                            // Indirect?
@@ -756,6 +1052,7 @@ void Uc_call_expression::gen_value(Basic_block* out) {
 		} else {
 			WriteOp(out, UC_CALLIND);
 		}
+		out->array_actions.emplace_back(Forget_shared_arrays);
 		return;
 	}
 	if (!sym) {
@@ -765,6 +1062,7 @@ void Uc_call_expression::gen_value(Basic_block* out) {
 		error("called object '%s' is not a function or intrinsic", sym->get_name());
 		sym = nullptr;    // Avoid repeating error if in loop.
 	}
+	out->array_actions.emplace_back(Forget_shared_arrays);
 }
 
 void Uc_class_expression::gen_value(Basic_block* out) {

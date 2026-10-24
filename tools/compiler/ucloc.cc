@@ -68,6 +68,7 @@ namespace {
 			   "unknown-directives",
 			   "unknown-escape-sequence",
 			   "function-id-alias",
+			   "script-mismatch",
 			   "general"};
 }
 

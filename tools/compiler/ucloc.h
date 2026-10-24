@@ -74,6 +74,7 @@ public:
 		unknown_directives,
 		unknown_escape_sequence,
 		function_id_alias,
+		script_mismatch,
 		general,
 		count
 	};

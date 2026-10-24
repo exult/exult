@@ -64,6 +64,9 @@ static Uc_var_symbol*       Get_variable(const char*);
 static UsecodeOps Integer_literal_opcode(int value, UsecodeOps opcode, Uc_location loc);
 static Uc_array_expression* Create_array(int, Uc_expression*);
 static Uc_array_expression* Create_array(int, Uc_expression*, Uc_expression*);
+static Uc_array_expression* Create_repeat(Uc_expression* body, Uc_expression* count, Uc_expression* reset = nullptr);
+static Uc_expression* Create_dereferenced_repeat(Uc_expression* body, Uc_expression* count, Uc_expression* reset = nullptr);
+static Uc_expression* Dereferenced_repeat(Uc_expression* expr, Uc_expression* initial = nullptr);
 static Uc_class*            Find_class(const char* nm, Uc_location loc);
 static bool                 Class_unexpected_error(Uc_expression* expr);
 static bool                 Nonclass_unexpected_error(Uc_expression* expr);
@@ -88,6 +91,8 @@ static Uc_struct_symbol* struct_type
 		= nullptr;    // For declaration of struct variables.
 static bool                    has_ret        = false;
 static int                     repeat_nesting = 0;
+// A separately constructed script has its own repeat nesting context.
+static std::vector<int> script_repeat_context;
 static std::vector<UsecodeOps> const_opcode;
 static std::vector<bool>       nested_if;
 static int converse = 0;    // If we are in a converse block.
@@ -105,6 +110,7 @@ static void Reset_declaration_context(Uc_class* cls = nullptr, Uc_struct_symbol*
 	has_ret = is_extern = false;
 	enum_val = -1;
 	repeat_nesting = converse = 0;
+	script_repeat_context.clear();
 	const_opcode.clear();
 	nested_if.clear();
 	reset_lex_state();
@@ -123,6 +129,7 @@ class Uc_recovery_block : public Uc_block_statement {
 	bool saved_has_ret = has_ret;
 	bool saved_is_extern = is_extern;
 	int saved_repeat_nesting = repeat_nesting;
+	std::vector<int> saved_script_repeat_context = script_repeat_context;
 	int saved_converse = converse;
 
 public:
@@ -136,6 +143,7 @@ public:
 		has_ret = saved_has_ret;
 		is_extern = saved_is_extern;
 		repeat_nesting = saved_repeat_nesting;
+		script_repeat_context = saved_script_repeat_context;
 		converse = saved_converse;
 	}
 };
@@ -191,6 +199,7 @@ struct Loop_Vars {
 
 %code requires {
 #include "ucloc.h"
+#include <limits>
 #include <type_traits>
 
 // Use Bison's conventional fields for initialization and debug printing. The
@@ -199,24 +208,46 @@ struct Loop_Vars {
 struct Uc_parser_location {
 	int first_line, first_column, last_line, last_column;
 	const char* source = nullptr;
+	int first_length = 0;
 
 	static Uc_parser_location current() {
 		Uc_location loc;
 		return {loc.get_line() + 1, loc.get_column(), loc.get_line() + 1,
-				loc.get_column() + loc.get_length(), loc.get_source()};
+				loc.get_column() + loc.get_length(), loc.get_source(), loc.get_length()};
 	}
 
 	Uc_location loc() const {
-		return Uc_location(source, first_line - 1, first_column, last_column - first_column);
+		return Uc_location(source, first_line - 1, first_column, first_length);
+	}
+
+	Uc_location span_to(const Uc_parser_location& end) const {
+		if (source != end.source) {
+			return loc();
+		}
+		// Diagnostics display the first source line. For a multiline span,
+		// underline through its end without overflowing the renderer's columns.
+		const int length = first_line == end.last_line ? end.last_column - first_column
+				: std::numeric_limits<int>::max() - first_column;
+		return Uc_location(source, first_line - 1, first_column, length);
+	}
+
+	Uc_location span() const {
+		return span_to(*this);
 	}
 };
 static_assert(std::is_trivially_copyable<Uc_parser_location>::value);
 #define YYLTYPE_IS_TRIVIAL 1
 
-// A production inherits its first token's source location. Keep filenames in
-// the location too, since one parse can span several included files.
+// Keep the first token for precise existing diagnostics, and the end of the
+// production for diagnostics that need a complete expression span.
 #define YYLLOC_DEFAULT(Current, Rhs, N) \
-	do { (Current) = YYRHSLOC(Rhs, (N) ? 1 : 0); } while (false)
+	do { \
+		(Current) = YYRHSLOC(Rhs, (N) ? 1 : 0); \
+		if ((N) && (Current).source == YYRHSLOC(Rhs, N).source) { \
+			(Current).last_line = YYRHSLOC(Rhs, N).last_line; \
+			(Current).last_column = YYRHSLOC(Rhs, N).last_column; \
+		} \
+	} while (false)
 }
 
 %union {
@@ -256,6 +287,7 @@ static_assert(std::is_trivially_copyable<Uc_parser_location>::value);
 %token TO "'to'"
 %token EXTERN "'extern'"
 %token DECLARE_ "'declare'"
+%token ASSUME_SCRIPT "'assume_script'"
 %token BREAK "'break'"
 %token GOTO "'goto'"
 %token CASE "'case'"
@@ -981,6 +1013,24 @@ simple_or_if_statement:
 
 simple_statement:
 	stmt_declaration
+	| ASSUME_SCRIPT '(' declared_var ',' nonclass_expr ')' ';'
+		{
+		Uc_location::Context diagnostic_context(@$.loc());
+		int length;
+		if ($3->get_cls()) {
+			@3.loc().error("assume_script requires a non-class variable");
+			$$ = nullptr;
+		} else if (!$5->eval_const(length)) {
+			@5.span().error("assume_script length must be a compile-time integer constant");
+			$$ = nullptr;
+		} else if (length < 0) {
+			@5.span().error("assume_script length must be nonnegative");
+			$$ = nullptr;
+		} else {
+			$$ = new Uc_assume_script_statement($3, length);
+		}
+		delete $5;
+		}
 	| assignment_statement
 	| trycatch_statement
 	| while_statement
@@ -1607,6 +1657,7 @@ assignment_statement:
 		{
 		Uc_location::Context diagnostic_context(@$.loc());
 		$1->set_is_obj_fun(-1);
+		Uc_location::Context expression_context(@1.span_to(@3));
 		$$ = new Uc_assignment_statement(
 				$1,
 				new Uc_binary_expression(static_cast<UsecodeOps>($2), $1, $3));
@@ -1615,7 +1666,8 @@ assignment_statement:
 		{
 		Uc_location::Context diagnostic_context(@$.loc());
 		$1->set_is_obj_fun(-1);
-		$$ = new Uc_assignment_statement($1, new Uc_array_expression($1, $3));
+		Uc_location::Context expression_context(@1.span_to(@3));
+		$$ = new Uc_assignment_statement($1, new Uc_append_expression($1, $3));
 		}
 	;
 
@@ -1656,7 +1708,7 @@ appended_element:
 		} script_command_list '}'
 		{
 		Uc_location::Context diagnostic_context(@$.loc());
-		$$ = $3;
+		$$ = new Uc_script_expression($3);
 		end_script();
 		}
 	;
@@ -2454,19 +2506,7 @@ script_command:
 		{
 		Uc_location::Context diagnostic_context(@$.loc());
 		repeat_nesting--;
-		auto* result = new Uc_array_expression();
-		result->concat($4);    // Start with cmnds. to repeat.
-		int sz = result->get_exprs().size();
-		result->add(new Uc_int_expression(
-				repeat_nesting ? Ucscript::repeat2 : Ucscript::repeat,
-				UC_PUSHB));
-		// Then -offset to start.
-		result->add(new Uc_int_expression(-sz));
-		result->add($2);    // Loop var for repeat2.
-		if (repeat_nesting) {
-			result->add($2);    // Then #times to repeat.
-		}
-		$$ = result;
+		$$ = Create_repeat($4, $2, repeat_nesting ? $2 : nullptr);
 		}
 	| REPEAT nonclass_expr ',' nonclass_expr { repeat_nesting++; }
 		script_command  ';'
@@ -2474,15 +2514,27 @@ script_command:
 		Uc_location::Context diagnostic_context(@$.loc());
 		// Allow setting a different initial number of repeats.
 		repeat_nesting--;
-		auto* result = new Uc_array_expression();
-		result->concat($6);    // Start with cmnds. to repeat.
-		int sz = result->get_exprs().size();
-		result->add(new Uc_int_expression(Ucscript::repeat2, UC_PUSHB));
-		// Then -offset to start.
-		result->add(new Uc_int_expression(-sz));
-		result->add($2);    // Loop var for repeat2.
-		result->add($4);    // Then #times to repeat.
-		$$ = result;
+		$$ = Create_repeat($6, $2, $4);
+		}
+	| REPEAT nonclass_expr ';'
+		{
+		Uc_location::Context diagnostic_context(@$.loc());
+		$$ = Dereferenced_repeat($2);
+		}
+	| REPEAT nonclass_expr ',' nonclass_expr ';'
+		{
+		Uc_location::Context diagnostic_context(@$.loc());
+		$$ = Dereferenced_repeat($4, $2);
+		}
+	| REPEAT FOREVER '*' primary ';'
+		{
+		Uc_location::Context diagnostic_context(@$.loc());
+		if (repeat_nesting) {
+			Uc_location::yyerror("'repeat forever' cannot be nested inside another 'repeat' command");
+		}
+		auto* count = new Uc_int_expression(255);
+		Uc_location::Context operand_context(@4.span());
+		$$ = Create_dereferenced_repeat($4, count);
 		}
 	| RAW '(' nonclass_expr ')' ';'
 		{ $$ = $3; }
@@ -2978,7 +3030,9 @@ expression:
 	| nonclass_expr '*' nonclass_expr
 		{
 		Uc_location::Context diagnostic_context(@$.loc());
-		$$ = new Uc_binary_expression(UC_MUL, $1, $3);
+		auto* expr = new Uc_binary_expression(UC_MUL, $1, $3);
+		expr->set_right_location(@3.span());
+		$$ = expr;
 		}
 	| nonclass_expr '/' nonclass_expr
 		{
@@ -2998,11 +3052,15 @@ expression:
 	| NEW SCRIPT {
 		Uc_location::Context diagnostic_context(@$.loc());
 		start_script();
+		script_repeat_context.push_back(repeat_nesting);
+		repeat_nesting = 0;
 		} script_command
 		{
 		Uc_location::Context diagnostic_context(@$.loc());
-		$$ = $4;
+		$$ = new Uc_script_expression($4);
 		end_script();
+		repeat_nesting = script_repeat_context.back();
+		script_repeat_context.pop_back();
 		}
 	| CHOICE
 		{
@@ -3056,7 +3114,7 @@ expression:
 		}
 	| nonclass_expr '&' nonclass_expr	/* append arrays */
 		{
-		Uc_location::Context diagnostic_context(@$.loc());
+		Uc_location::Context diagnostic_context(@$.span());
 		$$ = new Uc_binary_expression(UC_ARRA, $1, $3);
 		}
 	| '+' primary %prec UPLUS
@@ -3573,6 +3631,49 @@ defined_struct:
 #ifdef __GNUC__
 #	pragma GCC diagnostic pop
 #endif    // __GNUC__
+
+static Uc_array_expression* Create_repeat(Uc_expression* body, Uc_expression* count, Uc_expression* reset) {
+	auto* result = new Uc_array_expression();
+	result->concat(body);
+	result->mark_repeat();
+	auto* offset = new Uc_script_offset_expression(result->get_exprs());
+	result->add(new Uc_int_expression(reset ? Ucscript::repeat2 : Ucscript::repeat, UC_PUSHB));
+	result->add(offset);
+	result->add(count);
+	if (reset) {
+		result->add(reset);
+	}
+	return result;
+}
+
+static Uc_expression* Create_dereferenced_repeat(Uc_expression* body, Uc_expression* count, Uc_expression* reset) {
+	auto* expanded = new Uc_script_expression(body, true);
+	auto* offset = new Uc_script_offset_expression({expanded});
+	auto* tail = new Uc_array_expression();
+	tail->mark_repeat();
+	tail->add(new Uc_int_expression(reset ? Ucscript::repeat2 : Ucscript::repeat, UC_PUSHB));
+	tail->add(offset);
+	tail->add(count);
+	if (reset) {
+		tail->add(reset);
+	}
+	return new Uc_repeated_script_expression(expanded, new Uc_script_expression(tail), offset, reset ? 4 : 3);
+}
+
+static Uc_expression* Dereferenced_repeat(Uc_expression* expr, Uc_expression* initial) {
+	Uc_expression *count = nullptr, *body = nullptr;
+	Uc_location body_location;
+	auto* product = dynamic_cast<Uc_binary_expression*>(expr);
+	// Parse through the multiplication expression to avoid an ambiguity between
+	// multiplication in the count and the '*' introducing the script body.
+	if (!product || !product->split_script_repeat(count, body, body_location)) {
+		Uc_location::yyerror("expected '*script' after repeat count");
+		return new Uc_int_expression(0);
+	}
+	delete product;
+	Uc_location::Context operand_context(body_location);
+	return Create_dereferenced_repeat(body, initial ? initial : count, initial ? count : nullptr);
+}
 
 void yyerror(const char* s) {
 	extern char* yytext;

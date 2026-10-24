@@ -107,11 +107,42 @@ void Uc_assignment_statement::gen(
 	ignore_unused_variable_warning(fun, blocks, end, labels, break_continue);
 	value->gen_value(curr);    // Get value on stack.
 	target->gen_assign(curr);
+	if (auto* var = target->get_var()) {
+		while (var->get_sym() != var) {
+			var = static_cast<Uc_var_symbol*>(var->get_sym());
+		}
+		curr->array_actions.emplace_back([this, var](Uc_array_state& state, bool) {
+			state[var] = value->array_info(state);
+		});
+	}
 }
 
 /*
  *  Generate code.
  */
+
+void Uc_assume_script_statement::gen(
+		Uc_function* fun, vector<Basic_block*>& blocks, Basic_block*& curr, Basic_block* end,
+		map<string, Basic_block*>& labels, Uc_loop_data_stack& break_continue) {
+	ignore_unused_variable_warning(fun, blocks, end, labels, break_continue);
+	auto* var = variable;
+	while (var->get_sym() != var) {
+		var = static_cast<Uc_var_symbol*>(var->get_sym());
+	}
+	curr->array_actions.emplace_back([this, var](Uc_array_state& state, bool diagnose) {
+		auto& info = state[var];
+		if (diagnose) {
+			if (info.kind == Uc_array_info::Kind::scalar) {
+				error("assume_script contradicts known scalar value of '%s'", variable->get_name());
+			} else if (info.length && *info.length != length) {
+				error("assume_script length %d contradicts known length %d of '%s'", length, *info.length, variable->get_name());
+			}
+		}
+		info.kind = Uc_array_info::Kind::script;
+		info.length = length;
+		// Preserve known repeats: an assumption must not bypass their nesting check.
+	});
+}
 
 void Uc_if_statement::gen(
 		Uc_function*               fun,
@@ -222,6 +253,11 @@ void Uc_trycatch_statement::gen(
 	}
 	// Generate error variable assignment (push is handled by abort/throw)
 	blocks.push_back(catch_block);
+	// Exceptions can leave the try body at any instruction, including after
+	// assignments that are not represented by the normal edge into catch.
+	catch_block->array_actions.emplace_back([](Uc_array_state& state, bool) noexcept {
+		state.clear();
+	});
 	catch_var->gen_assign(catch_block);
 	// Do we have anything else to generate on catch block?
 	if (catch_stmt) {
@@ -531,6 +567,14 @@ void Uc_arrayloop_statement_base::finish(Uc_function* fun) {
  */
 
 void Uc_arrayloop_statement_base::gen_check(Basic_block* for_top, Basic_block* loop_body, Basic_block* past_loop) {
+	for_top->array_actions.emplace_back([this](Uc_array_state& state, bool) {
+		for (auto* symbol : {var, index, array_len}) {
+			while (symbol->get_sym() != symbol) {
+				symbol = static_cast<Uc_var_symbol*>(symbol->get_sym());
+			}
+			state.erase(symbol);
+		}
+	});
 	UsecodeOps opcode;
 	if (array->is_static()) {
 		opcode = UC_LOOPTOPS;
