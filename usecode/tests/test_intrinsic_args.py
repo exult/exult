@@ -24,7 +24,8 @@ def main():
     entry = re.search(r'\tstruct IntrinsicTableEntry \{.*?\n\t\};', header, re.S)[0]
     table_macro = re.search(r'^#define USECODE_INTRINSIC_PTR\(NAME\).*?(?<!\\)\n', source, re.M | re.S)[0]
     real = {'remove_party_items', 'add_party_items', 'remove_cont_items', 'add_cont_items', 'si_path_run_usecode',
-        'create_new_object2', 'book_mode_ex', 'begin_casting_mode', 'path_run_usecode', 'play_scene'}
+        'create_new_object2', 'book_mode_ex', 'begin_casting_mode', 'path_run_usecode', 'play_scene',
+        'create_new_egg', 'error_message'}
     code = r'''
 #include "span.h"
 #include <cassert>
@@ -34,21 +35,29 @@ def main():
 #include <limits>
 #include <memory>
 #include <string>
+#include <sstream>
 #include <vector>
 using uint16 = std::uint16_t;
 using std::cerr;
 using std::endl;
+struct Game_object;
 struct Usecode_value {
     int value = 0;
     const char* text = nullptr;
     Usecode_value() = default;
     explicit Usecode_value(int n) : value(n) {}
     explicit Usecode_value(const char* s) : text(s) {}
-    template<class T> explicit Usecode_value(T*) : value(1) {}
+    template<class T> explicit Usecode_value(T* p) : value(p ? 1 : 0) {}
     template<class T> explicit Usecode_value(std::shared_ptr<T>) : value(1) {}
     int get_int_value() const { return value; }
     int need_int_value() const { return value; }
     const char* get_str_value() const { return text; }
+    bool is_int() const { return text == nullptr; }
+    bool is_ptr() const { return false; }
+    bool is_array() const { return false; }
+    void* get_ptr_value() const { return nullptr; }
+    size_t get_array_size() const { return 0; }
+    Usecode_value& get_elem(size_t) { assert(false); return *this; }
 };
 Usecode_value no_ret(-1);
 enum { BLACK_GATE, SERPENT_ISLE };
@@ -102,6 +111,7 @@ struct Usecode_internal {
     using UsecodeIntrinsicFn = Usecode_value (Usecode_internal::*)(tcb::span<Usecode_value>);
     std::vector<Usecode_value> stack;
     bool executed = false;
+    std::vector<Usecode_value> received;
     int always = -1;
     bool find_free = false;
     Actor* chosen_actor = nullptr;
@@ -120,6 +130,7 @@ struct Usecode_internal {
     bool path_run_usecode(Usecode_value&, Usecode_value&, Usecode_value&, Usecode_value&, Usecode_value&, bool free, bool flag, bool = false) { find_free = free; always = flag; return true; }
     Usecode_value Execute_Intrinsic(UsecodeIntrinsicFn fn, const char*, int, tcb::span<Usecode_value> args) {
         executed = true;
+        received.assign(args.begin(), args.end());
         return (this->*fn)(args);
     }
 '''
@@ -138,7 +149,11 @@ struct Usecode_internal {
     code += dispatcher + '\n'
     code += '#define USECODE_INTRINSIC(NAME) Usecode_value Usecode_internal::UI_##NAME(tcb::span<Usecode_value> parms)\n'
     for name in sorted(real):
-        code += re.search(r'^USECODE_INTRINSIC\(' + name + r'\) \{.*?^\}', intrinsics, re.M | re.S)[0] + '\n'
+        body = re.search(r'^USECODE_INTRINSIC\(' + name + r'\) \{.*?^\}', intrinsics, re.M | re.S)[0]
+        if name == 'create_new_egg':
+            # Keep the production count check; egg creation itself needs game assets.
+            body = body[:body.index('\n\tconst int type')] + '\n\treturn Usecode_value(1);\n}'
+        code += body + '\n'
     code += r'''
 int main() {
     Usecode_internal vm;
@@ -159,6 +174,31 @@ int main() {
             assert(vm.call_intrinsic(id, 0).value == -1);
             assert(!vm.executed);
         }
+        int generic = -1, egg = -1, output = -1;
+        for (size_t i = 0; i < table.size(); ++i) {
+            const std::string name(table[i].name);
+            if (name == "UNKNOWN") { generic = static_cast<int>(i); }
+            if (name == "create_new_egg") { egg = static_cast<int>(i); }
+            if (name == "error_message") { output = static_cast<int>(i); }
+        }
+        assert(generic >= 0 && egg >= 0 && output >= 0);
+        for (int count : {0, 1, 7, 13, 20, 255}) {
+            for (int i = count; i > 0; --i) { vm.stack.push_back(Usecode_value(i)); }
+            assert(vm.call_intrinsic(generic, count).value == count);
+            assert(vm.stack.empty() && vm.received.size() == static_cast<size_t>(count));
+            for (int i = 0; i < count; ++i) { assert(vm.received[i].value == i + 1); }
+        }
+        vm.stack.assign(7, Usecode_value());
+        assert(vm.call_intrinsic(egg, 7).value == 1);
+        vm.stack.assign(8, Usecode_value());
+        assert(vm.call_intrinsic(egg, 8).value == 0);
+        vm.stack.push_back(Usecode_value(42));
+        vm.stack.push_back(Usecode_value("message"));
+        std::ostringstream stream;
+        auto* previous = std::cout.rdbuf(stream.rdbuf());
+        vm.call_intrinsic(output, 2);
+        std::cout.rdbuf(previous);
+        assert(stream.str() == "message42\n");
     }
     std::vector<Usecode_value> args(6);
     assert(vm.UI_remove_party_items({args.data(), 4}).value == 4);

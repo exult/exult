@@ -1596,7 +1596,7 @@ Usecode_value Usecode_internal::call_intrinsic(
 	static_assert(std::size(intrinsics_bg) <= std::numeric_limits<uint16>::max());
 	static_assert(std::size(intrinsics_si) <= std::numeric_limits<uint16>::max());
 	static_assert(std::size(intrinsics_sib) <= std::numeric_limits<uint16>::max());
-	std::vector<Usecode_value> parms(std::max(num_parms, 13));    // Get parms.
+	std::vector<Usecode_value> parms(static_cast<size_t>(num_parms));    // Get exactly the supplied arguments.
 	for (int i = 0; i < num_parms; i++) {
 		const Usecode_value val = pop();
 		parms[i]                = val;
