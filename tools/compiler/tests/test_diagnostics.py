@@ -45,6 +45,110 @@ class Diagnostics(unittest.TestCase):
         self.assertTrue(self.output.exists())
         self.assertNotIn("\033[", result.stdout)
 
+    def test_tail_array_loop_break_matches_return(self):
+        source = '''#game "blackgate"
+void example 0x900 (var objects) {
+    declare var object;
+    for (object in objects) {
+        if (UI_get_item_quality(object) == 100) {
+            UI_set_item_quality(object, 1);
+            return;
+        }
+    }
+    for (object in objects) {
+        if (UI_get_item_quality(object) == 0) {
+            UI_set_item_quality(object, 2);
+            EXIT;
+        }
+    }
+    TAIL
+}
+'''
+        outputs = []
+        for tail in ('return;', ''):
+            for exit_statement in ('break', 'return'):
+                with self.subTest(tail=tail, exit_statement=exit_statement):
+                    result = self.compile(source.replace('EXIT', exit_statement).replace('TAIL', tail), '-b')
+                    self.assertEqual(result.returncode, 0, result.stdout)
+                    outputs.append(self.output.read_bytes())
+        for output in outputs[1:]:
+            self.assertEqual(output, outputs[0])
+
+    def test_breakable_exit_matches_return(self):
+        body = '''if (event == 2) {
+    var objects = [1, 2];
+    var index = 1;
+    declare var object;
+    forever {
+        object = objects[index];
+        if (!object) { EXIT; }
+        if (object == 2) { break; }
+        index += 1;
+    }
+    UI_set_item_quality(object, 3);
+}
+'''
+        for return_type, return_statement in (('void', 'return'), ('var', 'return 0')):
+            with self.subTest(return_statement=return_statement):
+                sources = (
+                    'function_exit: breakable { ' + body.replace('EXIT', 'break function_exit') + ' }',
+                    body.replace('EXIT', return_statement),
+                )
+                outputs = []
+                for tail in (return_statement + ';', ''):
+                    for source in sources:
+                        result = self.compile('#game "blackgate"\n' + return_type + ' example 0x900 () { '
+                            + source + ' ' + tail + ' }', '-b')
+                        self.assertEqual(result.returncode, 0, result.stdout)
+                        outputs.append(self.output.read_bytes())
+                for output in outputs[1:]:
+                    self.assertEqual(output, outputs[0])
+
+    def test_early_return_matches_guarded_tail(self):
+        for return_type, return_statement in (('void', 'return'), ('var', 'return 0')):
+            for condition in ('condition', '(condition && gflags[1])'):
+                with self.subTest(return_type=return_type, condition=condition):
+                    bodies = (
+                        'if (CONDITION) { RETURN; } UI_set_schedule_type(item, 3);',
+                        'if (!(CONDITION)) { UI_set_schedule_type(item, 3); }',
+                    )
+                    outputs = []
+                    for tail in ('', return_statement + ';'):
+                        for body in bodies:
+                            source = ('#game "blackgate"\n' + return_type
+                                + ' example 0x900 (var condition) { '
+                                + body.replace('CONDITION', condition).replace('RETURN', return_statement)
+                                + tail + ' }')
+                            result = self.compile(source, '-b')
+                            self.assertEqual(result.returncode, 0, result.stdout)
+                            outputs.append(self.output.read_bytes())
+                    for output in outputs[1:]:
+                        self.assertEqual(output, outputs[0])
+
+    def test_converging_returns_do_not_invert_conditions(self):
+        source = '''#game "blackgate"
+extern var attempt 0x901 (var target);
+var example 0x900 (var owner) {
+    if (event == 2) {
+        if (attempt(item)) { return 1; }
+    } else {
+        UI_flash_mouse(1);
+        if (owner) {
+            if (attempt(owner)) { return 0; }
+        } else if (attempt(item)) { return 0; }
+    }
+    TAIL
+}
+'''
+        for tail in ('return 0;', ''):
+            with self.subTest(tail=tail):
+                result = self.compile(source.replace('TAIL', tail), '-b')
+                self.assertEqual(result.returncode, 0, result.stdout)
+                code = self.output.read_bytes()
+                # All three calls still feed JNE directly, without an added NOT.
+                self.assertEqual(code.count(b'\x24\x00\x00\x05'), 3)
+                self.assertNotIn(b'\x24\x00\x00\x10\x05', code)
+
     def test_plain_failure(self):
         result = self.compile("void example 0x900 () { var x = ; }\n")
         self.assert_failed(result, "syntax error")

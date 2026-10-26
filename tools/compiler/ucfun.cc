@@ -508,6 +508,36 @@ static int Remove_dead_blocks(vector<Basic_block*>& blocks, Basic_block* endbloc
 	return total_removed;
 }
 
+static void Share_returns(vector<Basic_block*>& blocks) {
+	map<UsecodeOps, Basic_block*> targets;
+	for (size_t i = blocks.size(); i > 0; --i) {
+		Basic_block* block = blocks[i - 1];
+		if (!block->is_end_block() || !block->ends_in_return()) {
+			continue;
+		}
+		const auto [target, inserted] = targets.emplace(block->get_return_opcode(), block);
+		if (!inserted && block->is_simple_return_block()) {
+			if (!target->second->is_simple_return_block()) {
+				// A trailing call or assignment can share a block with its return.
+				// Split off the return so earlier branches can target it directly.
+				Basic_block* tail   = target->second;
+				auto*        shared = new Basic_block();
+				WriteOp(shared, tail->get_return_opcode());
+				shared->set_targets(UC_INVALID, tail->get_taken());
+				shared->mark_reachable();
+				PopOpcode(tail);
+				tail->set_targets(UC_JMP, shared);
+				blocks.push_back(shared);
+				target->second = shared;
+			}
+			// Expose identical returns as jumps before optimizing conditions.
+			// This lets a conditional branch directly to the shared return.
+			PopOpcode(block);
+			block->set_targets(UC_JMP, target->second);
+		}
+	}
+}
+
 static int Optimize_jumps(vector<Basic_block*>& blocks, bool returns) {
 	int total_removed = 0;
 	while (true) {
@@ -517,6 +547,15 @@ static int Optimize_jumps(vector<Basic_block*>& blocks, bool returns) {
 			Basic_block* block  = blocks[i];
 			Basic_block* aux    = block->get_taken();
 			bool         remove = false;
+			// Resolve jump chains before deciding whether to invert a condition.
+			if (block->is_conditionaljump_block() || block->is_converse_case_block() || block->is_array_loop_block()) {
+				Basic_block* naux = block->get_ntaken();
+				if (naux->is_simple_jump_block() && naux->get_taken() != naux) {
+					block->set_ntaken(naux->get_taken());
+					++nremoved;
+					continue;
+				}
+			}
 			if (block->is_jump_block()) {
 				// Unconditional jump block.
 				if (aux == blocks[i + 1]) {
@@ -572,10 +611,11 @@ static int Optimize_jumps(vector<Basic_block*>& blocks, bool returns) {
 					}
 				} else if (
 						i + 2 < blocks.size() && block->is_conditionaljump_block() && aux->is_simple_jump_block()
-						&& aux->has_single_predecessor() && block->get_ntaken() == blocks[i + 2]) {
+						&& aux->has_single_predecessor() && block->get_ntaken() == blocks[i + 2]
+						&& aux->get_taken() != block->get_ntaken()) {
 					// Conditional jump followed by jump block which
 					// descends solely from current block.
-					// Reverse condition.
+					// Reverse condition only for distinct destinations.
 					UsecodeOps opcode = block->get_last_instruction();
 					switch (opcode) {
 					case UC_CMPGT:
@@ -615,13 +655,6 @@ static int Optimize_jumps(vector<Basic_block*>& blocks, bool returns) {
 					block->set_ntaken(aux->get_taken());
 					block->set_taken(ntaken);
 					remove = true;
-				} else if (block->is_conditionaljump_block() || block->is_converse_case_block() || block->is_array_loop_block()) {
-					Basic_block* naux = block->get_ntaken();
-					if (naux->is_simple_jump_block()) {
-						block->set_ntaken(naux->get_taken());
-						++nremoved;
-						continue;
-					}
 				}
 			} else if (
 					block->is_end_block() && (aux = blocks[i + 1])->is_end_block() && block->ends_in_return()
@@ -719,6 +752,9 @@ void Uc_function::gen(std::ostream& out) {
 		Uc_loop_data_stack break_continue;
 		statement->gen(this, fun_blocks, current, endblock, label_blocks, break_continue);
 	}
+	// Make the implicit return available to control-flow optimizations too.
+	WriteOp(current, proto->has_ret() ? UC_RETZ : UC_RET);
+	current->set_targets(UC_INVALID, endblock);
 	Analyze_array_shapes(initial);
 	assert(initial->no_parents() && endblock->is_childless());
 	std::set<Basic_block*> freed_blocks;
@@ -755,6 +791,7 @@ void Uc_function::gen(std::ostream& out) {
 	label_blocks.clear();
 	// First round of optimizations.
 	Remove_dead_blocks(fun_blocks, endblock);
+	Share_returns(fun_blocks);
 	int count1 = 0;
 	int count2 = 0;
 	do {
