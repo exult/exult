@@ -1172,6 +1172,7 @@ int obj->add_cont_items(int count, int shape, int qual, int frame, bool temp)
     frame    What frame will be used for the created objects. Can be FRAME_ANY =
              -359 to create items of any frame.
     temp     Flag indicating whether the created items are temporary or not.
+             If omitted, it defaults to false.
 
   Return:
     How many objects were actually added to the container.

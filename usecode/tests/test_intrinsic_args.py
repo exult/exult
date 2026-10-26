@@ -23,7 +23,8 @@ def main():
     dispatcher = re.search(r'^Usecode_value Usecode_internal::call_intrinsic\(.*?^\}', source, re.M | re.S)[0]
     entry = re.search(r'\tstruct IntrinsicTableEntry \{.*?\n\t\};', header, re.S)[0]
     table_macro = re.search(r'^#define USECODE_INTRINSIC_PTR\(NAME\).*?(?<!\\)\n', source, re.M | re.S)[0]
-    real = {'remove_party_items', 'add_party_items', 'remove_cont_items', 'add_cont_items', 'si_path_run_usecode'}
+    real = {'remove_party_items', 'add_party_items', 'remove_cont_items', 'add_cont_items', 'si_path_run_usecode',
+        'create_new_object2', 'book_mode_ex', 'begin_casting_mode', 'path_run_usecode', 'play_scene'}
     code = r'''
 #include "span.h"
 #include <cassert>
@@ -31,15 +32,23 @@ def main():
 #include <iostream>
 #include <iterator>
 #include <limits>
+#include <memory>
+#include <string>
 #include <vector>
 using uint16 = std::uint16_t;
 using std::cerr;
 using std::endl;
 struct Usecode_value {
     int value = 0;
+    const char* text = nullptr;
     Usecode_value() = default;
     explicit Usecode_value(int n) : value(n) {}
+    explicit Usecode_value(const char* s) : text(s) {}
+    template<class T> explicit Usecode_value(T*) : value(1) {}
+    template<class T> explicit Usecode_value(std::shared_ptr<T>) : value(1) {}
     int get_int_value() const { return value; }
+    int need_int_value() const { return value; }
+    const char* get_str_value() const { return text; }
 };
 Usecode_value no_ret(-1);
 enum { BLACK_GATE, SERPENT_ISLE };
@@ -48,28 +57,67 @@ struct Game {
     static inline bool beta = false;
     static int get_game_type() { return game; }
     static bool is_si_beta() { return beta; }
+    static int get_ticks() { return 0; }
 };
+#define GAME_SI (Game::game == SERPENT_ISLE)
 namespace Schedule { constexpr int wait = 0; }
 namespace Obj_flags { constexpr int asleep = 1, paralyzed = 2; }
 struct Actor {
+    int casting_shape = -1;
     int get_schedule_type() { return 0; }
     bool get_flag(int) { return false; }
     void clear_flag(int) {}
+    void begin_casting(int shape) { casting_shape = shape; }
 };
+struct Object { int frame = 17; void set_frame(int n) { frame = n; } };
+using Game_object_shared = std::shared_ptr<Object>;
+struct Text_gump {
+    int font, shape;
+    Text_gump(int f, int s) : font(f), shape(s) {}
+    virtual ~Text_gump() = default;
+};
+struct Book_gump : Text_gump { using Text_gump::Text_gump; };
+struct Scroll_gump : Text_gump { using Text_gump::Text_gump; };
+struct Queue { void pause(int) {} void resume(int) {} };
+struct Palette {
+    int out = -1, in = -1;
+    void fade_out(int n) { out = n; }
+    void fade_in(int n) { in = n; }
+};
+struct Window {
+    Actor avatar;
+    Queue queue;
+    Palette pal;
+    Actor* get_main_actor() { return &avatar; }
+    Queue* get_tqueue() { return &queue; }
+    Palette* get_pal() { return &pal; }
+    void set_all_dirty() {}
+    void paint() {}
+} window;
+Window* gwin = &window;
+constexpr int c_fade_out_time = 7, c_fade_in_time = 11;
+bool scene_available(const std::string&) { return true; }
+void play_scene(const std::string&) {}
 struct Usecode_internal {
     using UsecodeIntrinsicFn = Usecode_value (Usecode_internal::*)(tcb::span<Usecode_value>);
     std::vector<Usecode_value> stack;
     bool executed = false;
     int always = -1;
+    bool find_free = false;
+    Actor* chosen_actor = nullptr;
+    Game_object_shared created;
+    std::unique_ptr<Text_gump> book;
     Usecode_value pop() { assert(!stack.empty()); auto v = stack.back(); stack.pop_back(); return v; }
     Usecode_value call_intrinsic(int, int);
-    Actor* get_item(Usecode_value&) { return nullptr; }
+    Actor* get_item(Usecode_value&) { return chosen_actor; }
     Actor* as_actor(Actor* n) { return n; }
+    Game_object_shared create_object(int, bool) { created = std::make_shared<Object>(); return created; }
+    void set_book(Text_gump* p) { book.reset(p); }
     Usecode_value remove_party_items(Usecode_value&, Usecode_value&, Usecode_value&, Usecode_value&) { return Usecode_value(4); }
     Usecode_value remove_cont_items(Usecode_value&, Usecode_value&, Usecode_value&, Usecode_value&, Usecode_value&) { return Usecode_value(5); }
     Usecode_value add_party_items(Usecode_value&, Usecode_value&, Usecode_value&, Usecode_value&, Usecode_value& flag) { return flag; }
     Usecode_value add_cont_items(Usecode_value&, Usecode_value&, Usecode_value&, Usecode_value&, Usecode_value&, Usecode_value& flag) { return flag; }
-    bool path_run_usecode(Usecode_value&, Usecode_value&, Usecode_value&, Usecode_value&, Usecode_value&, bool, bool flag) { always = flag; return true; }
+    bool path_run_usecode(Usecode_value&, Usecode_value&, Usecode_value&, Usecode_value&, Usecode_value&, bool free, bool flag, bool = false) { find_free = free; always = flag; return true; }
     Usecode_value Execute_Intrinsic(UsecodeIntrinsicFn fn, const char*, int, tcb::span<Usecode_value> args) {
         executed = true;
         return (this->*fn)(args);
@@ -123,6 +171,40 @@ int main() {
     assert(vm.UI_add_cont_items(args).value == 1);
     vm.UI_si_path_run_usecode({args.data(), 5}); assert(vm.always == 0);
     vm.UI_si_path_run_usecode(args); assert(vm.always == 1);
+    vm.UI_create_new_object2({args.data(), 2}); assert(vm.created->frame == 17);
+    args[2] = Usecode_value(0);
+    vm.UI_create_new_object2({args.data(), 3}); assert(vm.created->frame == 0);
+    args[2] = Usecode_value(6);
+    vm.UI_create_new_object2({args.data(), 3}); assert(vm.created->frame == 6);
+    for (int scroll : {0, 1}) {
+        args[0] = Usecode_value(scroll);
+        vm.UI_book_mode_ex({args.data(), 2}); assert(vm.book->shape == -1);
+        args[2] = Usecode_value(0);
+        vm.UI_book_mode_ex({args.data(), 3}); assert(vm.book->shape == 0);
+    }
+    vm.chosen_actor = &window.avatar;
+    vm.UI_begin_casting_mode({args.data(), 1}); assert(window.avatar.casting_shape == 859);
+    args[1] = Usecode_value(0);
+    vm.UI_begin_casting_mode({args.data(), 2}); assert(window.avatar.casting_shape == 0);
+    for (int game : {BLACK_GATE, SERPENT_ISLE}) {
+        Game::game = game;
+        vm.UI_path_run_usecode({args.data(), 4}); assert(vm.find_free == (game == SERPENT_ISLE));
+        for (int mode : {0, 1}) {
+            args[4] = Usecode_value(mode);
+            vm.UI_path_run_usecode({args.data(), 5}); assert(vm.find_free == (mode != 0));
+        }
+    }
+    args[0] = Usecode_value("scene");
+    args[1] = Usecode_value(0);
+    args[2] = Usecode_value(0);
+    vm.UI_play_scene({args.data(), 1});
+    assert(window.pal.out == c_fade_out_time && window.pal.in == c_fade_in_time);
+    window.pal.out = -1;
+    vm.UI_play_scene({args.data(), 2});
+    assert(window.pal.out == -1 && window.pal.in == c_fade_in_time);
+    window.pal.out = -1;
+    vm.UI_play_scene({args.data(), 3});
+    assert(window.pal.out == -1 && window.pal.in == 0);
 }
 '''
     with tempfile.TemporaryDirectory(prefix='exult-intrinsic-args-') as directory:

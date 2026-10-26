@@ -537,8 +537,8 @@ USECODE_INTRINSIC(create_new_object2) {
 }
 
 USECODE_INTRINSIC(create_new_egg) {
-	// create_new_egg(type, loc, [criteria], [probability], [distance],
-	//                [flags], [data]).
+	// create_new_egg(type, loc, criteria, probability, distance, flags, data).
+	// All seven parameters are required.
 	// Creates an egg object at the specified location.
 	// Egg types: 1=monster, 2=jukebox, 3=soundsfx, 4=voice, 5=usecode,
 	//            6=missile, 7=teleport, 8=weather, 9=path, 10=button,
