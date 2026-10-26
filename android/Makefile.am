@@ -68,12 +68,24 @@ $(abs_builddir)/gradlew: $(APK_BUILD_TREE) android_packages
 	ANDROID_HOME=$(ANDROID_HOME) $(GRADLE) wrapper $(GRADLE_PROJECT_PROPS)
 
 # Always try to install any missing android packages
+# Retry failed package downloads twice before failing the build.
 .PHONY: android_packages
 android_packages:
-	$(SDKMANAGER) --install "platforms;android-$(ANDROID_SDK_VERSION)"
-	$(SDKMANAGER) --install "build-tools;$(ANDROID_BUILD_TOOLS_VERSION)"
-	$(SDKMANAGER) --install "ndk;$(ANDROID_NDK_VERSION)"
-	$(SDKMANAGER) --install "cmake;$(ANDROID_CMAKE_VERSION)"
+	@set -e; \
+	for package in "platforms;android-$(ANDROID_SDK_VERSION)" \
+			"build-tools;$(ANDROID_BUILD_TOOLS_VERSION)" \
+			"ndk;$(ANDROID_NDK_VERSION)" "cmake;$(ANDROID_CMAKE_VERSION)"; do \
+		attempt=1; \
+		until $(SDKMANAGER) --install "$$package"; do \
+			if test "$$attempt" -ge 3; then \
+				echo "Failed to install $$package after $$attempt attempts" >&2; \
+				exit 1; \
+			fi; \
+			echo "Retrying installation of $$package in 10 seconds ($$attempt/3 attempts failed)" >&2; \
+			sleep 10; \
+			attempt=$$((attempt + 1)); \
+		done; \
+	done
 	$(SDKMANAGER) --licenses
 
 # Various locations in the source and native build to copy files from that need to be staged for the APK build
