@@ -62,15 +62,17 @@ Uc_scope Uc_function::globals(nullptr);    // Stores intrinic symbols.
 
 Uc_function::Intrinsic_type Uc_function::intrinsic_type = Uc_function::unset;
 
-int Uc_function::num_global_statics = 0;
-int Uc_function::add_answer         = -1;
-int Uc_function::remove_answer      = -1;
-int Uc_function::push_answers       = -1;
-int Uc_function::pop_answers        = -1;
-int Uc_function::show_face          = -1;
-int Uc_function::remove_face        = -1;
-int Uc_function::get_item_shape     = -1;
-int Uc_function::get_usecode_fun    = -1;
+int Uc_function::num_global_statics   = 0;
+int Uc_function::add_answer           = -1;
+int Uc_function::remove_answer        = -1;
+int Uc_function::push_answers         = -1;
+int Uc_function::pop_answers          = -1;
+int Uc_function::show_face            = -1;
+int Uc_function::remove_face          = -1;
+int Uc_function::show_face_slots[2]   = {-1, -1};
+int Uc_function::remove_face_slots[2] = {-1, -1};
+int Uc_function::get_item_shape       = -1;
+int Uc_function::get_usecode_fun      = -1;
 
 /*
  *  Create function, and add to global symbol table.
@@ -945,6 +947,14 @@ void Uc_function::set_intrinsics() {
 			show_face = static_cast<int>(i);
 		} else if (nm == "UI_remove_npc_face") {
 			remove_face = static_cast<int>(i);
+		} else if (nm == "UI_show_npc_face0") {
+			show_face_slots[0] = static_cast<int>(i);
+		} else if (nm == "UI_show_npc_face1") {
+			show_face_slots[1] = static_cast<int>(i);
+		} else if (nm == "UI_remove_npc_face0") {
+			remove_face_slots[0] = static_cast<int>(i);
+		} else if (nm == "UI_remove_npc_face1") {
+			remove_face_slots[1] = static_cast<int>(i);
 		} else if (nm == "UI_get_usecode_fun") {
 			get_usecode_fun = static_cast<int>(i);
 		} else if (nm == "UI_get_item_shape") {

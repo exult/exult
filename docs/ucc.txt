@@ -137,6 +137,22 @@ function prototypes, and integer constant declarations.
 	 npc->say("Hello Avatar,", " it is good to see you.~",
 			 "How may I help you?");
 
+	 Use '@0' or '@1' after 'say' to select a portrait slot explicitly:
+
+	 npc.say@0("Hello Avatar");
+	 npc->say@1("Hello again");
+
+	 The selector may also be an integer constant identifier, including a
+	 locally declared constant or enum member. Its value must be 0 or 1:
+
+	 const int top = 0;
+	 npc.say@top("Hello Avatar");
+
+	 The slot names are user-defined constants, not built-in names. Runtime
+	 variables and expressions after '@' are not supported. These forms
+	 display portrait frame 0, then say the supplied text, just like the
+	 ordinary 'npc.say(...)' form.
+
         3.x.2:  Add/Remove
 	------------------
 	These allow you to enable/disable possible choices that the
@@ -160,3 +176,23 @@ function prototypes, and integer constant declarations.
 	------------
 	While "npc->say()" will bring up a portrait of an NPC during a
 	conversation, "npc->hide()" will remove that portrait.
+
+	To clear a particular slot regardless of whose portrait occupies it,
+	use 'hide@0();' or 'hide@1();'. A constant identifier is also accepted,
+	as in 'hide@top();'. Slot clearing has no NPC receiver.
+
+        3.x.4:  Show
+	------------
+	Use 'npc.show(frame);' to display a portrait without saying or flushing
+	text. The frame expression is optional and defaults to 0:
+
+	 npc.show();
+	 npc->show(3);
+
+	Without a selector, the intrinsic chooses a slot automatically. Use
+	'npc.show@0(frame);' or 'npc.show@1(frame);' to select a slot explicitly.
+	The same literal-or-constant rules as for 'say@slot' apply, and the frame
+	may be omitted with a selector too:
+
+	 npc.show@top();
+	 npc.show@1(expression);

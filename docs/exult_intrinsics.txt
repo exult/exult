@@ -360,6 +360,8 @@ CONVERSATION INTRINSICS
 UI_show_npc_face(int face, int frnum)
 UI_show_npc_face(actor face, int frnum)
 face->show_npc_face(int frnum)
+face.show(int frnum)
+face.show()                         // frnum defaults to 0
 
     Displays a face onscreen for conversations. The face is a shape from
     'FACES.VGA'. This intrinsic finds a free slot to display the face in or uses
@@ -376,13 +378,18 @@ face->show_npc_face(int frnum)
     If 'face' is an NPC, the Exult Studio-set face for that NPC is displayed;
     the "default" face is equal to the NPC's number.
 
-    For the cases when 'frnum is zero, you should use Usecode C's 'npc.say()' to
+    Use 'npc.show(frnum)' to display the face without saying or flushing text.
+    The frame may be omitted and defaults to 0.
+
+    For the cases when 'frnum' is zero, you can use Usecode C's 'npc.say()' to
     display the NPC's face and display any text within the parenthesis (or set
     with 'message') too.
 
 UI_show_npc_face0(int face, int frnum)                               [SI, Exult]
 UI_show_npc_face0(actor face, int frnum)
 face->show_npc_face0(int frnum)
+face.show@0(int frnum)
+face.show@0()                       // frnum defaults to 0
 
     Displays a face onscreen for conversations. The face is a shape from
     'FACES.VGA'. This intrinsic always uses slot 0 for the new face.
@@ -398,13 +405,15 @@ face->show_npc_face0(int frnum)
     If 'face' is an NPC, the Exult Studio-set face for that NPC is displayed;
     the "default" face is equal to the NPC's number.
 
-    For the cases when 'frnum is zero, you should use Usecode C's 'npc.say()' to
-    display the NPC's face and display any text within the parenthesis (or set
-    with 'message') too.
+    Use 'npc.show@0(frnum)' to display the face without saying or flushing text.
+    The frame may be omitted and defaults to 0. Use 'npc.say@0(...)' to display
+    frame 0 and say text, including any pending 'message' text.
 
-UI_show_npc_face1(int face, int face)                                [SI, Exult]
-UI_show_npc_face1(actor face, int face)
-npc->show_npc_face1(int face)
+UI_show_npc_face1(int face, int frnum)                               [SI, Exult]
+UI_show_npc_face1(actor face, int frnum)
+npc->show_npc_face1(int frnum)
+face.show@1(int frnum)
+face.show@1()                       // frnum defaults to 0
 
     Displays a face onscreen for conversations. The face is a shape from
     'FACES.VGA'. This intrinsic always uses slot 1 for the new face.
@@ -420,9 +429,14 @@ npc->show_npc_face1(int face)
     If 'face' is an NPC, the Exult Studio-set face for that NPC is displayed;
     the "default" face is equal to the NPC's number.
 
-    For the cases when 'frnum is zero, you should use Usecode C's 'npc.say()' to
-    display the NPC's face and display any text within the parenthesis (or set
-    with 'message') too.
+    Use 'npc.show@1(frnum)' to display the face without saying or flushing text.
+    The frame may be omitted and defaults to 0. Use 'npc.say@1(...)' to display
+    frame 0 and say text, including any pending 'message' text.
+
+    In 'say@slot', 'show@slot', and 'hide@slot', the slot must be an integer
+    literal or an integer constant identifier whose value is 0 or 1. Constant
+    identifiers follow normal scope rules; names such as 'top' are not built in.
+    Both '.' and '->' are accepted for the NPC receiver on 'say' and 'show'.
 
 UI_remove_npc_face(int face)
 UI_remove_npc_face(actor face)
@@ -441,10 +455,12 @@ face->remove_npc_face()
     "default" face is equal to the NPC's number.
 
 UI_remove_npc_face0()                                                [SI, Exult]
+hide@0()
 
     Removes whatever face is being shown in slot 0.
 
 UI_remove_npc_face1()                                                [SI, Exult]
+hide@1()
 
     Removes whatever face is being shown in slot 1.
 

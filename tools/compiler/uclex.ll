@@ -459,6 +459,7 @@ endconv		return ENDCONV;
 user_choice	return CHOICE;
 nested		return NESTED;
 say		return SAY;
+show		return SHOW;
 remove		return REMOVE;
 add		return ADD;
 hide		return HIDE;

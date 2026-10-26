@@ -305,6 +305,7 @@ static_assert(std::is_trivially_copyable<Uc_parser_location>::value);
 %token CONVERSE "'converse'"
 %token NESTED "'nested'"
 %token SAY "'say'"
+%token SHOW "'show'"
 %token MESSAGE "'message'"
 %token RESPONSE "'response'"
 %token EVENT "'event'"
@@ -485,11 +486,13 @@ static_assert(std::is_trivially_copyable<Uc_parser_location>::value);
 %type <expr> expression primary declared_var_value opt_script_delay item
 %type <expr> script_command start_call new_expr class_expr
 %type <expr> nonclass_expr opt_delay appended_element int_literal
+%type <expr> opt_face_frame
 %type <expr> opt_primary_expression conv_expression repeat_count
 %type <intval> direction converse_options actor_frames egg_criteria
 %type <intval> opt_original assignment_operator const_int_val opt_const_int_val
 %type <intval> const_int_type int_cast dam_type opt_nest opt_int_value
 %type <intval> sign_int_literal const_int_expr opt_const_int_expr addressof
+%type <intval> face_slot_value face_slot opt_face_slot
 %type <funid> opt_funid
 %type <membersel> member_selector
 %type <intlist> string_list response_expression
@@ -1072,6 +1075,12 @@ simple_statement:
 		{
 		Uc_location::Context diagnostic_context(@$.loc());
 		$$ = new Uc_message_statement($3);
+		}
+	| HIDE face_slot '(' ')' ';'
+		{
+		Uc_location::Context diagnostic_context(@$.loc());
+		$$ = new Uc_call_statement(new Uc_call_expression(
+				Uc_function::get_remove_face($2), new Uc_array_expression(), cur_fun));
 		}
 	| answer_statement
 	| ENDCONV ';'
@@ -2048,17 +2057,23 @@ function_call_statement:
 
 special_method_call_statement:
 					/* Have 'primary' say something.*/
-	primary hierarchy_tok SAY '(' opt_nonclass_expr_list ')' ';'
+	primary hierarchy_tok SAY opt_face_slot '(' opt_nonclass_expr_list ')' ';'
 		{
 		Uc_location::Context diagnostic_context(@$.loc());
 		auto* stmts = new Uc_block_statement();
 		/* Set up 'show' call.		*/
 		stmts->add(new Uc_call_statement(new Uc_call_expression(
-				Uc_function::get_show_face(),
+				Uc_function::get_show_face($4),
 				new Uc_array_expression($1, new Uc_int_expression(0)),
 				cur_fun)));
-		stmts->add(new Uc_say_statement($5));
+		stmts->add(new Uc_say_statement($6));
 		$$ = stmts;
+		}
+	| primary hierarchy_tok SHOW opt_face_slot '(' opt_face_frame ')' ';'
+		{
+		Uc_location::Context diagnostic_context(@$.loc());
+		$$ = new Uc_call_statement(new Uc_call_expression(
+				Uc_function::get_show_face($4), new Uc_array_expression($1, $6), cur_fun));
 		}
 	| primary hierarchy_tok HIDE '(' ')' ';'
 		{
@@ -2071,6 +2086,48 @@ special_method_call_statement:
 		{
 		Uc_location::Context diagnostic_context(@$.loc());
 		$$ = new Uc_call_statement($1);
+		}
+	;
+
+opt_face_frame:
+	nonclass_expr
+	| %empty
+		{ $$ = new Uc_int_expression(0); }
+	;
+
+opt_face_slot:
+	face_slot
+	| %empty
+		{ $$ = -1; }
+	;
+
+face_slot:
+	'@' face_slot_value
+		{
+		Uc_location::Context diagnostic_context(@$.loc());
+		if ($2 < 0 || $2 > 1) {
+			@2.loc().error("portrait slot must be 0 or 1");
+			$$ = 0;
+		} else {
+			$$ = $2;
+		}
+		}
+	;
+
+face_slot_value:
+	sign_int_literal
+	| declared_sym
+		{
+		Uc_location::Context diagnostic_context(@$.loc());
+		auto* sym = dynamic_cast<Uc_const_int_symbol*>($1);
+		if (sym) {
+			$$ = sym->get_value();
+		} else {
+			if (!$1->error_placeholder) {
+				@1.loc().error("portrait slot '%s' is not an integer constant", $1->get_name());
+			}
+			$$ = 0;
+		}
 		}
 	;
 
