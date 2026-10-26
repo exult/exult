@@ -1568,7 +1568,7 @@ using UsecodeIntrinsicFn = Usecode_value (Usecode_internal::*)(tcb::span<Usecode
 #	endif
 #endif
 
-#define USECODE_INTRINSIC_PTR(NAME) {&Usecode_internal::UI_##NAME, TO_STRING(NAME)}
+#define USECODE_INTRINSIC_PTR(NAME) {&Usecode_internal::UI_##NAME, TO_STRING(NAME), Usecode_internal::min_args_##NAME}
 
 // Black Gate Intrinsic Function Table
 Usecode_internal::IntrinsicTableEntry Usecode_internal::intrinsics_bg[] = {
@@ -1611,10 +1611,14 @@ Usecode_value Usecode_internal::call_intrinsic(
 	} else {
 		table = intrinsics_bg;
 	}
-	if (static_cast<size_t>(intrinsic) <= table.size()) {
+	if (static_cast<size_t>(intrinsic) < table.size()) {
 		auto&                    table_entry = table[intrinsic];
 		const UsecodeIntrinsicFn func        = table_entry.func;
 		const char*              name        = table_entry.name;
+		if (static_cast<size_t>(num_parms) < table_entry.min_args) {
+			cerr << name << ": Expected at least " << table_entry.min_args << " arguments, got " << num_parms << endl;
+			return no_ret;
+		}
 		return Execute_Intrinsic(func, name, intrinsic, parms);
 	}
 	return no_ret;

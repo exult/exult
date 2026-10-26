@@ -1,0 +1,142 @@
+#!/usr/bin/env python3
+"""Compile and run isolated intrinsic argument checks: python3 test_intrinsic_args.py [c++]."""
+
+from pathlib import Path
+import os
+import re
+import subprocess
+import sys
+import tempfile
+
+
+ROOT = Path(__file__).resolve().parents[2]
+
+
+def main():
+    if os.name == 'nt':
+        import ctypes
+        ctypes.windll.kernel32.SetErrorMode(3)
+    header = (ROOT / 'usecode/ucinternal.h').read_text()
+    source = (ROOT / 'usecode/ucinternal.cc').read_text()
+    intrinsics = (ROOT / 'usecode/intrinsics.cc').read_text()
+    declarations = re.findall(r'^\s*USECODE_INTRINSIC_DECL\((\w+), (\d+)\);', header, re.M)
+    dispatcher = re.search(r'^Usecode_value Usecode_internal::call_intrinsic\(.*?^\}', source, re.M | re.S)[0]
+    entry = re.search(r'\tstruct IntrinsicTableEntry \{.*?\n\t\};', header, re.S)[0]
+    table_macro = re.search(r'^#define USECODE_INTRINSIC_PTR\(NAME\).*?(?<!\\)\n', source, re.M | re.S)[0]
+    real = {'remove_party_items', 'add_party_items', 'remove_cont_items', 'add_cont_items', 'si_path_run_usecode'}
+    code = r'''
+#include "span.h"
+#include <cassert>
+#include <cstdint>
+#include <iostream>
+#include <iterator>
+#include <limits>
+#include <vector>
+using uint16 = std::uint16_t;
+using std::cerr;
+using std::endl;
+struct Usecode_value {
+    int value = 0;
+    Usecode_value() = default;
+    explicit Usecode_value(int n) : value(n) {}
+    int get_int_value() const { return value; }
+};
+Usecode_value no_ret(-1);
+enum { BLACK_GATE, SERPENT_ISLE };
+struct Game {
+    static inline int game = BLACK_GATE;
+    static inline bool beta = false;
+    static int get_game_type() { return game; }
+    static bool is_si_beta() { return beta; }
+};
+namespace Schedule { constexpr int wait = 0; }
+namespace Obj_flags { constexpr int asleep = 1, paralyzed = 2; }
+struct Actor {
+    int get_schedule_type() { return 0; }
+    bool get_flag(int) { return false; }
+    void clear_flag(int) {}
+};
+struct Usecode_internal {
+    using UsecodeIntrinsicFn = Usecode_value (Usecode_internal::*)(tcb::span<Usecode_value>);
+    std::vector<Usecode_value> stack;
+    bool executed = false;
+    int always = -1;
+    Usecode_value pop() { assert(!stack.empty()); auto v = stack.back(); stack.pop_back(); return v; }
+    Usecode_value call_intrinsic(int, int);
+    Actor* get_item(Usecode_value&) { return nullptr; }
+    Actor* as_actor(Actor* n) { return n; }
+    Usecode_value remove_party_items(Usecode_value&, Usecode_value&, Usecode_value&, Usecode_value&) { return Usecode_value(4); }
+    Usecode_value remove_cont_items(Usecode_value&, Usecode_value&, Usecode_value&, Usecode_value&, Usecode_value&) { return Usecode_value(5); }
+    Usecode_value add_party_items(Usecode_value&, Usecode_value&, Usecode_value&, Usecode_value&, Usecode_value& flag) { return flag; }
+    Usecode_value add_cont_items(Usecode_value&, Usecode_value&, Usecode_value&, Usecode_value&, Usecode_value&, Usecode_value& flag) { return flag; }
+    bool path_run_usecode(Usecode_value&, Usecode_value&, Usecode_value&, Usecode_value&, Usecode_value&, bool, bool flag) { always = flag; return true; }
+    Usecode_value Execute_Intrinsic(UsecodeIntrinsicFn fn, const char*, int, tcb::span<Usecode_value> args) {
+        executed = true;
+        return (this->*fn)(args);
+    }
+'''
+    code += entry + '\n'
+    for name, count in declarations:
+        code += f'static constexpr unsigned min_args_{name} = {count};\n'
+        code += f'Usecode_value UI_{name}(tcb::span<Usecode_value> parms)'
+        code += ';\n' if name in real else ' { return Usecode_value(static_cast<int>(parms.size())); }\n'
+    code += '''static IntrinsicTableEntry intrinsics_bg[], intrinsics_si[], intrinsics_sib[];
+};
+#define TO_STRING(NAME) #NAME
+'''
+    code += table_macro
+    for table, filename in [('bg', 'bgintrinsics.h'), ('si', 'siintrinsics.h'), ('sib', 'sibetaintrinsics.h')]:
+        code += f'Usecode_internal::IntrinsicTableEntry Usecode_internal::intrinsics_{table}[] = {{\n#include "{filename}"\n}};\n'
+    code += dispatcher + '\n'
+    code += '#define USECODE_INTRINSIC(NAME) Usecode_value Usecode_internal::UI_##NAME(tcb::span<Usecode_value> parms)\n'
+    for name in sorted(real):
+        code += re.search(r'^USECODE_INTRINSIC\(' + name + r'\) \{.*?^\}', intrinsics, re.M | re.S)[0] + '\n'
+    code += r'''
+int main() {
+    Usecode_internal vm;
+    for (int game = 0; game < 3; ++game) {
+        Game::game = game == 0 ? BLACK_GATE : SERPENT_ISLE;
+        Game::beta = game == 2;
+        auto table = game == 0 ? tcb::span(Usecode_internal::intrinsics_bg)
+            : game == 1 ? tcb::span(Usecode_internal::intrinsics_si) : tcb::span(Usecode_internal::intrinsics_sib);
+        for (size_t i = 0; i < table.size(); ++i) {
+            if (!table[i].min_args) { continue; }
+            vm.stack.assign(table[i].min_args - 1, Usecode_value());
+            vm.executed = false;
+            assert(vm.call_intrinsic(static_cast<int>(i), static_cast<int>(vm.stack.size())).value == -1);
+            assert(!vm.executed && vm.stack.empty());
+        }
+        for (int id : {-1, static_cast<int>(table.size())}) {
+            vm.executed = false;
+            assert(vm.call_intrinsic(id, 0).value == -1);
+            assert(!vm.executed);
+        }
+    }
+    std::vector<Usecode_value> args(6);
+    assert(vm.UI_remove_party_items({args.data(), 4}).value == 4);
+    assert(vm.UI_remove_cont_items({args.data(), 5}).value == 5);
+    assert(vm.UI_add_party_items({args.data(), 4}).value == 0);
+    args[4] = Usecode_value(1);
+    assert(vm.UI_add_party_items({args.data(), 5}).value == 1);
+    assert(vm.UI_add_cont_items({args.data(), 5}).value == 0);
+    args[5] = Usecode_value(1);
+    assert(vm.UI_add_cont_items(args).value == 1);
+    vm.UI_si_path_run_usecode({args.data(), 5}); assert(vm.always == 0);
+    vm.UI_si_path_run_usecode(args); assert(vm.always == 1);
+}
+'''
+    with tempfile.TemporaryDirectory(prefix='exult-intrinsic-args-') as directory:
+        path = Path(directory)
+        cpp = path / 'test.cc'
+        exe = path / ('test.exe' if os.name == 'nt' else 'test')
+        cpp.write_text(code)
+        subprocess.run([sys.argv[1] if len(sys.argv) > 1 else os.environ.get('CXX', 'c++'), '-std=c++17',
+            '-I' + str(ROOT / 'headers'), '-I' + str(ROOT / 'usecode'), str(cpp), '-o', str(exe)], check=True)
+        result = subprocess.run([str(exe)], capture_output=True, text=True, timeout=15)
+        if result.returncode:
+            raise RuntimeError(result.stdout + result.stderr)
+    print('Intrinsic argument checks passed')
+
+
+if __name__ == '__main__':
+    main()
