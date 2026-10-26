@@ -909,13 +909,14 @@ USECODE_INTRINSIC(get_cont_items) {
 
 USECODE_INTRINSIC(remove_party_items) {
 	// Remove items(quantity, item, ??quality?? (-359), frame(-359), T/F).
-	return remove_party_items(parms[0], parms[1], parms[2], parms[3], parms[4]);
+	return remove_party_items(parms[0], parms[1], parms[2], parms[3]);
 }
 
 USECODE_INTRINSIC(add_party_items) {
 	// Add items(num, item, ??quality?? (-359), frame (or -359), T/F).
 	// Returns array of NPC's (->'s) who got the items.
-	Usecode_value u(add_party_items(parms[0], parms[1], parms[2], parms[3], parms[4]));
+	Usecode_value temporary = parms.size() > 4 ? parms[4] : Usecode_value(0);
+	Usecode_value u(add_party_items(parms[0], parms[1], parms[2], parms[3], temporary));
 	return u;
 }
 
@@ -3418,13 +3419,14 @@ USECODE_INTRINSIC(set_npc_id) {
 
 USECODE_INTRINSIC(add_cont_items) {
 	// Add items(num, item, ??quality?? (-359), frame (or -359), T/F).
-	return add_cont_items(parms[0], parms[1], parms[2], parms[3], parms[4], parms[5]);
+	Usecode_value temporary = parms.size() > 5 ? parms[5] : Usecode_value(0);
+	return add_cont_items(parms[0], parms[1], parms[2], parms[3], parms[4], temporary);
 }
 
 // Is this SI Only
 USECODE_INTRINSIC(remove_cont_items) {
 	// Add items(num, item, ??quality?? (-359), frame (or -359), T/F).
-	return remove_cont_items(parms[0], parms[1], parms[2], parms[3], parms[4], parms[5]);
+	return remove_cont_items(parms[0], parms[1], parms[2], parms[3], parms[4]);
 }
 
 /*
@@ -3500,8 +3502,8 @@ USECODE_INTRINSIC(end_conversation) {
 USECODE_INTRINSIC(si_path_run_usecode) {
 	// exec(npc, loc(x,y,z), eventid, itemref, usecode#, flag_always).
 	// Schedule Npc to walk to loc and then execute usecode.
-	const int always = parms[5].get_int_value();
-	Actor*    npc    = as_actor(get_item(parms[0]));
+	const bool always = parms.size() > 5 && parms[5].get_int_value() != 0;
+	Actor*     npc    = as_actor(get_item(parms[0]));
 	// Wake up NPCs so they can move.
 	if (npc && npc->get_schedule_type() == Schedule::wait) {
 		if (npc->get_flag(Obj_flags::asleep)) {
@@ -3511,7 +3513,7 @@ USECODE_INTRINSIC(si_path_run_usecode) {
 			npc->clear_flag(Obj_flags::paralyzed);
 		}
 	}
-	path_run_usecode(parms[0], parms[1], parms[4], parms[3], parms[2], true, always != 0);
+	path_run_usecode(parms[0], parms[1], parms[4], parms[3], parms[2], true, always);
 	return no_ret;
 }
 

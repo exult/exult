@@ -1177,10 +1177,8 @@ Usecode_value Usecode_internal::remove_party_items(
 		Usecode_value& quantval,    // Quantity to remove.
 		Usecode_value& shapeval,    // Shape.
 		Usecode_value& qualval,     // Quality??
-		Usecode_value& frameval,    // Frame.
-		Usecode_value& flagval      // Flag??
+		Usecode_value& frameval     // Frame.
 ) {
-	ignore_unused_variable_warning(flagval);
 	int                 quantity = quantval.need_int_value();
 	const int           shapenum = shapeval.get_int_value();
 	const int           framenum = frameval.get_int_value();
@@ -1324,13 +1322,12 @@ Usecode_value Usecode_internal::remove_cont_items(
 		Usecode_value& quantval,     // Quantity to add.
 		Usecode_value& shapeval,     // Shape.
 		Usecode_value& qualval,      // Quality.
-		Usecode_value& frameval,     // Frame.
-		Usecode_value& flagval       // Flag??
+		Usecode_value& frameval      // Frame.
 ) {
 	Game_object* obj = get_item(container);
 	if (!obj) {
 		if (container.get_int_value() == -357) {
-			return remove_party_items(quantval, shapeval, qualval, frameval, flagval);
+			return remove_party_items(quantval, shapeval, qualval, frameval);
 		}
 		return Usecode_value(0);
 	}

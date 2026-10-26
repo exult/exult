@@ -304,6 +304,7 @@ npc->si_path_run_usecode(int pos[], int event, object obj, function fun, bool
              will be called even if the destination cannot be reached. The
              set_path_failure intrinsic will override this flag in either case.
              This failure usecode will use event 'SI_PATH_FAILURE'.
+             If omitted, this flag defaults to false.
 
 UI_set_path_failure(function fun, object obj, int event)
 
@@ -860,6 +861,7 @@ actor[] UI_add_party_items(int count, int shape, int qual, int frame, bool temp)
     frame    What frame will be used for the created objects. Can be FRAME_ANY =
              -359 to create items of any frame.
     temp     Flag indicating whether the created items are temporary or not.
+             If omitted, it defaults to false.
 
   Return:
     Returns an array of object references for all party members that received
@@ -1180,8 +1182,7 @@ int obj->remove_cont_items(int count, int shape, int qual, int frame, bool unk)
 
     Removes 'count' objects with shape 'shape', quality 'qual' and frame 'frame'
     that are contained by 'obj'. 'unk' is an unknown flag which is ignored by
-    Exult; I *think* it is safe to omit it from the parameter list, but I am not
-    sure. 'qual' and 'frame' can be wildcards:
+    Exult and can be omitted. 'qual' and 'frame' can be wildcards:
 
         qual                     frame
         QUALITY_ANY    = -359    FRAME_ANY      = -359

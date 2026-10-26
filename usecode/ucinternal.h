@@ -145,8 +145,7 @@ class Usecode_internal : public Usecode_machine {
 	Usecode_value count_objects(Usecode_value& objval, Usecode_value& shapeval, Usecode_value& qualval, Usecode_value& frameval);
 	Usecode_value get_objects(Usecode_value& objval, Usecode_value& shapeval, Usecode_value& qualval, Usecode_value& frameval);
 	Usecode_value remove_party_items(
-			Usecode_value& quantval, Usecode_value& shapeval, Usecode_value& qualval, Usecode_value& frameval,
-			Usecode_value& flagval);
+			Usecode_value& quantval, Usecode_value& shapeval, Usecode_value& qualval, Usecode_value& frameval);
 	Usecode_value add_party_items(
 			Usecode_value& quantval, Usecode_value& shapeval, Usecode_value& qualval, Usecode_value& frameval,
 			Usecode_value& temporary);
@@ -155,7 +154,7 @@ class Usecode_internal : public Usecode_machine {
 			Usecode_value& frameval, Usecode_value& temporary);
 	Usecode_value remove_cont_items(
 			Usecode_value& container, Usecode_value& quantval, Usecode_value& shapeval, Usecode_value& qualval,
-			Usecode_value& frameval, Usecode_value& flagval);
+			Usecode_value& frameval);
 	Game_object_shared create_object(int shapenum, bool equip);
 
 	bool path_run_usecode(
