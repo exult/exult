@@ -5,6 +5,8 @@ ANDROID_APK=$(abs_builddir)/app/build/outputs/apk/$(APK_BUILD_TYPE)/app-$(APK_BU
 androiddir = $(datadir)/exult
 android_DATA=$(ANDROID_APK)
 
+EXTRA_DIST = ci-sign-apk.sh
+
 # These are shared with iOS, but need to be staged in the android tree and are not allowed to have
 # a '-' in the filename.
 DPAD_CENTER = \

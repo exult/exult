@@ -58,6 +58,15 @@ jobs:
       - name: Checkout code
         if: ${{ steps.activity_check.outputs.repo_alive == 'true' }}
         uses: actions/checkout@v6
+      - name: Check Android signing configuration
+        if: ${{ steps.activity_check.outputs.repo_alive == 'true' }}
+        id: signing
+        env:
+          ANDROID_SIGNING_KEY: ${{ secrets.ANDROID_SIGNING_KEY }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: bash android/ci-sign-apk.sh check
       - name: Pre debug build clean
         if: ${{ steps.activity_check.outputs.repo_alive == 'true' }}
         run: |
@@ -112,6 +121,9 @@ jobs:
           cd ./../data && make clean && make -j2
           cd ./../android && make clean && make -j2
           $ANDROID_SDK_ROOT/build-tools/34.0.0/zipalign -v -p 4 ./app/build/outputs/apk/release/app-release-unsigned.apk ./app/build/outputs/apk/release/app-release-unsigned-aligned.apk
+      - name: Save unsigned release artifact
+        if: ${{ steps.activity_check.outputs.repo_alive == 'true' }}
+        run: cp ./../build/android/app/build/outputs/apk/release/app-release-unsigned-aligned.apk ./android-snapshot/exult-snapshot-unsigned.apk
       - name: Post Release Build Cleanup
         if: ${{ steps.activity_check.outputs.repo_alive == 'true' }}
         run: |
@@ -129,20 +141,19 @@ jobs:
           df -h
           
       - name: Sign APK
-        if: ${{ steps.activity_check.outputs.repo_alive == 'true' }}
-        uses: noriban/sign-android-release@v5.1
-        id: sign_app
-        with:
-          releaseDirectory: ./../build/android/app/build/outputs/apk/release
-          signingKeyBase64: ${{ secrets.ANDROID_SIGNING_KEY }}
-          alias: ${{ secrets.ANDROID_KEY_ALIAS }}
-          keyStorePassword: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
-          keyPassword: ${{ secrets.ANDROID_KEY_PASSWORD }}
-      - name: Save release artifact
-        if: ${{ steps.activity_check.outputs.repo_alive == 'true' }}
-        run: cp ${{steps.sign_app.outputs.signedReleaseFile}} ./android-snapshot/exult-snapshot-signed.apk
+        if: ${{ steps.activity_check.outputs.repo_alive == 'true' && steps.signing.outputs.enabled == 'true' }}
+        env:
+          ANDROID_SIGNING_KEY: ${{ secrets.ANDROID_SIGNING_KEY }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          bash android/ci-sign-apk.sh sign ./../build/android/app/build/outputs/apk/release/app-release-unsigned-aligned.apk ./android-snapshot/exult-snapshot-signed.apk
+          rm -f ./android-snapshot/exult-snapshot-unsigned.apk
       - name: Upload artifacts
+        if: ${{ !cancelled() }}
         uses: actions/upload-artifact@v7
         with:
           name: "android snapshot"
           path: android-snapshot
+          if-no-files-found: ignore
