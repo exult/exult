@@ -22,7 +22,6 @@
  *	Author: Marzo Junior
  *	Last Modified: 2006-02-27
  */
-
 void ZaurielJournal shape#(0x44E) () {
 	var quality = get_item_quality();
 
@@ -38,10 +37,7 @@ void ZaurielJournal shape#(0x44E) () {
 		if (quality == 1) {
 			UI_close_gumps();
 			gflags[READ_ZAURIEL_JOURNAL] = true;
-			say("~~ ~~Zauriel's Journal~~",
-				"~~by Zauriel~~",
-				"~~Part 2*Year 343",
-				"~~April 7",
+			say("~~ ~~Zauriel's Journal~~", "~~by Zauriel~~", "~~Part 2*Year 343", "~~April 7",
 				"~~    My plans are coming close to fruition. The pieces are moving in the board, and soon the coup will come. With the powerful spells under my command, I have no doubt that Lord British will fall prey to my magics! I will be the Overlord of Britannia! Mwahahaha. MWAHAHAHAHA!!!*");
 			say("April 8",
 				"~~    YES! Another victory! I have now learned the secret art of shapeshifting from that FOOL Erethian! I can now become a dragon! YES! HAHA! Lord British is doomed! Mwahahaha!!!*April 9",
@@ -66,23 +62,19 @@ void ZaurielJournal shape#(0x44E) () {
 				"~~    The child is extremely dangerous -- but I cannot abandon her to her death. Maybe there is some way to shield her from the distorted Ether?*");
 			say("December 26",
 				"~~    I have decided upon a name for the baby: I shall call her Laurianna. It seems to fit her, somehow...*");
-			say("Year 347",
-				"~~March 12",
+			say("Year 347", "~~March 12",
 				"~~    I have discovered a marvelous material -- which people seem to call Blackrock nowadays. It has precisely the sort of capabilities that I need, being a very effective at blocking the Ether waves. Maybe I can construct some sort of helmet to protect my daughter, or maybe even control the destruction she causes.*");
 			say("July 9",
 				"~~    I have found an arrangement of Blackrock which nullifies the destruction caused by my daughter. But shaping the blackrock has proven to be beyond my capabilities...*");
 			say("September 12",
 				"~~    It appears that the damaged Ether is the source of my sanity. Recently, I repeatedly found myself wandering randomly, killing things for no reason at all... this behavior not appropriate for a dragon of my stature.",
 				"~~    The longer I spend protected from the damaged Ether, the longer I stay in this strange state of mind... I wonder what might happen if I spend too much time protected from the Ether?*");
-			say("Year 350",
-				"~~June 20",
+			say("Year 350", "~~June 20",
 				"~~    I, the great Lord Zauriel, have attained some success in working with the Blackrock. It is still beyond my capabilities to craft an effective helmet from it, although I have uncovered a way to distill a potion from it that protects my daughter's damaged mind from the damaged Ether. Apparently, the potion is deadly poison to all save her, therefore I shall not even write it to my journal.*");
-			say("Year 356",
-				"~~February 18",
+			say("Year 356", "~~February 18",
 				"~~    Today is my birthday, and I have been graced with visions of what will come to pass. I put them forth here, up and until the moment of my death by the hands of the mighty Avatar -- who shall return to save Britannia from the mounting threat and will restore the Ether to normal in the process. It is perhaps poetic justice that I should perish by the hands of such a valiant mortal, due to all the transgressions I have made in the past and all the woe and destruction I have caused.",
 				"~~    I, the great Zauriel, shall be slain by the hands of a most worthy opponent, the same one that slew Mondain, Minax and Exodus! My name will go down into history due to the fierce battle that will ensue, and I shall finally be able to cure my daughter! I must now only uncover the spells I shall have to weave to finally cure my hatchling from the insanity that afflicts her.*");
-			say("Year 361",
-				"~~August 31",
+			say("Year 361", "~~August 31",
 				"~~    Today I shall make the final preparations to cure my daughter. Many mighty spells I, Lord Zauriel, shall weave to take effect upon my demise, using my very essence to heal my daughter's damaged mind. And it could not have been in a better time, for the Avatar shall be returning to Britannia any moment now, even as I have foreseen. All I have to do now is to wait 'distracted' and 'weakened' until that inept mage attacks and kidnaps my beloved daughter, thus setting in motion the events that will result in my well deserved death.*");
 		}
 
@@ -104,7 +96,8 @@ void ZaurielJournal shape#(0x44E) () {
 
 		//Use the book's quality to determine the remark:
 		if (quality == 1) {
-			say("@There are pages and pages of this drivel. The man seems to be totally insane, even to the point of including maniacal laughter in writing...");
+			say(
+				"@There are pages and pages of this drivel. The man seems to be totally insane, even to the point of including maniacal laughter in writing...");
 			say("@Maybe we should skip ahead a little bit...@");
 		} else if (quality == 2) {
 			var msg;
@@ -120,10 +113,12 @@ void ZaurielJournal shape#(0x44E) () {
 				msg = "the Avatar, Iolo, Shamino and Dupre";
 			}
 			say("@Zauriel also developed a strong interest in ", msg,
-			    " while in the Lycaeum. He seems to be completely obsessed...@");
+				" while in the Lycaeum. He seems to be completely obsessed...@");
 		} else if (quality == 3) {
-			say("@Several of the next pages include detailed accounts of everything we did ever since thou didst return to Britannia, Avatar!");
-			say("@It is unnerving to think that he knew all of this years before the events actually happened.");
+			say(
+				"@Several of the next pages include detailed accounts of everything we did ever since thou didst return to Britannia, Avatar!");
+			say(
+				"@It is unnerving to think that he knew all of this years before the events actually happened.");
 			say("@But why, oh why, did he not write the things thou woudst do -after- he died?@");
 			set_item_quality(1);
 			return;

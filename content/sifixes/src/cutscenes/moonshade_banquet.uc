@@ -16,12 +16,11 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
-
-void MoonshadeBanquet shape#(0x32E)() {
+void MoonshadeBanquet shape#(0x32E) () {
 	if (FILBERCIO->get_npc_id() == 13) {
 		try {
 			MoonshadeBanquet.original();
-		} catch() {
+		} catch () {
 			if (gflags[POTHOS_RETURNED]) {
 				var joinables = AVATAR->find_nearby(SHAPE_ANY, 45, MASK_NPC + MASK_INVISIBLE);
 				for (npc in joinables) {

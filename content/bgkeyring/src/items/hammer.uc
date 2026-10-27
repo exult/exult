@@ -19,7 +19,6 @@
  *	Author: Marzo Junior (reorganizing/updating code by Alun Bestor)
  *	Last Modified: 2006-03-19
  */
-
 void Hammer shape#(0x26F) () {
 	//Hammer was doubleclicked, use it on something
 	if (event == DOUBLECLICK) {
@@ -33,7 +32,6 @@ void Hammer shape#(0x26F) () {
 		UI_close_gumps();
 		struct<ObjPos> target = UI_click_on_item();
 		var target_shape = target->get_item_shape();
-
 		var swordblank;
 		var anvil;
 		//used on swordblank, make sure the swordblank is on an anvil

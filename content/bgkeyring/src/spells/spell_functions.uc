@@ -23,42 +23,41 @@
  *	Author: Marzo Junior
  *	Last Modified: 2006-02-27
  */
-
-const int SCRIPT_FACE_DIR			= 0x59;
-const int SCRIPT_NPC_FRAME			= 0x61;
+const int SCRIPT_FACE_DIR = 0x59;
+const int SCRIPT_NPC_FRAME = 0x61;
 
 //Cool new spell stuff:
 enum npc_wizard_flags {
 	//New spell effects:
-	CONFUSION						= 40,	//Under the effects of Consufion spell
-	DEATH_PROTECTION				= 41,	//Protected from death spells
-	MAGIC_PROTECTION				= 42,	//Protected from spells -- e.g., LB's crown
+	CONFUSION = 40,  //Under the effects of Consufion spell
+	DEATH_PROTECTION = 41,  //Protected from death spells
+	MAGIC_PROTECTION = 42,  //Protected from spells -- e.g., LB's crown
 	//Spellcasting power:
-	ARCHWIZARD						= 45,	//Cheat mode
-	MAGE_CLASS						= 46,	//Full spellcasting capabilities
-	BARD_CLASS						= 47,	//1/2 level spellcasting
-	WARMAGE							= 48,	//Combat spells cost half as much mana (round up)
-	SUMMONER						= 49,	//Summoning spells cost half as much mana (round up)
-	HEALER							= 50,	//Casts healing as if level 8, no death spells
-	NECROMANCER						= 51,	//Casts death as if level 8, no healing spells
+	ARCHWIZARD = 45,  //Cheat mode
+	MAGE_CLASS = 46,  //Full spellcasting capabilities
+	BARD_CLASS = 47,  //1/2 level spellcasting
+	WARMAGE = 48,  //Combat spells cost half as much mana (round up)
+	SUMMONER = 49,  //Summoning spells cost half as much mana (round up)
+	HEALER = 50,  //Casts healing as if level 8, no death spells
+	NECROMANCER = 51,  //Casts death as if level 8, no healing spells
 	//The next constants are used to control spellcaster AI; the AI is NOT
 	//IMPLEMENTED YET.
-	AI_CAST_DONT_CAST				= 52,	//AI will not cast any spells
-	AI_CAST_VERY_FEW				= 53,	//AI will cast every 32-36 ticks
-	AI_CAST_FEW						= 54,	//AI will cast every 24-28 ticks
+	AI_CAST_DONT_CAST = 52,  //AI will not cast any spells
+	AI_CAST_VERY_FEW = 53,  //AI will cast every 32-36 ticks
+	AI_CAST_FEW = 54,  //AI will cast every 24-28 ticks
 	//AI_CAST_DEFAULT						//AI will cast every 16-20 ticks
-	AI_CAST_MANY					= 55,	//AI will cast every 8-12 ticks
-	AI_HEALING						= 56,	//AI will try to cast healing spells first
-	AI_SUPPORT						= 57,	//AI will try to cast support spells first
-	AI_OFFENSE						= 58,	//AI will try to cast damaging combat first
-	AI_SUMMON						= 59,	//AI will try to summon creatures first
-	AI_ENCHANT						= 60,	//AI will try to cast non-damage combat spells
-	AI_DEATH						= 61,	//AI will try to cast death spells first
-	AI_MISDIRECTION					= 62,	//AI will try to use invisibility+blink+mass confusion very early and often
-	AI_TEMPORARY					= 63	//AI will stop casting when it runs out of targets
+	AI_CAST_MANY = 55,  //AI will cast every 8-12 ticks
+	AI_HEALING = 56,  //AI will try to cast healing spells first
+	AI_SUPPORT = 57,  //AI will try to cast support spells first
+	AI_OFFENSE = 58,  //AI will try to cast damaging combat first
+	AI_SUMMON = 59,  //AI will try to summon creatures first
+	AI_ENCHANT = 60,  //AI will try to cast non-damage combat spells
+	AI_DEATH = 61,  //AI will try to cast death spells first
+	AI_MISDIRECTION = 62,  //AI will try to use invisibility+blink+mass confusion very early and often
+	AI_TEMPORARY = 63  //AI will stop casting when it runs out of targets
 };
 
-void greatDouseIgnite (var obj, var shapes) {
+void greatDouseIgnite(var obj, var shapes) {
 	var dist = 25;
 	for (obj in shapes) {
 		//For each shape # in the array,
@@ -174,7 +173,7 @@ void spellCenteredSpriteEffect object#() () {
 
 void spellOffCenterSpriteEffect object#() () {
 	struct<Position> pos = get_object_position();
-	UI_sprite_effect(event, (pos.x - 2), (pos.y - 2), 0, 0, 0, -1);
+	UI_sprite_effect(event,(pos.x - 2),(pos.y - 2), 0, 0, 0, -1);
 }
 
 void spellCreateFoodEffect object#() () {
@@ -183,9 +182,7 @@ void spellCreateFoodEffect object#() () {
 	if (!get_item_flag(IN_PARTY)) {
 		return;
 	}
-
 	var party = UI_get_party_list();
-
 	for (npc in party) {
 		struct<Position> pos = npc->get_object_position();
 		var fooditem = UI_create_new_object(SHAPE_FOOD);
@@ -205,11 +202,10 @@ void spellShowMap object#() () {
 	UI_display_map();
 }
 
-
 void spellProtectAllEffect object#() () {
 	UI_play_sound_effect(109);
 	struct<Position> pos = get_object_position();
-	UI_sprite_effect(ANIMATION_TELEPORT, (pos.x - 2), (pos.y - 2), 0, 0, 0, -1);
+	UI_sprite_effect(ANIMATION_TELEPORT,(pos.x - 2),(pos.y - 2), 0, 0, 0, -1);
 	var targets = getFriendlyTargetList(item, 25);
 	for (npc in targets) {
 		npc->set_item_flag(PROTECTION);
@@ -225,7 +221,8 @@ void spellSwarmEffect object#() () {
 }
 
 void spellConjureEffect object#() () {
-	var conjurables = [SHAPE_BIRD, SHAPE_RABBIT, SHAPE_RAT, SHAPE_FOX, SHAPE_SNAKE, SHAPE_DEER, SHAPE_WOLF];
+	var conjurables = [SHAPE_BIRD, SHAPE_RABBIT, SHAPE_RAT, SHAPE_FOX, SHAPE_SNAKE, SHAPE_DEER,
+		SHAPE_WOLF];
 	var arraysize = UI_get_array_size(conjurables);
 	var npclevel = getNPCLevel(item);
 	if (npclevel > arraysize) {
@@ -239,7 +236,6 @@ void spellConjureEffect object#() () {
 		minroll = 1;
 	}
 	var rand = UI_die_roll(minroll, npclevel);
-
 	while (rand > 0) {
 		rand -= 1;
 		var rand2 = UI_die_roll(minroll, npclevel);
@@ -273,7 +269,8 @@ void spellCauseDancing object#() () {
 			UI_sprite_effect(ANIMATION_SPARKLES, pos.x, pos.y, 0, 0, 0, -1);
 			setNonpartySchedule(npc, DANCE);
 			npc->set_item_flag(IN_ACTION);
-			var barks = ["@Dance!@", "@Yeah!@", "@Huh!@", "@Oh, yeah!@", "@I'm bad!@", "@Boogie!@", "@Yow!@"];
+			var barks = ["@Dance!@", "@Yeah!@", "@Huh!@", "@Oh, yeah!@", "@I'm bad!@", "@Boogie!@",
+				"@Yow!@"];
 			var rand = UI_die_roll(1, 7);
 			var delay = UI_die_roll(10, 40);
 			delayedBark(npc, barks[rand], delay);
@@ -339,7 +336,6 @@ void spellTremorEffect object#() () {
 		var directions = [NORTH, EAST, SOUTH, WEST];
 		while (counter < duration) {
 			var rand = UI_die_roll(0, 8);
-
 			if (rand == 0) {
 				usecodearray << {
 					actor frame kneeling;
@@ -407,40 +403,33 @@ void spellCauseDeath object#() () {
 	var cantdie = get_item_flag(CANT_DIE) || get_item_flag(DEATH_PROTECTION);
 	if (!cantdie) {
 		var hps = get_npc_prop(HEALTH);
-		hurtNPC(item, (hps - 2));
+		hurtNPC(item,(hps - 2));
 		hurtNPC(item, 50);
 	}
 }
 
 void spellSummonEffect object#() () {
-	var summonables = [
-		SHAPE_SKELETON, SHAPE_DRAGON, SHAPE_GHOST3, SHAPE_MONSTER_TROLL,
-		SHAPE_MONSTER_MAGE, SHAPE_MONSTER_CYCLOPS, SHAPE_DRAKE,
-		SHAPE_MONSTER_GARGOYLE, SHAPE_GARGOYLE_WINGED, SHAPE_HEADLESS,
-		SHAPE_LICHE, SHAPE_MONGBAT, SHAPE_SCORPION
-	];
+	var summonables = [SHAPE_SKELETON, SHAPE_DRAGON, SHAPE_GHOST3, SHAPE_MONSTER_TROLL,
+		SHAPE_MONSTER_MAGE, SHAPE_MONSTER_CYCLOPS, SHAPE_DRAKE, SHAPE_MONSTER_GARGOYLE,
+		SHAPE_GARGOYLE_WINGED, SHAPE_HEADLESS, SHAPE_LICHE, SHAPE_MONGBAT, SHAPE_SCORPION];
 	var max_rand2 = [5, 15, 5, 5, 5, 5, 5, 5, 14, 5, 10, 5, 5];
 	var creature_count = [5, 1, 5, 1, 2, 2, 2, 1, 1, 3, 1, 5, 2];
 	var array_size = UI_get_array_size(summonables);
-
 	var rand1 = UI_get_random(array_size);
 	var rand2 = UI_die_roll(1, 100);
 	while (max_rand2[rand1] < rand2) {
 		rand1 = UI_get_random(array_size);
 		rand2 = UI_die_roll(1, 100);
 	}
-
 	var counter = creature_count[rand1];
 	var randmax = (counter / 2);
 	if (randmax < 1) {
 		randmax = 1;
 	}
-
 	var rand3 = UI_die_roll(1, randmax);
 	if (UI_die_roll(1, 2) == 1) {
 		rand3 = (-1 * rand3);
 	}
-
 	counter += rand3;
 	while (counter) {
 		var summoned = summonables[rand1]->summon(true);
@@ -453,14 +442,12 @@ void spellStopTime object#() () {
 	UI_stop_time(event);
 }
 
-
 void spellMassResurrectEffect object#() () {
 	var bodyshapes = [SHAPE_BODIES_1, SHAPE_BODIES_2, SHAPE_LARGE_BODIES, SHAPE_NEW_BODIES];
 	var bodies = [];
 	for (shnum in bodyshapes) {
 		bodies = [bodies, find_nearby(shnum, 25, MASK_NONE)];
 	}
-
 	var body;
 	var xoff = [0, 1, 2, 1, 0, -1, -2, -1];
 	var yoff = [2, 1, 0, -1, -2, -1, 0, 1];
@@ -470,9 +457,9 @@ void spellMassResurrectEffect object#() () {
 		if ((qual != 0) || (quant != 0)) {
 			struct<Position> pos = get_object_position();
 			UI_sprite_effect(ANIMATION_LIGHTNING, pos.x, pos.y, 0, 0, 0, -1);
-			UI_sprite_effect(ANIMATION_GREEN_BUBBLES, (pos.x - 2), (pos.y - 2), 0, 0, 0, -1);
+			UI_sprite_effect(ANIMATION_GREEN_BUBBLES,(pos.x - 2),(pos.y - 2), 0, 0, 0, -1);
 			var dist = get_distance(body);
-			script body after 2+dist/3 ticks resurrect;
+			script body after 2 + dist / 3 ticks resurrect;
 		}
 	}
 }

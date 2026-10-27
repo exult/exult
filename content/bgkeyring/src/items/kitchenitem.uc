@@ -24,18 +24,15 @@
  *	Since bucket and milk-bottle behaviours use constants defined in this
  *	script, it must be included before bucket.uc and food.uc.
  */
-
 void KitchenItem shape#(0x35F) () {
 	var framenum = get_item_frame();
 	struct<ObjPos> target;
-
 	if (event == DOUBLECLICK) {
 		//flour sack behaviour
 		if (framenum == FRAME_FLOURSACK_OPEN) {
 			target = UI_click_on_item();
 			struct<Position> target_pos = target->get_object_position();
 			var target_shape = target->get_item_shape();
-
 			if (target_shape == SHAPE_WORKTABLE_HORIZONTAL) {
 				target_pos.x -= UI_die_roll(0, 3);
 				//vertical offset ensures the flour ends up on top of the table
@@ -60,13 +57,13 @@ void KitchenItem shape#(0x35F) () {
 			target_pos->update_last_created();
 		} else if (framenum == FRAME_PITCHER) {
 			gotoAndGet(item);
-		} else if (framenum in [FRAME_ROLLINGPIN, FRAME_ROLLINGPIN_2]) {
+		} else if (framenum in[FRAME_ROLLINGPIN, FRAME_ROLLINGPIN_2]) {
 			//empty pitcher behaviour - go and pick up the pitcher
 			//then rerun the function with event = SCRIPTED
 			//rolling pin behaviour
 			target = UI_click_on_item();
-
-			if (target->get_item_shape() == SHAPE_DOUGH && target->get_item_frame() == FRAME_DOUGH_BALL) {
+			if (target->get_item_shape() == SHAPE_DOUGH
+				&& target->get_item_frame() == FRAME_DOUGH_BALL) {
 				//rolling pin was used on a ball of dough
 				//roll it out into flat dough
 				target->set_item_frame(FRAME_DOUGH_FLAT);
@@ -74,7 +71,7 @@ void KitchenItem shape#(0x35F) () {
 				//rolling pin was used on a person (donk!)
 				target->item_say("@Hey! That really hurt!@");
 			}
-		} else if (framenum in [FRAME_FLOURSACK, FRAME_FLOURSACK_2]) {
+		} else if (framenum in[FRAME_FLOURSACK, FRAME_FLOURSACK_2]) {
 			//closed floursack behaviour (no idea why there are two identical
 			//frames for this...)
 			set_item_frame(FRAME_FLOURSACK_OPEN);
@@ -84,7 +81,8 @@ void KitchenItem shape#(0x35F) () {
 		} else if (framenum == FRAME_PITCHER_MILK) {
 			//full pitcher behaviour
 			target = UI_click_on_item();
-			if (target->get_item_shape() == SHAPE_KITCHEN_ITEM && target->get_item_frame() == FRAME_CHURN) {
+			if (target->get_item_shape() == SHAPE_KITCHEN_ITEM
+				&& target->get_item_frame() == FRAME_CHURN) {
 				gotoChurn(target, CHURN_WITH_PITCHER);
 			} else {
 				randomPartySay("@Why not churn that milk into butter?@");
@@ -98,7 +96,8 @@ void KitchenItem shape#(0x35F) () {
 			if (target->get_item_shape() == SHAPE_COW) {
 				gotoCow(target, MILK_WITH_PITCHER);
 			} else {
-				randomPartySay("@Thou couldst always milk a cow to fill yon pitcher... if thou don't mind getting thy hands dirty, that is!@");
+				randomPartySay(
+					"@Thou couldst always milk a cow to fill yon pitcher... if thou don't mind getting thy hands dirty, that is!@");
 			}
 		}
 	}

@@ -22,7 +22,6 @@
  *	Author: Marzo Junior
  *	Last Modified: 2006-02-27
  */
-
 void Plaque shape#(0x334) () {
 	var qual = get_item_quality();
 	if (qual < 100) {

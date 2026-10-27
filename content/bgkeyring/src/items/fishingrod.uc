@@ -19,18 +19,17 @@
  *	Author: Marzo Junior (reorganizing/updating code by Alun Bestor)
  *	Last Modified: 2006-03-19
  */
+const int QUALITY_FRESHFISH = 1;  //the quality of freshly-caught fish
 
-const int QUALITY_FRESHFISH	= 1;	//the quality of freshly-caught fish
-									//(this will expire to 0 at EXPIRY_RATE)
-const int FISH_EXPIRY_RATE	= 50;	//the quality will be decremented by one
-									//every EXPIRY_RATE ticks
+//(this will expire to 0 at EXPIRY_RATE)
+const int FISH_EXPIRY_RATE = 50;  //the quality will be decremented by one
+
+//every EXPIRY_RATE ticks
 //These factors are not currently used: sleeping will not decrement quality properly.
-
-const int BASE_CATCH_CHANCE = 30;	//% base chance of catching a fish, if any are about
-const int CHANCE_PER_FISH	= 10;	//% extra catch chance per nearby fish
-
-const int SOUND_LANDEDFISH	= 40;	//played when you catch a fish
-const int SOUND_FISHING		= 103;	//the plop of bait entering the water
+const int BASE_CATCH_CHANCE = 30;  //% base chance of catching a fish, if any are about
+const int CHANCE_PER_FISH = 10;  //% extra catch chance per nearby fish
+const int SOUND_LANDEDFISH = 40;  //played when you catch a fish
+const int SOUND_FISHING = 103;  //the plop of bait entering the water
 
 //Reconstituted from original function, with some extra bits added
 //(more advice to the player, tweaked catch chance). Also extended
@@ -44,10 +43,8 @@ void FishingRod shape#(0x296) () {
 			randomPartySay("@Thou must have the rod in thy hand.@");
 			return;
 		}
-
 		UI_close_gumps();
 		struct<ObjPos> target = UI_click_on_item();
-
 		if (!UI_is_water(target) && target->get_item_shape() != SHAPE_FISH) {
 			UI_flash_mouse(0);
 
@@ -55,9 +52,11 @@ void FishingRod shape#(0x296) () {
 			if (UI_get_random(4) == 1) {
 				//Spark is the resident angling expert
 				if (inParty(SPARK)) {
-					SPARK.say("@Thou shouldst cast thy line into the water, Avatar!@ He grins cheekily.");
+					SPARK.say(
+						"@Thou shouldst cast thy line into the water, Avatar!@ He grins cheekily.");
 				} else {
-					randomPartySay("@Last I heard, fish doth not live upon dry land. Thou shouldst try thy rod in the water!@");
+					randomPartySay(
+						"@Last I heard, fish doth not live upon dry land. Thou shouldst try thy rod in the water!@");
 				}
 			}
 			return;
@@ -108,7 +107,6 @@ void FishingRod shape#(0x296) () {
 			if (!fish) {
 				return;
 			}
-
 			fish->set_item_frame(FRAME_TROUT);
 			//Added to stop fish sticking around indefinitely
 			fish->set_item_flag(TEMPORARY);
@@ -117,7 +115,6 @@ void FishingRod shape#(0x296) () {
 			struct<Position> avatar_pos = AVATAR->get_object_position();
 			avatar_pos.x += 1;
 			UI_update_last_created(avatar_pos);
-
 			UI_play_sound_effect(SOUND_LANDEDFISH);
 
 			//Added: indicates that the fish is fresh (for sale to Gordon)
@@ -160,10 +157,12 @@ void FishingRod shape#(0x296) () {
 			if (rand == 1) {
 				//Spark, butting his head in as usual
 				if (inParty(SPARK) && canTalk(SPARK)) {
-					SPARK.say("@The fish doth not seem to be biting, thou shouldst try somewhere else!",
+					SPARK.say(
+						"@The fish doth not seem to be biting, thou shouldst try somewhere else!",
 						"~@My father took me fishing sometimes -- thou canst find good spots near bridges, where thou canst see the fishes beneath the water.@");
 				} else {
-					randomPartySay("@Methinks there are no fish in these waters. Let us try in a better spot!@");
+					randomPartySay(
+						"@Methinks there are no fish in these waters. Let us try in a better spot!@");
 				}
 			} else if (rand == 2) {
 				delayedBark(AVATAR, "@Not even a bite!@", 0);
@@ -172,7 +171,6 @@ void FishingRod shape#(0x296) () {
 			}
 		} else {
 			rand = UI_get_random(4);
-
 			if (rand == 1) {
 				delayedBark(AVATAR, "@Not even a bite!@", 0);
 			} else if (rand == 2) {

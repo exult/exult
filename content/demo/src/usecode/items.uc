@@ -16,23 +16,13 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *	Author: Malignant Manor
 */
-
 #include "items/doors.uc"
-
 #include "items/keyring.uc"
-
 #include "items/key.uc"
-
 #include "items/book.uc"
-
 #include "items/scroll.uc"
-
 #include "items/book.uc"
-
 #include "items/gold_sign.uc"
-
 #include "items/wood_sign.uc"
-
 #include "items/tombstone.uc"
-
 #include "items/pickaxe.uc"

@@ -19,7 +19,6 @@
  *	Author: Marzo Junior (reorganizing/updating code by Alun Bestor)
  *	Last Modified: 2006-03-19
  */
-
 void Bellows shape#(0x1AF) () {
 	//Go to the bellows to operate it
 	if (event == DOUBLECLICK) {
@@ -44,7 +43,6 @@ void Bellows shape#(0x1AF) () {
 		script item {
 			sfx SOUND_BELLOWS;
 			continue;
-
 			frame starting_frame;
 			repeat (NUM_BELLOWS_PUMPS - 1) {
 				next frame;
@@ -68,7 +66,6 @@ void Bellows shape#(0x1AF) () {
 				actor frame standing;
 			};
 		}
-
 		var nearby_firepits = find_nearby(SHAPE_FIREPIT, 4, MASK_ALL_UNSEEN);
 		//The firepit animation behaviour is now moved off to its own function,
 		//as it *really* does not belong here

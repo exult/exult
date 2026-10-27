@@ -23,11 +23,13 @@
  *
  *	2016-07-11 Written by Knight Captain
  */
-
 void DraxinarClothRiddle 0x824 () {
-	say("@A clothier named Sedrick has received an order to make five dresses, all with the same pattern. Sedrick has three designs of embroidered cloth laying on a table in his workroom.@");
-	say("@Sedrick tells his apprentice to fetch five pieces of cloth with the same embroidered pattern. The lazy apprentice doesn't bother looking through the piles of cloth, he just takes an armful.@");
-	say("@Discounting pure luck, how many pieces of cloth would the apprentice have to grab to insure that Sedrick could make five dresses with the same embroidery pattern?@");
+	say(
+		"@A clothier named Sedrick has received an order to make five dresses, all with the same pattern. Sedrick has three designs of embroidered cloth laying on a table in his workroom.@");
+	say(
+		"@Sedrick tells his apprentice to fetch five pieces of cloth with the same embroidered pattern. The lazy apprentice doesn't bother looking through the piles of cloth, he just takes an armful.@");
+	say(
+		"@Discounting pure luck, how many pieces of cloth would the apprentice have to grab to insure that Sedrick could make five dresses with the same embroidery pattern?@");
 	var answer = UI_input_numeric_value(0, 30, 1, 0);
 	if (answer == 13) {
 		// Correct answer

@@ -23,9 +23,7 @@
  *	Author: Marzo Junior
  *	Last Modified: 2009-07-09 (just changed shape number)
  */
-
-void Key shape#(641) ()
-{
+void Key shape#(641) () {
 
 	//If we didn't came here via double-click, leave:
 	if (!(event == DOUBLECLICK)) return;
@@ -33,15 +31,12 @@ void Key shape#(641) ()
 	//Prompt player for target:
 	var target = UI_click_on_item();
 	//var target_quality;
-	
+
 	//Target is the keyring:
-	if (target->get_item_shape() == SHAPE_KEYRING)
-	{
+	if (target->get_item_shape() == SHAPE_KEYRING) {
 		get_keyring()->add_to_keyring(target, item);
 		return;
 	}
-
-	KeyInternal(target,
-				(get_item_quality() == target->get_item_quality()),
-				["@The key doesn't fit.@", "@Maybe it is another key.@"]);
+	KeyInternal(target,(get_item_quality() == target->get_item_quality()),["@The key doesn't fit.@",
+		"@Maybe it is another key.@"]);
 }

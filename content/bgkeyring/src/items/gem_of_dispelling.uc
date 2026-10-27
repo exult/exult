@@ -22,7 +22,6 @@
  *	Author: Marzo Junior
  *	Last Modified: 2006-02-27
  */
-
 void Gem_Of_Dispelling shape#(0x451) () {
 	if (event != DOUBLECLICK) {
 		return;
@@ -39,8 +38,10 @@ void Gem_Of_Dispelling shape#(0x451) () {
 			//close all gumps:
 			UI_close_gumps();
 			//Description of action:
-			AVATAR.say("You pick up the gem with your hand and firmly crush it -- although, to your surprise, the gem is far easier to crush than you had anticipated.");
-			say("You wait for the spell to take effect as the magical energies course through the Ether.");
+			AVATAR.say(
+				"You pick up the gem with your hand and firmly crush it -- although, to your surprise, the gem is far easier to crush than you had anticipated.");
+			say(
+				"You wait for the spell to take effect as the magical energies course through the Ether.");
 			AVATAR.hide();
 
 			//Give the amulet to Laurianna:
@@ -80,10 +81,12 @@ void Gem_Of_Dispelling shape#(0x451) () {
 			}
 		} else {
 			//Reproach Avatar for trying to waste the gem:
-			randomPartySay("@Gems like this are -very- rare; we should not waste it without being sure!@");
+			randomPartySay(
+				"@Gems like this are -very- rare; we should not waste it without being sure!@");
 		}
 	} else if (quest_state == TOLD_ABOUT_GEM) {
 		//Otherwise, warn player to seek Zauriel:
-		randomPartySay("@These should be the gems mentioned by Zauriel. We should take them to him quickly!@");
+		randomPartySay(
+			"@These should be the gems mentioned by Zauriel. We should take them to him quickly!@");
 	}
 }

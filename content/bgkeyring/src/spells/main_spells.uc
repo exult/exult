@@ -22,9 +22,7 @@
  *	Author: Marzo Junior
  *	Last Modified: 2006-02-27
  */
-
 #include "spells/spell_functions.uc"			//Spell functions used by a few spells
-
 #include "spells/linear_spells.uc"				//Linear spells for NPCs
 #include "spells/first_circle.uc"				//First Circle spells for NPCs
 #include "spells/second_circle.uc"				//Second Circle spells for NPCs
@@ -34,9 +32,7 @@
 #include "spells/sixth_circle.uc"				//Sixth Circle spells for NPCs
 #include "spells/seventh_circle.uc"				//Seventh Circle spells for NPCs
 #include "spells/eighth_circle.uc"				//Eighth Circle spells for NPCs
-
 #include "spells/npc_spells.uc"					//Generic spellcasting routines for NPCs
-
 #include "items/spell_items.uc"					//For NPC spellcasting
 
 //Spellcasting AI:
@@ -44,7 +40,6 @@
 
 //Spellbook override:
 #include "spells/spellbook_override.uc"			//Makes avatar use the new spells
-
 #include "misc/services.uc"						//General services (selling, healing)
 
 //Modified NPCs:

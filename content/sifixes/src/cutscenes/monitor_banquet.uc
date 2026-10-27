@@ -28,36 +28,31 @@ void MonitorBanquet object#(0x1C3) () {
 	var index;
 	var max;
 	var npc;
-
 	if ((event == SCRIPTED) && (MARSTEN->get_npc_id() == 0)) {
 		UI_play_music(15, getPathEgg(5, 1));
 		AVATAR->set_item_flag(DONT_MOVE);
 		var health = SHAZZANA->get_npc_prop(HEALTH);
-		SHAZZANA->set_npc_prop(HEALTH, (SHAZZANA->get_npc_prop(STRENGTH) - health));
+		SHAZZANA->set_npc_prop(HEALTH,(SHAZZANA->get_npc_prop(STRENGTH) - health));
 		health = LUTHER->get_npc_prop(HEALTH);
-		LUTHER->set_npc_prop(HEALTH, (LUTHER->get_npc_prop(STRENGTH) - health));
-
+		LUTHER->set_npc_prop(HEALTH,(LUTHER->get_npc_prop(STRENGTH) - health));
 		npc = partyUtters(1, 0, 0, true);
-
 		var partytoken = "We";
 		if (UI_get_array_size(UI_get_party_list()) < 3) {
 			partytoken = "I";
 		}
-
 		delayedBark(npc, "@" + partytoken + " shall wait for thee here!@", 5);
-
 		var partymembers = removeFromArray(AVATAR->get_npc_object(), UI_get_party_list2());
 		struct<Position> pos;
 		for (npc in partymembers with index to max) {
 			npc->clear_item_flag(INVISIBLE);
 			npc->remove_from_party();
 			pos = npc->get_object_position();
-			npc->set_new_schedules(MIDNIGHT, STANDTHERE, [pos.x, pos.y]);
+			npc->set_new_schedules(MIDNIGHT, STANDTHERE,[pos.x, pos.y]);
 			npc->run_schedule();
 		}
-
 		AVATAR->item_say("@This must be the place!@");
-		AVATAR->si_path_run_usecode([0x41F, 0xA7C, 0x0], SI_PATH_SUCCESS, item, MonitorBanquet, true);
+		AVATAR->si_path_run_usecode([0x41F, 0xA7C, 0x0], SI_PATH_SUCCESS, item, MonitorBanquet,
+			true);
 		UI_set_path_failure(MonitorBanquet, item, SI_PATH_FAILURE);
 		gflags[MONITOR_BANQUET_STARTED] = true;
 		// In the original, the avatar's position is used instead of
@@ -70,14 +65,9 @@ void MonitorBanquet object#(0x1C3) () {
 		var egg;
 		var dir;
 		var eggquality;
-		var directions = [
-			4,	   4,		0, 4,		 4,		  2,
-			6, 	   2,	   6,		2,	   6,	   0
-		];
-		var npcids = [
-			MARSTEN, SPEKTOR, 0, SHAZZANA, FLICKEN, BRENDANN,
-			CALADIN, CELLIA, TEMPLAR, KRAYG, LUTHER, 0
-		];
+		var directions = [4, 4, 0, 4, 4, 2, 6, 2, 6, 2, 6, 0];
+		var npcids = [MARSTEN, SPEKTOR, 0, SHAZZANA, FLICKEN, BRENDANN, CALADIN, CELLIA, TEMPLAR,
+			KRAYG, LUTHER, 0];
 		for (egg in eggs with index to max) {
 			pos = egg->get_object_position();
 			eggquality = egg->get_item_quality();
@@ -139,10 +129,8 @@ void MonitorBanquet object#(0x1C3) () {
 			// in Marsden's NPC ID field, and all other branches abort.
 			// So in theory we just have to check that event == SCRIPTED, but
 			// I'm also checking Marsden's NPC ID to be sure.
-			var npcids = [
-				MARSTEN, SPEKTOR, SHAZZANA, FLICKEN, BRENDANN,
-				CALADIN, CELLIA, TEMPLAR, KRAYG, LUTHER
-			];
+			var npcids = [MARSTEN, SPEKTOR, SHAZZANA, FLICKEN, BRENDANN, CALADIN, CELLIA, TEMPLAR,
+				KRAYG, LUTHER];
 			for (npc in npcids) {
 				if (npc && (!npc->get_item_flag(DEAD)) && (npc->get_schedule_type() == WAIT)) {
 					npc->run_schedule();

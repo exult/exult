@@ -23,7 +23,6 @@
  *
  *	2016-08-08 Submitted by Knight Captain
  */
-
 void gwaniAttack object#(0x797) () {
 	if (event == EGG) {
 		if (getAvatarLocationID() == SKULLCRUSHER_MOUNTAINS) {

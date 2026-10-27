@@ -25,9 +25,7 @@
 
 //Displays the Codex and its message:
 #include "quests/codex/show_codex.uc"			//Displays the Codex
-
 #include "misc/codex_eggs.uc"					//Eggs for displaying the Codex
-
 #include "items/lens.uc"						//For viewing the Codex
 #include "items/magic_carpet.uc"				//Prevents landing he carpet near the Codex Shrine
 #include "items/shrines.uc"						//For meditation at shrines

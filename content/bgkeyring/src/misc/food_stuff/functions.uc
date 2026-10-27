@@ -30,15 +30,12 @@ void createButter object#() () {
 		return;
 	}
 	butter->set_item_frame(FRAME_BUTTER);
-
 	butter->set_item_flag(TEMPORARY);
 	butter->set_item_flag(OKAY_TO_TAKE);
-
 	struct<Position> target_pos = get_object_position();
 	//place it on the middle right-hand side of the churn
 	target_pos.x += 1;
 	//target_pos.y -= 3;
-
 	UI_update_last_created(target_pos);
 
 	//Get a random party member to say something nice about butter
@@ -47,10 +44,9 @@ void createButter object#() () {
 	}
 }
 
-void churnButter () {
+void churnButter() {
 	//the source of the milk (either milk bottle or bucket of milk)
 	var source;
-
 	if (event == CHURN_WITH_BOTTLE) {
 		//churned from bottle of milk
 		//Remove milk from the party's stash
@@ -98,7 +94,6 @@ void churnButter () {
 	script item {
 		//wait for the avatar to get up from putting the milk in
 		wait 7;
-
 		frame FRAME_CHURN;
 		repeat 3 {
 			sfx CHURN_SOUND;
@@ -115,15 +110,13 @@ void churnButter () {
 }
 
 //go to the churn (called by Bottle and Bucket)
-void gotoChurn (var churn, var milktype) {
+void gotoChurn(var churn, var milktype) {
 	//User tried to use a churn that was inside something
 	if (churn->get_container()) {
 		randomPartySay("@Thou must first place the butter churn on the ground.@");
 		return;
 	}
-
 	UI_close_gumps();
-
 	var offsetx = [-1, -1, -1, 0, 0];
 	var offsety = [0, 1, -1, 1, -1];
 
@@ -133,9 +126,9 @@ void gotoChurn (var churn, var milktype) {
 
 //This had to be overridden in order to separate the choosing of the target
 //(now handled by UseEdible) from the act of eating the food
-void consumeEdible (var food, var npc, var nutritional_value, var sound_effect) {
-	if (!inParty(npc) || npc->get_item_flag(ASLEEP) || npc->get_item_flag(DEAD) ||
-			npc->get_item_flag(PARALYZED)) {
+void consumeEdible(var food, var npc, var nutritional_value, var sound_effect) {
+	if (!inParty(npc) || npc->get_item_flag(ASLEEP) || npc->get_item_flag(DEAD)
+		|| npc->get_item_flag(PARALYZED)) {
 		return;
 	}
 
@@ -145,18 +138,16 @@ void consumeEdible (var food, var npc, var nutritional_value, var sound_effect) 
 	var shapenum = food->get_item_shape();
 	var framenum = food->get_item_frame();
 	var cheesy_frames = [FRAME_BUTTER, FRAME_CHEESE1, FRAME_CHEESE2, FRAME_CHEESE3];
-
-	if (npc == IOLO->get_npc_object() &&
-		((shapenum == SHAPE_FOOD && framenum in cheesy_frames) ||
-		(shapenum == SHAPE_BOTTLE && framenum == FRAME_MILK))) {
+	if (npc == IOLO->get_npc_object() && ((shapenum == SHAPE_FOOD && framenum in cheesy_frames) || (
+		shapenum == SHAPE_BOTTLE && framenum == FRAME_MILK))) {
 		//Poor Iolo is lactose intolerant.
 		npc->item_say("@Nay, I am lactose-intolerant.@");
 		return;
 	} else if (npc == JAANA->get_npc_object() &&
-		//Jaana's just health-conscious. Tch, these healers.
-		//Tweaked 2005-03-17: Jaana has decided that cheese is ok,
-		//so she only objects to butter now
-		shapenum == SHAPE_FOOD && framenum == FRAME_BUTTER) {
+	//Jaana's just health-conscious. Tch, these healers.
+	//Tweaked 2005-03-17: Jaana has decided that cheese is ok,
+	//so she only objects to butter now
+	shapenum == SHAPE_FOOD && framenum == FRAME_BUTTER) {
 		//sanctimonious cow
 		npc.say("@No thank thee, I am watching my cholesterol. As shouldst thou!@");
 		return;
@@ -243,7 +234,6 @@ void consumeEdible (var food, var npc, var nutritional_value, var sound_effect) 
 			bark = "@I must have more!@";
 		}
 	}
-
 	if (bark != "" && canTalk(npc)) {
 		npc->item_say(bark);
 	}

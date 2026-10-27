@@ -18,7 +18,6 @@
  *
  *	Author: Marzo Junior
  */
-
 void ListFieldReturnGear 0x931 (var obj) {
 	// Getting the path egg quality early because it is reset to zero in the
 	// original function.
@@ -42,5 +41,3 @@ void ListFieldReturnGear 0x931 (var obj) {
 		}
 	}
 }
-
-

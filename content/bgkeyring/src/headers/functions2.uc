@@ -24,7 +24,7 @@
  */
 
 //Finds a temporary NPC from a given shape and NPC id.
-var findNearbyMonsterWithID (var loc, var shp, var dist, var id) {
+var findNearbyMonsterWithID(var loc, var shp, var dist, var id) {
 	var npcs = UI_find_nearby(loc, shp, dist, MASK_NONE);
 	for (npc in npcs) {
 		if ((npc->get_npc_number() > 0) && (npc->get_npc_id() == id)) {
@@ -37,16 +37,18 @@ var findNearbyMonsterWithID (var loc, var shp, var dist, var id) {
 void trueFreeze object#() () {
 	set_item_flag(BG_DONT_MOVE);
 }
+
 //Clears BG_DONT_MOVE flag:
 void trueUnfreeze object#() () {
 	clear_item_flag(BG_DONT_MOVE);
 }
+
 //Puts an NPC in casting mode:
 void showCastingFrames object#() () {
 	begin_casting_mode();
 }
 
-void freezeParty () {
+void freezeParty() {
 	//Get party list:
 	var party = UI_get_party_list();
 	//Random NPC for bark:
@@ -65,7 +67,7 @@ void freezeParty () {
 	}
 }
 
-void unfreezeParty () {
+void unfreezeParty() {
 	//Get party list:
 	var party = UI_get_party_list();
 	for (member in party) {
@@ -74,11 +76,11 @@ void unfreezeParty () {
 	}
 }
 
-var createContainerWithObjects (var cont_shape, var item_shapes, var item_frames, var item_quantity, var item_quality) {
+var createContainerWithObjects(var cont_shape, var item_shapes, var item_frames, var item_quantity,
+	var item_quality) {
 	var shape_count = UI_get_array_size(item_shapes);
 	var counter;
 	var obj;
-
 	var num;
 	var max;
 
@@ -88,11 +90,9 @@ var createContainerWithObjects (var cont_shape, var item_shapes, var item_frames
 	cont->set_item_flag(OKAY_TO_TAKE);
 	//Make it temporary:
 	cont->set_item_flag(TEMPORARY);
-
 	while (counter < shape_count) {
 		//Increment counter:
 		counter += 1;
-
 		if (item_quantity[counter]) {
 			//Create the object:
 			obj = UI_create_new_object(item_shapes[counter]);
@@ -137,11 +137,10 @@ var createContainerWithObjects (var cont_shape, var item_shapes, var item_frames
 			}
 		}
 	}
-
 	return cont;
 }
 
-void interjectIfPossible (var npcnum, var msg) {
+void interjectIfPossible(var npcnum, var msg) {
 	if (npcnum->npc_nearby()) {
 		var facenum = 0;
 		/*
@@ -156,21 +155,19 @@ void interjectIfPossible (var npcnum, var msg) {
 		 * Also, specifying a different face here is a good idea if the NPC
 		 * should use a different face.
 		*/
-
-
 		npcnum->show_npc_face(facenum);
 		if (npcnum->get_item_flag(CONFUSED)) {
 			say("@Slurp@");
 		} else {
 			for (lines in msg) {
 				say(lines);
-			 }
+			}
 		}
 		npcnum.hide();
 	}
 }
 
-var forceGiveObjToParty (var obj) {
+var forceGiveObjToParty(var obj) {
 	//Get party list:
 	var party = UI_get_party_list();
 	//Set the desired object as being the last created:
@@ -194,7 +191,8 @@ var forceGiveObjToParty (var obj) {
 	return false;
 }
 
-void sellItems (var options, var shapes, var frames, var price, var quantity, var articles, var quantity_text, var quantity_tokens, var dialog) {
+void sellItems(var options, var shapes, var frames, var price, var quantity, var articles,
+	var quantity_text, var quantity_tokens, var dialog) {
 	var choice_index;
 	var msg;
 	var sell_result;
@@ -205,9 +203,8 @@ void sellItems (var options, var shapes, var frames, var price, var quantity, va
 	choice_index = chooseFromMenu2(options);
 
 	//Keep doing this until the player choses not to buy anything else:
-	while (!(choice_index==1)) {
+	while (!(choice_index == 1)) {
 		total_price = price[choice_index] * quantity[choice_index];
-
 		if (quantity[choice_index] > 1) {
 			isplural = true;
 		} else {
@@ -215,11 +212,8 @@ void sellItems (var options, var shapes, var frames, var price, var quantity, va
 		}
 
 		//Inform price to player:
-		say("@^",
-			makeSellPriceString(articles[choice_index], options[choice_index],
-						isplural, price[choice_index],
-						quantity_text[choice_index]),
-			dialog[1]);
+		say("@^", makeSellPriceString(articles[choice_index], options[choice_index], isplural,
+			price[choice_index], quantity_text[choice_index]), dialog[1]);
 
 		//See if player agrees with price:
 		if (askYesNo()) {
@@ -227,8 +221,8 @@ void sellItems (var options, var shapes, var frames, var price, var quantity, va
 			say(dialog[2], quantity_tokens[choice_index], dialog[3]);
 
 			//Sell everything to the party:
-			sell_result = sellAmountToParty(shapes[choice_index], frames[choice_index], quantity[choice_index], price[choice_index], 32, 1, true);
-
+			sell_result = sellAmountToParty(shapes[choice_index], frames[choice_index],
+				quantity[choice_index], price[choice_index], 32, 1, true);
 			if (sell_result == 1) {
 				msg = dialog[4];
 			} else if (sell_result == 2) {
@@ -248,6 +242,5 @@ void sellItems (var options, var shapes, var frames, var price, var quantity, va
 		//Present the menu again:
 		choice_index = chooseFromMenu2(options);
 	}
-
 	say(dialog[9]);
 }

@@ -39,20 +39,19 @@
 	extern void spellSwarm ();
 	extern void spellRemoveCurse (struct<ObjPos> target);
 */
-
 enum third_circle_spells {
-	SPELL_CURSE						= 0,
-	SPELL_HEAL						= 1,
-	SPELL_PARALYZE					= 2,
-	SPELL_PEER						= 3,
-	SPELL_POISON					= 4,
-	SPELL_PROTECT_ALL				= 5,
-	SPELL_SLEEP						= 6,
-	SPELL_SWARM						= 7,
-	SPELL_REMOVE_CURSE				= 8
+	SPELL_CURSE = 0,
+	SPELL_HEAL = 1,
+	SPELL_PARALYZE = 2,
+	SPELL_PEER = 3,
+	SPELL_POISON = 4,
+	SPELL_PROTECT_ALL = 5,
+	SPELL_SLEEP = 6,
+	SPELL_SWARM = 7,
+	SPELL_REMOVE_CURSE = 8
 };
 
-void spellCurse (struct<ObjPos> target) {
+void spellCurse(struct<ObjPos> target) {
 	if (event == DOUBLECLICK) {
 		halt_scheduled();
 		//struct<ObjPos> target = UI_click_on_item();
@@ -82,7 +81,7 @@ void spellCurse (struct<ObjPos> target) {
 	}
 }
 
-void spellHeal (struct<ObjPos> target) {
+void spellHeal(struct<ObjPos> target) {
 	if (event == DOUBLECLICK) {
 		//struct<ObjPos> target = UI_click_on_item();
 		var dir = direction_from(target);
@@ -99,7 +98,6 @@ void spellHeal (struct<ObjPos> target) {
 				actor frame raise_1h;
 				actor frame strike_1h;
 			}
-
 			script target after 5 ticks {
 				nohalt;
 				call spellHealEffect;
@@ -119,7 +117,7 @@ void spellHeal (struct<ObjPos> target) {
 	}
 }
 
-void spellParalyze (struct<ObjPos> target) {
+void spellParalyze(struct<ObjPos> target) {
 	if ((event == DOUBLECLICK) || (event == WEAPON)) {
 		//struct<ObjPos> target = UI_click_on_item();
 		var dir = direction_from(target);
@@ -148,7 +146,7 @@ void spellParalyze (struct<ObjPos> target) {
 	}
 }
 
-void spellPeer () {
+void spellPeer() {
 	if (event == DOUBLECLICK) {
 		halt_scheduled();
 		item_say("@Vas Wis@");
@@ -173,7 +171,7 @@ void spellPeer () {
 	}
 }
 
-void spellPoison (struct<ObjPos> target) {
+void spellPoison(struct<ObjPos> target) {
 	if (event == DOUBLECLICK) {
 		//struct<ObjPos> target = UI_click_on_item();
 		var dir = direction_from(target);
@@ -202,7 +200,7 @@ void spellPoison (struct<ObjPos> target) {
 	}
 }
 
-void spellProtectAll () {
+void spellProtectAll() {
 	if (event == DOUBLECLICK) {
 		item_say("@Vas Uus Sanct@");
 		if (inMagicStorm()) {
@@ -228,7 +226,7 @@ void spellProtectAll () {
 	}
 }
 
-void spellSleep (struct<ObjPos> target) {
+void spellSleep(struct<ObjPos> target) {
 	if (event == DOUBLECLICK) {
 		//struct<ObjPos> target = UI_click_on_item();
 		var dir = direction_from(target);
@@ -257,7 +255,7 @@ void spellSleep (struct<ObjPos> target) {
 	}
 }
 
-void spellSwarm () {
+void spellSwarm() {
 	if (event == DOUBLECLICK) {
 		halt_scheduled();
 		item_say("@Kal Bet Xen@");
@@ -282,7 +280,7 @@ void spellSwarm () {
 	}
 }
 
-void spellRemoveCurse (struct<ObjPos> target) {
+void spellRemoveCurse(struct<ObjPos> target) {
 	if (event == DOUBLECLICK) {
 		halt_scheduled();
 		//struct<ObjPos> target = UI_click_on_item();
@@ -297,13 +295,11 @@ void spellRemoveCurse (struct<ObjPos> target) {
 				actor frame cast_out;
 				actor frame strike_2h;
 			}
-
 			script target after 5 ticks {
 				nohalt;
 				call spellClearFlag, CURSED;
 				call spellClearFlag, PARALYZED;
 			}
-
 			obj_sprite_effect(ANIMATION_GREEN_BUBBLES, -2, -2, 0, 0, 0, -1);
 		} else {
 			script item {

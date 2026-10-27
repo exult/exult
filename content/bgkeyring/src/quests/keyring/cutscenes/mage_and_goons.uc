@@ -26,18 +26,18 @@
 
 //Cutscene levels:
 enum MageAndGoons_levels {
-	BEGIN_CUTSCENE						= 1,
-	FADE_SCREEN							= 2,
-	CENTER_VIEW							= 3,
-	UNFADE_SCREEN						= 4,
-	DISPLAY_REGION						= 5,
-	MAKE_VISIBLE						= 6,
-	GENERATE_SCRIPTS					= 7,
-	FIREWORKS_LAURIANNA					= 8,
-	GARGOYLE_WARNS						= 9,
-	LAUNDO_SPEAKS						= 10,
-	BEGIN_COMBAT						= 11,
-	PREPARE_NPC							= 12
+	BEGIN_CUTSCENE = 1,
+	FADE_SCREEN = 2,
+	CENTER_VIEW = 3,
+	UNFADE_SCREEN = 4,
+	DISPLAY_REGION = 5,
+	MAKE_VISIBLE = 6,
+	GENERATE_SCRIPTS = 7,
+	FIREWORKS_LAURIANNA = 8,
+	GARGOYLE_WARNS = 9,
+	LAUNDO_SPEAKS = 10,
+	BEGIN_COMBAT = 11,
+	PREPARE_NPC = 12
 };
 
 void beginCutsceneMageAndGoons object#() () {
@@ -48,7 +48,6 @@ void beginCutsceneMageAndGoons object#() () {
 	var fighter;
 	struct<Position> pos;
 	var dir;
-
 	if (event == BEGIN_CUTSCENE) {
 		//Cutscene begins HERE, with item == AVATAR
 
@@ -65,8 +64,8 @@ void beginCutsceneMageAndGoons object#() () {
 		script item after 5 ticks call beginCutsceneMageAndGoons, FADE_SCREEN;
 
 		//Find Laundo:
-		mage = findNearbyMonsterWithID(LAURIANNA->get_object_position(),
-										SHAPE_MAGE_MALE, 80, ID_MAGE_OR_GOON);
+		mage = findNearbyMonsterWithID(LAURIANNA->get_object_position(), SHAPE_MAGE_MALE, 80,
+			ID_MAGE_OR_GOON);
 		//Use him to unfade screen and kick-start the rest of the scene:
 		script mage after 10 ticks {
 			nohalt;
@@ -94,14 +93,14 @@ void beginCutsceneMageAndGoons object#() () {
 		UI_play_sound_effect2(SOUND_MOONGATE, item);
 
 		//Get each of the mage's goons:
-		gargoyle = findNearbyMonsterWithID(LAURIANNA->get_object_position(),
-										SHAPE_GARGOYLE_WARRIOR, 80, ID_MAGE_OR_GOON);
-		cyclops = findNearbyMonsterWithID(LAURIANNA->get_object_position(),
-										SHAPE_CYCLOPS, 80, ID_MAGE_OR_GOON);
-		troll = findNearbyMonsterWithID(LAURIANNA->get_object_position(),
-										SHAPE_TROLL, 80, ID_MAGE_OR_GOON);
-		fighter = findNearbyMonsterWithID(LAURIANNA->get_object_position(),
-										SHAPE_FIGHTER_MALE, 80, ID_MAGE_OR_GOON);
+		gargoyle = findNearbyMonsterWithID(LAURIANNA->get_object_position(), SHAPE_GARGOYLE_WARRIOR,
+			80, ID_MAGE_OR_GOON);
+		cyclops = findNearbyMonsterWithID(LAURIANNA->get_object_position(), SHAPE_CYCLOPS, 80,
+			ID_MAGE_OR_GOON);
+		troll = findNearbyMonsterWithID(LAURIANNA->get_object_position(), SHAPE_TROLL, 80,
+			ID_MAGE_OR_GOON);
+		fighter = findNearbyMonsterWithID(LAURIANNA->get_object_position(), SHAPE_FIGHTER_MALE, 80,
+			ID_MAGE_OR_GOON);
 
 		//Make Laurianna visible and generate the scripts for the mage and goons:
 		script LAURIANNA after 6 ticks {
@@ -149,16 +148,16 @@ void beginCutsceneMageAndGoons object#() () {
 		script LAURIANNA call beginCutsceneMageAndGoons, FIREWORKS_LAURIANNA;
 
 		//Get references for the mage and his goons:
-		mage = findNearbyMonsterWithID(LAURIANNA->get_object_position(),
-										SHAPE_MAGE_MALE, 80, ID_MAGE_OR_GOON);
-		gargoyle = findNearbyMonsterWithID(LAURIANNA->get_object_position(),
-										SHAPE_GARGOYLE_WARRIOR, 80, ID_MAGE_OR_GOON);
-		cyclops = findNearbyMonsterWithID(LAURIANNA->get_object_position(),
-										SHAPE_CYCLOPS, 80, ID_MAGE_OR_GOON);
-		troll = findNearbyMonsterWithID(LAURIANNA->get_object_position(),
-										SHAPE_TROLL, 80, ID_MAGE_OR_GOON);
-		fighter = findNearbyMonsterWithID(LAURIANNA->get_object_position(),
-										SHAPE_FIGHTER_MALE, 80, ID_MAGE_OR_GOON);
+		mage = findNearbyMonsterWithID(LAURIANNA->get_object_position(), SHAPE_MAGE_MALE, 80,
+			ID_MAGE_OR_GOON);
+		gargoyle = findNearbyMonsterWithID(LAURIANNA->get_object_position(), SHAPE_GARGOYLE_WARRIOR,
+			80, ID_MAGE_OR_GOON);
+		cyclops = findNearbyMonsterWithID(LAURIANNA->get_object_position(), SHAPE_CYCLOPS, 80,
+			ID_MAGE_OR_GOON);
+		troll = findNearbyMonsterWithID(LAURIANNA->get_object_position(), SHAPE_TROLL, 80,
+			ID_MAGE_OR_GOON);
+		fighter = findNearbyMonsterWithID(LAURIANNA->get_object_position(), SHAPE_FIGHTER_MALE, 80,
+			ID_MAGE_OR_GOON);
 
 		//Laundo's script; he casts a couple spells and wonders why they failed; then,
 		//he turns to the Avatar and begins to talk:
@@ -392,7 +391,8 @@ void beginCutsceneMageAndGoons object#() () {
 		say("@Ah, yes! How didst thou -- a mere mortal -- dispel my warding spells?");
 		say("@And what art thou doing in my tower?");
 		say("@Wait -- I am -not- in my tower! Regardless, what art thou doing here?");
-		say("@Come now, speak quickly! Shouldst thou speak not, I shall kill thee where thou standest!");
+		say(
+			"@Come now, speak quickly! Shouldst thou speak not, I shall kill thee where thou standest!");
 		say("@Won't thou say anything? Hast thou a death wish?");
 		say("@I am in the middle of an experiment! I don't have time for this! Speak or die!@");
 		//...and is warned by Agra-Lem of his behaviour:
@@ -401,104 +401,102 @@ void beginCutsceneMageAndGoons object#() () {
 		GARGOYLE_FACE.hide();
 		say("@Ah, thou art correct, Agra-lem. Go on, peasant! Speak! I shall listen.");
 		say("@Perhaps thou shalt amuse me before dying...@ he adds, sounding hopeful.");
-		add(["name", "job", "bye", "dispel", "tower", "Doing here", "rescue", "experiment", "Laurianna", "Rooted woman"]);
-
+		add(["name", "job", "bye", "dispel", "tower", "Doing here", "rescue", "experiment",
+			"Laurianna", "Rooted woman"]);
 		converse (0) {
-			case "name" (remove):
-				say("@-I- am the archmage Laundo. Now, who art thou?");
-				say("@No, wait -- I have already asked that. Never mind.@");
-
-			case "job" (remove):
-				say("He looks at you with impatience. @I am a mage! An -arch-mage!@");
-				add("archmage");
-
-			case "archmage" (remove):
-				say("He gives you an exasperated look. @A mage so powerful he transcends other mages!");
-				say("@And I am one! Hahaha! Behold my powers and beware!@");
-
-			case "bye" (remove):
-				say("@Not so fast, peasant! Thou didst not tell me what thou art doing here!@");
-
-			case "dispel" (remove):
-				say("@Yes, I want to know how a nothing like thee dispelled my protection spells!");
-				say("@Wilt thou tell me or wilt thou die?@");
-				if (chooseFromMenu2(["tell", "die"]) == 2) {
-					//Quickest way to end the talk:
-					break;
-				}
-				AVATAR.say("You quickly explain about the Gem of Dispelling to Laundo.");
-				AVATAR.hide();
-				say("@Gems of Dispelling? Never heard of them. It doesn't matter anyway.@");
-
-			case "tower" (remove):
-				say("@Yes, I have a tower. All wizards have one. But I want a -castle- instead.@");
-				add("castle");
-
-			case "castle" (remove):
-				say("@I mean castle British, of course. None others are worthy!");
-				say("@But alas, I must first slay that tyrant British to have his castle...@");
-				add("Tyrant British");
-
-			case "Doing here" (remove):
-				say("@Wilt thou tell me what art doing here?@");
-				if (chooseFromMenu2(["rescue", "lie"]) == 1) {
-					say("@I am sorry to say thou hast wasted thy time. That mad mage sent thee on a wild goose chase.");
-				} else {
-					say("@I am sorry to say thou art wasting my time. I can feel the touch of that mad mage upon thee!");
-				}
-				say("@In any case, thou wilt fail to rescue this mageling! She is mine!@");
-				add("fail", "mad mage");
-				remove("rescue");
-
-			case "rescue" (remove):
-				say("@I am sorry to say thou hast wasted thy time. That mad mage sent thee on a wild goose chase.");
-				say("@In any case, thou wilt fail to rescue this mageling! She is mine!@");
-				add("fail", "mad mage");
-				remove("Doing here");
-
-			case "fail" (remove):
-				say("@Yes, thou wilt fail. By which I mean thou shalt die if thou dost try to rescue her.");
-				say("@And even if thou survivest, she will not be going anywhere...");
-				say("@Seest thou the necklace she wears? It is -my- handiwork.@");
-				add("necklace");
-
-			case "mad mage" (remove):
-				say("@Yes, that mage that wants to keep this menace alive!@ he points towards Laurianna.");
-				say("@He wants to keep that -beast- alive! And he helps people! He is -mad-!");
-				say("@With all the power he has, he could -- I mean, -should- -- kill the tyrant British!@");
-				add("Tyrant British");
-
-			case "Laurianna" (remove):
-				say("@Who? Never heard of her.@");
-				AVATAR.say("You explain that Laurianna is the woman with roots just nearby.");
-				AVATAR.hide();
-				say("@Ah, so -that- is her name? Well, it doesn't matter. She won't be going anywhere.");
-				say("@Seest thou the necklace she wears? It is -my- handiwork.@");
-				add("necklace");
-
-			case "necklace" (remove):
-				say("@It is lovely, is it not? It is a mighty artifact!");
-				say("@The person wearing it -- in this case, this dangerous lady here -- cannot move at all from where she is!");
-				say("@Not even magic can move her! And the necklace also cannot be removed! Hah! She shall be here forever!");
-				say("@And the best part is that the necklace will simply -explode- should someone powerful enough to dispel its magic");
-				say("@come even -near- it. That keeps that mad mage from trying to rescue her! Isn't it brilliant?");
-
-			case "experiment" (remove):
-				say("@Since thou wilt die anyway, I don't see why not explain the greatness of my plans to thee!");
-				say("@This woman is a menace. She wields enormous power, and has no control over them.");
-				say("@So I intend to give her powers to a worthy receptacle -- -me-!");
-				say("@I can then do what I want with them, and she won't be a menace anymore! Haha!");
-				say("@Of course, then I can remove other menaces from the face of Britannia.");
-				say("@One that comes to mind is that tyrant British. He -must- die!@");
-				add("Tyrant British");
-
-			case "Tyrant British" (remove):
-				say("@Thou knowest, that bloke with a crown which calls himself 'king'");
-				say("@That miserable excuse of a tyrant must perish for his misdeeds!@");
-
-			case "Rooted woman" (remove):
-				say("@Yes, that is an effect of the necklace I made for her. Isn't it lovely?@");
-				add("necklace");
+		case "name" (remove):
+			say("@-I- am the archmage Laundo. Now, who art thou?");
+			say("@No, wait -- I have already asked that. Never mind.@");
+		case "job" (remove):
+			say("He looks at you with impatience. @I am a mage! An -arch-mage!@");
+			add("archmage");
+		case "archmage" (remove):
+			say("He gives you an exasperated look. @A mage so powerful he transcends other mages!");
+			say("@And I am one! Hahaha! Behold my powers and beware!@");
+		case "bye" (remove):
+			say("@Not so fast, peasant! Thou didst not tell me what thou art doing here!@");
+		case "dispel" (remove):
+			say("@Yes, I want to know how a nothing like thee dispelled my protection spells!");
+			say("@Wilt thou tell me or wilt thou die?@");
+			if (chooseFromMenu2(["tell", "die"]) == 2) {
+				//Quickest way to end the talk:
+				break;
+			}
+			AVATAR.say("You quickly explain about the Gem of Dispelling to Laundo.");
+			AVATAR.hide();
+			say("@Gems of Dispelling? Never heard of them. It doesn't matter anyway.@");
+		case "tower" (remove):
+			say("@Yes, I have a tower. All wizards have one. But I want a -castle- instead.@");
+			add("castle");
+		case "castle" (remove):
+			say("@I mean castle British, of course. None others are worthy!");
+			say("@But alas, I must first slay that tyrant British to have his castle...@");
+			add("Tyrant British");
+		case "Doing here" (remove):
+			say("@Wilt thou tell me what art doing here?@");
+			if (chooseFromMenu2(["rescue", "lie"]) == 1) {
+				say(
+					"@I am sorry to say thou hast wasted thy time. That mad mage sent thee on a wild goose chase.");
+			} else {
+				say(
+					"@I am sorry to say thou art wasting my time. I can feel the touch of that mad mage upon thee!");
+			}
+			say("@In any case, thou wilt fail to rescue this mageling! She is mine!@");
+			add("fail", "mad mage");
+			remove("rescue");
+		case "rescue" (remove):
+			say(
+				"@I am sorry to say thou hast wasted thy time. That mad mage sent thee on a wild goose chase.");
+			say("@In any case, thou wilt fail to rescue this mageling! She is mine!@");
+			add("fail", "mad mage");
+			remove("Doing here");
+		case "fail" (remove):
+			say(
+				"@Yes, thou wilt fail. By which I mean thou shalt die if thou dost try to rescue her.");
+			say("@And even if thou survivest, she will not be going anywhere...");
+			say("@Seest thou the necklace she wears? It is -my- handiwork.@");
+			add("necklace");
+		case "mad mage" (remove):
+			say(
+				"@Yes, that mage that wants to keep this menace alive!@ he points towards Laurianna.");
+			say("@He wants to keep that -beast- alive! And he helps people! He is -mad-!");
+			say(
+				"@With all the power he has, he could -- I mean, -should- -- kill the tyrant British!@");
+			add("Tyrant British");
+		case "Laurianna" (remove):
+			say("@Who? Never heard of her.@");
+			AVATAR.say("You explain that Laurianna is the woman with roots just nearby.");
+			AVATAR.hide();
+			say(
+				"@Ah, so -that- is her name? Well, it doesn't matter. She won't be going anywhere.");
+			say("@Seest thou the necklace she wears? It is -my- handiwork.@");
+			add("necklace");
+		case "necklace" (remove):
+			say("@It is lovely, is it not? It is a mighty artifact!");
+			say(
+				"@The person wearing it -- in this case, this dangerous lady here -- cannot move at all from where she is!");
+			say(
+				"@Not even magic can move her! And the necklace also cannot be removed! Hah! She shall be here forever!");
+			say(
+				"@And the best part is that the necklace will simply -explode- should someone powerful enough to dispel its magic");
+			say(
+				"@come even -near- it. That keeps that mad mage from trying to rescue her! Isn't it brilliant?");
+		case "experiment" (remove):
+			say(
+				"@Since thou wilt die anyway, I don't see why not explain the greatness of my plans to thee!");
+			say(
+				"@This woman is a menace. She wields enormous power, and has no control over them.");
+			say("@So I intend to give her powers to a worthy receptacle -- -me-!");
+			say("@I can then do what I want with them, and she won't be a menace anymore! Haha!");
+			say("@Of course, then I can remove other menaces from the face of Britannia.");
+			say("@One that comes to mind is that tyrant British. He -must- die!@");
+			add("Tyrant British");
+		case "Tyrant British" (remove):
+			say("@Thou knowest, that bloke with a crown which calls himself 'king'");
+			say("@That miserable excuse of a tyrant must perish for his misdeeds!@");
+		case "Rooted woman" (remove):
+			say("@Yes, that is an effect of the necklace I made for her. Isn't it lovely?@");
+			add("necklace");
 		}
 
 		//When all options are exhausted (or the player chose the quick rout),
@@ -517,20 +515,20 @@ void beginCutsceneMageAndGoons object#() () {
 			call beginCutsceneMageAndGoons, BEGIN_COMBAT;
 			wait 3;
 			call trueUnfreeze;
-};
+		};
 	} else if (event == BEGIN_COMBAT) {
 		//item = AVATAR
 		//Get references to the mage and his goons:
-		mage = findNearbyMonsterWithID(LAURIANNA->get_object_position(),
-										SHAPE_MAGE_MALE, 80, ID_MAGE_OR_GOON);
-		gargoyle = findNearbyMonsterWithID(LAURIANNA->get_object_position(),
-										SHAPE_GARGOYLE_WARRIOR, 80, ID_MAGE_OR_GOON);
-		cyclops = findNearbyMonsterWithID(LAURIANNA->get_object_position(),
-										SHAPE_CYCLOPS, 80, ID_MAGE_OR_GOON);
-		troll = findNearbyMonsterWithID(LAURIANNA->get_object_position(),
-										SHAPE_TROLL, 80, ID_MAGE_OR_GOON);
-		fighter = findNearbyMonsterWithID(LAURIANNA->get_object_position(),
-										SHAPE_FIGHTER_MALE, 80, ID_MAGE_OR_GOON);
+		mage = findNearbyMonsterWithID(LAURIANNA->get_object_position(), SHAPE_MAGE_MALE, 80,
+			ID_MAGE_OR_GOON);
+		gargoyle = findNearbyMonsterWithID(LAURIANNA->get_object_position(), SHAPE_GARGOYLE_WARRIOR,
+			80, ID_MAGE_OR_GOON);
+		cyclops = findNearbyMonsterWithID(LAURIANNA->get_object_position(), SHAPE_CYCLOPS, 80,
+			ID_MAGE_OR_GOON);
+		troll = findNearbyMonsterWithID(LAURIANNA->get_object_position(), SHAPE_TROLL, 80,
+			ID_MAGE_OR_GOON);
+		fighter = findNearbyMonsterWithID(LAURIANNA->get_object_position(), SHAPE_FIGHTER_MALE, 80,
+			ID_MAGE_OR_GOON);
 
 		//Make them hostile and in combat:
 		script mage {
@@ -564,11 +562,10 @@ void beginCutsceneMageAndGoons object#() () {
 		//Just to be sure:
 		clear_item_flag(DONT_RENDER);
 	}
-
 }
 
 void registerDeathOfMageOrGoon object#() () {
-	if ((event == DEATH) &&  (get_npc_id() == ID_MAGE_OR_GOON)) {
+	if ((event == DEATH) && (get_npc_id() == ID_MAGE_OR_GOON)) {
 		if (get_item_shape() == SHAPE_MAGE_MALE) {
 			//Laundo has died
 			//Set flag:
@@ -584,7 +581,6 @@ void registerDeathOfMageOrGoon object#() () {
 		//Increase Laurianna's NPC ID:
 		var new_id = 1 + LAURIANNA->get_npc_id();
 		LAURIANNA->set_npc_id(new_id);
-
 		if (new_id == 5) {
 			LAURIANNA->set_npc_id(5);
 			//Everyone is dead; halt scripts for Laurianna:

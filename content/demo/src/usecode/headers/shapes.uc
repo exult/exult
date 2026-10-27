@@ -16,7 +16,6 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *  Author: Malignant Manor
  */
-
 const int NS_DOOR = 162;
 const int EW_DOOR = 163;
 const int SHAPE_KEY = 641;
@@ -24,15 +23,12 @@ const int SHAPE_KEYRING = 165;
 const int SHAPE_CHEST = 156;
 const int SHAPE_LOCKED_CHEST = 157;
 const int SHAPE_BAG = 153;
-
-const int SHAPE_GOLD = 644; // hardcoded somewhere? not in shapes yet, used in functions.uc
+const int SHAPE_GOLD = 644;  // hardcoded somewhere? not in shapes yet, used in functions.uc
 
 // *** needs one set ***
 const int SOUND_KEY = 0;
 const int KEY_INN = 255;
 
-
-enum npc_shapes
-{
-	SHAPE_WHITE_MALE_AVATAR	=721
+enum npc_shapes {
+	SHAPE_WHITE_MALE_AVATAR = 721
 };

@@ -22,9 +22,8 @@
  *
  *  2023-03-15 Added to SIfixes, includes Rhona's artwork for SmithzHorse.
  */
-
 enum face_names {
-	FACE_AVATAR = 0,					// 6 frames
+	FACE_AVATAR = 0,  // 6 frames
 	FACE_DUPRE = 1,
 	FACE_SHAMINO = 2,
 	FACE_IOLO = 3,
@@ -35,9 +34,9 @@ enum face_names {
 	FACE_DUCIO = 15,
 	FACE_EDRIN = 16,
 	FACE_FEDABIBLIO = 17,
-	FACE_FILBERCIO = 18,				// 2 frames, same image
+	FACE_FILBERCIO = 18,  // 2 frames, same image
 	FACE_FRELI = 19,
-	FACE_FRIGIDAZZI = 20,				// 3 frames, 2 same with clothes, 3rd naked
+	FACE_FRIGIDAZZI = 20,  // 3 frames, 2 same with clothes, 3rd naked
 	// 21 unused
 	FACE_GUSTACIO = 22,
 	FACE_JULIA = 23,
@@ -48,7 +47,7 @@ enum face_names {
 	FACE_PETRA = 28,
 	FACE_POTHOS = 29,
 	FACE_ROCCO = 30,
-	FACE_ROTOLUNCIA = 31,				// 2 frames, same image
+	FACE_ROTOLUNCIA = 31,  // 2 frames, same image
 	FACE_TOPO = 32,
 	FACE_TORRISSIO = 33,
 	FACE_BOYDON = 34,
@@ -151,10 +150,10 @@ enum face_names {
 	// 216-255 unused
 	// Most face numbers used below do not match with NPC numbers.
 	FACE_ARCADION = 256,
-	FACE_BLACK_SWORD = 257,				// 4 frames, only first used in game
+	FACE_BLACK_SWORD = 257,  // 4 frames, only first used in game
 	FACE_SHRIASH = 258,
-	FACE_WISP1 = 259,					// Unused in game
-	FACE_WISP2 = 260,					// Unused in game
+	FACE_WISP1 = 259,  // Unused in game
+	FACE_WISP2 = 260,  // Unused in game
 	FACE_ORACLE = 261,
 	FACE_CATMAN = 262,
 	// 263 unused
@@ -191,9 +190,9 @@ enum face_names {
 	FACE_ORDER_SERPENT = 294,
 	FACE_GREAT_EARTH_SERPENT = 295,
 	FACE_GUARDIAN = 296,
-	FACE_WILDMAN = 297,					// Unused in the original games
+	FACE_WILDMAN = 297,  // Unused in the original games
 	FACE_AUTOMATON = 298,
-	FACE_AVATAR_TATTOO = 299,			// 6 frames
+	FACE_AVATAR_TATTOO = 299,  // 6 frames
 	FACE_GES_TRANSLUCENT = 300,
 	FACE_BOYDON_HEAD = 301,
 	FACE_ROTOLUNCIA_SCROLL = 302,

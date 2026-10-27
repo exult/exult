@@ -22,7 +22,6 @@
  *
  *	2016-07-17 Written by Knight Captain with code from Malignant Manor.
  */
-
 void Mwaerno object#(0x491) () {
 	if (event == STARTED_TALKING) {
 		if (gwaniCloakCheck(true)) {
@@ -34,15 +33,20 @@ void Mwaerno object#(0x491) () {
 			// If she is nearby, can talk, and not sleeping.
 			// The npcCanTalk external does not check the sleep activity, only the sleeping flag.
 			// That sleeping flag does not always get set by scheduled sleeping in SI.
-			if (npcNearbyAndVisible(BAIYANDA) && npcCanTalk(BAIYANDA) && BAIYANDA->get_schedule_type(!SLEEP)) {
+			if (npcNearbyAndVisible(BAIYANDA) && npcCanTalk(BAIYANDA)
+				&& BAIYANDA->get_schedule_type(!SLEEP)) {
 				UI_show_npc_face1(BAIYANDA, 0);
 				UI_set_conversation_slot(1);
 				say("@Soko terama dok!@ *This one gives you a mean look and spits.");
 				UI_remove_npc_face1();
-				partyUtters(1, "@Avatar, 'tis the pelts! They can smell that we have Gwani pelts on us! I suggest we throw them away!@", "@I have Gwani pelts!@", false);
+				partyUtters(1,
+					"@Avatar, 'tis the pelts! They can smell that we have Gwani pelts on us! I suggest we throw them away!@",
+					"@I have Gwani pelts!@", false);
 				return;
 			} else {
-				partyUtters(1, "@Avatar, 'tis the pelts! He can smell that we have Gwani pelts on us! I suggest we throw them away!@", "@I have Gwani pelts!@", false);
+				partyUtters(1,
+					"@Avatar, 'tis the pelts! He can smell that we have Gwani pelts on us! I suggest we throw them away!@",
+					"@I have Gwani pelts!@", false);
 				return;
 			}
 		}
@@ -55,24 +59,20 @@ void Mwaerno object#(0x491) () {
 		say("@Thou look like Avatar,@ *the Gwani creature says with broken speech.");
 		// First questions available.
 		add(["name", "Gwani", "bye"]);
-
 		converse (0) {
-			case "name" (remove):
-				say("@Mwaerno. Means 'rain clouds'.@");
-				MWAERNO->set_item_flag(MET);
-
-			case "Gwani" (remove):
+		case "name" (remove):
+			say("@Mwaerno. Means 'rain clouds'.@");
+			MWAERNO->set_item_flag(MET);
+		case "Gwani" (remove):
 			say("@Our village near. Speak to Yenani.@");
-
-			case "bye":
-				UI_remove_npc_face0();
-				UI_remove_npc_face1();
-				delayedBark(AVATAR, "@Goodbye!@", 1);
-				delayedBark(MWAERNO, "@Atala dak!@", 5);
-				break;
+		case "bye":
+			UI_remove_npc_face0();
+			UI_remove_npc_face1();
+			delayedBark(AVATAR, "@Goodbye!@", 1);
+			delayedBark(MWAERNO, "@Atala dak!@", 5);
+			break;
 		}
 	} else {
 		Mwaerno.original();
 	}
 }
-

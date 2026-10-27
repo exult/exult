@@ -44,16 +44,15 @@ extern void resurrectCompanions 0x86D ();
 
 // playmusic refers to the Batlin cutscene music:
 extern void animateWallOfLights 0x8C0 (var playmusic);
-
 extern void xenkaReturns 0x8F4 ();
 extern void xenkanMonkDies 0x8F5 (var monk);
 
 // Returns true is point is inside rectangle
-extern var pointInsideRect 0x8F8 (struct<Position2D> point, struct<Position2D> upperleft, struct<Position2D> lowerright);
+extern var pointInsideRect 0x8F8 (struct<Position2D> point, struct<Position2D> upperleft,
+	struct<Position2D> lowerright);
 
 // List of dead bodies nearby:
 extern var getNearbyBodies 0x8FB ();
-
 extern var areThereBodiesNearby 0x8FC ();
 
 // List the NPC names for joinable NPCs:
@@ -73,7 +72,6 @@ extern void setDoorState 0x907 (var door, var state);
 // If mode == 1, opens closed sliding doors.
 // If mode == SHAPE_ANY, toggles sliding doors.
 extern void changeSlidingDoorState 0x924 (var lever, var mode);
-
 extern void usecodeStartSpeechWrapper 0x922 (var track);
 extern var exchangedItemList 0x92C (var index);
 
@@ -82,7 +80,6 @@ extern void endMonitorTraining 0x92E (var npc);
 
 // The dialog of the Monitorians after training ends:
 extern void trainingEndDialog 0x936 (var npc1, var npc2);
-
 extern var getNPCLevel 0x941 (var npc);
 extern var npcNearbyAndVisible 0x942 (var npc);
 
@@ -90,8 +87,7 @@ extern var npcNearbyAndVisible 0x942 (var npc);
 extern void npcSpeakIfNearby 0x94E (var npc, var text);
 
 // Returns true if the party is NOT in a magic storm:
-extern var notInMagicStorm 0x951();
-
+extern var notInMagicStorm 0x951 ();
 extern var getAvatarName 0x953 ();
 extern var getPoliteTitle 0x954 ();
 extern var askYesNo 0x955 ();
@@ -102,7 +98,6 @@ extern var getPropValue 0x95C (var npc, var propid);
 
 // Increases the value of propid for NPC by delta:
 extern void setPropValue 0x95E (var npc, var propid, var delta);
-
 extern var getArraySize 0x977 (var array);
 
 // Wrapper for UI_direction_from(AVATAR, obj)
@@ -110,7 +105,6 @@ extern var directionFromAvatar 0x979 (var obj);
 
 // Sees if the party has a minimum count of the specified item:
 extern var hasItemCount 0x97D (var cont, var mincount, var shapenum, var quality, var framenum);
-
 extern var absoluteValueOf 0x97E (var number);
 
 // Makes the NPC bark after delay ticks:
@@ -158,9 +152,10 @@ extern void randomPartyBark 0x949 (var utter);
 extern var getAvatarLocationID 0x994 ();
 
 // Takes an item from a container and gives it to another:
-extern var giveItem 0x996 (var givefrom, var giveto, var givecount, var shapenum, var quality, var framenum, var flag);
-
-extern var giveItemsToPartyMember 0x99B (var cont, var count, var shapenum, var quality, var framenum, var flag1, var flag2);
+extern var giveItem 0x996 (var givefrom, var giveto, var givecount, var shapenum, var quality,
+	var framenum, var flag);
+extern var giveItemsToPartyMember 0x99B (var cont, var count, var shapenum, var quality,
+	var framenum, var flag1, var flag2);
 extern var getOuterContainer 0x99E (var obj);
 
 // In SI, path eggs are used for scripting purposes. This function turns a pair

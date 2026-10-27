@@ -22,7 +22,6 @@
  *	Author: Marzo Junior
  *	Last Modified: 2006-03-19
  */
-
 void eggCodexLenses object#() () {
 	struct<Position> pos;
 	var quality;
@@ -30,7 +29,6 @@ void eggCodexLenses object#() () {
 	var npc;
 	var framenum;
 	var bark;
-
 	if ((event == EGG || event == SCRIPTED)) {
 		//Get egg's position and quality:
 		pos = get_object_position();
@@ -91,7 +89,6 @@ void eggCodexShrineEntrance object#() () {
 	}
 	var statues = UI_find_nearby(item, SHAPE_GUARDIAN_STATUE, 20, MASK_NONE);
 	var statue;
-
 	if (statues) {
 		//If the Avatar is facing south, he is most likely leaving
 		//the shrine of the Codex. Do not display the statues' message
@@ -121,15 +118,12 @@ void eggCodexShrineEntrance object#() () {
 				//But not if the Codex Quest is over:
 				in_quest = false;
 			}
-
 			if (in_quest) {
 				//The Avatar is in a sacred quest, so let him enter:
 				statue = statues[2];
-				script statue
-					say "@Thou art welcome, seeker@";
+				script statue say "@Thou art welcome, seeker@";
 				statue = statues[1];
-				script statue after 15 ticks
-					say("@Let Virtue bring thee wisdom@");
+				script statue after 15 ticks say("@Let Virtue bring thee wisdom@");
 
 				//Anti-cheater flag:
 				gflags[IN_CODEX_QUEST] = true;
@@ -137,11 +131,9 @@ void eggCodexShrineEntrance object#() () {
 				//The Avatar is trying to enter without a quest;
 				//boot him out:
 				statue = statues[2];
-				script statue
-					say "@Thou art not on a sacred quest!@";
+				script statue say "@Thou art not on a sacred quest!@";
 				statue = statues[1];
-				script statue after 15 ticks
-					say("@Passage denied!@");
+				script statue after 15 ticks say("@Passage denied!@");
 				var pos = [2719, 2852, 0];
 				AVATAR->halt_scheduled();
 				AVATAR->trueFreeze();
@@ -194,7 +186,6 @@ void eggCodexQuest object#() () {
 			index -= 1;
 		}
 	}
-
 	var objshape;
 	//Check to see if we must detect items of principle or
 	//the Vortex Cube:
@@ -332,11 +323,12 @@ void eggsPartyLocationBarks object#(0x621) () {
 			num = PARTY->count_objects(SHAPE_ITEM_OF_PRINCIPLE, QUALITY_ANY, FRAME_ANY);
 			if (num != 3) {
 				var has_book = contHasItemCount(PARTY, 1, SHAPE_ITEM_OF_PRINCIPLE, QUALITY_ANY, 0);
-				var has_candle = contHasItemCount(PARTY, 1, SHAPE_ITEM_OF_PRINCIPLE, QUALITY_ANY, 1);
+				var has_candle = contHasItemCount(PARTY, 1, SHAPE_ITEM_OF_PRINCIPLE, QUALITY_ANY,
+					1);
 				var has_bell = contHasItemCount(PARTY, 1, SHAPE_ITEM_OF_PRINCIPLE, QUALITY_ANY, 2);
-				var princitems = [" the Book of Truth", " the Candle of Love", " the Bell of Courage"];
+				var princitems = [" the Book of Truth", " the Candle of Love",
+					" the Bell of Courage"];
 				var index = 0;
-
 				if (msg) {
 					msg += " You also forgot";
 				} else {
@@ -380,7 +372,6 @@ void eggsPartyLocationBarks object#(0x621) () {
 			istalk = true;
 		}
 	}
-
 	if (npcnum == PARTY) {
 		npcnum = randomPartyMember();
 		if (npcnum == AVATAR) {
@@ -390,7 +381,6 @@ void eggsPartyLocationBarks object#(0x621) () {
 	if (!isNearby(npcnum)) {
 		abort;
 	}
-
 	if (!istalk) {
 		UI_item_say(npcnum, "@" + msg + "@");
 	} else if (istalk) {

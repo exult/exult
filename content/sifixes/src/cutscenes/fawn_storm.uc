@@ -16,11 +16,9 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
-
 void FawnStorm object#(0x6BC) () {
 	var pathegg = getPathEgg(2, 1);
 	var lute;
-
 	if (event == SCRIPTED) {
 		var quality = pathegg->get_item_quality();
 		if (quality == 6) {
@@ -34,7 +32,6 @@ void FawnStorm object#(0x6BC) () {
 					pos.x += (pos.z / 2);
 					pos.y += (pos.z / 2);
 					UI_sprite_effect(ANIMATION_PURPLE_BUBBLES, pos.x, pos.y, 0, 0, 0, -1);
-
 					var dir = IOLO->find_direction(lute);
 					script IOLO {
 						nohalt;
@@ -67,17 +64,14 @@ void FawnStorm object#(0x6BC) () {
 				lute->set_last_created();
 				IOLO->give_last_created();
 			}
-
 			script IOLO {
 				nohalt;
 				actor frame standing;
 			}
-
 			script pathegg after 3 ticks {
 				nohalt;
 				call FawnStorm;
 			}
-
 			pathegg->set_item_quality(quality + 1);
 			AVATAR->clear_item_flag(DONT_MOVE);
 			delayedBark(IOLO, "@A lute!@", 0);

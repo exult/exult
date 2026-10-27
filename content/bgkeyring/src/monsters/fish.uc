@@ -22,8 +22,8 @@
 
 //Live fish originally didn't do a damn thing - this makes them plop
 //out of the water (using unimplemented animations from the original)
+const int SOUND_FISH = 40;  //splashy sound
 
-const int SOUND_FISH = 40;	//splashy sound
 void Fish shape#(0x1FD) () {
 	if (event == PROXIMITY) {
 		var frames;
@@ -34,12 +34,10 @@ void Fish shape#(0x1FD) () {
 			//use rotated (south-facing) animation set (slightly different order too)
 			frames = [30, 21, 29, 31, 16];
 		}
-
 		script item {
 			//keep the fish from swimming during sequence
 			call freeze;
 			//(according to their schedule)
-
 			frame frames[1];
 			wait 1;
 			sfx SOUND_FISH;

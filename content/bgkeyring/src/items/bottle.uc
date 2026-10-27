@@ -38,8 +38,8 @@ void Bottle shape#(0x268) () {
 		//Milk was picked up, and is ready to be used
 		struct<ObjPos> target = UI_click_on_item();
 		//a churn was selected - go to the churn and run churnButter()
-		if (target->get_item_shape() == SHAPE_KITCHEN_ITEM &&
-				target->get_item_frame() == FRAME_CHURN) {
+		if (target->get_item_shape() == SHAPE_KITCHEN_ITEM
+			&& target->get_item_frame() == FRAME_CHURN) {
 			gotoChurn(target, CHURN_WITH_BOTTLE);
 		} else {
 			//otherwise, just drink the damn milk already

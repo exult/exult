@@ -23,7 +23,6 @@
  *	Author: Marzo Junior
  *	Last Modified: 2006-02-27
  */
-
 #include "npcs/related_functions/zauriel_dialog.uc"			//Zauriel's dialog functions
 
 void Zauriel object#(0x48B) () {
@@ -65,12 +64,13 @@ void Zauriel object#(0x48B) () {
 		var barks;
 		if (quest_state == GEM_USED) {
 			//But not killed Laundo:
-			barks = ["@Thou hast used the gem!@", "@Find and kill the mage!@", "@Rescue my daughter!@"];
+			barks = ["@Thou hast used the gem!@", "@Find and kill the mage!@",
+				"@Rescue my daughter!@"];
 		} else {
 			//But is not with Laurianna:
-			barks = ["@Thou hast killed the mage!@", "@Why art thou not with my daughter?@", "@Go and rescue her!@"];
+			barks = ["@Thou hast killed the mage!@", "@Why art thou not with my daughter?@",
+				"@Go and rescue her!@"];
 		}
-
 		script item {
 			face find_direction(AVATAR);
 			say barks[1];
@@ -83,15 +83,12 @@ void Zauriel object#(0x48B) () {
 		item->trueUnfreeze();
 		return;
 	}
-
 	var in_gem_subquest;
-
 	if (quest_state == NO_ONE_THERE) {
 		in_gem_subquest = true;
 	} else {
 		in_gem_subquest = false;
 	}
-
 	if (event == DOUBLECLICK) {
 		//Close all gumps so the animation starts at once:
 		UI_close_gumps();
@@ -142,7 +139,6 @@ void Zauriel object#(0x48B) () {
 			wait 8;
 			call Zauriel;
 		}
-
 		if (laurianna_near) {
 			if (has_amulet) {
 				//This should only happen if the player cheated (hack moved) Laurianna
@@ -156,11 +152,10 @@ void Zauriel object#(0x48B) () {
 				//Laurianna has yet to teleport to her father; do so.
 				LAURIANNA->remove_from_party();
 				LAURIANNA->set_schedule_type(WAIT);
-
 				var eggs = find_nearby(SHAPE_EGG, 20, MASK_EGG);
 				struct<Position> pos;
 				for (egg in eggs) {
-					if (egg->get_item_quality() ==  -1 * LAURIANNA->get_npc_number()) {
+					if (egg->get_item_quality() == -1 * LAURIANNA->get_npc_number()) {
 						pos = egg->get_object_position();
 						break;
 					}
@@ -169,7 +164,6 @@ void Zauriel object#(0x48B) () {
 				UI_sprite_effect(ANIMATION_TELEPORT, pos.x, pos.y, 0, 0, 0, -1);
 				//LAURIANNA->move_object([0x224, 0x628, 0x0]);
 				//UI_sprite_effect(ANIMATION_TELEPORT, 0x224, 0x628, 0, 0, 0, -1);
-
 				script LAURIANNA {
 					sfx SOUND_TELEPORT;
 					wait 4;
@@ -191,7 +185,7 @@ void Zauriel object#(0x48B) () {
 			//The quest is finished.
 			//Begin post-quest talk:
 			zaurielLastTalk();
-		} else if (quest_state>= NO_ONE_THERE) {
+		} else if (quest_state >= NO_ONE_THERE) {
 			zaurielTalkGemSubquest();
 		} else {
 			zaurielTalkPreQuest();

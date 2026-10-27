@@ -19,21 +19,25 @@
  *	Author: Marzo Junior (reorganizing/updating code by Alun Bestor)
  *	Last Modified: 2006-03-19
  */
-
 #include "misc/blacksmithing/constants.uc"
 #include "misc/blacksmithing/functions.uc"
 #include "misc/blacksmithing/externs.uc"
 
 //Anvil, reimplemented to allow custom sword forging
 #include "items/anvil.uc"
+
 //Bellows, reimplemented to shift off firepit behaviour to firepit.uc
 #include "items/bellows.uc"
+
 //Firepit, reimplemented to heat up swordblanks
 #include "items/firepit.uc"
+
 //Hammer, reimplemented to allow custom sword forging
 #include "items/hammer.uc"
+
 //Swordblank, reimplemented to allow custom sword forging
 #include "items/swordblank.uc"
+
 //Trough & well, both reimplemented due changes in bucket code
 #include "items/water_trough.uc"
 #include "items/well.uc"

@@ -24,7 +24,7 @@
  */
 
 //Returns a list of targets for friendly spells
-var getFriendlyTargetList (var caster, var dist) {
+var getFriendlyTargetList(var caster, var dist) {
 	if ((caster->get_npc_object()) in UI_get_party_list()) {
 		//Caster is in the party; return party:
 		return UI_get_party_list();
@@ -51,7 +51,7 @@ var getFriendlyTargetList (var caster, var dist) {
 }
 
 //Returns a list of targets for offensive spells
-var getEnemyTargetList (var caster, var dist) {
+var getEnemyTargetList(var caster, var dist) {
 	if ((caster->get_npc_object()) in UI_get_party_list()) {
 		//If caster in party, return all non-party NPCs:
 		return getNearbyNonPartyNPCs(dist);
@@ -78,10 +78,9 @@ var getEnemyTargetList (var caster, var dist) {
 }
 
 //Removes element # elemindex from the array and returns resulting array
-var removeFromArrayByIndex (var array, var elemindex) {
+var removeFromArrayByIndex(var array, var elemindex) {
 	//var count = 1;
 	var retarray = [];
-
 	for (elem in array with index) {
 		if (index != elemindex) {
 			retarray << elem;
@@ -93,7 +92,6 @@ var removeFromArrayByIndex (var array, var elemindex) {
 //Given an NPC list, returns only those with a given flag set
 var filterListByFlag(var list, var flag, var state) {
 	var ret_list = [];
-
 	for (npc in list) {
 		if (npc->get_item_flag(flag) == state) {
 			ret_list << npc;
@@ -109,7 +107,6 @@ var filterListByEquipedObject(var list, var shapes, var spot) {
 	if (UI_get_array_size(shapes) == 1) {
 		shapes = [shapes];
 	}
-
 	for (npc in list) {
 		if ((npc->get_readied(spot))->get_item_shape() in shapes) {
 			ret_list << npc;
@@ -122,9 +119,9 @@ var filterListByEquipedObject(var list, var shapes, var spot) {
 var filterListByRelHits(var list, var frac) {
 	var ret_list = [];
 	for (npc in list) {
-		var hps = 4*npc->get_npc_prop(HEALTH);
+		var hps = 4 * npc->get_npc_prop(HEALTH);
 		var str = npc->get_npc_prop(STRENGTH);
-		if (hps<str*frac) {
+		if (hps < str * frac) {
 			ret_list << npc;
 		}
 	}
@@ -135,12 +132,10 @@ var filterListByRelHits(var list, var frac) {
 //which are not in removes
 var removeItemsFromList(var list, var removes) {
 	var newarray = [];
-
 	if (UI_get_array_size(removes) > 0) {
 		if (UI_get_array_size(removes) == 1) {
 			removes = [removes];
 		}
-
 		for (spell in list) {
 			if (!(spell in removes)) {
 				newarray << spell;
@@ -149,7 +144,6 @@ var removeItemsFromList(var list, var removes) {
 	} else {
 		newarray = list;
 	}
-
 	return newarray;
 }
 
@@ -157,12 +151,10 @@ var removeItemsFromList(var list, var removes) {
 //which are also in list2
 var intersectLists(var list1, var list2) {
 	var newarray = [];
-
 	if (UI_get_array_size(list2) > 0) {
 		if (UI_get_array_size(list2) == 1) {
 			list2 = [list2];
 		}
-
 		for (spell in list1) {
 			if (spell in list2) {
 				newarray << spell;
@@ -171,13 +163,11 @@ var intersectLists(var list1, var list2) {
 	} else {
 		newarray = [];
 	}
-
 	return newarray;
 }
 
 var filterBodyList(var list, var body) {
 	var newarray = [];
-
 	if (UI_get_array_size(list) > 0) {
 		for (currbody in list) {
 			if (currbody->get_body_npc() != body->get_body_npc()) {
@@ -187,15 +177,12 @@ var filterBodyList(var list, var body) {
 	} else {
 		newarray = [];
 	}
-
 	return newarray;
 }
-
 
 //Returns a version of <array> that has <obj> stripped from it.
 var removeFromArray(var array, var obj) {
 	var newarray = [];
-
 	if (UI_get_array_size(array) > 0) {
 		for (curr in array) {
 			if (curr != obj) {
@@ -205,6 +192,5 @@ var removeFromArray(var array, var obj) {
 	} else {
 		newarray = [];
 	}
-
 	return newarray;
 }

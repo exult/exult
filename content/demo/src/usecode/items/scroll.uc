@@ -17,14 +17,10 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *  Author: Malignant Manor
  */
-
-void Scroll shape#(166)()
-{
+void Scroll shape#(166) () {
 	UI_book_mode_ex(true, 4);
 	var QUALITY = get_item_quality();
-	if (QUALITY == 0)
-		say("This is an important scroll! You might have more fun installing 
+	if (QUALITY == 0) say("This is an important scroll! You might have more fun installing 
 			Ultima VII - The Black Gate and Ultima VII Part 2 - Serpent Isle and playing these with Exult");
-	else
-		say("I don't feel like writing anymore.");
+	else say("I don't feel like writing anymore.");
 }

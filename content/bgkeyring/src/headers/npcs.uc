@@ -24,5 +24,5 @@
  */
 
 //NPC number for the two Keyring Quest NPCs:
-const int ZAURIEL						= -139;	//0xFECA
-const int LAURIANNA						= -148;	//0xFEC9
+const int ZAURIEL = -139;  //0xFECA
+const int LAURIANNA = -148;  //0xFEC9

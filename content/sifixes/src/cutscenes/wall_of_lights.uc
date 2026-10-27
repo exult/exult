@@ -30,7 +30,6 @@
 // externs
 extern void partySurroundBatlin object#(0x61D) ();
 extern void killEveryone object#(0x7D8) ();
-
 const int BATLIN_FACE = -287;
 
 void BatlinAtWallOfLights object#(0x73B) () {
@@ -39,11 +38,9 @@ void BatlinAtWallOfLights object#(0x73B) () {
 	var baneshapes = [SHAPE_ANTISHAMINO, SHAPE_ANTIDUPRE, SHAPE_MAD_IOLO];
 	var npc;
 	var newbaneshape;
-
 	if ((get_item_quality() == 255) && (event == EGG)) {
 		var index;
 		var max;
-
 		pos = AVATAR->get_object_position();
 		pos.x -= 4;
 		pos.y += 10;
@@ -61,7 +58,6 @@ void BatlinAtWallOfLights object#(0x73B) () {
 
 			// Do not let even the Avatar prevent them from being there:
 			npc->set_item_flag(SI_TOURNAMENT);
-
 			if (npc->get_distance(AVATAR) > 15) {
 				pos.x += index * 2;
 				npc->move_object(pos);
@@ -85,32 +81,26 @@ void BatlinAtWallOfLights object#(0x73B) () {
 	} else if (event == SCRIPTED) {
 		var pathegg = getPathEgg(2, 1);
 		var pathegg_quality = pathegg->get_item_quality();
-
 		if ((pathegg_quality > 3) && (pathegg_quality < 7)) {
 			npc = companions[(pathegg_quality - 3)];
 			UI_play_sound_effect(0x77);
-
 			if (pathegg_quality > 4) {
 				pos = npc->get_object_position();
 				UI_sprite_effect(ANIMATION_TELEPORT, pos.x, pos.y, 0, 0, 0, -1);
 			}
-
 			var body = UI_find_object(-359, SHAPE_BODIES_2, QUALITY_ANY, 16);
 			var dir = npc->find_direction(body);
 			struct<Position> offsets = [0, 0];
-
-			if (dir in [NORTHWEST, NORTH, NORTHEAST]) {
+			if (dir in[NORTHWEST, NORTH, NORTHEAST]) {
 				offsets.y = -1;
-			} else if (dir in [SOUTHWEST, SOUTH, SOUTHEAST]) {
+			} else if (dir in[SOUTHWEST, SOUTH, SOUTHEAST]) {
 				offsets.y = 1;
 			}
-
-			if (dir in [NORTHEAST, EAST, SOUTHEAST]) {
+			if (dir in[NORTHEAST, EAST, SOUTHEAST]) {
 				offsets.x = 1;
-			} else if (dir in [NORTHWEST, WEST, SOUTHWEST]) {
+			} else if (dir in[NORTHWEST, WEST, SOUTHWEST]) {
 				offsets.x = -1;
 			}
-
 			var dist = npc->get_distance(body);
 			offsets.x *= dist;
 			offsets.y *= dist;
@@ -121,22 +111,17 @@ void BatlinAtWallOfLights object#(0x73B) () {
 			offsets.y = -1 * offsets.y;
 			UI_sprite_effect(ANIMATION_RED_SWIRL, pos.x, pos.y, offsets.x, offsets.y, 0, dist);
 			pathegg->set_item_quality(pathegg_quality + 1);
-
 			script pathegg {
 				nohalt;
-				wait (dist + 10);
+				wait(dist + 10);
 				call BatlinAtWallOfLights;
 			}
-
 			newbaneshape = baneshapes[(pathegg_quality - 3)];
-
 			npc->remove_from_party();
 			pos = npc->get_object_position();
 			struct<Position> objpos = [0x6B + 3 * npc, 0x36, 0];
-
 			npc->move_object(objpos);
 			setNewSchedules(npc, objpos.x, objpos.y, WAIT);
-
 			var baneframe = npc->get_item_frame();
 			var baneobj = newbaneshape->create_new_object2(pos);
 			baneobj->set_item_frame(baneframe);
@@ -149,24 +134,22 @@ void BatlinAtWallOfLights object#(0x73B) () {
 			const int INSANITY = -292;
 			UI_show_npc_face0(ANARCHY, 0);
 			say("@I am Anarchy! Hahaha!@");
-			say("@The world shall quail before me! Wrong shall become right! And right shall become lost! Nothing shall escape my touch!@");
+			say(
+				"@The world shall quail before me! Wrong shall become right! And right shall become lost! Nothing shall escape my touch!@");
 			UI_remove_npc_face0();
-
 			UI_show_npc_face0(WANTONNESS, 0);
 			say("@Hahaha! I am the Wantonness Bane!@");
-			say("@Wherever I pass, people shall frolic and sate their wild desires! I shall drive thee to feed thy darkest hungers!@");
+			say(
+				"@Wherever I pass, people shall frolic and sate their wild desires! I shall drive thee to feed thy darkest hungers!@");
 			UI_remove_npc_face0();
-
 			UI_show_npc_face0(INSANITY, 0);
 			say("@I -- hahaha! -- am the Insanity Bane! Hahaha!@");
-			say("@All those who fall within my shadow shall have their reason clouded and their wits addled! Their greatest love shall lie in the rubbish they once loathed! Hahaha!@");
+			say(
+				"@All those who fall within my shadow shall have their reason clouded and their wits addled! Their greatest love shall lie in the rubbish they once loathed! Hahaha!@");
 			UI_remove_npc_face0();
-
 			pos = AVATAR->get_object_position();
 			UI_sprite_effect(ANIMATION_TELEPORT, pos.x, pos.y, 0, 0, 0, -1);
-
 			var banenpc;
-
 			for (newbaneshape in baneshapes with index to max) {
 				banenpc = AVATAR->find_nearby(newbaneshape, 40, 0);
 				if (banenpc) {
@@ -177,7 +160,6 @@ void BatlinAtWallOfLights object#(0x73B) () {
 					npc->kill_npc();
 				}
 			}
-
 			if (BOYDON->npc_nearby()) {
 				pos = BOYDON->get_object_position();
 				script BOYDON {

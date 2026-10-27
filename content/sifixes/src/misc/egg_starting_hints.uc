@@ -16,7 +16,6 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
-
 void eggStartingHints object#(0x7AE) () {
 	if ((event == EGG) && (get_item_quality() == 6)) {
 		gflags[KNOWS_BEAR_SKULL_ORIGIN] = true;

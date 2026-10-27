@@ -20,7 +20,6 @@
  *	Modified By: Marzo Junior
  *	Last Modified: 2006-03-19
  */
-
 #include "npcs/npcs.uc"				//generic NPC dialogue-related functions
 
 //For blacksmithing:
@@ -31,7 +30,6 @@
 
 //Buckets have been changed for milking cows and baking:
 #include "items/bucket.uc"
-
 #include "items/wheat.uc"			//Grinding wheat
 
 //#include "items/key.uc"			//Keys
@@ -42,9 +40,7 @@
 
 //For fishing & selling fish
 #include "misc/fishing.uc"
-
 #include "items/pocketwatch.uc"		//Corrects am/pm bug
-
 #include "items/baby.uc"			//Allows you to put Lady Tory's baby into a cradle
 #include "npcs/tory.uc"				//Lady Tory, the empath in Serpent's Hold (general dialogue improvements)
 
@@ -54,5 +50,4 @@
 //NPCs
 #include "npcs/camille.uc"			//Camille the widow in Paws (adds a good deed)
 #include "npcs/willy.uc"			//Willy the baker in Britain (fixes original conversation bug)
-
 #include "items/misc.uc"			//Miscellaneous interactions

@@ -23,7 +23,6 @@
  *
  *  2016-07-11 Written by Knight Captain
  */
-
 void Delin object#(0x42F) () {
 	if (event == STARTED_TALKING && gflags[ASKED_JENDON_DAEMON_ARTIFACTS]) {
 		gflags[ASK_DELIN_ABOUT_BATLIN] = true;
