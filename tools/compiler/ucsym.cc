@@ -409,6 +409,9 @@ Uc_function_symbol* Uc_function_symbol::create(
 		int   num,    // Function #, or -1 to assign
 		//  1 + last_num.
 		std::vector<Uc_var_symbol*>& p, bool is_extern, Uc_scope* scope, Function_kind kind) {
+	if (std::strncmp(nm, "UI_", 3) == 0) {
+		Uc_location::yyerror("function name '%s' is reserved for intrinsics (prefix 'UI_')", nm);
+	}
 	const auto kind_name = [](Function_kind type) {
 		return type == utility_fun ? "utility" : type == shape_fun ? "shape#" : "object#";
 	};

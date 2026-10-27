@@ -3908,6 +3908,10 @@ static bool Uc_is_valid_calle(
 static Uc_call_expression* cls_function_call(
 		Uc_expression* ths, Uc_class* curcls, char* nm, bool original,
 		Uc_array_expression* parms) {
+	if (std::strcmp(nm, "UI_UNKNOWN") == 0) {
+		Uc_location::yyerror("'UI_UNKNOWN' requires an explicit intrinsic number; use UI_UNKNOWN_XX(...) or (@number)(...)");
+		return nullptr;
+	}
 	Uc_symbol* sym = nullptr;
 	// Check class methods first.
 	if (!ths && curcls) {
@@ -3945,8 +3949,11 @@ static Uc_call_expression* cls_function_call(
 			&& name.size() > uiUnk.size() && name.size() <= uiUnk.size() + 4) {
 			string num(name.substr(uiUnk.size()));
 			try {
-				auto val = std::stoul(num, nullptr, 16);
-				sym      = Uc_function::get_intrinsic(val);
+				size_t digits;
+				auto val = std::stoul(num, &digits, 16);
+				if (digits == num.size()) {
+					sym = Uc_function::get_intrinsic(val);
+				}
 			} catch (std::exception&) {
 				sym = nullptr;
 			}

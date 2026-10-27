@@ -50,6 +50,15 @@ function prototypes, and integer constant declarations.
 
     2.2  Functions
     --------------
+    Function names beginning with the case-sensitive prefix 'UI_' are reserved
+    for intrinsics. User function declarations and definitions, including
+    'extern' declarations and class methods, cannot use this prefix.
+
+    The exact identifier 'UNKNOWN' is reserved for all kinds of user-defined
+    names. Calls to 'UI_UNKNOWN(...)' or 'UNKNOWN(...)' must instead select an
+    intrinsic number with 'UI_UNKNOWN_XX(...)' (hexadecimal suffix) or
+    '(@number)(...)'. Explicit receivers are supported on these numbered calls.
+
     Functions are similar to those in C, but without type
     declarations.  Plus, one must assign a unique number
     which may be used to reference that function in

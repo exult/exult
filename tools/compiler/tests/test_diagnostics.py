@@ -45,6 +45,140 @@ class Diagnostics(unittest.TestCase):
         self.assertTrue(self.output.exists())
         self.assertNotIn("\033[", result.stdout)
 
+    def test_intrinsic_prefix_reserved_for_function_declarations(self):
+        for declaration in (
+            'void UI_custom 0x900 () {}',
+            'UI_custom 0x900 () {}',
+            'extern void UI_custom 0x900 ();',
+            'extern var UI_custom 0x900 (var value);',
+            '#autonumber 0x900\nvoid UI_custom () {}',
+            'void UI_custom shape#(1) () {}',
+            'void UI_custom object#(0x450) () {}',
+            'struct Position { var x; } extern struct<Position> UI_custom 0x900 ();',
+            'class Result {}; extern class<Result> UI_custom 0x900 ();',
+            'class Example { void UI_custom () {} };',
+            'class Example { var UI_custom () { return 1; } };',
+            'void UI_ 0x900 () {}',
+        ):
+            with self.subTest(declaration=declaration):
+                result = self.compile('#game "blackgate"\n' + declaration)
+                self.assert_failed(result, "is reserved for intrinsics (prefix 'UI_')")
+                line = 2 + declaration[:declaration.index('UI_')].count('\n')
+                self.assertIn('input.uc:%d:' % line, result.stdout)
+
+    def test_intrinsic_redeclarations_are_rejected(self):
+        for game in ('blackgate', 'serpentisle', 'serpentbeta'):
+            for declaration in ('extern var UI_get_random 0x900 (var range);',
+                                'var UI_get_random 0x900 (var range) { return range; }'):
+                with self.subTest(game=game, declaration=declaration):
+                    result = self.compile('#game "' + game + '"\n' + declaration)
+                    self.assert_failed(result, "function name 'UI_get_random' is reserved for intrinsics")
+                    self.assertEqual(result.returncode, 1, result.stdout)
+
+    def test_intrinsic_prefix_declaration_recovery(self):
+        result = self.compile('''#game "blackgate"
+void UI_custom 0x900 () {}
+void following 0x901 () { var value = unknown; }
+''', '-Wno-all')
+        self.assert_failed(result, "function name 'UI_custom' is reserved for intrinsics")
+        self.assertIn("use of undeclared identifier 'unknown'", result.stdout)
+        self.assertEqual(result.returncode, 1, result.stdout)
+
+    def test_intrinsic_prefix_is_case_sensitive(self):
+        result = self.compile('''#game "blackgate"
+void UI 0x900 () {}
+void ui_custom 0x901 () {}
+void XUI_custom 0x902 () {}
+void UIcustom 0x903 () {}
+void example 0x904 () {
+    var UI_value = 1;
+    UI(); ui_custom(); XUI_custom(); UIcustom();
+}
+''')
+        self.assertEqual(result.returncode, 0, result.stdout)
+
+    def test_unknown_is_reserved_as_an_identifier(self):
+        for source in (
+            'void UNKNOWN 0x900 () {}',
+            'extern void UNKNOWN 0x900 ();',
+            'void example 0x900 (var UNKNOWN) {}',
+            'void example 0x900 () { var UNKNOWN = 1; }',
+            'void example 0x900 () { declare var UNKNOWN; }',
+            'void example 0x900 () { static var UNKNOWN; }',
+            'void example 0x900 () { string UNKNOWN = "text"; }',
+            'void example 0x900 () { var value; var alias UNKNOWN = value; }',
+            'const int UNKNOWN = 1;',
+            'enum UNKNOWN { value = 1 };',
+            'enum numbers { UNKNOWN = 1 };',
+            'struct UNKNOWN { var value; }',
+            'struct Data { var UNKNOWN; }',
+            'class UNKNOWN {};',
+            'class Example { var UNKNOWN; };',
+            'class Example { void UNKNOWN () {} };',
+            'void example 0x900 () { UNKNOWN: return; }',
+            'void example 0x900 () { for (UNKNOWN in [1]) {} }',
+        ):
+            with self.subTest(source=source):
+                result = self.compile('#game "blackgate"\n' + source, '-Wno-all')
+                self.assert_failed(result, "identifier 'UNKNOWN' is reserved")
+                self.assertEqual(result.returncode, 1, result.stdout)
+
+    def test_unnumbered_unknown_intrinsic_calls_are_rejected(self):
+        for game in ('blackgate', 'serpentisle', 'serpentbeta'):
+            for call in ('UI_UNKNOWN();', 'UNKNOWN();', 'item.UI_UNKNOWN();',
+                         'item.UNKNOWN();', 'item->UI_UNKNOWN(1);', 'item->UNKNOWN(1);'):
+                with self.subTest(game=game, call=call):
+                    result = self.compile('#game "' + game + '"\nvoid example 0x900 () { ' + call + ' }')
+                    self.assert_failed(result, 'require' + ('s' if 'UI_UNKNOWN' in call else '')
+                        + ' an explicit intrinsic number')
+                    self.assertEqual(result.returncode, 1, result.stdout)
+
+    def test_numbered_unknown_intrinsic_calls_remain_available(self):
+        for game in ('blackgate', 'serpentisle', 'serpentbeta'):
+            for numbered, explicit in (('UI_UNKNOWN_FE(1);', '(@0xFE)(1);'),
+                                       ('item.UI_UNKNOWN_FE(1);', 'item.(@0xFE)(1);')):
+                with self.subTest(game=game, numbered=numbered):
+                    prefix = '#game "' + game + '"\nvoid example 0x900 () { '
+                    result = self.compile(prefix + numbered + ' }', '-b')
+                    self.assertEqual(result.returncode, 0, result.stdout)
+                    expected = self.output.read_bytes()
+                    result = self.compile(prefix + explicit + ' }', '-b')
+                    self.assertEqual(result.returncode, 0, result.stdout)
+                    self.assertEqual(self.output.read_bytes(), expected)
+
+    def test_unknown_intrinsic_number_must_be_complete(self):
+        for name in ('UI_UNKNOWN_foo', 'UI_UNKNOWN_FEzz', 'UI_UNKNOWN_', 'UI_UNKNOWN_10000'):
+            with self.subTest(name=name):
+                result = self.compile('#game "blackgate"\nvoid example 0x900 () { ' + name + '(); }')
+                self.assert_failed(result, "use of undeclared identifier '" + name + "'")
+
+    def test_unknown_identifier_case_and_recovery(self):
+        result = self.compile('''#game "blackgate"
+// UNKNOWN is allowed in comments and strings.
+void Unknown 0x900 () { say("UNKNOWN"); }
+void unknown 0x901 () { var UNKNOWN_value = 0; }
+''')
+        self.assertEqual(result.returncode, 0, result.stdout)
+        self.output.unlink()
+        result = self.compile('''#game "blackgate"
+void example 0x900 () { UI_UNKNOWN(); }
+void following 0x901 () { var value = undeclared; }
+''')
+        self.assert_failed(result, "'UI_UNKNOWN' requires an explicit intrinsic number")
+        self.assertIn("use of undeclared identifier 'undeclared'", result.stdout)
+
+    def test_intrinsic_calls_remain_available(self):
+        for game in ('blackgate', 'serpentisle', 'serpentbeta'):
+            with self.subTest(game=game):
+                result = self.compile('#game "' + game + '''"
+void example 0x900 () {
+    var value = UI_get_random(6);
+    UI_show_npc_face(item, 0);
+    UI_remove_npc_face(item);
+}
+''')
+                self.assertEqual(result.returncode, 0, result.stdout)
+
     def assert_portrait_bytecode(self, sugar, expanded, game, declarations=''):
         prefix = ('#game "' + game + '"\n' + declarations + '\n'
             + 'const int top = 0;\nvoid example 0x900 (var npc, var frame) { const int bottom = 1; ')

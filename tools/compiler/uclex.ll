@@ -572,6 +572,9 @@ sonic_damage	return SONIC_DAMAGE;
 "!"		return NOT;
 
 [a-zA-Z_][a-zA-Z0-9_]*	{
+			if (std::strcmp(yytext, "UNKNOWN") == 0) {
+				Uc_location::yyerror("identifier 'UNKNOWN' is reserved; unknown intrinsics require an explicit intrinsic number");
+			}
 			yylval.strval = strdup(yytext);
 			return IDENTIFIER;
 		}
