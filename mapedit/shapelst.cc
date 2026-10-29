@@ -70,7 +70,23 @@ using std::unique_ptr;
 std::vector<std::unique_ptr<Editing_file>> Shape_chooser::editing_files;
 int                                        Shape_chooser::check_editing_timer = -1;
 
-#define IS_FLAT(shnum) ((shnum) < c_first_obj_shape)
+constexpr int c_max_flat_frames = 32;    // Flats are read with frame # & 31.
+
+/*
+ *  Is a shape in 'shapes.vga' an 8x8 flat?  Empty shapes go by number.
+ */
+
+static bool Is_flat(Shape_file_info* finfo, int shnum) {
+	ExultStudio* studio = ExultStudio::get_instance();
+	Vga_file*    ifile  = finfo != nullptr ? finfo->get_ifile() : nullptr;
+	if (ifile == nullptr || finfo != studio->get_vgafile() || shnum < 0) {
+		return false;
+	}
+	if (shnum < ifile->get_num_shapes() && ifile->get_num_frames(shnum) > 0) {
+		return ifile->is_flat(shnum);
+	}
+	return shnum < c_first_obj_shape;
+}
 
 /*
  *  Callback for when a shape is dropped on our draw area.
@@ -729,10 +745,9 @@ time_t Shape_chooser::export_tiled_png(
 		bool        bycols    // Write tiles columns-first.
 ) {
 	assert(selected >= 0);
-	const int    shnum  = info[selected].shapenum;
-	ExultStudio* studio = ExultStudio::get_instance();
-	// Low shape in 'shapes.vga'?
-	assert(IS_FLAT(shnum) && file_info == studio->get_vgafile());
+	const int shnum = info[selected].shapenum;
+	// Flat in 'shapes.vga'?
+	assert(Is_flat(file_info, shnum));
 	Shape* shape = ifile->extract_shape(shnum);
 	assert(shape != nullptr);
 	cout << "Writing " << fname << " tiled" << (bycols ? ", by cols" : ", by rows") << " first" << endl;
@@ -1085,8 +1100,8 @@ static void Import_png(
 	// Convert to game palette.
 	Convert_indexed_image(pixels, h * rowsize, oldpal, palsize, pal);
 	delete[] oldpal;
-	// Low shape in 'shapes.vga'?
-	const bool flat = IS_FLAT(shapenum) && finfo == studio->get_vgafile();
+	// Flat in 'shapes.vga'?
+	const bool flat = Is_flat(finfo, shapenum);
 	int        xleft;
 	int        yabove;
 	if (flat) {
@@ -1373,7 +1388,8 @@ void Shape_chooser::import_all_pngs(const char* fname, int shnum) {
 		return;
 	}
 	ExultStudio* studio = ExultStudio::get_instance();
-	if (IS_FLAT(shnum) && file_info == studio->get_vgafile()) {
+	const bool   flat   = Is_flat(file_info, shnum);
+	if (flat) {
 		// The shape is an 8x8 tile from shapes.vga, check the size of the png
 		int i = 0;
 		int f = 0;
@@ -1393,7 +1409,7 @@ void Shape_chooser::import_all_pngs(const char* fname, int shnum) {
 			}
 			delete[] oldpal;
 			delete[] pixels;
-			if ((w != c_tilesize) || (h != c_tilesize)) {
+			if ((w != c_tilesize) || (h != c_tilesize) || (rowsize != c_tilesize)) {
 				f++;
 			}
 			i++;
@@ -1405,6 +1421,11 @@ void Shape_chooser::import_all_pngs(const char* fname, int shnum) {
 			msg += "\tThere are " + std::to_string(f) + " frames among ";
 			msg += std::to_string(i) + " \n\twith a size not 8px * 8px";
 			studio->prompt(msg.c_str(), "OK", nullptr, nullptr);
+			delete[] fullname;
+			return;
+		}
+		if (i > c_max_flat_frames) {
+			Alert("A flat can't have more than %d frames.", c_max_flat_frames);
 			delete[] fullname;
 			return;
 		}
@@ -1434,9 +1455,9 @@ void Shape_chooser::import_all_pngs(const char* fname, int shnum) {
 		// Convert to game palette.
 		Convert_indexed_image(pixels, h * rowsize, oldpal, palsize, pal);
 		delete[] oldpal;
-		const int xleft  = w + xoff - 1;
-		const int yabove = h + yoff - 1;
-		auto      frame  = make_unique<Shape_frame>(pixels, w, h, xleft, yabove, true);
+		const int xleft  = flat ? c_tilesize : w + xoff - 1;
+		const int yabove = flat ? c_tilesize : h + yoff - 1;
+		auto      frame  = make_unique<Shape_frame>(pixels, w, h, xleft, yabove, !flat);
 		if (i < ifile->get_num_frames(shnum)) {
 			shape->set_frame(std::move(frame), i);
 		} else {
@@ -1474,9 +1495,8 @@ void Shape_chooser::import_shape(const char* fname, gpointer user_data) {
 		if (chooser->selected < 0) {
 			return;    // Shouldn't happen.
 		}
-		ExultStudio* studio = ExultStudio::get_instance();
-		// Low shape in 'shapes.vga'?
-		const bool      flat = IS_FLAT(chooser->info[chooser->selected].shapenum) && chooser->file_info == studio->get_vgafile();
+		// Flat in 'shapes.vga'?
+		const bool      flat = Is_flat(chooser->file_info, chooser->info[chooser->selected].shapenum);
 		IFileDataSource ds(fname);
 		const int       size = ds.getSize();
 		// Check to see if it is a valid shape file, Flat to Flat, RLE to RLE.
@@ -1521,13 +1541,17 @@ void Shape_chooser::new_frame() {
 		frnum > shape->get_num_frames()) {
 		return;
 	}
-	// Low shape in 'shapes.vga'?
+	// Flat in 'shapes.vga'?
 	ExultStudio* studio = ExultStudio::get_instance();
-	const bool   flat   = IS_FLAT(shnum) && file_info == studio->get_vgafile();
-	int          w      = 0;
-	int          h      = 0;
-	int          xleft;
-	int          yabove;
+	const bool   flat   = Is_flat(file_info, shnum);
+	if (flat && shape->get_num_frames() >= c_max_flat_frames) {
+		Alert("A flat can't have more than %d frames.", c_max_flat_frames);
+		return;
+	}
+	int w = 0;
+	int h = 0;
+	int xleft;
+	int yabove;
 	if (flat) {
 		w = h = xleft = yabove = c_tilesize;
 	} else {    // Find largest frame.
@@ -1593,6 +1617,28 @@ C_EXPORT void on_new_shape_font_toggled(GtkToggleButton* btn, gpointer user_data
 	chooser->from_font_toggled(on);
 }
 
+// Toggled '8x8 flat' button:
+C_EXPORT void on_new_shape_flat_toggled(GtkToggleButton* btn, gpointer user_data) {
+	ignore_unused_variable_warning(user_data);
+	const bool on      = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(btn));
+	GtkWidget* win     = gtk_widget_get_toplevel(GTK_WIDGET(btn));
+	auto*      chooser = static_cast<Shape_chooser*>(g_object_get_data(G_OBJECT(win), "user_data"));
+	if (chooser != nullptr) {
+		chooser->new_shape_flat_toggled(on);
+	}
+}
+
+// Changed shape #:
+C_EXPORT void on_new_shape_num_changed(GtkSpinButton* btn, gpointer user_data) {
+	ignore_unused_variable_warning(user_data);
+	const int  shnum   = gtk_spin_button_get_value_as_int(btn);
+	GtkWidget* win     = gtk_widget_get_toplevel(GTK_WIDGET(btn));
+	auto*      chooser = static_cast<Shape_chooser*>(g_object_get_data(G_OBJECT(win), "user_data"));
+	if (chooser != nullptr) {
+		chooser->new_shape_num_changed(shnum);
+	}
+}
+
 gboolean Shape_chooser::on_new_shape_font_color_draw_expose_event(
 		GtkWidget* widget,    // The draw area.
 		cairo_t*   cairo,
@@ -1647,6 +1693,36 @@ void Shape_chooser::from_font_toggled(bool on) {
 }
 
 /*
+ *  '8x8 flat' toggled in 'New shape' dialog.
+ */
+
+void Shape_chooser::new_shape_flat_toggled(bool on) {
+	ExultStudio*   studio = ExultStudio::get_instance();
+	GtkWidget*     spin   = studio->get_widget("new_shape_nframes");
+	GtkAdjustment* adj    = gtk_spin_button_get_adjustment(GTK_SPIN_BUTTON(spin));
+	gtk_adjustment_set_upper(adj, on ? c_max_flat_frames : 255);
+	if (gtk_adjustment_get_value(adj) > gtk_adjustment_get_upper(adj)) {
+		gtk_adjustment_set_value(adj, gtk_adjustment_get_upper(adj));
+	}
+	if (on) {    // Flats can't come from a font.
+		studio->set_toggle("new_shape_font", false, false);
+	}
+#ifdef HAVE_FREETYPE2
+	studio->set_sensitive("new_shape_font", !on);
+#endif
+}
+
+/*
+ *  Shape # changed in 'New shape' dialog:  default '8x8 flat' to match.
+ */
+
+void Shape_chooser::new_shape_num_changed(int shnum) {
+	ExultStudio* studio = ExultStudio::get_instance();
+	const bool   vga    = file_info == studio->get_vgafile();
+	studio->set_toggle("new_shape_flat", vga && shnum < c_first_obj_shape, vga);
+}
+
+/*
  *  Add a new shape.
  */
 
@@ -1678,14 +1754,6 @@ void Shape_chooser::new_shape() {
 		}
 	}
 	gtk_adjustment_set_value(adj, shstart);
-	spin            = studio->get_widget("new_shape_nframes");
-	adj             = gtk_spin_button_get_adjustment(GTK_SPIN_BUTTON(spin));
-	const bool flat = IS_FLAT(shnum) && file_info == studio->get_vgafile();
-	if (flat) {
-		gtk_adjustment_set_upper(adj, 31);
-	} else {
-		gtk_adjustment_set_upper(adj, 255);
-	}
 	spin = studio->get_widget("new_shape_font_height");
 	studio->set_sensitive("new_shape_font_height", false);
 	adj = gtk_spin_button_get_adjustment(GTK_SPIN_BUTTON(spin));
@@ -1701,6 +1769,8 @@ void Shape_chooser::new_shape() {
 #ifndef HAVE_FREETYPE2 /* No freetype?  No fonts.  */
 	studio->set_sensitive("new_shape_font", false);
 #endif
+	new_shape_num_changed(shstart);
+	new_shape_flat_toggled(studio->get_toggle("new_shape_flat"));
 	// Store our pointer in color drawer.
 	GtkWidget* draw = studio->get_widget("new_shape_font_color_draw");
 	g_object_set_data(G_OBJECT(draw), "user_data", this);
@@ -1734,8 +1804,11 @@ void Shape_chooser::create_new_shape() {
 		return;
 	}
 	// Create frames.
-	const bool flat     = IS_FLAT(shnum) && file_info == studio->get_vgafile();
+	const bool flat     = file_info == studio->get_vgafile() && studio->get_toggle("new_shape_flat");
 	bool       use_font = false;
+	if (flat && nframes > c_max_flat_frames) {
+		nframes = c_max_flat_frames;
+	}
 #ifdef HAVE_FREETYPE2
 	// Want to create from a font?
 	use_font             = studio->get_toggle("new_shape_font");
@@ -2302,7 +2375,7 @@ GtkWidget* Shape_chooser::create_popup() {
 		Add_menu_item(popup, "Info...", G_CALLBACK(on_shapes_popup_info_activate), this);
 		if (studio->get_image_editor()) {
 			Add_menu_item(popup, "Edit...", G_CALLBACK(on_shapes_popup_edit_activate), this);
-			if (IS_FLAT(info[selected].shapenum) && file_info == studio->get_vgafile()) {
+			if (Is_flat(file_info, info[selected].shapenum)) {
 				Add_menu_item(popup, "Edit tiled...", G_CALLBACK(on_shapes_popup_edtiles_activate), this);
 			}
 		}
