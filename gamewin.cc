@@ -584,6 +584,9 @@ void Game_window::init_files(bool cycle) {
 	shape_man->load();    // All the .vga files!
 	cycle_load_palette();
 
+	// init effects after shapes have loaded
+	effects->init();
+
 	const unsigned long timer = SDL_GetTicks();
 	srand(timer);    // Use time to seed rand. generator.
 	// Force clock to start.
