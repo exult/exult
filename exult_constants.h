@@ -47,6 +47,9 @@ constexpr const int c_any_qual     = -359;
 constexpr const int c_any_framenum = -359;
 constexpr const int c_any_quantity = -359;
 
+// Gold coin shape # (same in BG and SI).
+constexpr const int c_gold_coin_shapenum = 644;
+
 // Maximum number of shapes:
 constexpr const int c_max_shapes = 2048;
 constexpr const int c_occsize    = c_max_shapes / 8 + ((c_max_shapes % 8) != 0 ? 1 : 0);
