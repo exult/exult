@@ -1220,6 +1220,12 @@
 						High quality scaler, that uses a lot of CPU cycles. Only 2x.</li>
 					<li><strong>HQ3X</strong><br/>
 						High quality scaler, that uses a lot of CPU cycles. Only 3x.</li>
+					<li><strong>ScaleFX</strong> by Sp00kyFox<br/>
+						Edge-aware pixel-art scaling at 3x, preserving the original colours.
+						Uses a CPU implementation of the five-pass ScaleFX shader.
+						Select ScaleFX in Video Options, or set <strong>scale_method</strong>
+						to <strong>ScaleFX</strong> and <strong>scale</strong> to <strong>3</strong>
+						in exult.cfg. Also available for UI layer scalers.</li>
 					<li><strong>HQ4X</strong><br/>
 						High quality scaler, that uses a *lot* of CPU cycles. Only 4x.</li>
 					<li><strong>2xBR</strong><br/>

@@ -303,6 +303,7 @@ public:
 	static const ScalerConst    _2xBR;
 	static const ScalerConst    _3xBR;
 	static const ScalerConst    _4xBR;
+	static const ScalerConst    ScaleFX;
 	static const ScalerConst    SDLScaler;
 	static const ScalerConst    NumScalers;
 
@@ -448,6 +449,9 @@ protected:
 	/*
 	 *   Scaled blits:
 	 */
+	void show_scaled8to16_ScaleFX(int x, int y, int w, int h);
+	void show_scaled8to32_ScaleFX(int x, int y, int w, int h);
+
 	void show_scaled8to16_2xSaI(int x, int y, int w, int h);
 	void show_scaled8to555_2xSaI(int x, int y, int w, int h);
 	void show_scaled8to565_2xSaI(int x, int y, int w, int h);

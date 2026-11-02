@@ -340,7 +340,7 @@ void VideoOptions_gump::rebuild_dynamic_buttons() {
 		buttons[id_scaling] = std::make_unique<VideoTextToggle>(
 				this, &VideoOptions_gump::toggle_scaling, std::move(scalingtext), scaling,
 				get_button_pos_for_label(Strings::Scaling_()), yForRow(4), 74);
-	} else if (scaler == Image_window::Hq3x || scaler == Image_window::_3xBR) {
+	} else if (scaler == Image_window::Hq3x || scaler == Image_window::_3xBR || scaler == Image_window::ScaleFX) {
 		scaling = 2;
 	} else if (scaler == Image_window::Hq4x || scaler == Image_window::_4xBR) {
 		scaling = 3;

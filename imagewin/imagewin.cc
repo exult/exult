@@ -42,6 +42,7 @@ Boston, MA  02111-1307, USA.
 #include "manip.h"
 #include "mouse.h"
 #include "perf.h"
+#include "scale_scalefx.h"
 
 #include <algorithm>
 #include <cstdlib>
@@ -90,6 +91,7 @@ const Image_window::ScalerConst Image_window::Hq4x("Hq4x");
 const Image_window::ScalerConst Image_window::_2xBR("2xBR");
 const Image_window::ScalerConst Image_window::_3xBR("3xBR");
 const Image_window::ScalerConst Image_window::_4xBR("4xBR");
+const Image_window::ScalerConst Image_window::ScaleFX("ScaleFX");
 const Image_window::ScalerConst Image_window::SDLScaler("SDLScaler");
 const Image_window::ScalerConst Image_window::NumScalers(nullptr);
 
@@ -113,7 +115,7 @@ SDL_Color              ManipBase::colors[256];    // Palette for source window.
 
 // Constructor for the ScalerVector, setup the list
 Image_window::ScalerVector::ScalerVector() {
-	reserve(14);
+	reserve(16);
 
 	// This is all the names of the scalers. It needs to match the ScalerType
 	// enum
@@ -277,6 +279,17 @@ Image_window::ScalerVector::ScalerVector() {
 			   nullptr};
 	push_back(_4xbr);
 #endif
+	const ScalerInfo scalefx
+			= {"ScaleFX",
+			   0,
+			   SCALE_BIT(::ScaleFX::factor),
+			   nullptr,
+			   &Image_window::show_scaled8to16_ScaleFX,
+			   &Image_window::show_scaled8to16_ScaleFX,
+			   &Image_window::show_scaled8to16_ScaleFX,
+			   &Image_window::show_scaled8to32_ScaleFX,
+			   nullptr};
+	push_back(scalefx);
 	const ScalerInfo SDLScaler = {"SDLScaler", 0, 0xFFFFFFFF, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr};
 	push_back(SDLScaler);
 }
@@ -914,8 +927,9 @@ void Image_window::show(int x, int y, int w, int h) {
 	//  can still be used if it is not a muliple of 4
 	int buffer_w = get_full_width() + gb;
 	int buffer_h = get_full_height() + gb;
-	// Increase the area by 4 pixels
-	increase_area(x, y, w, h, 4, 4, 4, 4, buffer_w, buffer_h);
+	// ScaleFX's multipass edge analysis has a larger dependency radius.
+	const int margin = scaler == ScaleFX ? ::ScaleFX::radius : 4;
+	increase_area(x, y, w, h, margin, margin, margin, margin, buffer_w, buffer_h);
 
 	// Make it 4 pixel aligned too, needed for more advanced scalers that work
 	// best with groups of 4 pixels, othwerwise we can get discontinuities
@@ -2275,3 +2289,29 @@ Image_window::Layer::Layer(SDL_Surface* surface, int w, int h, unsigned char tra
 		  buf(std::make_unique<Image_buffer8>(
 				  surface->w, surface->h, surface->pitch, reinterpret_cast<unsigned char*>(surface->pixels), guard_band)),
 		  logw(w), logh(h), fixed_scale(fscale), transparent(transp), z(zorder), name(std::move(name)) {}
+
+namespace {
+	template <typename Pixel>
+	void show_scalefx(SDL_Surface* source, SDL_Surface* destination, int x, int y, int w, int h) {
+		const auto*                   format  = SDL_GetPixelFormatDetails(destination->format);
+		const auto*                   palette = SDL_GetSurfacePalette(source);
+		std::array<ScaleFX::RGB, 256> rgb;
+		std::array<Pixel, 256>        colours;
+		for (size_t i = 0; i < rgb.size(); ++i) {
+			const auto& c = palette->colors[i];
+			rgb[i]        = {c.r, c.g, c.b};
+			colours[i]    = static_cast<Pixel>(SDL_MapRGB(format, nullptr, c.r, c.g, c.b));
+		}
+		ScaleFX::scale(
+				static_cast<const uint8_t*>(source->pixels), source->pitch, source->w, source->h, x, y, w, h, rgb,
+				static_cast<Pixel*>(destination->pixels), destination->pitch / static_cast<int>(sizeof(Pixel)), colours);
+	}
+}    // namespace
+
+void Image_window::show_scaled8to16_ScaleFX(int x, int y, int w, int h) {
+	show_scalefx<uint16>(draw_surface, inter_surface, x + guard_band, y + guard_band, w, h);
+}
+
+void Image_window::show_scaled8to32_ScaleFX(int x, int y, int w, int h) {
+	show_scalefx<uint32>(draw_surface, inter_surface, x + guard_band, y + guard_band, w, h);
+}

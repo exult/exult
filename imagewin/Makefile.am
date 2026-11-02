@@ -47,9 +47,14 @@ libimagewin_la_SOURCES += \
 	BilinearScalerInternal_X2Y24.cpp \
 	PointScaler.cpp \
 	PointScaler.h \
+	scale_scalefx.h \
 	scale_xbr.cc \
 	scale_xbr.h
 endif
 endif
 
-EXTRA_DIST =
+EXTRA_DIST = \
+	tests/README.md \
+	tests/test_scalefx.cc \
+	tests/slopes-32-24.txt \
+	tests/noise-17-19.txt
