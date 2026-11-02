@@ -57,6 +57,10 @@ struct SDL_IOStream;
  *   should be derived from it.
  */
 
+namespace ScaleFX {
+	struct Workspace;
+}
+
 namespace Pentagram {
 	class ArbScaler;
 }
@@ -251,6 +255,7 @@ public:
 	};
 
 private:
+	std::unique_ptr<ScaleFX::Workspace>               scalefx_workspace;
 	static ScalerVector                               p_scalers;
 	static std::map<uint32, Image_window::Resolution> p_resolutions;
 	static bool                                       any_res_allowed;
@@ -261,6 +266,7 @@ public:
 	static const bool&                                       AnyResAllowed;
 
 	static ScalerType get_scaler_for_name(const char* scaler);
+	static int        normalize_scalefx_factor(int factor);
 
 	static inline const char* get_name_for_scaler(int num) {
 		if (num < 0 || static_cast<size_t>(num) >= Scalers.size()) {
@@ -572,14 +578,7 @@ public:
 	// Create with given buffer.
 	Image_window(
 			Image_buffer* ib, int w, int h, int gamew, int gameh, int scl = 1, bool fs = false, int sclr = point,
-			FillMode fmode = AspectCorrectCentre, int fillsclr = point)
-			: ibuf(ib), scale(scl), scaler(sclr), uses_palette(true), fullscreen(fs), game_width(gamew), game_height(gameh),
-			  saved_game_width(gamew), saved_game_height(gameh), fill_mode(fmode), fill_scaler(fillsclr), screen_window(nullptr),
-			  screen_renderer(nullptr), screen_texture(nullptr), screen_texture_a(nullptr), paletted_surface(nullptr),
-			  inter_surface(nullptr), draw_surface(nullptr) {
-		static_init();
-		create_surface(w, h);
-	}
+			FillMode fmode = AspectCorrectCentre, int fillsclr = point);
 
 	virtual ~Image_window();
 

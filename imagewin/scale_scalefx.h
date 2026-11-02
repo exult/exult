@@ -1,7 +1,8 @@
 /*
  * ScaleFX CPU implementation of the five-pass shader by Sp00kyFox.
  * Reference: libretro/glsl-shaders/scalefx (2017-03-01), default settings:
- * SFX_CLR=0.5, SFX_SAA=1, SFX_SCN=1. Native output is 3x.
+ * SFX_CLR=0.5, SFX_SAA=1, SFX_SCN=1. Original output is 3x.
+ * The 4x/6x extension rasterizes continuous edge contours at native resolution.
  * Intermediate flags and source selectors are kept as integers instead of
  * packing them into normalized shader render targets.
  *
@@ -38,7 +39,16 @@ THE SOFTWARE.
 #include <vector>
 
 namespace ScaleFX {
-	constexpr int factor = 3;
+	constexpr int factor = 3;    // Legacy API default.
+
+	constexpr bool supports(int value) {
+		return value == 3 || value == 4 || value == 6;
+	}
+
+	constexpr int normalize_factor(int value) {
+		return supports(value) ? value : 3;
+	}
+
 	// Pass 0 reads one neighbour, passes 1 and 2 add one each, and pass 3
 	// examines flags three pixels away. Both dirty updates and input halos
 	// must cover this dependency radius.
@@ -80,7 +90,19 @@ namespace ScaleFX {
 			int            width, height;
 			std::vector<T> data;
 
-			Grid(int w, int h) : width(w), height(h), data(size_t(w) * size_t(h)) {}
+			Grid() : width(0), height(0) {}
+
+			void resize(int w, int h) {
+				width  = w;
+				height = h;
+				// Keep the high-water size as well as capacity: alternating game
+				// and UI rectangles must not zero-initialize scratch rows that
+				// the analysis is about to overwrite.
+				const size_t required = size_t(w) * size_t(h);
+				if (data.size() < required) {
+					data.resize(required);
+				}
+			}
 
 			const T& get(int x, int y) const {
 				x = std::clamp(x, 0, width - 1);
@@ -130,7 +152,95 @@ namespace ScaleFX {
 						   || strengths[i] + strengths[(i + 2) % 4] > strengths[(i + 1) % 4] + strengths[(i + 3) % 4]));
 		}
 
-		inline std::array<uint8_t, 9> selectors(const Grid<Flags>& flags, int x, int y) {
+		// A contour at one corner in coordinates directed into the source
+		// pixel. nx*u + ny*v <= threshold/12. Its normal records the edge
+		// slope (levels 1..6), not a magnification of the legacy 3x mask.
+		struct Edge {
+			int     nx = 1, ny = 1, threshold = 0;
+			uint8_t code = 0;
+		};
+
+		struct Analysis {
+			std::array<uint8_t, 9> legacy;
+			std::array<Edge, 4>    edges;
+		};
+
+		inline Edge contour(uint8_t code, uint8_t horizontal_mid, uint8_t vertical_mid, int horizontal_level, int vertical_level) {
+			if (!code) {
+				return {};
+			}
+			const bool along_x = horizontal_mid == code, along_y = vertical_mid == code;
+			if (along_x) {
+				horizontal_level = std::max(horizontal_level, horizontal_mid == 2 || horizontal_mid == 4 ? 5 : 2);
+			}
+			if (along_y) {
+				vertical_level = std::max(vertical_level, vertical_mid == 6 || vertical_mid == 8 ? 5 : 2);
+			}
+			int  nx     = horizontal_level >= vertical_level ? 1 : vertical_level;
+			int  ny     = vertical_level >= horizontal_level ? 1 : horizontal_level;
+			auto bounds = [&](int a, int b) {
+				// Fit the contour between the positive corner/adjacent-edge
+				// anchors and the negative anchors (including the centre).
+				// Anchor coordinates are in sixths of a source pixel.
+				int lo = a + b, hi = 3 * a + 3 * b;
+				if (along_x) {
+					lo = std::max(lo, 3 * a + b);
+				} else {
+					hi = std::min(hi, 3 * a + b);
+				}
+				if (along_y) {
+					lo = std::max(lo, a + 3 * b);
+				} else {
+					hi = std::min(hi, a + 3 * b);
+				}
+				return std::array<int, 2>{lo, hi};
+			};
+			auto fit = bounds(nx, ny);
+			if (fit[0] >= fit[1]) {
+				// At a contradictory junction favour the local edge anchors.
+				nx  = along_y && !along_x ? 2 : 1;
+				ny  = along_x && !along_y ? 2 : 1;
+				fit = bounds(nx, ny);
+			}
+			return {nx, ny, fit[0] + fit[1], code};
+		}
+
+		struct Pattern {
+			uint64_t                mask = 0;
+			std::array<int16_t, 36> depth{};
+		};
+
+		inline const Pattern& pattern(const Edge& edge, int output_factor) {
+			// Tiny, immutable native-resolution raster tables. Initialised once,
+			// independent of images, palettes and windows. Each pixel only
+			// looks up four contours; it never re-runs edge detection per sample.
+			static const auto tables = [] {
+				std::array<Pattern, 2 * 36 * 73> result{};
+				for (int fidx = 0; fidx < 2; ++fidx) {
+					const int f = fidx == 0 ? 4 : 6;
+					for (int nx = 1; nx <= 6; ++nx) {
+						for (int ny = 1; ny <= 6; ++ny) {
+							for (int t = 0; t <= 72; ++t) {
+								auto& p = result[size_t(((fidx * 6 + nx - 1) * 6 + ny - 1) * 73 + t)];
+								for (int y = 0; y < f; ++y) {
+									for (int x = 0; x < f; ++x) {
+										const int i        = y * f + x;
+										p.depth[size_t(i)] = int16_t(f * t - 6 * (nx * (2 * x + 1) + ny * (2 * y + 1)));
+										if (p.depth[size_t(i)] >= 0) {
+											p.mask |= uint64_t(1) << i;
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+				return result;
+			}();
+			return tables[size_t(((((output_factor == 4 ? 0 : 1) * 6 + edge.nx - 1) * 6 + edge.ny - 1) * 73) + edge.threshold)];
+		}
+
+		inline Analysis selectors(const Grid<Flags>& flags, int x, int y, bool extended) {
 			const auto& E  = flags.get(x, y);
 			const auto& D  = flags.get(x - 1, y);
 			const auto& D0 = flags.get(x - 2, y);
@@ -265,9 +375,50 @@ namespace ScaleFX {
 					: ((Ec.w && Hc.y && Ec.x && Bc.z)) ? (!Eo.w ? !Eo.x ? 1 : 5 : 7)
 													   : 0;
 
-			return {crn.x, mid.x, crn.y, mid.w, 0, mid.y, crn.w, mid.z, crn.z};
+			Analysis result{
+					{crn.x, mid.x, crn.y, mid.w, 0, mid.y, crn.w, mid.z, crn.z},
+                    {}
+            };
+			if (extended) {
+				auto level = [](bool l3, bool l4, bool l6) {
+					return l6 ? 6 : l4 ? 4 : l3 ? 3 : 1;
+				};
+				result.edges
+						= {contour(crn.x, mid.x, mid.w, level(lvl3x.x, lvl4x.x, lvl6x.x), level(lvl3x.y, lvl4x.y, lvl6x.y)),
+						   contour(crn.y, mid.x, mid.y, level(lvl3y.x, lvl4y.x, lvl6y.x), level(lvl3y.y, lvl4y.y, lvl6y.y)),
+						   contour(crn.z, mid.z, mid.y, level(lvl3z.x, lvl4z.x, lvl6z.x), level(lvl3z.y, lvl4z.y, lvl6z.y)),
+						   contour(crn.w, mid.z, mid.w, level(lvl3w.x, lvl4w.x, lvl6w.x), level(lvl3w.y, lvl4w.y, lvl6w.y))};
+			}
+			return result;
 		}
 	}    // namespace detail
+
+	// One workspace per window (or explicitly per caller). Resizing reuses
+	// capacity, and colour distances survive frames until the RGB palette
+	// actually changes. Source-dependent flags are always recomputed for the
+	// requested rectangle plus its halo, so dirty edits cannot become stale.
+	struct Workspace {
+		detail::Grid<detail::Float4> metric, strengths;
+		detail::Grid<detail::Flags>  flags;
+		std::array<float, 256 * 256> distances{};
+		std::array<RGB, 256>         palette{};
+		bool                         palette_valid = false;
+
+		void prepare(int w, int h, const std::array<RGB, 256>& colours) {
+			metric.resize(w, h);
+			strengths.resize(w, h);
+			flags.resize(w, h);
+			bool changed = !palette_valid;
+			for (size_t i = 0; i < palette.size() && !changed; ++i) {
+				changed = palette[i].r != colours[i].r || palette[i].g != colours[i].g || palette[i].b != colours[i].b;
+			}
+			if (changed) {
+				palette = colours;
+				distances.fill(-1.0f);
+				palette_valid = true;
+			}
+		}
+	};
 
 	// The input and output rectangles use absolute surface coordinates. Strides
 	// are in pixels, not bytes. Texture reads clamp to the actual image boundary,
@@ -275,8 +426,8 @@ namespace ScaleFX {
 	template <typename Pixel>
 	void scale(
 			const uint8_t* src, int stride, int width, int height, int x, int y, int w, int h, const std::array<RGB, 256>& palette,
-			Pixel* dst, int dst_stride, const std::array<Pixel, 256>& colours) {
-		if (width <= 0 || height <= 0 || w <= 0 || h <= 0) {
+			Pixel* dst, int dst_stride, const std::array<Pixel, 256>& colours, int output_factor, Workspace& workspace) {
+		if (!supports(output_factor) || width <= 0 || height <= 0 || w <= 0 || h <= 0) {
 			return;
 		}
 		const int end_x = std::min(width, x + w), end_y = std::min(height, y + h);
@@ -285,20 +436,18 @@ namespace ScaleFX {
 		if (x >= end_x || y >= end_y) {
 			return;
 		}
-		const int                    left = std::max(0, x - radius), top = std::max(0, y - radius);
-		const int                    right = std::min(width, end_x + radius), bottom = std::min(height, end_y + radius);
-		const int                    gw = right - left, gh = bottom - top;
-		detail::Grid<detail::Float4> metric(gw, gh), strengths(gw, gh);
-		detail::Grid<detail::Flags>  flags(gw, gh);
-		auto                         sample = [&](int sx, int sy) {
+		const int left = std::max(0, x - radius), top = std::max(0, y - radius);
+		const int right = std::min(width, end_x + radius), bottom = std::min(height, end_y + radius);
+		const int gw = right - left, gh = bottom - top;
+		workspace.prepare(gw, gh, palette);
+		auto& metric    = workspace.metric;
+		auto& strengths = workspace.strengths;
+		auto& flags     = workspace.flags;
+		auto  sample    = [&](int sx, int sy) {
 			return src[size_t(std::clamp(sy, 0, height - 1)) * size_t(stride) + size_t(std::clamp(sx, 0, width - 1))];
 		};
-		// Cache palette-pair metrics only for the duration of this call, so palette
-		// animations and multiple windows cannot reuse stale colours.
-		std::array<float, 256 * 256> distances;
-		distances.fill(-1.0f);
 		auto dist = [&](uint8_t a, uint8_t b) {
-			auto& value = distances[size_t(std::min(a, b)) * 256 + std::max(a, b)];
+			auto& value = workspace.distances[size_t(std::min(a, b)) * 256 + std::max(a, b)];
 			if (value < 0) {
 				value = detail::distance(palette[a], palette[b]);
 			}
@@ -357,21 +506,91 @@ namespace ScaleFX {
 				flags.at(i, j) = {corner, hori, vert, orientation};
 			}
 		}
-		// Passes 3 and 4: identify edges through level 6 and choose one of the
-		// original palette colours for each of the nine output subpixels.
+
+		// One edge analysis per source pixel, shared by all native subpixels.
 		constexpr int dx[9] = {0, -1, -2, 1, 2, 0, 0, 0, 0}, dy[9] = {0, 0, 0, 0, 0, -1, -2, 1, 2};
 		for (int sy = y; sy < end_y; ++sy) {
 			for (int sx = x; sx < end_x; ++sx) {
-				const auto selected = detail::selectors(flags, sx - left, sy - top);
-				for (int row = 0; row < factor; ++row) {
-					for (int col = 0; col < factor; ++col) {
-						const auto code = selected[size_t(row * factor + col)];
-						dst[size_t(sy * factor + row) * size_t(dst_stride) + size_t(sx * factor + col)]
-								= colours[sample(sx + dx[code], sy + dy[code])];
+				std::array<uint8_t, 9> candidates;
+				for (int i = 0; i < 9; ++i) {
+					candidates[size_t(i)] = sample(sx + dx[i], sy + dy[i]);
+				}
+				// All possible source choices agree: neither corner analysis
+				// nor per-subpixel contour tests can change this block.
+				if (std::all_of(candidates.begin() + 1, candidates.end(), [&](uint8_t v) {
+						return v == candidates[0];
+					})) {
+					for (int row = 0; row < output_factor; ++row) {
+						std::fill_n(
+								dst + size_t(sy * output_factor + row) * size_t(dst_stride) + size_t(sx * output_factor),
+								output_factor, colours[candidates[0]]);
+					}
+					continue;
+				}
+				const auto analysis = detail::selectors(flags, sx - left, sy - top, output_factor != 3);
+				if (output_factor == 3) {
+					// Keep the upstream nine selectors and writes exactly intact.
+					for (int row = 0; row < 3; ++row) {
+						for (int col = 0; col < 3; ++col) {
+							dst[size_t(sy * 3 + row) * size_t(dst_stride) + size_t(sx * 3 + col)]
+									= colours[candidates[analysis.legacy[size_t(row * 3 + col)]]];
+						}
+					}
+					continue;
+				}
+				std::array<const detail::Pattern*, 4> masks;
+				for (int c = 0; c < 4; ++c) {
+					masks[size_t(c)] = &detail::pattern(analysis.edges[size_t(c)], output_factor);
+				}
+				for (int row = 0; row < output_factor; ++row) {
+					for (int col = 0; col < output_factor; ++col) {
+						uint8_t colour = candidates[0];
+						int     best = -1, denominator = 1;
+						bool    conflict = false;
+						for (int c = 0; c < 4; ++c) {
+							const auto& edge = analysis.edges[size_t(c)];
+							if (!edge.code) {
+								continue;
+							}
+							const int u = (c == 1 || c == 2) ? output_factor - 1 - col : col;
+							const int v = c >= 2 ? output_factor - 1 - row : row;
+							const int i = v * output_factor + u;
+							if (!(masks[size_t(c)]->mask & (uint64_t(1) << i))) {
+								continue;
+							}
+							const int     depth = masks[size_t(c)]->depth[size_t(i)], norm = edge.nx + edge.ny;
+							const uint8_t candidate = candidates[edge.code];
+							// A line can pass through even-factor sample centres.
+							// Give both sides the same palette-index tie break, so
+							// adjacent source pixels do not form alternating seams.
+							if (depth == 0 && candidate > candidates[0]) {
+								continue;
+							}
+							if (depth * denominator > best * norm) {
+								best        = depth;
+								denominator = norm;
+								colour      = candidate;
+								conflict    = false;
+							} else if (depth * denominator == best * norm && candidate != colour) {
+								conflict = true;
+							}
+						}
+						// Exact junction ties retain the source colour instead of
+						// favouring an arbitrary direction or introducing new colours.
+						dst[size_t(sy * output_factor + row) * size_t(dst_stride) + size_t(sx * output_factor + col)]
+								= colours[conflict ? candidates[0] : colour];
 					}
 				}
 			}
 		}
+	}
+
+	template <typename Pixel>
+	void scale(
+			const uint8_t* src, int stride, int width, int height, int x, int y, int w, int h, const std::array<RGB, 256>& palette,
+			Pixel* dst, int dst_stride, const std::array<Pixel, 256>& colours, int output_factor = 3) {
+		thread_local Workspace workspace;
+		scale(src, stride, width, height, x, y, w, h, palette, dst, dst_stride, colours, output_factor, workspace);
 	}
 }    // namespace ScaleFX
 #endif

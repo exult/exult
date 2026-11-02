@@ -29,3 +29,42 @@ need a random-number generator or network downloads. The CPU implementation
 also matched the upstream shader on 24 diagonal, slope, and noise images
 from 1x1 through 32x24 during development, using both a four-colour palette
 and a randomized 256-colour palette.
+
+## Native factors and performance
+
+The suite also validates native 4x/6x patterns, an independent straight-diagonal
+oracle (including reflections/rotations), all factors with dirty/tiled updates,
+palette invalidation/restoration, and retained workspace storage.
+[Implementation and GPU investigation](scalefx-notes.md) describes the geometry,
+compatibility guarantees, renderer constraints and performance methodology.
+
+```sh
+c++ -std=c++17 -O2 -Wall -Wextra -pedantic -I. imagewin/tests/benchmark_scalefx.cc -o /tmp/benchmark-scalefx
+/tmp/benchmark-scalefx /tmp/scalefx > /tmp/scalefx-performance.csv
+# Optional visual report; Pillow is the only extra dependency:
+python3 imagewin/tests/compare_scalefx.py /tmp/scalefx /tmp/scalefx-comparison.png
+```
+
+To compare against the previous implementation at commit `b6ccac7ea`, extract
+that header outside the checkout, rename its namespace and include guard, and
+pass its absolute path as `SCALEFX_BASELINE_HEADER` to both binaries. For example:
+
+```sh
+git show b6ccac7ea:imagewin/scale_scalefx.h > /tmp/scalefx-old.h
+python3 - <<'PY'
+from pathlib import Path
+p = Path('/tmp/scalefx-old.h')
+s = p.read_text().replace('ScaleFX', 'BaselineScaleFX')
+s = s.replace('EXULT_SCALE_SCALEFX_H', 'EXULT_SCALE_BASELINE_SCALEFX_H')
+p.write_text(s)
+PY
+c++ -std=c++17 -O2 -I. -DSCALEFX_BASELINE_HEADER='"/tmp/scalefx-old.h"' imagewin/tests/test_scalefx.cc -o /tmp/test-scalefx
+/tmp/test-scalefx
+c++ -std=c++17 -O2 -I. -DSCALEFX_BASELINE_HEADER='"/tmp/scalefx-old.h"' imagewin/tests/benchmark_scalefx.cc -o /tmp/benchmark-scalefx
+/tmp/benchmark-scalefx /tmp/scalefx
+```
+
+The optional baseline tests compare old/new 3x output on random 256-colour
+palettes, source pitches, dimensions and palette edits, in addition to the
+committed upstream shader fixtures. Sanitizer builds use the same source with
+`-fsanitize=address,undefined -fno-omit-frame-pointer -g` (keep assertions on).

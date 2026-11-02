@@ -113,6 +113,18 @@ float Image_window::nativescale = 1.0f;
 SDL_PixelFormatDetails ManipBase::fmt;            // Format of dest. pixels (and src for rgb src).
 SDL_Color              ManipBase::colors[256];    // Palette for source window.
 
+// Keep the constructor out of line so the private ScaleFX workspace can
+// remain an incomplete type in the public header.
+Image_window::Image_window(
+		Image_buffer* ib, int w, int h, int gamew, int gameh, int scl, bool fs, int sclr, FillMode fmode, int fillsclr)
+		: ibuf(ib), scale(scl), scaler(sclr), uses_palette(true), fullscreen(fs), game_width(gamew), game_height(gameh),
+		  saved_game_width(gamew), saved_game_height(gameh), fill_mode(fmode), fill_scaler(fillsclr), screen_window(nullptr),
+		  screen_renderer(nullptr), screen_texture(nullptr), screen_texture_a(nullptr), paletted_surface(nullptr),
+		  inter_surface(nullptr), draw_surface(nullptr) {
+	static_init();
+	create_surface(w, h);
+}
+
 // Constructor for the ScalerVector, setup the list
 Image_window::ScalerVector::ScalerVector() {
 	reserve(16);
@@ -282,7 +294,7 @@ Image_window::ScalerVector::ScalerVector() {
 	const ScalerInfo scalefx
 			= {"ScaleFX",
 			   0,
-			   SCALE_BIT(::ScaleFX::factor),
+			   SCALE_BIT(3) | SCALE_BIT(4) | SCALE_BIT(6),
 			   nullptr,
 			   &Image_window::show_scaled8to16_ScaleFX,
 			   &Image_window::show_scaled8to16_ScaleFX,
@@ -298,6 +310,10 @@ Image_window::ScalerVector::~ScalerVector() {
 	for (auto& it : *this) {
 		delete it.arb;
 	}
+}
+
+int Image_window::normalize_scalefx_factor(int factor) {
+	return ::ScaleFX::normalize_factor(factor);
 }
 
 Image_window::ScalerType Image_window::get_scaler_for_name(const char* scaler) {
@@ -1736,6 +1752,11 @@ int Image_window::layer_render_scale(const Layer& layer) const {
 	if (si.arb != nullptr || si.fun8to32 == nullptr) {
 		return 1;
 	}
+	if (uscaler == ScaleFX) {
+		// UI layers inherit the selected native factor; with another main
+		// scaler, unsupported factors retain the historical 3x default.
+		return normalize_scalefx_factor(scale);
+	}
 	const uint32 mask = si.size_mask;
 	for (int f = 2; f <= 4; ++f) {
 		if (mask == (1u << (f - 1))) {
@@ -2292,7 +2313,8 @@ Image_window::Layer::Layer(SDL_Surface* surface, int w, int h, unsigned char tra
 
 namespace {
 	template <typename Pixel>
-	void show_scalefx(SDL_Surface* source, SDL_Surface* destination, int x, int y, int w, int h) {
+	void show_scalefx(
+			SDL_Surface* source, SDL_Surface* destination, int x, int y, int w, int h, int factor, ScaleFX::Workspace& workspace) {
 		const auto*                   format  = SDL_GetPixelFormatDetails(destination->format);
 		const auto*                   palette = SDL_GetSurfacePalette(source);
 		std::array<ScaleFX::RGB, 256> rgb;
@@ -2304,14 +2326,23 @@ namespace {
 		}
 		ScaleFX::scale(
 				static_cast<const uint8_t*>(source->pixels), source->pitch, source->w, source->h, x, y, w, h, rgb,
-				static_cast<Pixel*>(destination->pixels), destination->pitch / static_cast<int>(sizeof(Pixel)), colours);
+				static_cast<Pixel*>(destination->pixels), destination->pitch / static_cast<int>(sizeof(Pixel)), colours, factor,
+				workspace);
 	}
 }    // namespace
 
 void Image_window::show_scaled8to16_ScaleFX(int x, int y, int w, int h) {
-	show_scalefx<uint16>(draw_surface, inter_surface, x + guard_band, y + guard_band, w, h);
+	if (!scalefx_workspace) {
+		scalefx_workspace = std::make_unique<::ScaleFX::Workspace>();
+	}
+	show_scalefx<uint16>(
+			draw_surface, inter_surface, x + guard_band, y + guard_band, w, h, normalize_scalefx_factor(scale), *scalefx_workspace);
 }
 
 void Image_window::show_scaled8to32_ScaleFX(int x, int y, int w, int h) {
-	show_scalefx<uint32>(draw_surface, inter_surface, x + guard_band, y + guard_band, w, h);
+	if (!scalefx_workspace) {
+		scalefx_workspace = std::make_unique<::ScaleFX::Workspace>();
+	}
+	show_scalefx<uint32>(
+			draw_surface, inter_surface, x + guard_band, y + guard_band, w, h, normalize_scalefx_factor(scale), *scalefx_workspace);
 }

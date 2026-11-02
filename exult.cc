@@ -3200,7 +3200,9 @@ void setup_video(
 			scaler = Image_window::get_scaler_for_name(default_scaler.c_str());
 		}
 		// Ensure proper values for scaleval based on scaler.
-		if (scaler == Image_window::Hq3x || scaler == Image_window::_3xBR || scaler == Image_window::ScaleFX) {
+		if (scaler == Image_window::ScaleFX) {
+			scaleval = Image_window::normalize_scalefx_factor(scaleval);
+		} else if (scaler == Image_window::Hq3x || scaler == Image_window::_3xBR) {
 			scaleval = 3;
 		} else if (scaler == Image_window::Hq4x || scaler == Image_window::_4xBR) {
 			scaleval = 4;

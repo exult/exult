@@ -56,5 +56,9 @@ endif
 EXTRA_DIST = \
 	tests/README.md \
 	tests/test_scalefx.cc \
+	tests/benchmark_scalefx.cc \
+	tests/compare_scalefx.py \
+	tests/scalefx-notes.md \
+	tests/scalefx-comparison.png \
 	tests/slopes-32-24.txt \
 	tests/noise-17-19.txt
