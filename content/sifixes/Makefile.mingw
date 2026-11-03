@@ -38,6 +38,7 @@ USECODE_OBJECTS :=	\
 	src/items/hourglass.uc	\
 	src/items/nightmare.uc	\
 	src/items/pillar.uc	\
+	src/items/plaque_ophidian.uc	\
 	src/items/potion.uc	\
 	src/items/scroll.uc	\
 	src/items/time_tellers.uc	\
@@ -46,6 +47,7 @@ USECODE_OBJECTS :=	\
 	src/misc/egg_bane_holocaust.uc	\
 	src/misc/egg_gorlab_swamp_sleep.uc	\
 	src/misc/egg_gwani_attack.uc	\
+	src/misc/egg_shamino_sees_his_castle.uc	\
 	src/misc/egg_skullcrusher_automatons.uc	\
 	src/misc/egg_spinebreaker_antechamber_ambush.uc	\
 	src/misc/egg_starting_hints.uc	\
@@ -61,6 +63,7 @@ USECODE_OBJECTS :=	\
 	src/misc/luther_return_shield.uc	\
 	src/misc/resurrect.uc	\
 	src/npcs/baiyanda.uc	\
+	src/npcs/batlin.uc	\
 	src/npcs/bwundiai.uc	\
 	src/npcs/cantra.uc	\
 	src/npcs/delin.uc	\
