@@ -21,9 +21,9 @@ version: 0.15.15
 
 	This modification fixes a few of the Usecode bugs that plague Ultima VII:
 	Serpent Isle. I have tested it *only* with Silver Seed installed; while it
-	*might* work without the add-on, I woudn't count on it.
+	*might* work without the add-on, I wouldn't count on it.
 
-	A potion of the code (the healing of Cantra) is based on Usecode available
+	A portion of the code (the healing of Cantra) is based on Usecode available
 	with the Exult source code in the "content/si" directory. I did some minor
 	tweaks and some reorganization to make it more compatible with the rest of
 	the mod's usecode. I am including it in this mod because many people would
@@ -34,7 +34,7 @@ version: 0.15.15
 	Knight Captain has provided fixes to version 0.15.12 and later editions.
 
 	Everything else has been my own work, although the structure of the mod is
-	based on Alun Bestor's Quests and Iteractions mod. Many fixes were based on
+	based on Alun Bestor's Quests and Interactions mod. Many fixes were based on
 	the document found at "docs/usecode_bugs.txt" on the Exult source.
 
 2	Installing the mod
@@ -112,7 +112,7 @@ version: 0.15.15
 	  and the plain shield had a few problems.
 	- The Pillars in dining hall of Serpent's Fang Keep no longer teleport you
 	  to the Test of Purity;
-	- After the the Wall of Lights cutscene, you can no longer summon Thoxa to
+	- After the Wall of Lights cutscene, you can no longer summon Thoxa to
 	  "resurrect" your possessed party. Or rather, you can summon her, but she
 	  won't bring Iolo, Dupre and Shamino back as they are the Banes now. Even
 	  if you have their bodies right there -- or elsewhere.
@@ -188,7 +188,7 @@ version 0.15.16 - 2023-03-15
 	  and a utility folder to make importing from Knight Captain's mod a bit easier.
 version 0.15.15 - 2017-09-03
 	- Fixed paperdoll art for the moonsilk and fishnet stockings to cover toes.
-	- Fixed sprite art for the blue "teleport here" to completed clipped circles.
+	- Fixed sprite art for the blue "teleport here" to complete clipped circles.
 version 0.15.14 - 2016-12-02
 	- Fixed the existing teleporter egg out of the gridiron football field,
 	  going to the intended location outside of Pothos' house/island: 2265,1919.
