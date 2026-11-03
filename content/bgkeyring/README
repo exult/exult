@@ -17,7 +17,7 @@ To build it yourself, there are 4 different methods:
 	
 3)	Scripts: There are two scripts in "content/bgkeyring/src": "make.bat" (for
 	Windows) and "make.sh" (for POSIX systems with bash); both scripts require
-	UCC and ExPack. Call te appropriate one and you are done.
+	UCC and ExPack. Call the appropriate one and you are done.
 
 4)	The manual way: You will need UCC and ExPack to do it. You can do it in any
 	order you want, but you have to:
