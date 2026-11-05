@@ -150,6 +150,9 @@ public:
 	const Container_game_object* as_container() const override {
 		return this;
 	}
+
+	// Combine gold coins into piles of 100 (plus remainder).
+	void consolidate_gold(int shapenum = c_gold_coin_shapenum);
 };
 
 #endif
