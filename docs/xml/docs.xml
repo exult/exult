@@ -1225,7 +1225,11 @@
 						The original 3x shader output is preserved; 4x and 6x rasterize native diagonal contours.
 						Select ScaleFX in Video Options, or set <strong>scale_method</strong>
 						to <strong>ScaleFX</strong> and <strong>scale</strong> to <strong>3</strong>, <strong>4</strong>, or <strong>6</strong>
-						in exult.cfg. UI layer scalers inherit the selected factor, defaulting to 3x when unsupported.</li>
+						in exult.cfg. UI layer scalers inherit the selected factor, defaulting to 3x when unsupported.<br/>
+						With SDL 3.4 and a Vulkan driver, GPU scaling is used automatically for the world
+						and opaque scenes. Set <strong>scalefx_gpu</strong> to <strong>no</strong> under
+						<strong>video</strong> to force CPU scaling. Older SDL versions and unavailable
+						GPU support fall back to CPU; translucent UI layers retain CPU matting.</li>
 					<li><strong>HQ4X</strong><br/>
 						High quality scaler, that uses a *lot* of CPU cycles. Only 4x.</li>
 					<li><strong>2xBR</strong><br/>

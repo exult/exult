@@ -59,6 +59,7 @@ struct SDL_IOStream;
 
 namespace ScaleFX {
 	struct Workspace;
+	class GPU;
 }
 
 namespace Pentagram {
@@ -181,6 +182,7 @@ public:
 		friend class Image_window8;
 		SDL_Surface*                  surface = nullptr;    // SDL Surface for buf
 		std::unique_ptr<Image_buffer> buf;                  // 8-bit drawing buffer.
+		std::unique_ptr<ScaleFX::GPU> scalefx_gpu;
 		struct SDL_Texture*           texture = nullptr;    // GPU cache (rebuilt on resize).
 		int                           logw;                 // Logical (game-pixel) width.
 		int                           logh;                 // Logical (game-pixel) height.
@@ -256,6 +258,9 @@ public:
 
 private:
 	std::unique_ptr<ScaleFX::Workspace>               scalefx_workspace;
+	std::unique_ptr<ScaleFX::GPU>                     scalefx_gpu;
+	bool                                              scalefx_gpu_enabled = true;
+	bool                                              show_scalefx_gpu(int x, int y, int w, int h);
 	static ScalerVector                               p_scalers;
 	static std::map<uint32, Image_window::Resolution> p_resolutions;
 	static bool                                       any_res_allowed;
@@ -403,7 +408,7 @@ protected:
 											 // screen_texture and contains the current full frame being displayed
 
 	// Update screen_texture_a with the dirtyRect changes made to screen_texture and render fullRect of screen_texture_a
-	void UpdateRect(SDL_FRect* dirtyRect, SDL_FRect* fullRect, bool for_screenshot);
+	void UpdateRect(SDL_FRect* dirtyRect, SDL_FRect* fullRect, bool for_screenshot, bool already_updated = false);
 
 	SDL_Surface* paletted_surface;    // Surface that palette is set on (Example
 									  // res) - Never null
@@ -447,6 +452,7 @@ protected:
 	// into a 32-bit destination surface, by temporarily repointing the
 	// scaling state.  Returns false if the current scaler can't be used this
 	// way (arb or SDL scaler).  Used to apply the game scaler to layers.
+	bool scale_layer_gpu(Layer& layer, SDL_Surface* source, int factor);
 	bool scale_layer_color(const Layer& layer, struct SDL_Surface* src8, int logw, int logh, struct SDL_Surface* dst32);
 	// Free any GPU textures owned by layers (e.g. before the renderer is
 	// destroyed).  The layers and their buffers are kept.

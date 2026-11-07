@@ -34,36 +34,13 @@ runs once, with its results shared by all native output subpixels. Uniform
 blocks bypass corner selection/raster tests when every possible source choice
 has the same index. Warm calls make no scratch-buffer allocations.
 
-## GPU investigation
+## GPU acceleration
 
-The supported SDL3 3.2 renderer path in `imagewin.cc` uses `SDL_CreateRenderer`,
-streaming `SDL_Texture`s, `SDL_LockTextureToSurface`, and CPU intermediate
-surfaces. The 3.2 public renderer API has no custom shader/compute submission
-hook. `SDL_PROP_RENDERER_GPU_DEVICE_POINTER` only exposes a device for the
-SDL-GPU renderer backend; it neither works for all renderer backends nor exposes
-a portable SDL_Renderer texture import/export and command synchronization path.
-The documented native texture properties are backend-specific OpenGL/Vulkan/
-Direct3D/Metal handles, not a portable SDL_GPUTexture bridge.
-
-A separate SDL_GPUDevice can run custom compute/render pipelines, but integrating
-its output here requires either:
-
-- GPU readback to the CPU surfaces followed by another SDL texture upload,
-  adding synchronization and transfers to every update; or
-- changing renderer ownership/backend requirements, texture lifecycle, layer
-  composition, readback/screenshot handling and cross-backend synchronization.
-
-Neither is a practical acceleration of this change without disrupting the
-existing renderer. No experimental GPU path is enabled, and no GPU speedup is
-claimed. CPU rendering remains available everywhere. A future GPU backend
-should own the source/palette textures and all ScaleFX passes, integrate dirty
-uploads and palette generations, and hand the output directly to composition;
-it needs a renderer-wide design and backend-specific performance validation.
-
-The local evidence is SDL 3.2.10's `SDL_render.h` renderer/texture properties and
-`SDL_gpu.h`, alongside Exult's surface/texture ownership and layer scaling
-paths. The repository's Linux CI also targets the SDL 3.2 series. Newer SDL API
-capabilities alone would not cover existing supported runtimes/backends.
+The initial SDL 3.2 renderer did not provide portable texture sharing. An
+optional SDL 3.4 Vulkan path now runs ScaleFX's edge and native-output passes
+on the GPU and imports the final texture into the existing SDL renderer.
+The CPU implementation remains the fallback, including on older SDL builds.
+See [GPU setup, implementation and validation](scalefx-gpu.md).
 
 ## Validation and comparison
 

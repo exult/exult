@@ -68,3 +68,9 @@ The optional baseline tests compare old/new 3x output on random 256-colour
 palettes, source pitches, dimensions and palette edits, in addition to the
 committed upstream shader fixtures. Sanitizer builds use the same source with
 `-fsanitize=address,undefined -fno-omit-frame-pointer -g` (keep assertions on).
+
+## Optional GPU path
+
+[GPU setup and validation](scalefx-gpu.md) describes the SDL 3.4/Vulkan path,
+CPU fallback, GPU/CPU pixel conformance test, shader regeneration, and completed
+GPU latency benchmark. Older SDL builds keep the CPU implementation.

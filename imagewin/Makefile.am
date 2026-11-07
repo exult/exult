@@ -48,12 +48,24 @@ libimagewin_la_SOURCES += \
 	PointScaler.cpp \
 	PointScaler.h \
 	scale_scalefx.h \
+	scalefx_gpu.h \
+	shaders/scalefx_spirv.h \
 	scale_xbr.cc \
 	scale_xbr.h
 endif
 endif
 
 EXTRA_DIST = \
+	shaders/LICENSE.scalefx \
+	shaders/scalefx.vert \
+	shaders/scalefx-0.frag \
+	shaders/scalefx-1.frag \
+	shaders/scalefx-2.frag \
+	shaders/scalefx-3.frag \
+	shaders/scalefx-4.frag \
+	shaders/compile_scalefx.py \
+	tests/test_scalefx_gpu.cc \
+	tests/scalefx-gpu.md \
 	tests/README.md \
 	tests/test_scalefx.cc \
 	tests/benchmark_scalefx.cc \

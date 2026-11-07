@@ -386,6 +386,12 @@ bool Image_window8::refresh_layer_scaled(Layer& layer, int factor) {
 	}
 	SDL_SetPaletteColors(sdl_pal, cols, 0, 256);
 
+	// Transparent/translucent UI layers keep their existing consensus-matting
+	// CPU path. Opaque scenes can share the GPU's final texture directly.
+	if (layer.is_opaque() && scale_layer_gpu(layer, lsurf, factor)) {
+		return true;
+	}
+
 	// A fully opaque layer (a full-screen scene) has no transparent index and no
 	// translucency, so skip the transparency matting entirely: scale the colours
 	// once through the game scaler and mark every pixel opaque. Otherwise the
