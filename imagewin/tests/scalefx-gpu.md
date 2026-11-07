@@ -20,10 +20,21 @@ acceleration requires SDL 3.4. They continue using the CPU implementation.
 
 ## Rendering and fallback
 
-The world image and **opaque** full-screen/scene layers use GPU scaling. Other
-scalers and transparent/translucent UI layers retain their existing CPU paths,
-including consensus-difference matting, palette overrides, gamma, and opacity.
-The latter are deliberately not replaced by a different transparency algorithm.
+The world image, opaque scenes, and transparent/translucent UI layers use GPU
+ScaleFX, including the mouse cursor with universal UI settings. UI uses the same
+red/green/blue consensus-difference matting and integer alpha reconstruction as
+the CPU implementation. A GPU reduction determines whether the CPU algorithm
+would request the blue pass; no scaled pixels or reduction flags are read back.
+The blue scaling pass is submitted speculatively to avoid a CPU/GPU round trip.
+Palette overrides, gamma, intrinsic translucency, layer opacity and composition
+ordering are preserved. Other scalers retain their existing rendering paths.
+
+UI input and used palette entries are cached, so unrelated palette animation
+and unchanged layer refreshes reuse the existing GPU texture. Empty transparent
+layers are skipped before allocating scaling textures. Palette distance tables
+recalculate only pairs affected by changed colours. Resources are retained
+between updates and released before their renderer. Shader/resource failure
+returns the affected layer to its existing CPU matting implementation.
 
 SDL_GPU runs the five source-metric, strength, junction, selector and output
 passes. Intermediate metrics and selectors use full 32-bit float attachments;
@@ -68,8 +79,11 @@ c++ -std=c++17 -O2 -Wall -Wextra -pedantic -I. imagewin/tests/test_scalefx.cc -o
 /tmp/test-scalefx
 c++ -std=c++17 -O2 -Wall -Wextra -pedantic -I. imagewin/tests/test_scalefx_gpu.cc $(pkg-config --cflags --libs sdl3) -o /tmp/test-scalefx-gpu
 SDL_VIDEODRIVER=offscreen /tmp/test-scalefx-gpu
+c++ -std=c++17 -O2 -Wall -Wextra -pedantic -I. imagewin/tests/test_scalefx_gpu_ui.cc $(pkg-config --cflags --libs sdl3) -o /tmp/test-scalefx-gpu-ui
+SDL_VIDEODRIVER=offscreen /tmp/test-scalefx-gpu-ui
 # Optional CPU versus GPU completed-latency measurements:
 SDL_VIDEODRIVER=offscreen /tmp/test-scalefx-gpu --benchmark
+SDL_VIDEODRIVER=offscreen /tmp/test-scalefx-gpu-ui --benchmark
 ```
 
 The GPU test checks all factors on tiny/padded images, random 256-colour images,
@@ -79,6 +93,11 @@ texture composition across successive SDL/GPU submissions. GPU output must
 match the CPU pixel-for-pixel. A valid offscreen render target is used, as
 required by SDL's windowless GPU renderer. Exit 77 means the GPU test did not
 run because SDL/GPU support was unavailable; it is not a passing test.
+
+The UI test compares CPU and GPU RGBA output at all factors, including fully
+transparent layers, saturated fill colours, diagonal outlines, random colours,
+palette changes, intrinsic alpha, alpha-only changes, cached updates, software-renderer fallback and resized
+resources. UI activation is logged as `ScaleFX: GPU UI shaders active at 4x`.
 
 Shader regeneration is a development-only step:
 
@@ -120,3 +139,9 @@ The host also passed address/undefined-behaviour sanitizer checks for the GPU
 upload/resource path and all GPU/CPU conformance cases. Window presentation was
 checked through a private X server. Hardware FPS and full gameplay remain for
 testing on a Linux machine with a physical Vulkan GPU and game data.
+
+The UI benchmark compares three CPU colour-scaling passes (a lower bound that
+excludes CPU matting) against completed GPU scaling plus matting on a 420x263
+transparent UI. It separately measures cached updates. All buffers/pipelines
+are warmed before timing. These are standalone costs, not in-game FPS; use a
+physical GPU to assess the acceleration on the target machine.

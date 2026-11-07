@@ -49,6 +49,7 @@ libimagewin_la_SOURCES += \
 	PointScaler.h \
 	scale_scalefx.h \
 	scalefx_gpu.h \
+	scalefx_gpu_ui.h \
 	shaders/scalefx_spirv.h \
 	scale_xbr.cc \
 	scale_xbr.h
@@ -56,6 +57,9 @@ endif
 endif
 
 EXTRA_DIST = \
+	tests/test_scalefx_gpu_ui.cc \
+	shaders/scalefx-reduce.frag \
+	shaders/scalefx-matte.frag \
 	shaders/LICENSE.scalefx \
 	shaders/scalefx.vert \
 	shaders/scalefx-0.frag \

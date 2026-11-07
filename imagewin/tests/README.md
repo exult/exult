@@ -72,5 +72,5 @@ committed upstream shader fixtures. Sanitizer builds use the same source with
 ## Optional GPU path
 
 [GPU setup and validation](scalefx-gpu.md) describes the SDL 3.4/Vulkan path,
-CPU fallback, GPU/CPU pixel conformance test, shader regeneration, and completed
+CPU fallback, GPU/CPU world and transparent UI pixel conformance tests, shader regeneration, and completed
 GPU latency benchmark. Older SDL builds keep the CPU implementation.

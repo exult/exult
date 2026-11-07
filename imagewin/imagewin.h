@@ -60,6 +60,7 @@ struct SDL_IOStream;
 namespace ScaleFX {
 	struct Workspace;
 	class GPU;
+	class UIGPU;
 }
 
 namespace Pentagram {
@@ -183,6 +184,7 @@ public:
 		SDL_Surface*                  surface = nullptr;    // SDL Surface for buf
 		std::unique_ptr<Image_buffer> buf;                  // 8-bit drawing buffer.
 		std::unique_ptr<ScaleFX::GPU> scalefx_gpu;
+		std::unique_ptr<ScaleFX::UIGPU> scalefx_ui_gpu;
 		struct SDL_Texture*           texture = nullptr;    // GPU cache (rebuilt on resize).
 		int                           logw;                 // Logical (game-pixel) width.
 		int                           logh;                 // Logical (game-pixel) height.
@@ -453,6 +455,9 @@ protected:
 	// scaling state.  Returns false if the current scaler can't be used this
 	// way (arb or SDL scaler).  Used to apply the game scaler to layers.
 	bool scale_layer_gpu(Layer& layer, SDL_Surface* source, int factor);
+	bool scalefx_gpu_allowed() const {
+		return scalefx_gpu_enabled;
+	}
 	bool scale_layer_color(const Layer& layer, struct SDL_Surface* src8, int logw, int logh, struct SDL_Surface* dst32);
 	// Free any GPU textures owned by layers (e.g. before the renderer is
 	// destroyed).  The layers and their buffers are kept.

@@ -44,6 +44,7 @@ Boston, MA  02111-1307, USA.
 #include "perf.h"
 #include "scale_scalefx.h"
 #include "scalefx_gpu.h"
+#include "scalefx_gpu_ui.h"
 
 #include <algorithm>
 #include <cstdlib>
@@ -2163,6 +2164,7 @@ void Image_window::free_layer_textures() {
 	for (auto& lp : layers) {
 		if (lp) {
 			lp->scalefx_gpu.reset();
+			lp->scalefx_ui_gpu.reset();
 		}
 		if (lp && lp->texture) {
 			SDL_DestroyTexture(lp->texture);
@@ -2211,6 +2213,25 @@ void Image_window::composite_layers() {
 		const SDL_ScaleMode smode = smooth ? SDL_SCALEMODE_LINEAR : SDL_SCALEMODE_NEAREST;
 		// If a software (member) scaler is active, layers are pre-scaled by it
 		// to this factor; otherwise they are uploaded 1:1 and scaled on the GPU.
+		// Empty transparent layers need neither a scaling workspace nor a
+		// full-size texture. Keep them dirty so drawing content later refreshes
+		// their cache; an older nonempty cache must not be composited here.
+		if (layer.dirty && !layer.is_opaque()) {
+			const auto* pixels = static_cast<const Uint8*>(layer.surface->pixels);
+			bool empty = true;
+			for (int y = 0; y < layer.logh && empty; ++y) {
+				const auto* row = pixels + (y + guard_band) * layer.surface->pitch + guard_band;
+				for (int x = 0; x < layer.logw; ++x) {
+					if (row[x] != layer.transparent) {
+						empty = false;
+						break;
+					}
+				}
+			}
+			if (empty) {
+				continue;
+			}
+		}
 		const int render_scale = layer_render_scale(layer);
 		// Recreate the texture if the render scale changed (its size depends
 		// on it) or it was dropped.
@@ -2239,6 +2260,10 @@ void Image_window::composite_layers() {
 		if (scalefx_gpu_enabled && layer.is_opaque() && eff_ui_scaler(cfg) == ScaleFX && layer.scalefx_gpu
 			&& layer.scalefx_gpu->output()) {
 			display_texture = layer.scalefx_gpu->output();
+		}
+		if (scalefx_gpu_enabled && !layer.is_opaque() && eff_ui_scaler(cfg) == ScaleFX && layer.scalefx_ui_gpu
+			&& layer.scalefx_ui_gpu->output()) {
+			display_texture = layer.scalefx_ui_gpu->output();
 		}
 		SDL_SetTextureScaleMode(display_texture, smode);
 		SDL_SetTextureAlphaMod(display_texture, layer.alpha);

@@ -44,6 +44,7 @@ Boston, MA  02111-1307, USA.
 #include "common_types.h"
 #include "gamma.h"
 #include "iwin8.h"
+#include "scalefx_gpu_ui.h"
 
 #include <algorithm>
 #include <climits>
@@ -386,10 +387,29 @@ bool Image_window8::refresh_layer_scaled(Layer& layer, int factor) {
 	}
 	SDL_SetPaletteColors(sdl_pal, cols, 0, 256);
 
-	// Transparent/translucent UI layers keep their existing consensus-matting
-	// CPU path. Opaque scenes can share the GPU's final texture directly.
+	// Both opaque scenes and transparent UI share GPU textures directly.
 	if (layer.is_opaque() && scale_layer_gpu(layer, lsurf, factor)) {
 		return true;
+	}
+
+	if (!layer.is_opaque() && scalefx_gpu_allowed() && eff_ui_scaler(get_ui_cfg(layer.ui_kind)) == ScaleFX
+		&& ::ScaleFX::GPU::available(screen_renderer)) {
+		if (!layer.scalefx_ui_gpu) {
+			layer.scalefx_ui_gpu = std::make_unique<::ScaleFX::UIGPU>(screen_renderer);
+		}
+		std::array<SDL_Color, 256> base, original;
+		std::copy_n(cols, 256, base.begin());
+		for (int i = 0; i < 256; ++i) {
+			const uint32 c = layer_argb_pixel(layer, static_cast<unsigned char>(i));
+			original[i]    = {Uint8(c >> 16), Uint8(c >> 8), Uint8(c), Uint8(c >> 24)};
+		}
+		const bool first = layer.scalefx_ui_gpu->output() == nullptr;
+		if (layer.scalefx_ui_gpu->update(lsurf, factor, transp, base, original, {guard_band, guard_band, logw, logh})) {
+			if (first) {
+				SDL_Log("ScaleFX: GPU UI shaders active at %dx (%s)", factor, layer.get_name().c_str());
+			}
+			return true;
+		}
 	}
 
 	// A fully opaque layer (a full-screen scene) has no transparent index and no

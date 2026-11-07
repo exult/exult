@@ -36,7 +36,7 @@ def main():
         "#pragma once\n#include <cstdint>\nnamespace ScaleFX { namespace Shaders {\n",
     ]
     with tempfile.TemporaryDirectory() as temporary:
-        for index in list(range(5)) + ["vertex"]:
+        for index in list(range(5)) + ["reduce", "matte", "vertex"]:
             source = ROOT / ("scalefx.vert" if index == "vertex" else f"scalefx-{index}.frag")
             binary = Path(temporary) / f"{index}.spv"
             subprocess.run([

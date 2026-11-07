@@ -34,6 +34,7 @@ namespace ScaleFX {
 		bool                                    initialized = false;
 		std::array<SDL_Color, 256>              palette{};
 		std::vector<uint32_t>                   upload;
+		std::vector<float>                      distances;
 
 		void release() {
 			if (renderer) {
@@ -196,6 +197,7 @@ namespace ScaleFX {
 			SDL_SetTextureBlendMode(result, SDL_BLENDMODE_NONE);
 			SDL_SetTextureScaleMode(result, SDL_SCALEMODE_NEAREST);
 			upload.resize(size_t(w) * size_t(h));
+			distances.resize(256 * 256);
 			return true;
 		}
 #endif
@@ -224,6 +226,15 @@ namespace ScaleFX {
 #endif
 		}
 
+#if SDL_VERSION_ATLEAST(3, 4, 0)
+		SDL_GPUTexture* gpu_output() const {
+			return targets[4];
+		}
+
+		SDL_GPUTexture* indexed_source() const {
+			return source;
+		}
+#endif
 		SDL_Texture* output() const {
 #if SDL_VERSION_ATLEAST(3, 4, 0)
 			return initialized && !failed ? result : nullptr;
@@ -253,10 +264,12 @@ namespace ScaleFX {
 					if (!pal || pal->ncolors < 256) {
 						return false;
 					}
-					bool changed = !initialized;
-					for (size_t i = 0; i < 256 && !changed; ++i) {
-						changed = palette[i].r != pal->colors[i].r || palette[i].g != pal->colors[i].g
-								  || palette[i].b != pal->colors[i].b;
+					bool                  changed = !initialized;
+					std::array<bool, 256> changed_entries{};
+					for (size_t i = 0; i < 256; ++i) {
+						const auto a = palette[i], b = pal->colors[i];
+						changed_entries[i] = !initialized || a.r != b.r || a.g != b.g || a.b != b.b;
+						changed            = changed || changed_entries[i];
 					}
 					if (changed) {
 						std::copy_n(pal->colors, 256, palette.begin());
@@ -300,12 +313,15 @@ namespace ScaleFX {
 						auto* distances = mapped + size_t(width) * size_t(height) * 4;
 						for (size_t a = 0; a < 256; ++a) {
 							for (size_t b = 0; b <= a; ++b) {
-								auto        ca = palette[a], cb = palette[b];
-								const float d = detail::distance({ca.r, ca.g, ca.b}, {cb.r, cb.g, cb.b});
-								SDL_memcpy(distances + (a * 256 + b) * sizeof(float), &d, sizeof d);
-								SDL_memcpy(distances + (b * 256 + a) * sizeof(float), &d, sizeof d);
+								if (!changed_entries[a] && !changed_entries[b]) {
+									continue;
+								}
+								const auto  ca = palette[a], cb = palette[b];
+								const float d                = detail::distance({ca.r, ca.g, ca.b}, {cb.r, cb.g, cb.b});
+								this->distances[a * 256 + b] = this->distances[b * 256 + a] = d;
 							}
 						}
+						SDL_memcpy(distances, this->distances.data(), 256 * 256 * sizeof(float));
 					}
 					SDL_UnmapGPUTransferBuffer(device, transfer);
 					auto* commands = SDL_AcquireGPUCommandBuffer(device);
