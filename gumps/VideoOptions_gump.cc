@@ -251,6 +251,9 @@ void VideoOptions_gump::rebuild_buttons() {
 			   Image_window::get_displayname_for_scaler(Image_window::bilinear)};
 	{
 		const char* renderer_name = SDL_GetRendererName(SDL_GetRenderer(gwin->get_win()->get_screen_window()));
+		if (renderer_name && SDL_strcmp(renderer_name, "gpu") == 0) {
+			renderer_name = "GPU";
+		}
 		if (renderer_name) {
 			fill_scaler_text.emplace_back(renderer_name);
 		}
