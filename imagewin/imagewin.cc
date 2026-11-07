@@ -656,6 +656,7 @@ bool Image_window::create_scale_surfaces(int w, int h, int bpp) {
 	std::string gpu_mode;
 	config->value("config/video/scalefx_gpu", gpu_mode, "auto");
 	scalefx_gpu_enabled = gpu_mode != "no" && gpu_mode != "off" && gpu_mode != "0";
+	scalefx_gpu_world_failed = false;
 	if (screen_renderer == nullptr) {
 #if SDL_VERSION_ATLEAST(3, 4, 0)
 		const char* requested_driver = SDL_GetHint(SDL_HINT_RENDER_DRIVER);
@@ -1013,7 +1014,8 @@ void Image_window::show(int x, int y, int w, int h) {
 		// A GPU-to-CPU transition must initialize the complete CPU staging
 		// image before a fill scaler can copy it, not just the last damage.
 		scalefx_gpu.reset();
-		scalefx_gpu_enabled = false;
+		// Scene buffers can temporarily bypass world scaling. They must not
+		// disable acceleration for subsequent world frames or UI layers.
 		x                   = 0;
 		y                   = 0;
 		w                   = buffer_w;
@@ -2430,7 +2432,7 @@ void Image_window::show_scaled8to32_ScaleFX(int x, int y, int w, int h) {
 // The GPU path writes the existing world-cache texture directly. Composition,
 // screenshots, overlay ordering and final presentation remain in UpdateRect.
 bool Image_window::show_scalefx_gpu(int x, int y, int w, int h) {
-	if (!scalefx_gpu_enabled || scaler != ScaleFX || !::ScaleFX::GPU::available(screen_renderer)
+	if (!scalefx_gpu_enabled || scalefx_gpu_world_failed || scaler != ScaleFX || !::ScaleFX::GPU::available(screen_renderer)
 		|| ibuf->width + 2 * guard_band != draw_surface->w || ibuf->height + 2 * guard_band != draw_surface->h) {
 		return false;
 	}
@@ -2453,6 +2455,7 @@ bool Image_window::show_scalefx_gpu(int x, int y, int w, int h) {
 		damage.h += guard_band;
 	}
 	if (!scalefx_gpu->update(draw_surface, damage, scale)) {
+		scalefx_gpu_world_failed = true;
 		return false;
 	}
 	if (first_frame) {
@@ -2475,6 +2478,8 @@ bool Image_window::show_scalefx_gpu(int x, int y, int w, int h) {
 			= SDL_SetRenderTarget(screen_renderer, screen_texture_a) && SDL_RenderTexture(screen_renderer, frame, &source, &full);
 	SDL_SetRenderTarget(screen_renderer, saved);
 	if (!ok) {
+		scalefx_gpu_world_failed = true;
+		SDL_Log("ScaleFX world GPU copy failed; using CPU: %s", SDL_GetError());
 		SDL_ClearError();
 		return false;
 	}

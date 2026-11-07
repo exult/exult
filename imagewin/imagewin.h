@@ -262,6 +262,7 @@ private:
 	std::unique_ptr<ScaleFX::Workspace>               scalefx_workspace;
 	std::unique_ptr<ScaleFX::GPU>                     scalefx_gpu;
 	bool                                              scalefx_gpu_enabled = true;
+	bool                                              scalefx_gpu_world_failed = false;
 	bool                                              show_scalefx_gpu(int x, int y, int w, int h);
 	static ScalerVector                               p_scalers;
 	static std::map<uint32, Image_window::Resolution> p_resolutions;
