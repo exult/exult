@@ -25,8 +25,7 @@
  *
  *	2016-08-08 Submitted by Knight Captain
  */
-
-void SetSkullcrusherAutomaton (var npc, var name, var sched, var loc) {
+void SetSkullcrusherAutomaton(var npc, var name, var sched, var loc) {
 	npc->set_npc_name(name);
 	npc->set_schedule_type(sched);
 	npc->set_new_schedules(DAWN, sched, loc);
@@ -38,19 +37,19 @@ void SkullcrusherAutomatons object#(0x6B9) () {
 		// First, give them schedules.
 		if (!gflags[SKULLCRUSHER_AUTOMATONS]) {
 			// Entrance Guard
-			SetSkullcrusherAutomaton(GUARD17, "West Guard", STANDTHERE, [0962, 1045]);
+			SetSkullcrusherAutomaton(GUARD17, "West Guard", STANDTHERE,[0962, 1045]);
 			// Exit Guard
-			SetSkullcrusherAutomaton(GUARD21, "Exit Guard", PACE_VERTICAL, [1297, 0888]);
+			SetSkullcrusherAutomaton(GUARD21, "Exit Guard", PACE_VERTICAL,[1297, 0888]);
 			// Serpent Gate Guard
-			SetSkullcrusherAutomaton(GUARD20, "North Door Guard", STANDTHERE, [1217, 0887]);
+			SetSkullcrusherAutomaton(GUARD20, "North Door Guard", STANDTHERE,[1217, 0887]);
 			// East Big Doors Guard, northern one
-			SetSkullcrusherAutomaton(GUARD19, "East Door Guard N", STANDTHERE, [1418, 1045]);
+			SetSkullcrusherAutomaton(GUARD19, "East Door Guard N", STANDTHERE,[1418, 1045]);
 			script GUARD19 {
 				nohalt;
 				face WEST;
 			}
 			// East Big Doors Guard, southern one
-			SetSkullcrusherAutomaton(GUARD18, "East Door Guard S", STANDTHERE, [1418, 1048]);
+			SetSkullcrusherAutomaton(GUARD18, "East Door Guard S", STANDTHERE,[1418, 1048]);
 			script GUARD18 {
 				nohalt;
 				face WEST;
@@ -60,7 +59,6 @@ void SkullcrusherAutomatons object#(0x6B9) () {
 			// auto-reset egg, meaning it would keep retrying these changes when hatched.
 			gflags[SKULLCRUSHER_AUTOMATONS] = true;
 		}
-
 		var npc;
 		// Then make them respond to your presence.
 
@@ -131,7 +129,6 @@ void SkullcrusherAutomatons object#(0x6B9) () {
 			// Set his next activity to Talk. His conversation triggers GUARD19 to attack too.
 			npc->set_schedule_type(TALK);
 		}
-
 		SkullcrusherAutomatons.original();
 	}
 }

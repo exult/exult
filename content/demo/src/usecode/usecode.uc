@@ -16,19 +16,11 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *  Author: Malignant Manor
  */
-
 #game "blackgate" // Dev games seem to use Blackgate usecode intrinsics.
-
 #include "headers/constants.uc"
-
 #include "headers/npcs.uc"
-
 #include "headers/shapes.uc"
-
 #include "spells.uc"
-
 #autonumber 0xA00
-
 #include "headers/functions.uc"
-
 #include "items.uc"

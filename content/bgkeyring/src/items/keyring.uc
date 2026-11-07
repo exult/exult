@@ -25,16 +25,15 @@
 
 //Constants
 enum keyring_constants {
-   KEY_ALAGNER				= 254,	// Keys for inn doors.
-   KEY_CHRISTOPHERS_CHEST	= 253	// Key for Christopher's chest.
+	KEY_ALAGNER = 254,  // Keys for inn doors.
+	KEY_CHRISTOPHERS_CHEST = 253  // Key for Christopher's chest.
 };
 
-void UseKeyOnChest (var chest) {
+void UseKeyOnChest(var chest) {
 	if (chest->get_item_shape() == SHAPE_LOCKED_CHEST) {
 		//key was used in a locked chest:
 		chest->set_item_shape(SHAPE_CHEST);
 		chest->item_say("Unlocked");
-
 		if (chest->get_item_quality() == KEY_CHRISTOPHERS_CHEST) {
 			gflags[UNLOCKED_CHRISTOPHERS_CHEST] = true;
 		}
@@ -70,16 +69,9 @@ void UseKeyOnChest (var chest) {
 	}
 }
 
-void KeyInternal (var target, var keyfits, var barks) {
-	var lockables = [
-		SHAPE_LOCKED_CHEST,
-		SHAPE_CHEST,
-		SHAPE_DOOR_HORIZONTAL,
-		SHAPE_DOOR_VERTICAL,
-		SHAPE_DOOR2_HORIZONTAL,
-		SHAPE_DOOR2_VERTICAL
-	];
-
+void KeyInternal(var target, var keyfits, var barks) {
+	var lockables = [SHAPE_LOCKED_CHEST, SHAPE_CHEST, SHAPE_DOOR_HORIZONTAL, SHAPE_DOOR_VERTICAL,
+		SHAPE_DOOR2_HORIZONTAL, SHAPE_DOOR2_VERTICAL];
 	var target_shape = target->get_item_shape();
 
 	//The target cannot be unlocked:
@@ -91,8 +83,8 @@ void KeyInternal (var target, var keyfits, var barks) {
 	if (keyfits) {
 		//Play the key sound:
 		UI_play_sound_effect2(SOUND_KEY, item);
-
-		if (target_shape in [SHAPE_DOOR_HORIZONTAL, SHAPE_DOOR_VERTICAL, SHAPE_DOOR2_HORIZONTAL, SHAPE_DOOR2_VERTICAL]) {
+		if (target_shape in[SHAPE_DOOR_HORIZONTAL, SHAPE_DOOR_VERTICAL, SHAPE_DOOR2_HORIZONTAL,
+			SHAPE_DOOR2_VERTICAL]) {
 			//Key was used in a door:
 			UseKeyOnDoor(target);
 		} else {
@@ -108,7 +100,7 @@ void KeyInternal (var target, var keyfits, var barks) {
 
 class Keyring_data {
 	var keys;
-	void set_keyring_frame (var keyring) {
+	void set_keyring_frame(var keyring) {
 		var count = UI_get_array_size(keys);
 		UI_play_sound_effect2(SOUND_KEY, keyring);
 		// Set the keyring's frame:
@@ -118,34 +110,32 @@ class Keyring_data {
 			keyring->set_item_frame(count);
 		}
 	}
-	var is_on_keyring (var target) {
-		return (target in keys);
+	var is_on_keyring(var target) {
+		return(target in keys);
 	}
-	var add_to_keyring (var keyring, var key) {
+	var add_to_keyring(var keyring, var key) {
 		var qual = key->get_item_quality();
-		switch(qual) {
-			case KEY_INN:
-				//Refuse Inn keys:
-				avatarSay("@I don't think that the innkeeper would like that...@");
-				return false;
-
-			case KEY_ALAGNER:
-				//Refuse Alagner's storeroom key:
-				avatarSay("@I am supposed to return this key to Alagner.@");
-				return false;
-
-			default:
-				if (!is_on_keyring(qual)) {
-					// Add the key to the keyring:
-					keys << qual;
-				}
-				set_keyring_frame(keyring);
-				// Delete the key from the world:
-				key->remove_item();
-				return true;
+		switch (qual) {
+		case KEY_INN:
+			//Refuse Inn keys:
+			avatarSay("@I don't think that the innkeeper would like that...@");
+			return false;
+		case KEY_ALAGNER:
+			//Refuse Alagner's storeroom key:
+			avatarSay("@I am supposed to return this key to Alagner.@");
+			return false;
+		default:
+			if (!is_on_keyring(qual)) {
+				// Add the key to the keyring:
+				keys << qual;
+			}
+			set_keyring_frame(keyring);
+			// Delete the key from the world:
+			key->remove_item();
+			return true;
 		}
 	}
-	void dump_keys () {
+	void dump_keys() {
 		// Create a bag for the keys:
 		var bag = UI_create_new_object(SHAPE_BAG);
 		for (key in keys) {
@@ -162,7 +152,7 @@ class Keyring_data {
 		// Clear the keyring collection:
 		keys = [];
 	}
-	var add_party_keys (var keyring) {
+	var add_party_keys(var keyring) {
 		//Count party keys:
 		var party = UI_get_party_list();
 		var added = 0;
@@ -194,7 +184,7 @@ class Keyring_data {
 	}
 }
 
-class<Keyring_data> get_keyring () {
+class<Keyring_data> get_keyring() {
 	//This stores the keys in the keyring:
 	static class<Keyring_data> keyring;
 	static var initialized;
@@ -210,7 +200,6 @@ void Keyring shape#(0x44C) () {
 	if (!(event == DOUBLECLICK)) {
 		return;
 	}
-
 	struct<ObjPos> target = UI_click_on_item();
 
 	//Since BG has no native support for adding keys to the keyring when you
@@ -229,8 +218,6 @@ void Keyring shape#(0x44C) () {
 		}
 		return;
 	}
-
-	KeyInternal(target,
-				get_keyring()->is_on_keyring(target->get_item_quality()),
-				["@We don't have that key.@", "@It's not on the keyring.@"]);
+	KeyInternal(target, get_keyring()->is_on_keyring(target->get_item_quality()),
+		["@We don't have that key.@", "@It's not on the keyring.@"]);
 }

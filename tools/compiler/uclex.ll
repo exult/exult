@@ -438,6 +438,7 @@ const		return UCC_CONST;
 string		return STRING;
 enum		return ENUM;
 declare		return DECLARE_;
+assume_script	return ASSUME_SCRIPT;
 extern		return EXTERN;
 true		return UCTRUE;
 false		return UCFALSE;
@@ -458,6 +459,7 @@ endconv		return ENDCONV;
 user_choice	return CHOICE;
 nested		return NESTED;
 say		return SAY;
+show		return SHOW;
 remove		return REMOVE;
 add		return ADD;
 hide		return HIDE;
@@ -570,6 +572,9 @@ sonic_damage	return SONIC_DAMAGE;
 "!"		return NOT;
 
 [a-zA-Z_][a-zA-Z0-9_]*	{
+			if (std::strcmp(yytext, "UNKNOWN") == 0) {
+				Uc_location::yyerror("identifier 'UNKNOWN' is reserved; unknown intrinsics require an explicit intrinsic number");
+			}
 			yylval.strval = strdup(yytext);
 			return IDENTIFIER;
 		}

@@ -24,40 +24,39 @@
  *	Author: Marzo Junior
  *	Last Modified: 2006-02-27
  */
-
 enum MakePotion_levels {
-	CAST_TELEPORT						= 1,
-	TELEPORT_WIDGETS					= 2,
-	POTION_FADE_SCREEN					= 3,
-	MOVE_TO_LAB							= 4,
-	POTION_UNFADE_SCREEN				= 5,
-	MAKE_POTION							= 6,
-	PLACE_BLACKROCK						= 7,
-	UPDATE_CAULDRON						= 8,
-	DELETE_POTIONS						= 9,
-	BEGIN_DIALOG_1						= 10,
-	MOVE_TO_LBCASTLE					= 11,
-	BEGIN_DIALOG_2						= 12,
-	TELEPORT_TO_SKARABRAE				= 13,
-	WALK_TO_CAULDRON_1					= 14,
-	WALK_TO_CAULDRON_2					= 15,
-	WALK_TO_POTION_1					= 16,
-	WALK_TO_POTION_2					= 17,
-	IS_AT_CAULDRON_1					= 18,
-	IS_AT_CAULDRON_2					= 19,
-	IS_AT_POTION_1						= 20,
-	IS_AT_POTION_2						= 21
+	CAST_TELEPORT = 1,
+	TELEPORT_WIDGETS = 2,
+	POTION_FADE_SCREEN = 3,
+	MOVE_TO_LAB = 4,
+	POTION_UNFADE_SCREEN = 5,
+	MAKE_POTION = 6,
+	PLACE_BLACKROCK = 7,
+	UPDATE_CAULDRON = 8,
+	DELETE_POTIONS = 9,
+	BEGIN_DIALOG_1 = 10,
+	MOVE_TO_LBCASTLE = 11,
+	BEGIN_DIALOG_2 = 12,
+	TELEPORT_TO_SKARABRAE = 13,
+	WALK_TO_CAULDRON_1 = 14,
+	WALK_TO_CAULDRON_2 = 15,
+	WALK_TO_POTION_1 = 16,
+	WALK_TO_POTION_2 = 17,
+	IS_AT_CAULDRON_1 = 18,
+	IS_AT_CAULDRON_2 = 19,
+	IS_AT_POTION_1 = 20,
+	IS_AT_POTION_2 = 21
 };
 
 void zaurielMakePotion object#() () {
 	struct<Position> pos;
 	var party = UI_get_party_list();
 	var casting;
-
 	if (event == CAST_TELEPORT) {
 		//item = ZAURIEL
 		ZAURIEL->show_npc_face(0);
-		say("@I shall teleport us all into my lab so that we have some privacy while I work on the potion.@");
+		say(
+			"@I shall teleport us all into my lab so that we have some privacy while I work on the potion.@");
 		//Teleportation spell:
 		script item {
 			nohalt;
@@ -117,38 +116,38 @@ void zaurielMakePotion object#() () {
 		UI_fade_palette(12, 1, 1);
 	} else if (event == MAKE_POTION) {
 		script AVATAR after 2 ticks call trueFreeze;
-
 		ZAURIEL->show_npc_face(0);
-		say("@There, I can work unfettered by other concerns now. Here, let me have the ingredients.@");
+		say(
+			"@There, I can work unfettered by other concerns now. Here, let me have the ingredients.@");
 		//Take the ingredients away:
 		UI_remove_party_items(1, SHAPE_BLACKROCK, QUALITY_ANY, FRAME_ANY, true);
 		UI_remove_party_items(1, SHAPE_VENOM, QUALITY_ANY, FRAME_ANY, true);
-		say("Zauriel takes the Blackrock and the Silver Serpent venom from you. @Thank thee, Avatar.@");
+		say(
+			"Zauriel takes the Blackrock and the Silver Serpent venom from you. @Thank thee, Avatar.@");
 		//The cutscene:
 		script ZAURIEL after 3 ticks {
 			nohalt;
 			finish;
 			call zaurielMakePotion, WALK_TO_CAULDRON_1;
 		}
-
 	} else if (event >= WALK_TO_CAULDRON_1 && event <= WALK_TO_POTION_2) {
 		var pos = [0x537, 0xa46, 0x0];
 		var newevent;
 		switch (event) {
-			case WALK_TO_CAULDRON_1:
-				newevent = IS_AT_CAULDRON_1;
-				break;
-			case WALK_TO_CAULDRON_2:
-				newevent = IS_AT_CAULDRON_2;
-				break;
-			case WALK_TO_POTION_1:
-				pos = [0x534, 0xa47, 0x0];
-				newevent = IS_AT_POTION_1;
-				break;
-			case WALK_TO_POTION_2:
-				pos = [0x534, 0xa49, 0x0];
-				newevent = IS_AT_POTION_2;
-				break;
+		case WALK_TO_CAULDRON_1:
+			newevent = IS_AT_CAULDRON_1;
+			break;
+		case WALK_TO_CAULDRON_2:
+			newevent = IS_AT_CAULDRON_2;
+			break;
+		case WALK_TO_POTION_1:
+			pos = [0x534, 0xa47, 0x0];
+			newevent = IS_AT_POTION_1;
+			break;
+		case WALK_TO_POTION_2:
+			pos = [0x534, 0xa49, 0x0];
+			newevent = IS_AT_POTION_2;
+			break;
 		}
 		ZAURIEL->si_path_run_usecode(pos, newevent, ZAURIEL, zaurielMakePotion, true);
 	} else if (event >= IS_AT_CAULDRON_1 && event <= IS_AT_POTION_2) {
@@ -216,10 +215,9 @@ void zaurielMakePotion object#() () {
 	} else if (event == UPDATE_CAULDRON) {
 		var cauldron = ZAURIEL->find_nearest(SHAPE_CAULDRON, 10);
 		var blackrock = ZAURIEL->find_nearest(SHAPE_BLACKROCK, 10);
-		var framemap = [ 4, -1,  3, 		0,  2];
-		var sfxmap	 = [67, 67, 67, SOUND_KEY, 67];
+		var framemap = [4, -1, 3, 0, 2];
+		var sfxmap = [67, 67, 67, SOUND_KEY, 67];
 		var frameindex = cauldron->get_item_frame() + 1;
-
 		if (blackrock) {
 			blackrock->UI_remove_item();
 		}
@@ -230,10 +228,10 @@ void zaurielMakePotion object#() () {
 		cauldron->set_item_frame(framemap[frameindex]);
 	} else if (event == BEGIN_DIALOG_1) {
 		var potion;
-
 		ZAURIEL->show_npc_face(0);
 		say("Zauriel finally turns to you and hands you the potion. @Here, the potion is ready.");
-		say("@Make good use of it, for I shall -not- give thee any more!@ In the vial is a glowing black potion.");
+		say(
+			"@Make good use of it, for I shall -not- give thee any more!@ In the vial is a glowing black potion.");
 
 		//Try to create the potion in the Avatar's inventory:
 		UI_set_last_created(get_cont_items(SHAPE_BLACKROCK_POTION, QUALITY_ANY, FRAME_ANY));
@@ -245,21 +243,24 @@ void zaurielMakePotion object#() () {
 		//Remind the player that a piece of Blackrock is still needed:
 		var blackrock_count = PARTY->count_objects(SHAPE_BLACKROCK, QUALITY_ANY, FRAME_ANY);
 		if (!blackrock_count) {
-			say("@Remember that thou dost still need to gather a piece of Blackrock ore in order to neutralize the necklace!@");
+			say(
+				"@Remember that thou dost still need to gather a piece of Blackrock ore in order to neutralize the necklace!@");
 		}
 		say("@I shall now tell thee where my daughter is being held.@");
 		add("Where are they?");
-
 		converse (0) {
-			case "Where are they?" (remove):
-				say("@Yes, I was just about to say that! A little more patience, Avatar, if thou wilt!");
-				say("@There is a small island to the north of Skara Brae; that is where the mage and his thugs are located.");
-				say("@My divinations indicate that they are in the northwestern portion of the island.");
-				say("@There -is- the issue that the island is disconnected from the mainland, being reachable only by boat or through flying...");
-				say("@But thou art resourceful enough to bypass this minor obstacle.@");
-				gflags[ZAURIEL_TOLD_LOCATION] = true;
+		case "Where are they?" (remove):
+			say(
+				"@Yes, I was just about to say that! A little more patience, Avatar, if thou wilt!");
+			say(
+				"@There is a small island to the north of Skara Brae; that is where the mage and his thugs are located.");
+			say(
+				"@My divinations indicate that they are in the northwestern portion of the island.");
+			say(
+				"@There -is- the issue that the island is disconnected from the mainland, being reachable only by boat or through flying...");
+			say("@But thou art resourceful enough to bypass this minor obstacle.@");
+			gflags[ZAURIEL_TOLD_LOCATION] = true;
 		}
-
 		say("@Now that everything is said, I shall take us back to where we were.@");
 		//Teleportation animation:
 		script item {
@@ -305,15 +306,17 @@ void zaurielMakePotion object#() () {
 		PARTY->move_object(pos);
 	} else if (event == BEGIN_DIALOG_2) {
 		ZAURIEL->show_npc_face(0);
-		say("@Here we are again. Thou knowest now what needs to be done, so I ask thee to do so quickly.");
-		say("@But before thou dost go, I must confess that I find this place far too crowded for me.");
+		say(
+			"@Here we are again. Thou knowest now what needs to be done, so I ask thee to do so quickly.");
+		say(
+			"@But before thou dost go, I must confess that I find this place far too crowded for me.");
 		say("@When thou hast rescued my daughter, come meet me near the Skara Brae Moongate.");
 		if (PARTY->count_objects(SHAPE_SEXTANT, QUALITY_ANY, FRAME_ANY)) {
 			say("@Thy sextant shall guide thee: I shall be at 45 degrees south, 38 degrees west.@");
 		} else {
-			say("@Shouldst thou acquire a sextant, take this as a reference: I shall be at 45 degrees south, 38 degrees west.@");
+			say(
+				"@Shouldst thou acquire a sextant, take this as a reference: I shall be at 45 degrees south, 38 degrees west.@");
 		}
-
 		giveExperience(100);
 		//Fire the teleport animation and move Zauriel:
 		gflags[ZAURIEL_TELEPORTED] = true;
@@ -330,8 +333,7 @@ void zaurielMakePotion object#() () {
 		//Move him to the destination:
 		move_object([0x224, 0x630, 0x0]);
 		set_item_frame_rot(STAND_SOUTH);
-		set_new_schedules([DAWN,			MORNING,		AFTERNOON,		EVENING,		NIGHT],
-						  [WAIT,			WAIT,			WAIT,			WAIT,			WAIT],
-						  [0x224, 0x630,	0x224, 0x630,	0x224, 0x630,	0x224, 0x630,	0x224, 0x630]);
+		set_new_schedules([DAWN, MORNING, AFTERNOON, EVENING, NIGHT],[WAIT, WAIT, WAIT, WAIT, WAIT],
+			[0x224, 0x630, 0x224, 0x630, 0x224, 0x630, 0x224, 0x630, 0x224, 0x630]);
 	}
 }

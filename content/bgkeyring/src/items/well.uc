@@ -19,8 +19,8 @@
  *	Author: Marzo Junior
  *	Last Modified: 2006-03-19
  */
+extern void useBucketOnWell();
 
-extern void useBucketOnWell ();
 void WellBase shape#(0x1D6) () {
 	var bucket = AVATAR->get_cont_items(SHAPE_BUCKET, QUALITY_ANY, 0);
 	if (bucket) {

@@ -21,7 +21,8 @@
  */
 
 /* Baby: reimplemented so you can finally stick Lady Tory's baby in a cradle */
-const int FRAME_RIKY			= 2;
+const int FRAME_RIKY = 2;
+
 void Baby shape#(0x2DA) () {
 	if (event != DOUBLECLICK) {
 		return;
@@ -32,16 +33,19 @@ void Baby shape#(0x2DA) () {
 	if (get_item_frame() == FRAME_RIKY && !gflags[RESCUED_RIKY]) {
 		if (gflags[HEARD_ABOUT_RIKY]) {
 			//heard about Riky
-			randomPartySay("@Praise All! The child is still alive. He must be returned to Lady Tory immediately!@");
+			randomPartySay(
+				"@Praise All! The child is still alive. He must be returned to Lady Tory immediately!@");
 		} else {
-			randomPartySay("@Praise All! The child is still alive. We must find who his parents are, and return him to his home!@");
+			randomPartySay(
+				"@Praise All! The child is still alive. We must find who his parents are, and return him to his home!@");
 		}
 	} else {
 		struct<ObjPos> target = UI_click_on_item();
 		var target_shape = target->get_item_shape();
 		if (target_shape == SHAPE_FULL_CRADLE) {
 			//used on full cradle
-			randomPartySay("@Pardon me my friend, dost thou not think that would be a little crowded?@");
+			randomPartySay(
+				"@Pardon me my friend, dost thou not think that would be a little crowded?@");
 		} else if (target_shape == SHAPE_EMPTY_CRADLE) {
 			//used on empty cradle
 			target->set_item_shape(SHAPE_FULL_CRADLE);

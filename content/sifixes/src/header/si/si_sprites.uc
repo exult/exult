@@ -22,7 +22,6 @@
  *	2017-01-20 Put in linear order since there's little benefit to groups.
  *	2023-03-15 Added full list to support adding a face to SmithzHorse.
  */
-
 enum sprites {
 	// Used for several effects:
 	SPRITE_0 = 0,

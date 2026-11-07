@@ -25,29 +25,24 @@ void testOfOrder() {
 		"part of thee, they are thee and thou art the rules.'@*");
 	say("@'Once those rules, or Forces, are one with thee, then, and only then,"
 		" canst thou abide regardless of the circumstances.'@");
-	var replies = [
-		"Strength Though Ethics", "Guidelines of Life",
-		"Tenets of Discipline"
-	];
+	var replies = ["Strength Though Ethics", "Guidelines of Life", "Tenets of Discipline"];
 	if (gflags[READ_STRUCTURE_OF_ORDER]) {
 		replies &= "The Structure of Order";
 	} else {
 		replies &= "The Joy of Order";
 	}
-	converse : nested (replies) {
+	converse: nested (replies) {
 	case "Strength Though Ethics":
 		say("@An excellent book, one that can guide a disciple of Order to new "
 			"consciousness. I would recommend that thou readest it. Then thou "
 			"wouldst realize that the answer thou didst give was incorrect.@");
 		break;
-
 	case "Tenets of Discipline":
 		say("@Shushuro was a great man indeed. If only mine hollow head could "
 			"be so enlightened. But at least I realize my quote was not from "
 			"that book's pages. Mayhap thou shouldst return to the city and "
 			"examine thy books further.@");
 		break;
-
 	case "Guidelines of Life":
 		say("@A masterpiece! Indeed, its words of wisdom could educate thee "
 			"very well. Then thou wouldst be enlightened to learn that the "
@@ -55,13 +50,11 @@ void testOfOrder() {
 		say("@Mayhap thou dost need to study more at the Hierophant's  library."
 			" 'Tis a wondrous place full of the wisdom of Order.@");
 		break;
-
 	case "The Joy of Order":
 		say("@Curious, I have never heard of that book. Methinks that thou art "
 			"trying to deceive me. Please, do us both a service and return "
 			"thou to the library for further study.@");
 		break;
-
 	case "The Structure of Order" (remove):
 		say("@Ah, so thou art a true acolyte of Order. I will permit thee to "
 			"enter the Grand Shrine.@");
@@ -75,7 +68,6 @@ void testOfOrder() {
 				UI_play_sound_effect(0x001E);
 				changeSlidingDoorState(lever, 1);
 				break;
-
 			case 120:
 				lever->set_item_quality(147);
 				break;
@@ -122,46 +114,38 @@ void SpinebreakerGuard object#(0x4CA) () {
 				"to enter the grand shrine.@");
 			add(["Give me the test", "grand shrine", "bye"]);
 		}
-		converse(0) {
+		converse (0) {
 		case "I follow Order":
 			remove(["I follow Order", "I follow Chaos"]);
 			say("@That may be, but I must test thy knowledge before I permit "
 				"thee access to the grand shrine.@");
 			add(["test", "grand shrine", "bye"]);
-
 		case "test" (remove):
 			say("@Though I doubt one such as thee would attempt to deceive "
-				"me, many 'followers' of late do not appear to truly be "
-				"devoted to Order.@");
+				"me, many 'followers' of late do not appear to truly be " "devoted to Order.@");
 			say("@In truth, I believe them to be impostors, though they did "
 				"answer the question I put to them.@");
 			add(["impostors", "question"]);
-
 		case "question" (remove):
 			say("@To insure that thou art a true student of Order, I will ask "
 				"thee to complete a line from one of our greatest books and "
 				"thou must name the book.@");
 			say("@Only a devout student of Order would know the answer.@");
 			add(["Give me the test"]);
-
 		case "Give me the test" (remove):
 			testOfOrder();
-
 		case "grand shrine" (remove):
 			say("@At the end of this corridor lies the grand shrine of Order. "
 				"That is where the Hierophant performs the ceremony to open "
 				"the Wall of Lights.@");
-
 		case "impostors" (remove):
 			say("@Though I should not speak such, they appeared to be, shall "
 				"we say, less than intelligent. They seemed to have great "
 				"difficulty with answering the most modest of my queries.@");
 			say("@One of their number even threatened to tear me limb from "
 				"limb if I failed to open this portal. But it was the large "
-				"one who answered all the questions correctly. He alone was no "
-				"dolt.@");
+				"one who answered all the questions correctly. He alone was no " "dolt.@");
 			add(["large one"]);
-
 		case "others" (remove):
 			say("@The others that I spoke about earlier. Or did I mention "
 				"them? I thought that I mentioned that the 'disciples' of late "
@@ -169,24 +153,19 @@ void SpinebreakerGuard object#(0x4CA) () {
 			say("@In truth, I believed them to be impostors, though they "
 				"passed the test I put upon them.@");
 			add(["impostors"]);
-
 		case "large one" (remove):
 			say("@He was an impressive man, in both size and intellect. He "
-				"appeared to have the combined intellect that the rest of the "
-				"party lacked.@*");
+				"appeared to have the combined intellect that the rest of the " "party lacked.@*");
 			say("@He answered my questions easily, though in truth I cannot "
 				"remember what I asked of him.@");
-
 		case "door locked" (remove):
 			say("@I am truly sorry, but I can only operate these doors. I know "
 				"nothing about any other doors in this place.@");
-
 		case "I follow Chaos" (remove):
 			say("@Then thou shalt not pass.@");
 			delayedBark(METAL_MAN, "@Duty.@", 3);
 			METAL_MAN->set_schedule_type(PATROL);
 			break;
-
 		case "bye":
 			UI_remove_npc_face0();
 			UI_remove_npc_face1();

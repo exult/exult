@@ -70,8 +70,7 @@ jobs:
           pkg update -v pkg || true
           pkg update -v || true
           pkg install gcc13
-          pkg install llvm-17
-          pkg install clang-17
+          pkg install llvm-21 clang-21
           curl -ORL https://pkgsrc.SmartOS.org/packages/SmartOS/bootstrap/bootstrap-2025Q4-x86_64.tar.gz
           tar -zxpf bootstrap-2025Q4-x86_64.tar.gz -C /
           export PATH=/opt/local/bin:/opt/local/sbin:$PATH

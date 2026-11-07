@@ -44,15 +44,13 @@ void finishShearing object#() () {
 }
 
 //Shear that sheep!
-void shearSheep () {
+void shearSheep() {
 	script AVATAR {
 		nohalt;
 		//paralyze the avatar so the player can't move during sequence
 		call freeze;
-
 		face directionFromAvatar(item);
 		say("@Easy now...@");
-
 		repeat 6 {
 			actor frame standing;
 			actor frame reach_1h;
@@ -65,7 +63,6 @@ void shearSheep () {
 		//unparalyze again
 		call unfreeze;
 	}
-
 	script item {
 		nohalt;
 		call freeze;
@@ -80,22 +77,20 @@ void shearSheep () {
 
 	//our resident sheep expert
 	if (inParty(KATRINA)) {
-		var barks = [
-			"@Thou art doing it all wrong!@",
-			"@Nay, work thy way forwards!@",
-			"@Thou shouldst be a shepherd!@"
-		];
+		var barks = ["@Thou art doing it all wrong!@", "@Nay, work thy way forwards!@",
+			"@Thou shouldst be a shepherd!@"];
 		delayedBark(KATRINA, randomIndex(barks), 20);
 	}
 }
 
 //Organise everything for shearing, and go to the sheep
-void startShearing (var sheep) {
+void startShearing(var sheep) {
 	UI_close_gumps();
 
 	//The sheep is already sheared
 	if (sheep->get_item_flag(SHEARED)) {
-		randomPartySay("@Thou hast sheared that sheep already! Give the poor thing a chance to grow it back.@");
+		randomPartySay(
+			"@Thou hast sheared that sheep already! Give the poor thing a chance to grow it back.@");
 		return;
 	}
 

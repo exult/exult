@@ -24,13 +24,13 @@
  *	Author: Marzo Junior
  *	Last Modified: 2006-02-27
  */
-
 void Invisibility_Ring shape#(0x128) () {
 	var cont;
 	if (event == READIED) {
 		//Get ring container:
 		cont = get_container();
-		if (cont->is_npc() && (item == cont->get_readied(BG_LEFT_RING) || item == cont->get_readied(BG_RIGHT_RING))) {
+		if (cont->is_npc() && (item == cont->get_readied(BG_LEFT_RING)
+			|| item == cont->get_readied(BG_RIGHT_RING))) {
 			//If the container is an NPC, and if the item is equipped in a finger,
 			//make user invisible:
 			cont->set_item_flag(INVISIBLE);
@@ -47,12 +47,12 @@ void Regeneration_Ring shape#(0x12A) () {
 	if (event == READIED) {
 		//Get ring container:
 		cont = get_container();
-		if (cont->is_npc() && (item == cont->get_readied(BG_LEFT_RING) || item == cont->get_readied(BG_RIGHT_RING))) {
+		if (cont->is_npc() && (item == cont->get_readied(BG_LEFT_RING)
+			|| item == cont->get_readied(BG_RIGHT_RING))) {
 			//If the container is an NPC, and if the item is equipped in a finger,
 			//make user regenerate:
 			halt_scheduled();
-			script item after 100 ticks
-				call Regeneration_Ring;
+			script item after 100 ticks call Regeneration_Ring;
 		}
 	} else if (event == UNREADIED) {
 		//Stop regeneration:
@@ -76,8 +76,7 @@ void Regeneration_Ring shape#(0x12A) () {
 				}
 			}
 			//Call this function again:
-			script item after 100 ticks
-				call Regeneration_Ring;
+			script item after 100 ticks call Regeneration_Ring;
 		}
 	}
 }

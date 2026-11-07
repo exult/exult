@@ -19,8 +19,7 @@
  *	Author: Marzo Junior (reorganizing/updating code by Alun Bestor)
  *	Last Modified: 2006-03-19
  */
-
-void milkCow () {
+void milkCow() {
 	var cow = item;
 	//the empty bucket/pitcher used for milking
 	var vessel;
@@ -46,13 +45,11 @@ void milkCow () {
 	//struct<Position> target_pos = UI_get_object_position(cow);
 	//target_pos.x -= 2;
 	//moveToLocation(vessel, target_pos);
-
 	if (UI_get_random(10) < 3) {
 		delayedBark(AVATAR, "@Hold still...@", 15);
 	}
 
 	//UI_set_schedule_type(cow, GRAZE);
-
 	script AVATAR {
 		nohalt;
 		call freeze;
@@ -63,7 +60,6 @@ void milkCow () {
 		wait 2;
 		actor frame standing;
 		wait 2;
-
 		repeat 3 {
 			sfx SOUND_MILKING;
 			actor frame ready;
@@ -71,7 +67,6 @@ void milkCow () {
 			actor frame standing;
 			wait 2;
 		};
-
 		say "@That's a good girl!@";
 		call unfreeze;
 	}
@@ -95,7 +90,7 @@ void milkCow () {
 //freezes the cow in place till they get there. Calls milkCow() when the
 //player arrives, using eventid to flag whether a bucket (2) or pitcher
 //(3) was used
-void gotoCow (var cow, var milktype) {
+void gotoCow(var cow, var milktype) {
 	UI_close_gumps();
 
 	//stop the cow from moving around

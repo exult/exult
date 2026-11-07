@@ -16,9 +16,7 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *  Author: Malignant Manor
  */
-
-void Pickaxe shape#(624)()
-{
+void Pickaxe shape#(624) () {
 	// This is also used as a weapon function for pickaxe shape
 	var range;
 	var shape;
@@ -30,7 +28,7 @@ void Pickaxe shape#(624)()
 	var SHAPE = UI_get_item_shape(target);
 	var FRAME = UI_get_item_frame(target);
 
-/*	if (event != WEAPON)
+	/*	if (event != WEAPON)
 	{
 		var partymember = ;
 		if (!UI_is_readied(0xFE9C, 11, 624, 0xFE99) && )
@@ -39,26 +37,20 @@ void Pickaxe shape#(624)()
 			return;
 		}
 	}*/
-	if (SHAPE == OREA || SHAPE == OREB)
-	{
-		UI_set_item_flag(target, TEMPORARY); // needed for static ore
-		if (FRAME == 0 && UI_get_random(4) == 4) // broken slightly
-			UI_set_item_frame(target, 1);
-		else if (FRAME == 1 && UI_get_random(4) == 4) // broken some more
-			UI_set_item_frame(target, 2);
-		else if (FRAME == 2 && UI_get_random(4) == 4) 
-		{
-			if (UI_get_random(100) <=4)
-			{
+	if (SHAPE == OREA || SHAPE == OREB) {
+		UI_set_item_flag(target, TEMPORARY);  // needed for static ore
+		if (FRAME == 0 && UI_get_random(4) == 4)  // broken slightly
+		UI_set_item_frame(target, 1);
+		else if (FRAME == 1 && UI_get_random(4) == 4)  // broken some more
+		UI_set_item_frame(target, 2);
+		else if (FRAME == 2 && UI_get_random(4) == 4) {
+			if (UI_get_random(100) <= 4) {
 				shape = GOLD_NUGGET;
 				range = [0, 1];
-			}
-			else if (UI_get_random(100) >=94)
-			{
+			} else if (UI_get_random(100) >= 94) {
 				shape = GEM;
-				range = [0, 11]; // any higher and you get the special gems
-			}
-			else	// ore dust until deleted by leaving proximity
+				range = [0, 11];  // any higher and you get the special gems
+			} else  // ore dust until deleted by leaving proximity
 			{
 				UI_set_item_frame(target, 3);
 				return;

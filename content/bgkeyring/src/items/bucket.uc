@@ -35,7 +35,6 @@ void makeSpill object#() () {
 	var bucket_frame = get_item_frame();
 	var min_frame = 0;
 	var max_frame = 0;
-
 	if (bucket_frame == FRAME_BUCKET_WATER) {
 		min_frame = 16;
 		max_frame = 19;
@@ -45,27 +44,24 @@ void makeSpill object#() () {
 	} else if (bucket_frame == FRAME_BUCKET_WINE) {
 		min_frame = 20;
 		max_frame = 23;
-	} else if (bucket_frame in [FRAME_BUCKET_BEER, FRAME_BUCKET_BEER2, FRAME_BUCKET_MILK]) {
+	} else if (bucket_frame in[FRAME_BUCKET_BEER, FRAME_BUCKET_BEER2, FRAME_BUCKET_MILK]) {
 		min_frame = 12;
 		max_frame = 15;
 	} else if (bucket_frame == FRAME_WATERINGCAN) {
 		return;
 	}
-
 	struct<Position> avatar_pos = AVATAR->get_object_position();
 	var target_pos = [avatar_pos.x, avatar_pos.y - 1, 0];
-
 	var spill = UI_create_new_object(SHAPE_SPILL);
 	//choose a random frame
 	spill->set_item_frame(UI_die_roll(min_frame, max_frame));
 	//added to the original, prevents them sticking around FOREVER AND EVER
 	spill->set_item_flag(TEMPORARY);
-
 	UI_update_last_created(target_pos);
 
 	//for FV quest: decrement the quality (ie, remaining spills) of the bucket
 	var bucket_quality = get_item_quality();
-	if(bucket_frame == FRAME_BUCKET_BLOOD && bucket_quality) {
+	if (bucket_frame == FRAME_BUCKET_BLOOD && bucket_quality) {
 		set_item_quality(bucket_quality - 1);
 	} else {
 		//switch the bucket to the empty frame
@@ -76,19 +72,17 @@ void makeSpill object#() () {
 	UI_play_sound_effect(SOUND_BUCKET_EMPTY);
 }
 
-
 //Bucket was used on an NPC (this behaviour was moved from Bucket() to
 //aid code organisation). Todo: use event to specify what kind of bucket
 //was used - so we can avoid 'accidental' dousings in blood
 //Updated 2005-03-18 to a) wake NPC up and b) make sure NPC can talk
 //before making them bark
-void useBucketOnNPC () {
+void useBucketOnNPC() {
 	//Note: item is the NPC clicked on
 
 	//get the first bucket we can find that the avatar is carrying
 	var bucket = AVATAR->get_cont_items(SHAPE_BUCKET, QUALITY_ANY, FRAME_ANY);
 	var bucket_frame = bucket->get_item_frame();
-
 	var direction = directionFromAvatar(item);
 	var towards_avatar = invertDirection(direction);
 
@@ -135,7 +129,7 @@ void useBucketOnNPC () {
 
 //Bucket was used on a trough (this behaviour was moved from Bucket()
 //to aid code organisation)
-void useBucketOnTrough () {
+void useBucketOnTrough() {
 	var trough = false;
 	//try to find the nearest horizontal trough
 	trough = AVATAR->find_nearest(SHAPE_TROUGH_HORIZONTAL, 5);
@@ -147,14 +141,12 @@ void useBucketOnTrough () {
 	if (!trough) {
 		return;
 	}
-
 	var bucket_frame = get_item_frame();
 	var trough_frame = trough->get_item_frame();
 	//the trough's frame after the bucket has been used on it
 	var trough_new_frame;
 	//the bucket's frame after it was used
 	var bucket_new_frame;
-
 	if (bucket_frame == FRAME_BUCKET_WATER) {
 		//bucket is full of water, fill the trough from the bucket
 		if (trough_frame == 3 || trough_frame == 7) {
@@ -215,19 +207,16 @@ void douseAnimation object#() () {
 }
 
 //Bucket was used on a dousable item
-void useBucketOnDousable () {
+void useBucketOnDousable() {
 	//Note: item is the object clicked on
 
 	//get the first bucket of water we can find in the player's inventory
 	var bucket = AVATAR->get_cont_items(SHAPE_BUCKET, QUALITY_ANY, FRAME_BUCKET_WATER);
 	var bucket_frame = bucket->get_item_frame();
-
 	var target_shape = get_item_shape();
 	var target_frame = get_item_frame();
-
 	var target_direction = directionFromAvatar(item);
 	struct<Position> target_pos = get_object_position();
-
 	if (target_shape == SHAPE_FIREPIT) {
 		if (target_frame == 4) {
 			avatarBark("@There are only coals.@");
@@ -260,7 +249,8 @@ void useBucketOnDousable () {
 			wait 2;
 			actor frame standing;
 		};
-	} else if (target_shape == SHAPE_LIGHTSOURCE_LIT || target_shape == SHAPE_SCONCE_LIT || target_shape == SHAPE_TORCH_LIT) {
+	} else if (target_shape == SHAPE_LIGHTSOURCE_LIT || target_shape == SHAPE_SCONCE_LIT
+		|| target_shape == SHAPE_TORCH_LIT) {
 		var sprite_offset;
 		//the last style of light source has some special behaviour (FV item?)
 		if (target_frame == 16) {
@@ -275,19 +265,18 @@ void useBucketOnDousable () {
 		} else {
 			sprite_offset = 3;
 			var lightsource_quality = get_item_quality();
-		 	var new_shape;
+			var new_shape;
 
 			//determine the correct doused shape
 			if (target_shape == SHAPE_LIGHTSOURCE_LIT) {
 				new_shape = SHAPE_LIGHTSOURCE;
-			} else if	(target_shape == SHAPE_SCONCE_LIT) {
+			} else if (target_shape == SHAPE_SCONCE_LIT) {
 				new_shape = SHAPE_SCONCE;
-			} else if	(target_shape == SHAPE_TORCH_LIT) {
+			} else if (target_shape == SHAPE_TORCH_LIT) {
 				new_shape = SHAPE_TORCH;
 			}
 			//remove the old lightsource and put a new one in its place
 			remove_item();
-
 			var new_lightsource = UI_create_new_object(new_shape);
 			new_lightsource->set_item_quality(lightsource_quality);
 			new_lightsource->set_item_frame(target_frame);
@@ -300,7 +289,6 @@ void useBucketOnDousable () {
 				actor frame ready;
 				actor frame standing;
 			}
-
 		}
 
 		//place the extinguishing effect relative to the elevation of the
@@ -332,7 +320,6 @@ void useBucketOnDousable () {
 			wait 2;
 			actor frame standing;
 		}
-
 		UI_sprite_effect(ANIMATION_POOF, target_pos.x, target_pos.y, 0, 0, 0, -1);
 		UI_play_sound_effect(0x2E);
 	}
@@ -342,7 +329,7 @@ void useBucketOnDousable () {
 //Note: this doesn't actually decrement the bucket's quality or
 //anything, which means you can use the bucket as many times as
 //you like
-void useBucketOnDough () {
+void useBucketOnDough() {
 	//The dough has already been watered
 	if (get_item_frame() != 0) {
 		return;
@@ -390,18 +377,16 @@ void fillBucketFromWell object#() () {
 			wait 2;
 			actor frame standing;
 		}
-
 		script item frame WALK_1_NORTH;
 		UI_play_sound_effect(0x28);
 	}
 }
 
 //Bucket of water was used on well
-void useBucketOnWell () {
+void useBucketOnWell() {
 	//find the nearest well
 	var well = AVATAR->find_nearest(SHAPE_WELL, 10);
 	var well_frame = well->get_item_frame();
-
 	if (well_frame >= 0 && well_frame <= 11) {
 		//well is of the regular style
 		well_frame = 1;
@@ -450,7 +435,7 @@ void useBucketOnWell () {
 	}
 }
 
-void useBucketOnGround () {
+void useBucketOnGround() {
 	script AVATAR {
 		face north;
 		actor frame bowing;
@@ -480,15 +465,12 @@ void Bucket shape#(0x32A) () {
 	//use cursor)
 	if (event == SCRIPTED) {
 		UI_close_gumps();
-
 		var bucket_frame = get_item_frame();
-
 		struct<ObjPos> target = UI_click_on_item();
 		var target_shape = target->get_item_shape();
 		var target_frame = target->get_item_frame();
 		var target_offsetx;
 		var target_offsety;
-
 		if (isAvatar(target)) {
 			//Player clicked on him/herself
 			if (bucket_frame == FRAME_BUCKET_BLOOD) {
@@ -516,12 +498,11 @@ void Bucket shape#(0x32A) () {
 					avatarBark("@The bucket is empty.@");
 					return;
 				}
-
 				target_offsetx = [0, 2, 0, -2];
 				target_offsety = [2, 0, -2, 0];
-
 				script target wait 50;
-				gotoObject(target, target_offsetx, target_offsety, 0, useBucketOnNPC, target, SCRIPTED);
+				gotoObject(target, target_offsetx, target_offsety, 0, useBucketOnNPC, target,
+					SCRIPTED);
 			}
 		} else if (target_shape == SHAPE_KITCHEN_ITEM && target_frame == FRAME_CHURN) {
 			//Player clicked on a churn
@@ -533,12 +514,11 @@ void Bucket shape#(0x32A) () {
 			} else {
 				return;
 			}
-		} else if (target_shape in [SHAPE_TROUGH_HORIZONTAL, SHAPE_TROUGH_VERTICAL]) {
+		} else if (target_shape in[SHAPE_TROUGH_HORIZONTAL, SHAPE_TROUGH_VERTICAL]) {
 			//Player clicked on a trough
-			if (!(bucket_frame in [FRAME_BUCKET_EMPTY, FRAME_BUCKET_WATER])) {
+			if (!(bucket_frame in[FRAME_BUCKET_EMPTY, FRAME_BUCKET_WATER])) {
 				return;
 			}
-
 			if (target_shape == SHAPE_TROUGH_HORIZONTAL) {
 				target_offsetx = [-1, -2, -1, -2, 1, 1, -4, -4];
 				target_offsety = [1, 1, -2, -2, 0, -1, 0, -1];
@@ -546,7 +526,8 @@ void Bucket shape#(0x32A) () {
 				target_offsetx = [1, 1, -2, -2, 0, -1, 0, -1];
 				target_offsety = [-1, -2, -1, -2, 1, 1, -4, -4];
 			}
-			gotoObject(target, target_offsetx, target_offsety, 0, useBucketOnTrough, item, SCRIPTED);
+			gotoObject(target, target_offsetx, target_offsety, 0, useBucketOnTrough, item,
+				SCRIPTED);
 		} else if (target_shape == SHAPE_FIREPIT) {
 			//player clicked on a firepit
 			//Now this is odd...only golden firepits can be used this
@@ -554,19 +535,18 @@ void Bucket shape#(0x32A) () {
 			if (target->get_item_frame() < 4 || target->get_item_frame() > 7) {
 				return;
 			}
-
 			if (bucket_frame == FRAME_BUCKET_EMPTY) {
 				avatarBark("@The bucket is empty.@");
 				return;
 			} else if (bucket_frame != FRAME_BUCKET_WATER) {
 				return;
 			}
-
 			target_offsetx = [-1, -2, 1, 1, -1, -2, -4, -4];
 			target_offsety = [1, 1, -1, -2, -4, -4, -1, -2];
-
-			gotoObject(target, target_offsetx, target_offsety, 0, useBucketOnDousable, target, SCRIPTED);
-		} else if (target_shape in [SHAPE_LIGHTSOURCE_LIT, SHAPE_SCONCE_LIT, SHAPE_TORCH_LIT, SHAPE_CAMPFIRE]) {
+			gotoObject(target, target_offsetx, target_offsety, 0, useBucketOnDousable, target,
+				SCRIPTED);
+		} else if (target_shape in[SHAPE_LIGHTSOURCE_LIT, SHAPE_SCONCE_LIT, SHAPE_TORCH_LIT,
+			SHAPE_CAMPFIRE]) {
 			//player clicked on dousable lightsource
 			if (bucket_frame == FRAME_BUCKET_EMPTY) {
 				avatarBark("@The bucket is empty.@");
@@ -574,11 +554,10 @@ void Bucket shape#(0x32A) () {
 			} else if (bucket_frame != FRAME_BUCKET_WATER) {
 				return;
 			}
-
 			target_offsetx = [2, 0, -2, 0];
 			target_offsety = [0, 2, 0, -2];
-
-			gotoObject(target, target_offsetx, target_offsety, -5, useBucketOnDousable, target, SCRIPTED);
+			gotoObject(target, target_offsetx, target_offsety, -5, useBucketOnDousable, target,
+				SCRIPTED);
 		} else if (target_shape == SHAPE_DOUGH) {
 			//player clicked on some flour
 			if (bucket_frame == FRAME_BUCKET_EMPTY) {
@@ -587,12 +566,11 @@ void Bucket shape#(0x32A) () {
 			} else if (bucket_frame != FRAME_BUCKET_WATER) {
 				return;
 			}
-
 			target_offsetx = [2, 0, -2, 0];
 			target_offsety = [0, 2, 0, -2];
-
-			gotoObject(target, target_offsetx, target_offsety, -5, useBucketOnDough, target, SCRIPTED);
-		} else if (target_shape in [SHAPE_WELL, SHAPE_WELLBASE]) {
+			gotoObject(target, target_offsetx, target_offsety, -5, useBucketOnDough, target,
+				SCRIPTED);
+		} else if (target_shape in[SHAPE_WELL, SHAPE_WELLBASE]) {
 			//player clicked on well/well base
 			if (bucket_frame != FRAME_BUCKET_EMPTY) {
 				avatarBark("@The bucket is full.@");
@@ -607,7 +585,6 @@ void Bucket shape#(0x32A) () {
 					return;
 				}
 			}
-
 			target_offsetx = [-5, -5];
 			target_offsety = [-1, -1];
 			gotoObject(target, target_offsetx, target_offsety, 0, useBucketOnWell, item, SCRIPTED);
@@ -621,9 +598,8 @@ void Bucket shape#(0x32A) () {
 
 			//This strips the object reference from target, making
 			//it a regular X,Y,Z coordinate array
-			struct<Position>& trg = target;
+			struct<Position> &trg = target;
 			trg = removeFromArray(target, target[1]);
-
 			trg.y += 1;
 			UI_path_run_usecode(trg, useBucketOnGround, item, SCRIPTED);
 		}

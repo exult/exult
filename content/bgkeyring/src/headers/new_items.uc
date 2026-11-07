@@ -24,8 +24,6 @@
  *	Author: Marzo Junior
  *	Last Modified: 2006-02-27
  */
-
 extern void Keyring shape#(0x44C) ();
-
 extern void Zauriel object#(0x48B) ();
 extern void Laurianna object#(0x494) ();

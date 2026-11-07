@@ -7,4 +7,3 @@
  */
 const int IN_PARTY = 6;
 const int IF_MET = 28;
-

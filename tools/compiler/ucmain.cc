@@ -100,6 +100,7 @@ Warning categories (enabled by default except function-id-alias):
                         Unrecognized escape sequences in strings.
   function-id-alias     Compatible declarations with different names sharing an
                         explicit function ID (disabled by default).
+  script-mismatch      Concatenation of script and non-script operands.
   general               Warnings without a more specific category.
 
 Warning options are processed in order. An explicit per-category severity

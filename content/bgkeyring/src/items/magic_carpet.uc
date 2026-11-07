@@ -39,7 +39,6 @@ void Magic_Carpet shape#(SHAPE_MAGIC_CARPET) () {
 		if (UI_in_gump_mode()) {
 			UI_close_gumps();
 		}
-
 		var barge = get_barge();
 
 		// Flag 10 = 'on moving barge'
@@ -71,8 +70,8 @@ void Magic_Carpet shape#(SHAPE_MAGIC_CARPET) () {
 					randomPartySay("@There is something wrong with this flying carpet!@");
 				} else {
 					// Convert frame number into direction.
-					var frnum  = piece->get_item_frame_rot();
-					var nsrefl   = (frnum / 2) % 2;
+					var frnum = piece->get_item_frame_rot();
+					var nsrefl = (frnum / 2) % 2;
 					var diagrefl = frnum / 32;
 					var dir = ((diagrefl * 6) + (nsrefl * 4)) % 8;
 
@@ -101,8 +100,8 @@ void Magic_Carpet shape#(SHAPE_MAGIC_CARPET) () {
 					randomPartySay("@There is something wrong with this flying carpet!@");
 				} else if (event == DOUBLECLICK) {
 					// Convert frame number into direction.
-					var frnum  = piece->get_item_frame_rot();
-					var nsrefl   = (frnum / 2) % 2;
+					var frnum = piece->get_item_frame_rot();
+					var nsrefl = (frnum / 2) % 2;
 					var diagrefl = frnum / 32;
 					var dir = ((diagrefl * 6) + (nsrefl * 4)) % 8;
 
@@ -113,30 +112,22 @@ void Magic_Carpet shape#(SHAPE_MAGIC_CARPET) () {
 					// Get array of position offsets.
 					var offsets;
 					switch (dir) {
-						case 0:	// north
-							offsets = [
-								-2, -9, -3, -7, -1, -7, -3, -5,
-								-1, -5, -3, -3, -1, -3, -2, -1
-							];
-							break;
-						case 2:	// east
-							offsets = [
-								-1, -2, -3, -3, -3, -1, -5, -3,
-								-5, -1, -7, -3, -7, -1, -9, -2
-							];
-							break;
-						case 4:	// south
-							offsets = [
-								-2, -2, -3, -4, -1, -4, -3, -6,
-								-1, -6, -3, -8, -1, -8, -2, -10
-							];
-							break;
-						case 6:	// west
-							offsets = [
-								-9, -1, -7, -2, -7,  0, -5, -2,
-								-5,  0, -3, -2, -3,  0, -1, -1
-							];
-							break;
+					case 0:
+						// north
+						offsets = [-2, -9, -3, -7, -1, -7, -3, -5, -1, -5, -3, -3, -1, -3, -2, -1];
+						break;
+					case 2:
+						// east
+						offsets = [-1, -2, -3, -3, -3, -1, -5, -3, -5, -1, -7, -3, -7, -1, -9, -2];
+						break;
+					case 4:
+						// south
+						offsets = [-2, -2, -3, -4, -1, -4, -3, -6, -1, -6, -3, -8, -1, -8, -2, -10];
+						break;
+					case 6:
+						// west
+						offsets = [-9, -1, -7, -2, -7, 0, -5, -2, -5, 0, -3, -2, -3, 0, -1, -1];
+						break;
 					}
 
 					// Go through party.
@@ -145,14 +136,13 @@ void Magic_Carpet shape#(SHAPE_MAGIC_CARPET) () {
 						// Make party members walk to various points on the
 						// carpet and try to make it rise.
 						if (npc->get_npc_number() == AVATAR) {
-							UI_path_run_usecode([pos.x + offsets[2*index-1],
-								                 pos.y + offsets[2*index],
-								                 pos.z], Magic_Carpet, barge, AVATAR_CARPET, true);
+							UI_path_run_usecode([pos.x + offsets[2 * index - 1],
+								pos.y + offsets[2 * index], pos.z], Magic_Carpet, barge,
+								AVATAR_CARPET, true);
 						} else {
-							npc->si_path_run_usecode([pos.x + offsets[2*index-1],
-								                      pos.y + offsets[2*index],
-								                      pos.z], PARTY_CARPET, barge,
-								                     Magic_Carpet, false);
+							npc->si_path_run_usecode([pos.x + offsets[2 * index - 1],
+								pos.y + offsets[2 * index], pos.z], PARTY_CARPET, barge,
+								Magic_Carpet, false);
 						}
 					}
 				}
@@ -165,8 +155,8 @@ void Magic_Carpet shape#(SHAPE_MAGIC_CARPET) () {
 			// There aren't debris preventing landing. Check if we are not over
 			// the Codex Shrine.
 			struct<Position> pos = AVATAR->get_object_position();
-			if (AVATAR->get_map_num() == 0 &&
-				(pos.x >= 0xA50) && (pos.y >= 0xABC) && (pos.x <= 0xAE0) && (pos.y <= 0xB2D)) {
+			if (AVATAR->get_map_num() == 0 && (pos.x >= 0xA50) && (pos.y >= 0xABC)
+				&& (pos.x <= 0xAE0) && (pos.y <= 0xB2D)) {
 				// Party is over the area of the Shrine of the Codex; prevent landing
 				AVATAR.say("There is a strange force preventing you from landing in this area.");
 			} else {
@@ -192,8 +182,7 @@ void Magic_Carpet shape#(SHAPE_MAGIC_CARPET) () {
 
 void FlyingCarpetRoller shape#(SHAPE_CARPET_ROLLER) () {
 	// Check if we are on a barge.
-	var barge  = get_barge();
-
+	var barge = get_barge();
 	if (barge) {
 		// We are. Is the barge in motion?
 		if (barge->get_item_flag(ON_MOVING_BARGE)) {
@@ -219,15 +208,15 @@ void FlyingCarpetRoller shape#(SHAPE_CARPET_ROLLER) () {
 	}
 
 	// Convert frame number into direction and rotation bits.
-	var frnum  = get_item_frame_rot();
-	var nsrefl   = (frnum / 2) % 2;
+	var frnum = get_item_frame_rot();
+	var nsrefl = (frnum / 2) % 2;
 	var diagrefl = frnum / 32;
 	var dir = ((diagrefl * 6) + (nsrefl * 4)) % 8;
-	var diagbit  = diagrefl * 32;
-	var nsbit    = nsrefl * 2;
+	var diagbit = diagrefl * 32;
+	var nsbit = nsrefl * 2;
 
 	// Get piece position.
-	struct<Position> pos    = get_object_position();
+	struct<Position> pos = get_object_position();
 
 	// Create a rolled-up carpet and set its frame.
 	var roll = UI_create_new_object(SHAPE_ROLLED_CARPET);
@@ -235,18 +224,22 @@ void FlyingCarpetRoller shape#(SHAPE_CARPET_ROLLER) () {
 
 	// Move the rolled-up carpet into the right spot.
 	switch (dir) {
-		case 0:	// north
-			UI_update_last_created([pos.x + 1, pos.y    , 0]);
-			break;
-		case 2:	// east
-			UI_update_last_created([pos.x    , pos.y + 1, 0]);
-			break;
-		case 4:	// south
-			UI_update_last_created([pos.x + 1, pos.y    , 0]);
-			break;
-		case 6:	// west
-			UI_update_last_created([pos.x    , pos.y + 1, 0]);
-			break;
+	case 0:
+		// north
+		UI_update_last_created([pos.x + 1, pos.y, 0]);
+		break;
+	case 2:
+		// east
+		UI_update_last_created([pos.x, pos.y + 1, 0]);
+		break;
+	case 4:
+		// south
+		UI_update_last_created([pos.x + 1, pos.y, 0]);
+		break;
+	case 6:
+		// west
+		UI_update_last_created([pos.x, pos.y + 1, 0]);
+		break;
 	}
 
 	// Finally, remove this piece.
@@ -263,11 +256,11 @@ void RolledFlyingCarpet shape#(SHAPE_ROLLED_CARPET) () {
 
 	// Convert frame number into direction and rotation bits.
 	var frnum = get_item_frame_rot();
-	var nsrefl   = (frnum / 2) % 2;
+	var nsrefl = (frnum / 2) % 2;
 	var diagrefl = frnum / 32;
 	var dir = ((diagrefl * 6) + (nsrefl * 4)) % 8;
-	var diagbit  = diagrefl * 32;
-	var nsbit    = nsrefl * 2;
+	var diagbit = diagrefl * 32;
+	var nsbit = nsrefl * 2;
 
 	// Get carpet position.
 	struct<Position> pos = get_object_position();
@@ -277,30 +270,34 @@ void RolledFlyingCarpet shape#(SHAPE_ROLLED_CARPET) () {
 
 	// Get positions adequate to the direction.
 	switch (dir) {
-		case 0:	// north
-			pospart1 = [pos.x    , pos.y - 6, pos.z];
-			pospart2 = [pos.x    , pos.y    , pos.z];
-			pospart3 = [pos.x - 1, pos.y    , pos.z];
-			posbarge = [pos.x    , pos.y    , pos.z];
-			break;
-		case 2:	// east
-			pospart1 = [pos.x +11, pos.y    , pos.z];
-			pospart2 = [pos.x + 5, pos.y    , pos.z];
-			pospart3 = [pos.x    , pos.y - 1, pos.z];
-			posbarge = [pos.x +11, pos.y    , pos.z];
-			break;
-		case 4:	// south
-			pospart1 = [pos.x    , pos.y +11, pos.z];
-			pospart2 = [pos.x    , pos.y + 5, pos.z];
-			pospart3 = [pos.x - 1, pos.y    , pos.z];
-			posbarge = [pos.x    , pos.y +11, pos.z];
-			break;
-		case 6:	// west
-			pospart1 = [pos.x - 6, pos.y    , pos.z];
-			pospart2 = [pos.x    , pos.y    , pos.z];
-			pospart3 = [pos.x    , pos.y - 1, pos.z];
-			posbarge = [pos.x    , pos.y    , pos.z];
-			break;
+	case 0:
+		// north
+		pospart1 = [pos.x, pos.y - 6, pos.z];
+		pospart2 = [pos.x, pos.y, pos.z];
+		pospart3 = [pos.x - 1, pos.y, pos.z];
+		posbarge = [pos.x, pos.y, pos.z];
+		break;
+	case 2:
+		// east
+		pospart1 = [pos.x + 11, pos.y, pos.z];
+		pospart2 = [pos.x + 5, pos.y, pos.z];
+		pospart3 = [pos.x, pos.y - 1, pos.z];
+		posbarge = [pos.x + 11, pos.y, pos.z];
+		break;
+	case 4:
+		// south
+		pospart1 = [pos.x, pos.y + 11, pos.z];
+		pospart2 = [pos.x, pos.y + 5, pos.z];
+		pospart3 = [pos.x - 1, pos.y, pos.z];
+		posbarge = [pos.x, pos.y + 11, pos.z];
+		break;
+	case 6:
+		// west
+		pospart1 = [pos.x - 6, pos.y, pos.z];
+		pospart2 = [pos.x, pos.y, pos.z];
+		pospart3 = [pos.x, pos.y - 1, pos.z];
+		posbarge = [pos.x, pos.y, pos.z];
+		break;
 	}
 
 	// Remove the current piece from the world without deleting.
@@ -325,11 +322,9 @@ void RolledFlyingCarpet shape#(SHAPE_ROLLED_CARPET) () {
 		var part1 = UI_create_new_object(SHAPE_MAGIC_CARPET);
 		part1->set_item_frame_rot(nsbit + diagbit);
 		UI_update_last_created(pospart1);
-
 		var part2 = UI_create_new_object(SHAPE_MAGIC_CARPET);
 		part2->set_item_frame_rot(2 - nsbit + diagbit);
 		UI_update_last_created(pospart2);
-
 		var part3 = UI_create_new_object(SHAPE_CARPET_ROLLER);
 		part3->set_item_frame_rot(nsbit + diagbit);
 		UI_update_last_created(pospart3);
@@ -354,4 +349,3 @@ void RolledFlyingCarpet shape#(SHAPE_ROLLED_CARPET) () {
 		randomPartySay("@There is not enough space to unroll the carpet.@");
 	}
 }
-

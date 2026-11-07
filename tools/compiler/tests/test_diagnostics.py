@@ -45,10 +45,736 @@ class Diagnostics(unittest.TestCase):
         self.assertTrue(self.output.exists())
         self.assertNotIn("\033[", result.stdout)
 
+    def test_intrinsic_prefix_reserved_for_function_declarations(self):
+        for declaration in (
+            'void UI_custom 0x900 () {}',
+            'UI_custom 0x900 () {}',
+            'extern void UI_custom 0x900 ();',
+            'extern var UI_custom 0x900 (var value);',
+            '#autonumber 0x900\nvoid UI_custom () {}',
+            'void UI_custom shape#(1) () {}',
+            'void UI_custom object#(0x450) () {}',
+            'struct Position { var x; } extern struct<Position> UI_custom 0x900 ();',
+            'class Result {}; extern class<Result> UI_custom 0x900 ();',
+            'class Example { void UI_custom () {} };',
+            'class Example { var UI_custom () { return 1; } };',
+            'void UI_ 0x900 () {}',
+        ):
+            with self.subTest(declaration=declaration):
+                result = self.compile('#game "blackgate"\n' + declaration)
+                self.assert_failed(result, "is reserved for intrinsics (prefix 'UI_')")
+                line = 2 + declaration[:declaration.index('UI_')].count('\n')
+                self.assertIn('input.uc:%d:' % line, result.stdout)
+
+    def test_intrinsic_redeclarations_are_rejected(self):
+        for game in ('blackgate', 'serpentisle', 'serpentbeta'):
+            for declaration in ('extern var UI_get_random 0x900 (var range);',
+                                'var UI_get_random 0x900 (var range) { return range; }'):
+                with self.subTest(game=game, declaration=declaration):
+                    result = self.compile('#game "' + game + '"\n' + declaration)
+                    self.assert_failed(result, "function name 'UI_get_random' is reserved for intrinsics")
+                    self.assertEqual(result.returncode, 1, result.stdout)
+
+    def test_intrinsic_prefix_declaration_recovery(self):
+        result = self.compile('''#game "blackgate"
+void UI_custom 0x900 () {}
+void following 0x901 () { var value = unknown; }
+''', '-Wno-all')
+        self.assert_failed(result, "function name 'UI_custom' is reserved for intrinsics")
+        self.assertIn("use of undeclared identifier 'unknown'", result.stdout)
+        self.assertEqual(result.returncode, 1, result.stdout)
+
+    def test_intrinsic_prefix_is_case_sensitive(self):
+        result = self.compile('''#game "blackgate"
+void UI 0x900 () {}
+void ui_custom 0x901 () {}
+void XUI_custom 0x902 () {}
+void UIcustom 0x903 () {}
+void example 0x904 () {
+    var UI_value = 1;
+    UI(); ui_custom(); XUI_custom(); UIcustom();
+}
+''')
+        self.assertEqual(result.returncode, 0, result.stdout)
+
+    def test_unknown_is_reserved_as_an_identifier(self):
+        for source in (
+            'void UNKNOWN 0x900 () {}',
+            'extern void UNKNOWN 0x900 ();',
+            'void example 0x900 (var UNKNOWN) {}',
+            'void example 0x900 () { var UNKNOWN = 1; }',
+            'void example 0x900 () { declare var UNKNOWN; }',
+            'void example 0x900 () { static var UNKNOWN; }',
+            'void example 0x900 () { string UNKNOWN = "text"; }',
+            'void example 0x900 () { var value; var alias UNKNOWN = value; }',
+            'const int UNKNOWN = 1;',
+            'enum UNKNOWN { value = 1 };',
+            'enum numbers { UNKNOWN = 1 };',
+            'struct UNKNOWN { var value; }',
+            'struct Data { var UNKNOWN; }',
+            'class UNKNOWN {};',
+            'class Example { var UNKNOWN; };',
+            'class Example { void UNKNOWN () {} };',
+            'void example 0x900 () { UNKNOWN: return; }',
+            'void example 0x900 () { for (UNKNOWN in [1]) {} }',
+        ):
+            with self.subTest(source=source):
+                result = self.compile('#game "blackgate"\n' + source, '-Wno-all')
+                self.assert_failed(result, "identifier 'UNKNOWN' is reserved")
+                self.assertEqual(result.returncode, 1, result.stdout)
+
+    def test_unnumbered_unknown_intrinsic_calls_are_rejected(self):
+        for game in ('blackgate', 'serpentisle', 'serpentbeta'):
+            for call in ('UI_UNKNOWN();', 'UNKNOWN();', 'item.UI_UNKNOWN();',
+                         'item.UNKNOWN();', 'item->UI_UNKNOWN(1);', 'item->UNKNOWN(1);'):
+                with self.subTest(game=game, call=call):
+                    result = self.compile('#game "' + game + '"\nvoid example 0x900 () { ' + call + ' }')
+                    self.assert_failed(result, 'require' + ('s' if 'UI_UNKNOWN' in call else '')
+                        + ' an explicit intrinsic number')
+                    self.assertEqual(result.returncode, 1, result.stdout)
+
+    def test_numbered_unknown_intrinsic_calls_remain_available(self):
+        for game in ('blackgate', 'serpentisle', 'serpentbeta'):
+            for numbered, explicit in (('UI_UNKNOWN_FE(1);', '(@0xFE)(1);'),
+                                       ('item.UI_UNKNOWN_FE(1);', 'item.(@0xFE)(1);')):
+                with self.subTest(game=game, numbered=numbered):
+                    prefix = '#game "' + game + '"\nvoid example 0x900 () { '
+                    result = self.compile(prefix + numbered + ' }', '-b')
+                    self.assertEqual(result.returncode, 0, result.stdout)
+                    expected = self.output.read_bytes()
+                    result = self.compile(prefix + explicit + ' }', '-b')
+                    self.assertEqual(result.returncode, 0, result.stdout)
+                    self.assertEqual(self.output.read_bytes(), expected)
+
+    def test_unknown_intrinsic_number_must_be_complete(self):
+        for name in ('UI_UNKNOWN_foo', 'UI_UNKNOWN_FEzz', 'UI_UNKNOWN_', 'UI_UNKNOWN_10000'):
+            with self.subTest(name=name):
+                result = self.compile('#game "blackgate"\nvoid example 0x900 () { ' + name + '(); }')
+                self.assert_failed(result, "use of undeclared identifier '" + name + "'")
+
+    def test_unknown_identifier_case_and_recovery(self):
+        result = self.compile('''#game "blackgate"
+// UNKNOWN is allowed in comments and strings.
+void Unknown 0x900 () { say("UNKNOWN"); }
+void unknown 0x901 () { var UNKNOWN_value = 0; }
+''')
+        self.assertEqual(result.returncode, 0, result.stdout)
+        self.output.unlink()
+        result = self.compile('''#game "blackgate"
+void example 0x900 () { UI_UNKNOWN(); }
+void following 0x901 () { var value = undeclared; }
+''')
+        self.assert_failed(result, "'UI_UNKNOWN' requires an explicit intrinsic number")
+        self.assertIn("use of undeclared identifier 'undeclared'", result.stdout)
+
+    def test_intrinsic_calls_remain_available(self):
+        for game in ('blackgate', 'serpentisle', 'serpentbeta'):
+            with self.subTest(game=game):
+                result = self.compile('#game "' + game + '''"
+void example 0x900 () {
+    var value = UI_get_random(6);
+    UI_show_npc_face(item, 0);
+    UI_remove_npc_face(item);
+}
+''')
+                self.assertEqual(result.returncode, 0, result.stdout)
+
+    def assert_portrait_bytecode(self, sugar, expanded, game, declarations=''):
+        prefix = ('#game "' + game + '"\n' + declarations + '\n'
+            + 'const int top = 0;\nvoid example 0x900 (var npc, var frame) { const int bottom = 1; ')
+        result = self.compile(prefix + sugar + ' }', '-b')
+        self.assertEqual(result.returncode, 0, result.stdout)
+        expected = self.output.read_bytes()
+        result = self.compile(prefix + expanded + ' }', '-b')
+        self.assertEqual(result.returncode, 0, result.stdout)
+        self.assertEqual(self.output.read_bytes(), expected)
+
+    def test_portrait_sugar_bytecode(self):
+        cases = (
+            ('npc.show();', 'UI_show_npc_face(npc, 0);'),
+            ('npc->show(frame + 1);', 'UI_show_npc_face(npc, frame + 1);'),
+            ('npc.say();', 'UI_show_npc_face(npc, 0); say();'),
+            ('npc.hide();', 'UI_remove_npc_face(npc);'),
+        )
+        for slot, suffix in (('0', '0'), ('1', '1'), ('top', '0'), ('bottom', '1'), ('+0', '0'), ('0x1', '1')):
+            cases += (
+                ('npc.show@' + slot + '();', 'UI_show_npc_face' + suffix + '(npc, 0);'),
+                ('npc->show@' + slot + '(frame);', 'UI_show_npc_face' + suffix + '(npc, frame);'),
+                ('npc.say@' + slot + '();', 'UI_show_npc_face' + suffix + '(npc, 0); say();'),
+                ('npc->say@' + slot + '("Hello", " Avatar");',
+                 'UI_show_npc_face' + suffix + '(npc, 0); say("Hello", " Avatar");'),
+                ('hide@' + slot + '();', 'UI_remove_npc_face' + suffix + '();'),
+            )
+        for game in ('blackgate', 'serpentisle', 'serpentbeta'):
+            for sugar, expanded in cases:
+                with self.subTest(game=game, sugar=sugar):
+                    self.assert_portrait_bytecode(sugar, expanded, game)
+
+    def test_portrait_receiver_and_frame_evaluation(self):
+        declarations = 'extern var receiver 0x901 (); extern var getFrame 0x902 ();'
+        for game in ('blackgate', 'serpentisle', 'serpentbeta'):
+            for selector, suffix in (('', ''), ('@top', '0'), ('@bottom', '1')):
+                with self.subTest(game=game, selector=selector):
+                    self.assert_portrait_bytecode('receiver().show' + selector + '(getFrame());',
+                        'UI_show_npc_face' + suffix + '(receiver(), getFrame());', game, declarations)
+                    self.assert_portrait_bytecode('receiver().say' + selector + '("Hello");',
+                        'UI_show_npc_face' + suffix + '(receiver(), 0); say("Hello");', game, declarations)
+
+    def test_portrait_slot_constant_scope(self):
+        self.assert_portrait_bytecode('const int top = 1; npc.show@top(); hide@top();',
+            'const int top = 1; UI_show_npc_face1(npc, 0); UI_remove_npc_face1();', 'blackgate')
+        self.assert_portrait_bytecode('enum slots { other = 1 }; npc.say@other("Hello");',
+            'enum slots { other = 1 }; UI_show_npc_face1(npc, 0); say("Hello");', 'serpentisle')
+
+    def test_portrait_default_game(self):
+        for sugar, expanded in (
+            ('item.show();', 'UI_show_npc_face(item, 0);'),
+            ('item.say@0();', 'UI_show_npc_face0(item, 0); say();'),
+            ('hide@1();', 'UI_remove_npc_face1();'),
+        ):
+            with self.subTest(sugar=sugar):
+                result = self.compile('void example 0x900 () { ' + sugar + ' }', '-b')
+                self.assertEqual(result.returncode, 0, result.stdout)
+                self.assertIn('[-Wmissing-game]', result.stdout)
+                expected = self.output.read_bytes()
+                result = self.compile('void example 0x900 () { ' + expanded + ' }', '-b')
+                self.assertEqual(result.returncode, 0, result.stdout)
+                self.assertEqual(self.output.read_bytes(), expected)
+
+    def test_portrait_slot_diagnostics(self):
+        for statement in ('item.show@SLOT();', 'item.say@SLOT("Hello");', 'hide@SLOT();'):
+            for slot, setup, message in (
+                ('-1', '', 'portrait slot must be 0 or 1'),
+                ('2', '', 'portrait slot must be 0 or 1'),
+                ('bad', 'const int bad = 3;', 'portrait slot must be 0 or 1'),
+                ('runtime', 'var runtime = 0;', "portrait slot 'runtime' is not an integer constant"),
+                ('text', 'string text = "top";', "portrait slot 'text' is not an integer constant"),
+                ('missing', '', "use of undeclared identifier 'missing'"),
+                ('(0)', '', 'syntax error'),
+                ('0 + 1', '', 'syntax error'),
+            ):
+                with self.subTest(statement=statement, slot=slot):
+                    result = self.compile('#game "blackgate"\nvoid example 0x900 () { '
+                        + setup + statement.replace('SLOT', slot) + ' }')
+                    self.assert_failed(result, message)
+
+    def test_portrait_syntax_recovery(self):
+        for statement in ('item.show(0, 1);', 'item.hide@0();', 'hide();', 'say@0("Hello");'):
+            with self.subTest(statement=statement):
+                result = self.compile('void example 0x900 () { ' + statement
+                    + ' }\nvoid following 0x901 () { var x = unknown; }')
+                self.assert_failed(result, 'syntax error')
+                self.assertIn("use of undeclared identifier 'unknown'", result.stdout)
+
+    def test_tail_array_loop_break_matches_return(self):
+        source = '''#game "blackgate"
+void example 0x900 (var objects) {
+    declare var object;
+    for (object in objects) {
+        if (UI_get_item_quality(object) == 100) {
+            UI_set_item_quality(object, 1);
+            return;
+        }
+    }
+    for (object in objects) {
+        if (UI_get_item_quality(object) == 0) {
+            UI_set_item_quality(object, 2);
+            EXIT;
+        }
+    }
+    TAIL
+}
+'''
+        outputs = []
+        for tail in ('return;', ''):
+            for exit_statement in ('break', 'return'):
+                with self.subTest(tail=tail, exit_statement=exit_statement):
+                    result = self.compile(source.replace('EXIT', exit_statement).replace('TAIL', tail), '-b')
+                    self.assertEqual(result.returncode, 0, result.stdout)
+                    outputs.append(self.output.read_bytes())
+        for output in outputs[1:]:
+            self.assertEqual(output, outputs[0])
+
+    def test_breakable_exit_matches_return(self):
+        body = '''if (event == 2) {
+    var objects = [1, 2];
+    var index = 1;
+    declare var object;
+    forever {
+        object = objects[index];
+        if (!object) { EXIT; }
+        if (object == 2) { break; }
+        index += 1;
+    }
+    UI_set_item_quality(object, 3);
+}
+'''
+        for return_type, return_statement in (('void', 'return'), ('var', 'return 0')):
+            with self.subTest(return_statement=return_statement):
+                sources = (
+                    'function_exit: breakable { ' + body.replace('EXIT', 'break function_exit') + ' }',
+                    body.replace('EXIT', return_statement),
+                )
+                outputs = []
+                for tail in (return_statement + ';', ''):
+                    for source in sources:
+                        result = self.compile('#game "blackgate"\n' + return_type + ' example 0x900 () { '
+                            + source + ' ' + tail + ' }', '-b')
+                        self.assertEqual(result.returncode, 0, result.stdout)
+                        outputs.append(self.output.read_bytes())
+                for output in outputs[1:]:
+                    self.assertEqual(output, outputs[0])
+
+    def test_early_return_matches_guarded_tail(self):
+        for return_type, return_statement in (('void', 'return'), ('var', 'return 0')):
+            for condition in ('condition', '(condition && gflags[1])'):
+                with self.subTest(return_type=return_type, condition=condition):
+                    bodies = (
+                        'if (CONDITION) { RETURN; } UI_set_schedule_type(item, 3);',
+                        'if (!(CONDITION)) { UI_set_schedule_type(item, 3); }',
+                    )
+                    outputs = []
+                    for tail in ('', return_statement + ';'):
+                        for body in bodies:
+                            source = ('#game "blackgate"\n' + return_type
+                                + ' example 0x900 (var condition) { '
+                                + body.replace('CONDITION', condition).replace('RETURN', return_statement)
+                                + tail + ' }')
+                            result = self.compile(source, '-b')
+                            self.assertEqual(result.returncode, 0, result.stdout)
+                            outputs.append(self.output.read_bytes())
+                    for output in outputs[1:]:
+                        self.assertEqual(output, outputs[0])
+
+    def test_converging_returns_do_not_invert_conditions(self):
+        source = '''#game "blackgate"
+extern var attempt 0x901 (var target);
+var example 0x900 (var owner) {
+    if (event == 2) {
+        if (attempt(item)) { return 1; }
+    } else {
+        UI_flash_mouse(1);
+        if (owner) {
+            if (attempt(owner)) { return 0; }
+        } else if (attempt(item)) { return 0; }
+    }
+    TAIL
+}
+'''
+        for tail in ('return 0;', ''):
+            with self.subTest(tail=tail):
+                result = self.compile(source.replace('TAIL', tail), '-b')
+                self.assertEqual(result.returncode, 0, result.stdout)
+                code = self.output.read_bytes()
+                # All three calls still feed JNE directly, without an added NOT.
+                self.assertEqual(code.count(b'\x24\x00\x00\x05'), 3)
+                self.assertNotIn(b'\x24\x00\x00\x10\x05', code)
+
     def test_plain_failure(self):
         result = self.compile("void example 0x900 () { var x = ; }\n")
         self.assert_failed(result, "syntax error")
         self.assertNotIn("\033[", result.stdout)
+
+    def test_raw_script_expressions(self):
+        source = '''#game "blackgate"
+var command 0x901 () { return 0x27; }
+void example 0x900 (var value) {
+ script item {
+  raw(0x27);
+  raw(-1);
+  raw((long) -1);
+  raw((byte) +0x27);
+  raw(value);
+  raw(value + 1);
+  raw(command());
+  raw(UI_get_random(10));
+  raw([0x27, value]);
+ }
+}
+'''
+        result = self.compile(source)
+        self.assertEqual(result.returncode, 0, result.stdout)
+        self.assertTrue(self.output.exists())
+
+    def test_raw_script_expression_bytecode(self):
+        source = '''#game "blackgate"
+var duration 0x901 () { return 2; }
+void example 0x900 (var value) {
+ script item { %s }
+}
+'''
+        result = self.compile(source % 'wait value + duration();')
+        self.assertEqual(result.returncode, 0, result.stdout)
+        expected = self.output.read_bytes()
+        for command in (
+            'raw((byte) 0x27); raw(value + duration());',
+            'raw([(byte) 0x27, value + duration()]);',
+        ):
+            with self.subTest(command=command):
+                result = self.compile(source % command)
+                self.assertEqual(result.returncode, 0, result.stdout)
+                self.assertEqual(self.output.read_bytes(), expected)
+
+    def test_raw_script_void_call(self):
+        result = self.compile('''#game "blackgate"
+void command 0x901 () {}
+void example 0x900 () { script item raw(command()); }
+''')
+        self.assert_failed(result, "void function 'command' does not return a value")
+
+    def script_source(self, setup, command, parameters="var condition"):
+        return '#game "blackgate"\nvoid example 0x900 (' + parameters + ') {\n' + setup + '\n script item { ' + command + ' }\n}\n'
+
+    def assert_script_offset(self, setup, length, command="repeat 3 *s;", options=()):
+        source = self.script_source(setup, command)
+        result = self.compile(source, *options)
+        self.assertEqual(result.returncode, 0, result.stdout)
+        expected = self.output.read_bytes()
+        offset = '(long) %d' % -length if length > 32768 else str(-length)
+        result = self.compile(self.script_source(setup,
+            'raw(s & new script { raw((byte) 0x0b); raw(%s); raw(3); });' % offset), *options)
+        self.assertEqual(result.returncode, 0, result.stdout)
+        self.assertEqual(self.output.read_bytes(), expected)
+
+    def test_script_dereference_offsets(self):
+        for setup, size in (
+            ('var s = new script { nop; };', 1),
+            ('var s = new script { wait 1; nop; };', 3),
+            ('var s = new script { raw([]); };', 0),
+            ('var a = [1, 2]; var b = [a, 3]; var s = new script { raw(b); };', 3),
+            ('var s = new script nop;;', 1),
+            ('var s = new script { nop; }; var t = new script { wait 1; }; s = s & t;', 3),
+            ('var s = new script { nop; }; var t = new script { wait 1; }; s &= t;', 3),
+            ('var s = new script { nop; }; s << { wait 1; } << new script { nop; };', 4),
+            ('var s = new script { nop; }; var alias a = s; a &= new script { wait 1; };', 3),
+            ('var s = new script { nop; }; s[1] = 0x21;', 1),
+            ('var s = new script { nop; }; s[3] = 0x21;', 3),
+            ('var s = new script { nop; }; var t = s; s &= s; s = t;', 1),
+        ):
+            with self.subTest(setup=setup):
+                self.assert_script_offset(setup, size)
+
+    def test_script_dereference_parentheses_and_count(self):
+        setup = 'var s = new script { nop; }; var t = new script { wait 1; };'
+        for expression, count, size in (('s', '3 * 2', 1), ('(s & t)', '(1 + 2)', 3)):
+            source = self.script_source(setup, 'repeat %s *%s;' % (count, expression))
+            result = self.compile(source)
+            self.assertEqual(result.returncode, 0, result.stdout)
+            expected = self.output.read_bytes()
+            result = self.compile(self.script_source(setup,
+                'raw(%s & new script { raw((byte) 0x0b); raw(%d); raw(%s); });' % (expression, -size, count)))
+            self.assertEqual(result.returncode, 0, result.stdout)
+            self.assertEqual(self.output.read_bytes(), expected)
+
+    def test_script_dereference_large_lengths(self):
+        setup = 'var a = [0]; ' + 'a &= a; ' * 15
+        for extra, size in (('', 32768), ('a << 0; ', 32769)):
+            with self.subTest(size=size):
+                self.assert_script_offset(setup + extra + 'var s = new script { raw(a); };', size)
+
+    def test_script_repeat_concat_evaluation_order(self):
+        for setup in ('var s = new script { nop; };', 'static var s; s = new script { nop; };'):
+            result = self.compile(self.script_source(setup, 'repeat UI_get_random(3) *s;'))
+            self.assertEqual(result.returncode, 0, result.stdout)
+            expected = self.output.read_bytes()
+            result = self.compile(self.script_source(setup,
+                'raw(s & new script { raw((byte) 0x0b); raw(-1); raw(UI_get_random(3)); });'))
+            self.assertEqual(result.returncode, 0, result.stdout)
+            self.assertEqual(self.output.read_bytes(), expected)
+
+    def test_script_dereference_control_flow(self):
+        for setup in (
+            'var s; if (condition) { s = new script { nop; }; } else { s = new script { nohalt; }; }',
+            'var s = new script { nop; }; while (condition) { s = new script { nohalt; }; }',
+            'var s = new script { nop; }; do { s = new script { nohalt; }; } while (condition);',
+            'var s = new script { nop; }; again: if (condition) { s = new script { nohalt; }; goto again; }',
+            'var s = new script { nop; }; if (condition) { s = new script { wait 1; }; return; }',
+            'var s; switch (condition) { case 1: s = new script { nop; }; break; default: s = new script { nohalt; }; }',
+        ):
+            with self.subTest(setup=setup):
+                self.assert_script_offset(setup, 1)
+
+    def test_script_dereference_unknown_length(self):
+        for setup in (
+            'var s = new script { raw(condition); };',
+            'var s; if (condition) { s = new script { nop; }; } else { s = new script { wait 1; }; }',
+            'var s = new script { nop; }; if (condition) { s &= new script { nop; }; }',
+            'var s = new script { nop; }; while (condition) { s &= new script { nop; }; }',
+            'var s = new script { nop; }; again: if (condition) { s &= new script { nop; }; goto again; }',
+            'var s = new script { nop; }; s[condition] = 0x21;',
+            'var s; switch (condition) { case 1: s = new script { nop; }; break; default: s = new script { wait 1; }; }',
+            'var s = new script { nop; }; s &= [condition];',
+        ):
+            with self.subTest(setup=setup):
+                result = self.compile(self.script_source(setup, 'repeat 3 *s;'))
+                self.assert_failed(result, "cannot repeat script: array length is unknown")
+
+    def test_script_dereference_requires_script(self):
+        for setup in (
+            'var s = [0x21];',
+            'var s = 0x21;',
+            'var s;',
+            'var s = new script { nop; }; s = [0x21];',
+            'var s = new script { nop; }; if (condition) { s = [0x21]; }',
+            'var s = new script { nop; }; var values = [1]; for (s in values) {}',
+        ):
+            with self.subTest(setup=setup):
+                result = self.compile(self.script_source(setup, 'repeat 3 *s;'))
+                self.assert_failed(result, "script dereference requires a value tracked as a script")
+
+    def test_script_dereference_error_spans(self):
+        for body in ('animationCommands', '(animationCommands)', '(animationCommands & animationCommands)'):
+            for command in ('repeat 2 *%s;', 'repeat 2, 3 *%s;', 'repeat forever *%s;',
+                            'repeat 3 { repeat 2 *%s; };'):
+                with self.subTest(body=body, command=command):
+                    line = '\tvar unusedScriptResult = script item { ' + command % body + ' };'
+                    source = ('#game "blackgate"\nvoid example 0x900 (var value) {\n'
+                              ' var animationCommands = new script { raw(value); };\n' + line + '\n}\n')
+                    result = self.compile(source)
+                    self.assert_failed(result, 'cannot repeat script: array length is unknown')
+                    column = line.index(body) + 1
+                    self.assertIn('input.uc:4:%d: error: cannot repeat script' % column, result.stdout)
+                    expanded = line.expandtabs(8)
+                    start = expanded.index(body)
+                    self.assertIn('  ' + expanded + '\n  ' + ' ' * start + '^' + '~' * (len(body) - 1) + '\n', result.stdout)
+
+    def test_script_dereference_type_error_span(self):
+        line = ' script item { repeat 2 *(commands); }'
+        result = self.compile('#game "blackgate"\nvoid example 0x900 () {\n var commands = [1];\n' + line + '\n}\n')
+        self.assert_failed(result, 'script dereference requires a value tracked as a script')
+        start = line.index('(commands)')
+        self.assertIn('input.uc:4:%d: error: script dereference' % (start + 1), result.stdout)
+        self.assertIn('  ' + line + '\n  ' + ' ' * start + '^~~~~~~~~~\n', result.stdout)
+
+    def test_script_concat_warnings(self):
+        for statement in ('s = s & a;', 's = a & s;', 's &= a;', 's << a;'):
+            with self.subTest(statement=statement):
+                setup = 'var s = new script { nop; }; var a = [1, 2]; ' + statement
+                result = self.compile(self.script_source(setup, 'repeat 3 *s;'))
+                self.assertEqual(result.returncode, 0, result.stdout)
+                self.assertIn('[-Wscript-mismatch]', result.stdout)
+                self.assert_script_offset(setup, 3, options=('-Wno-script-mismatch',))
+                self.output.unlink()
+                result = self.compile(self.script_source(setup, 'repeat 3 *s;'), '-Werror=script-mismatch')
+                self.assert_failed(result, '[-Werror=script-mismatch]')
+
+    def test_script_concat_matching_operands(self):
+        result = self.compile(self.script_source(
+            'var a = [1]; var b = [2]; a &= b; a << b; '
+            'var s = new script { nop; }; var t = new script { nohalt; }; s &= t; s << t;',
+            'repeat 3 *s;'))
+        self.assertEqual(result.returncode, 0, result.stdout)
+        self.assertNotIn('script-mismatch', result.stdout)
+
+    def test_script_concat_warning_spans(self):
+        for expression in (
+            's & [1, 2]',
+            '((s)) & ([1, 2])',
+            '(new script { nop; }) & [1, 2]',
+            '(new script raw((byte) 0x59);) & [1, 2]',
+            's & [(byte) 0x0b, -2, 1]',
+        ):
+            with self.subTest(expression=expression):
+                line = '\tvar value = UI_get_array_size(' + expression + ');'
+                source = '#game "blackgate"\nvoid example 0x900 () {\n var s = new script { nop; };\n' + line + '\n}\n'
+                result = self.compile(source)
+                self.assertEqual(result.returncode, 0, result.stdout)
+                column = line.index(expression) + 1
+                self.assertIn('input.uc:4:%d: warning: concatenating a script' % column, result.stdout)
+                expanded = line.expandtabs(8)
+                start = expanded.index(expression)
+                self.assertIn('  ' + expanded + '\n  ' + ' ' * start + '^' + '~' * (len(expression) - 1) + '\n', result.stdout)
+
+    def test_script_assignment_concat_warning_spans(self):
+        for expression in ('s &= [1, 2]', '(s) << [1, 2]'):
+            with self.subTest(expression=expression):
+                line = ' ' + expression + ';'
+                source = '#game "blackgate"\nvoid example 0x900 () {\n var s = new script { nop; };\n' + line + '\n}\n'
+                result = self.compile(source)
+                self.assertEqual(result.returncode, 0, result.stdout)
+                self.assertIn('input.uc:4:2: warning: concatenating a script', result.stdout)
+                self.assertIn('  ' + line + '\n   ^' + '~' * (len(expression) - 1) + '\n', result.stdout)
+
+    def test_script_concat_multiline_warning_span(self):
+        result = self.compile('''#game "blackgate"
+void example 0x900 () {
+ var value = (new script {
+  nop;
+ }) & [1, 2];
+}
+''')
+        self.assertEqual(result.returncode, 0, result.stdout)
+        self.assertIn('input.uc:3:14: warning: concatenating a script', result.stdout)
+        self.assertIn('   var value = (new script {\n               ^~~~~~~~~~~~~\n', result.stdout)
+
+    def test_script_dereference_nested_repeat(self):
+        setup = 'var s = new script { nop; wait 1; };'
+        result = self.compile(self.script_source(setup, 'repeat 2 { repeat 3 *s; };'))
+        self.assertEqual(result.returncode, 0, result.stdout)
+        expected = self.output.read_bytes()
+        result = self.compile(self.script_source(setup,
+            'raw(s & new script { raw((byte) 0x0b); raw(-3); raw(3); }); '
+            'raw((byte) 0x0b); raw(-6); raw(2);'))
+        self.assertEqual(result.returncode, 0, result.stdout)
+        self.assertEqual(self.output.read_bytes(), expected)
+
+    def test_script_dereference_reset_count_and_forever(self):
+        setup = 'var s = new script { nop; };'
+        for command, reference in (
+            ('repeat 3, 4 *s;', 'raw(s & new script { raw((byte) 0x0c); raw(-1); raw(3); raw(4); });'),
+            ('repeat forever *s;', 'raw(s & new script { raw((byte) 0x0b); raw(-1); raw(255); });'),
+        ):
+            result = self.compile(self.script_source(setup, command))
+            self.assertEqual(result.returncode, 0, result.stdout)
+            expected = self.output.read_bytes()
+            result = self.compile(self.script_source(setup, reference))
+            self.assertEqual(result.returncode, 0, result.stdout)
+            self.assertEqual(self.output.read_bytes(), expected)
+
+    def test_new_script_uses_normal_repeat(self):
+        setup = 'var s = new script { repeat 2 { nop; }; };'
+        result = self.compile(self.script_source(setup, 'raw(s);'))
+        self.assertEqual(result.returncode, 0, result.stdout)
+        expected = self.output.read_bytes()
+        reference = ('var s = new script { nop; raw((byte) 0x0b); '
+                     'raw(-1); raw(2); };')
+        result = self.compile(self.script_source(reference, 'raw(s);'))
+        self.assertEqual(result.returncode, 0, result.stdout)
+        self.assertEqual(self.output.read_bytes(), expected)
+
+    def test_script_dereference_rejects_repeat_bodies(self):
+        for setup in (
+            'var s = new script { repeat 2 { nop; }; };',
+            'var s = new script { repeat 2, 3 { nop; }; };',
+            'var s = new script { repeat 2 { repeat 3 { nop; }; }; };',
+            'var s = new script { nop; repeat 2 { nop; }; nohalt; };',
+            'var t = new script { repeat 2 { nop; }; }; var s = t;',
+            'var t = new script { repeat 2 { nop; }; }; var alias s = t;',
+            'var t = new script { repeat 2 { nop; }; }; var s = new script { nop; }; s &= t;',
+            'var t = new script { repeat 2 { nop; }; }; var s = t & new script { nop; };',
+            'var s = new script { nop; }; s << { repeat 2 { nop; }; };',
+            'var s = new script { nop; nop; nop; nop; }; '
+            'if (condition) { s = new script { repeat 2 { nop; }; }; }',
+            'var s = new script { nop; nop; nop; nop; }; '
+            'while (condition) { s = new script { repeat 2 { nop; }; }; }',
+            'var s = new script { repeat 2 { nop; }; }; s = new script { raw(s); };',
+        ):
+            with self.subTest(setup=setup):
+                result = self.compile(self.script_source(setup, 'repeat 3 *s;'), '-Wno-all')
+                self.assert_failed(result, 'cannot dereference a script containing a repeat inside another repeat')
+
+    def test_script_repeat_metadata_reassignment(self):
+        self.assert_script_offset('var s = new script { repeat 2 { nop; }; }; '
+                                  's = new script { nop; };', 1)
+
+    def test_new_script_repeat_context_recovery(self):
+        result = self.compile('''#game "blackgate"
+void example 0x900 () {
+ var s = new script repeat 2 { raw(; };
+ script item repeat forever { nop; };
+ var following = ;
+}
+''')
+        self.assert_failed(result, 'syntax error')
+        self.assertNotIn("'repeat forever' cannot be nested", result.stdout)
+        self.assertIn('input.uc:5:', result.stdout)
+
+    def test_script_metadata_shared_variables_and_exceptions(self):
+        for setup, message in (
+            ('static var s; s = new script { nop; };', None),
+            ('static var s; s = new script { nop; }; UI_get_random(1);', 'requires a value tracked as a script'),
+            ('var s = new script { nop; }; try { s &= new script { nop; }; } catch () {}', 'requires a value tracked as a script'),
+            ('var s; try { s = new script { nop; }; } catch () { s = new script { nohalt; }; }', None),
+        ):
+            with self.subTest(setup=setup):
+                result = self.compile(self.script_source(setup, 'repeat 3 *s;'), '-Wno-all')
+                if message:
+                    self.assert_failed(result, message)
+                else:
+                    self.assertEqual(result.returncode, 0, result.stdout)
+                    self.output.unlink()
+
+    def test_script_dereference_scope_and_recovery(self):
+        for malformed in ('*s;', 'repeat 3;', 'repeat 3 *;'):
+            with self.subTest(malformed=malformed):
+                result = self.compile(self.script_source('var s = new script { nop; };', malformed))
+                self.assertNotEqual(result.returncode, 0, result.stdout)
+                self.assertFalse(self.output.exists())
+
+    def test_assume_script_preserves_bytecode(self):
+        result = self.compile(self.script_source('assume_script(s, 26);', 'repeat 3 *s;', 'var s'))
+        self.assertEqual(result.returncode, 0, result.stdout)
+        expected = self.output.read_bytes()
+        result = self.compile(self.script_source('',
+            'raw(s & new script { raw((byte) 0x0b); raw(-26); raw(3); });', 'var s'), '-Wno-script-mismatch')
+        self.assertEqual(result.returncode, 0, result.stdout)
+        self.assertEqual(self.output.read_bytes(), expected)
+
+    def test_assume_script_alone_emits_no_code(self):
+        result = self.compile('void example 0x900 (var s) { ; }\n')
+        self.assertEqual(result.returncode, 0, result.stdout)
+        expected = self.output.read_bytes()
+        result = self.compile('void example 0x900 (var s) { assume_script(s, 26); }\n')
+        self.assertEqual(result.returncode, 0, result.stdout)
+        self.assertEqual(self.output.read_bytes(), expected)
+
+    def test_assume_script_refinement(self):
+        for setup, size in (
+            ('declare var s; assume_script(s, 26);', 26),
+            ('var s; assume_script(s, 0);', 0),
+            ('var s = [0x21]; assume_script(s, 1);', 1),
+            ('var s = new script { nop; }; assume_script(s, 1);', 1),
+            ('var s; var alias a = s; assume_script(a, 2);', 2),
+            ('var s; const int length = 13; assume_script(s, length * 2);', 26),
+            ('var s; if (condition) { s = new script { nop; }; } assume_script(s, 1);', 1),
+            ('var s; if (condition) { s = new script { nop; }; } '
+             'else { s = new script { wait 1; }; } assume_script(s, 2);', 2),
+        ):
+            with self.subTest(setup=setup):
+                self.assert_script_offset(setup, size)
+
+    def test_assume_script_contradictions(self):
+        for setup, message in (
+            ('var s = 1; assume_script(s, 1);', "contradicts known scalar value of 's'"),
+            ('var s = [1, 2]; assume_script(s, 1);', "length 1 contradicts known length 2 of 's'"),
+            ('var s = new script { nop; }; assume_script(s, 26);', "length 26 contradicts known length 1 of 's'"),
+            ('var s; assume_script(s, 26); assume_script(s, 1);', "length 1 contradicts known length 26 of 's'"),
+        ):
+            with self.subTest(setup=setup):
+                result = self.compile(self.script_source(setup, 'nop;'), '-Wno-all')
+                self.assert_failed(result, message)
+
+    def test_assume_script_validates_arguments(self):
+        for statement, message in (
+            ('assume_script(s, -1);', 'length must be nonnegative'),
+            ('assume_script(s, condition);', 'length must be a compile-time integer constant'),
+            ('assume_script(s, UI_get_random(3));', 'length must be a compile-time integer constant'),
+            ('assume_script(s, "26");', 'length must be a compile-time integer constant'),
+            ('assume_script(missing, 26);', "use of undeclared identifier 'missing'"),
+            ('assume_script(1, 26);', 'syntax error'),
+            ('assume_script(s, );', 'syntax error'),
+        ):
+            with self.subTest(statement=statement):
+                result = self.compile(self.script_source('var s; ' + statement, 'nop;'))
+                self.assert_failed(result, message)
+        result = self.compile('class Widget {} void example 0x900 () { class<Widget> s; assume_script(s, 0); }\n')
+        self.assert_failed(result, 'assume_script requires a non-class variable')
+
+    def test_assume_script_preserves_repeat_restriction(self):
+        result = self.compile(self.script_source(
+            'var s = new script { repeat 2 { nop; }; }; assume_script(s, 4);', 'repeat 3 *s;'))
+        self.assert_failed(result, 'cannot dereference a script containing a repeat inside another repeat')
+
+    def test_assume_script_follows_control_flow_and_reassignment(self):
+        for setup, message in (
+            ('var s; if (condition) { assume_script(s, 1); }', 'requires a value tracked as a script'),
+            ('var s; if (condition) { assume_script(s, 1); } else { assume_script(s, 2); }', 'array length is unknown'),
+            ('var s; assume_script(s, 26); s = [1];', 'requires a value tracked as a script'),
+            ('static var s; assume_script(s, 26); UI_get_random(1);', 'requires a value tracked as a script'),
+        ):
+            with self.subTest(setup=setup):
+                result = self.compile(self.script_source(setup, 'repeat 3 *s;'))
+                self.assert_failed(result, message)
 
     def test_token_column_and_caret(self):
         result = self.compile("void example 0x900 () {\n    var value = ;\n}\n")

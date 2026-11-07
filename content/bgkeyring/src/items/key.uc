@@ -23,7 +23,6 @@
  *	Author: Marzo Junior
  *	Last Modified: 2006-02-27
  */
-
 void Key shape#(0x281) () {
 
 	//If we didn't came here via double-click, leave:
@@ -40,8 +39,6 @@ void Key shape#(0x281) () {
 		get_keyring()->add_to_keyring(target, item);
 		return;
 	}
-
-	KeyInternal(target,
-				(get_item_quality() == target->get_item_quality()),
-				["@The key doesn't fit.@", "@Maybe it is another key.@"]);
+	KeyInternal(target,(get_item_quality() == target->get_item_quality()),["@The key doesn't fit.@",
+		"@Maybe it is another key.@"]);
 }

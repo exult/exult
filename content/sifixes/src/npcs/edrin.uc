@@ -16,7 +16,6 @@
  *
  *  2016-07-12 Written by Knight Captain
  */
-
 void Edrin object#(0x410) () {
 	if (event == STARTED_TALKING && gflags[DREAM_REALM_COMPLETE]) {
 		gflags[EDRIN_KNOWS_SIRANUSH_IS_REAL] = true;

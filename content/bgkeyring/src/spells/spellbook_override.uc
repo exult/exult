@@ -35,22 +35,26 @@
  *	Author: Marzo Junior
  *	Last Modified: 2006-02-27
  */
-
 void spellAwaken_Override object#(0x640) () {
 	spellAwaken(UI_click_on_item());
 }
+
 void spellWeather_Override object#(0x641) () {
 	spellWeather();
 }
+
 void spellDouse_Override object#(0x642) () {
 	spellDouse(UI_click_on_item());
 }
+
 void spellFireworks_Override object#(0x643) () {
 	spellFireworks();
 }
+
 void spellGlimmer_Override object#(0x644) () {
 	spellGlimmer();
 }
+
 void spellHelp_Override object#(0x645) () {
 	if (event == DOUBLECLICK) {
 		//If we came here from a doubleclick, forward to original:
@@ -62,9 +66,11 @@ void spellHelp_Override object#(0x645) () {
 		PARTY->move_object(pos);
 	}
 }
+
 void spellIgnite_Override object#(0x646) () {
 	spellIgnite(UI_click_on_item());
 }
+
 void spellThunder_Override object#(0x647) () {
 	spellThunder();
 }
@@ -72,24 +78,31 @@ void spellThunder_Override object#(0x647) () {
 void spellCreateFood_Override object#(0x648) () {
 	spellCreateFood();
 }
+
 void spellCure_Override object#(0x649) () {
 	spellCure(UI_click_on_item());
 }
+
 void spellDetectTrap_Override object#(0x64A) () {
 	spellDetectTrap();
 }
+
 void spellGreatDouse_Override object#(0x64B) () {
 	spellGreatDouse();
 }
+
 void spellGreatIgnite_Override object#(0x64C) () {
 	spellGreatIgnite();
 }
+
 void spellLight_Override object#(0x64D) () {
 	spellLight();
 }
+
 void spellLocate_Override object#(0x64E) () {
 	spellLocate();
 }
+
 void spellAwakenAll_Override object#(0x64F) () {
 	spellAwakenAll();
 }
@@ -97,24 +110,31 @@ void spellAwakenAll_Override object#(0x64F) () {
 void spellDestroyTrap_Override object#(0x650) () {
 	spellDestroyTrap(UI_click_on_item());
 }
+
 void spellEnchant_Override object#(0x651) () {
 	spellEnchant(UI_click_on_item());
 }
+
 void spellFireBlast_Override object#(0x652) () {
 	spellFireBlast(UI_click_on_item());
 }
+
 void spellGreatLight_Override object#(0x653) () {
 	spellGreatLight();
 }
+
 void spellMassCure_Override object#(0x654) () {
 	spellMassCure();
 }
+
 void spellProtection_Override object#(0x655) () {
 	spellProtection(UI_click_on_item());
 }
+
 void spellTelekinesis_Override object#(0x656) () {
 	spellTelekinesis(UI_click_on_item());
 }
+
 void spellWizardEye_Override object#(0x657) () {
 	spellWizardEye();
 }
@@ -122,24 +142,31 @@ void spellWizardEye_Override object#(0x657) () {
 void spellCurse_Override object#(0x658) () {
 	spellCurse(UI_click_on_item());
 }
+
 void spellHeal_Override object#(0x659) () {
 	spellHeal(UI_click_on_item());
 }
+
 void spellSwarm_Override object#(0x65A) () {
 	spellSwarm();
 }
+
 void spellProtectAll_Override object#(0x65B) () {
 	spellProtectAll();
 }
+
 void spellParalyze_Override object#(0x65C) () {
 	spellParalyze(UI_click_on_item());
 }
+
 void spellPeer_Override object#(0x65D) () {
 	spellPeer();
 }
+
 void spellPoison_Override object#(0x65E) () {
 	spellPoison(UI_click_on_item());
 }
+
 void spellSleep_Override object#(0x65F) () {
 	spellSleep(UI_click_on_item());
 }
@@ -147,14 +174,15 @@ void spellSleep_Override object#(0x65F) () {
 void spellConjure_Override object#(0x660) () {
 	spellConjure();
 }
+
 void spellLightning_Override object#(0x661) () {
 	spellLightning(UI_click_on_item());
 }
+
 void spellMark_Override object#(0x662) () {
 	var target;
 	struct<Position> pos;
 	var in_codex_shrine;
-
 	if (event == DOUBLECLICK) {
 		//Stop Avatar's usecode:
 		halt_scheduled();
@@ -172,14 +200,14 @@ void spellMark_Override object#(0x662) () {
 			pos = target->get_object_position();
 
 			//Check to see if the STONE is inside the area of the Shrine of the Codex:
-			if (!UI_is_pc_inside() && (pos.x >= 0xA50) && (pos.y >= 0xABC) && (pos.x <= 0xAE0) && (pos.y <= 0xB1D)) {
+			if (!UI_is_pc_inside() && (pos.x >= 0xA50) && (pos.y >= 0xABC) && (pos.x <= 0xAE0)
+				&& (pos.y <= 0xB1D)) {
 				in_codex_shrine = true;
 			}
 			if ((pos.x >= 0xA80) && (pos.y >= 0xADC) && (pos.x <= 0xABB) && (pos.y <= 0xB0D)) {
 				in_codex_shrine = true;
 			}
 		}
-
 		if (!in_codex_shrine) {
 			//The stone is not inside the area guarded by the Guardians;
 			//forward to original usecode:
@@ -198,9 +226,11 @@ void spellMark_Override object#(0x662) () {
 		}
 	}
 }
+
 void spellMassCurse_Override object#(0x663) () {
 	spellMassCurse();
 }
+
 /*
 spellRecall_Override object#(0x667) () {
 	item->spellRecall_Override.original();
@@ -209,9 +239,11 @@ spellRecall_Override object#(0x667) () {
 void spellReveal_Override object#(0x665) () {
 	spellReveal();
 }
+
 void spellSeance_Override object#(0x666) () {
 	spellSeance();
 }
+
 void spellUnlockMagic_Override object#(0x667) () {
 	spellUnlockMagic(UI_click_on_item());
 }
@@ -219,24 +251,31 @@ void spellUnlockMagic_Override object#(0x667) () {
 void spellCharm_Override object#(0x668) () {
 	spellCharm(UI_click_on_item());
 }
+
 void spellDance_Override object#(0x669) () {
 	spellDance();
 }
+
 void spellDispelField_Override object#(0x66A) () {
 	spellDispelField(UI_click_on_item());
 }
+
 void spellExplosion_Override object#(0x66B) () {
 	spellExplosion(UI_click_on_item());
 }
+
 void spellGreatHeal_Override object#(0x66C) () {
 	spellGreatHeal(UI_click_on_item());
 }
+
 void spellInvisibility_Override object#(0x66D) () {
 	spellInvisibility(UI_click_on_item());
 }
+
 void spellFireField_Override object#(0x66E) () {
 	spellFireField(UI_click_on_item());
 }
+
 void spellMassSleep_Override object#(0x66F) () {
 	spellMassSleep();
 }
@@ -244,24 +283,31 @@ void spellMassSleep_Override object#(0x66F) () {
 void spellCauseFear_Override object#(0x670) () {
 	spellCauseFear();
 }
+
 void spellClone_Override object#(0x671) () {
 	spellClone(UI_click_on_item());
 }
+
 void spellFireRing_Override object#(0x672) () {
 	spellFireRing(UI_click_on_item());
 }
+
 void spellFlameStrike_Override object#(0x673) () {
 	spellFlameStrike();
 }
+
 void spellMagicStorm_Override object#(0x674) () {
 	spellMagicStorm();
 }
+
 void spellPoisonField_Override object#(0x675) () {
 	spellPoisonField(UI_click_on_item());
 }
+
 void spellSleepField_Override object#(0x676) () {
 	spellSleepField(UI_click_on_item());
 }
+
 void spellTremor_Override object#(0x677) () {
 	spellTremor();
 }
@@ -269,24 +315,31 @@ void spellTremor_Override object#(0x677) () {
 void spellCreateGold_Override object#(0x678) () {
 	spellCreateGold(UI_click_on_item());
 }
+
 void spellDeathBolt_Override object#(0x679) () {
 	spellDeathBolt(UI_click_on_item());
 }
+
 void spellDelayedBlast_Override object#(0x67A) () {
 	spellDelayedBlast(UI_click_on_item());
 }
+
 void spellEnergyField_Override object#(0x67B) () {
 	spellEnergyField(UI_click_on_item());
 }
+
 void spellEnergyMist_Override object#(0x67C) () {
 	spellEnergyMist(UI_click_on_item());
 }
+
 void spellMassCharm_Override object#(0x67D) () {
 	spellMassCharm();
 }
+
 void spellMassMight_Override object#(0x67E) () {
 	spellMassMight();
 }
+
 void spellRestoration_Override object#(0x67F) () {
 	spellRestoration();
 }
@@ -299,21 +352,27 @@ void spellArmaggedon_Override object#(0x680) () {
 void spellDeathVortex_Override object#(0x681) () {
 	spellDeathVortex(UI_click_on_item());
 }
+
 void spellMassDeath_Override object#(0x682) () {
 	spellMassDeath();
 }
+
 void spellInvisibilityAll_Override object#(0x683) () {
 	spellInvisibilityAll();
 }
+
 void spellResurrect_Override object#(0x684) () {
 	spellResurrect(UI_click_on_item());
 }
+
 void spellSummon_Override object#(0x685) () {
 	spellSummon();
 }
+
 void spellSwordStrike_Override object#(0x686) () {
 	spellSwordStrike(UI_click_on_item());
 }
+
 void spellTimeStop_Override object#(0x687) () {
 	spellTimeStop();
 }

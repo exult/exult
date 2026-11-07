@@ -23,9 +23,8 @@
  *  inn... Fix that by resetting the location of his eat at inn schedule to the
  *  Blue Boar.
  */
-
 void Topo object#(0x420) () {
-	TOPO->set_new_schedules([MIDNIGHT, DAWN, NOON, AFTERNOON], [SLEEP, WANDER, EAT_AT_INN, WANDER], [0x936,0x6C8, 0x949,0x786, 0x8C8,0x710, 0x948,0x788]);
-
+	TOPO->set_new_schedules([MIDNIGHT, DAWN, NOON, AFTERNOON],[SLEEP, WANDER, EAT_AT_INN, WANDER],
+		[0x936, 0x6C8, 0x949, 0x786, 0x8C8, 0x710, 0x948, 0x788]);
 	Topo.original();
 }

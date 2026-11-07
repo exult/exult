@@ -26,14 +26,14 @@
 //state, except that there is a high chance that the quality will go up
 //and a low chance it will go down with each hit.
 enum swordblank_qualities {
-	SWORDBLANK_READY	= 9,	//At this quality, the swordblank is hardened by
-								//quenching and is ready to be completed by Menion
-	SWORDBLANK_QUENCH	= 8,	//At this quality, the swordblank is ready to be
-								//quenched and cannot be hammered any more
-								//(If the sword is allowed to cool without quenching,
-								//it will reduce to below this quality again)
-	SWORDBLANK_IMPROVED	= 4		//At and above this quality, the swordblank has an
-								//improved appearance
+	SWORDBLANK_READY = 9,  //At this quality, the swordblank is hardened by
+	//quenching and is ready to be completed by Menion
+	SWORDBLANK_QUENCH = 8,  //At this quality, the swordblank is ready to be
+	//quenched and cannot be hammered any more
+	//(If the sword is allowed to cool without quenching,
+	//it will reduce to below this quality again)
+	SWORDBLANK_IMPROVED = 4  //At and above this quality, the swordblank has an
+	//improved appearance
 };
 
 //These control the chance that the swordblank's quality is improved/reduced
@@ -50,21 +50,22 @@ const int SWORDBLANK_COOL_SPEED = 25;
 
 //The sound of quenching a sword in a water trough
 const int SOUND_QUENCH_SWORD = 46;
-
 const int SOUND_HAMMER_SWORD = 45;
-
-const int SOUND_BELLOWS = 47;		//Fwooosh
-const int NUM_BELLOWS_PUMPS = 2;	//The number of times to pump the bellows
+const int SOUND_BELLOWS = 47;  //Fwooosh
+const int NUM_BELLOWS_PUMPS = 2;  //The number of times to pump the bellows
 
 //The number of ticks it takes the firepit to cool down one notch
 //(increased from 15 to 20)
 const int FIREPIT_COOL_SPEED = 20;
+
 //The sound made when the flames roar higher and higher and HIGHER
 const int SOUND_FIREPIT = 47;
 
 //The quality of the instruction scroll Menion gives you
 const int SWORDSMITHING_INSTRUCTIONS = 13;
+
 //How much Menion charges for training
 const int MENION_TRAINING_PRICE = 45;
+
 //The XP reward for completing a custom sword
 const int SWORDSMITHING_XP = 25;

@@ -23,17 +23,16 @@
  *	Author: Marzo Junior
  *	Last Modified: 2006-02-27
  */
-
 enum Ritual_levels {
-	BEGIN_RITUAL						= 1,
-	SPRITE_EFFECTS_LAURIANNA			= 2,
-	ERECT_BARRIER						= 3,
-	SPRITE_EFFECTS_ZAURIEL				= 4,
-	DRAGON_SHAPESHIFT					= 5,
-	PARTING_REMARKS						= 6,
-	BEGIN_ZAURIEL_COMBAT				= 7,
-	ZAURIEL_DIED						= 8,
-	RITUAL_END							= 9
+	BEGIN_RITUAL = 1,
+	SPRITE_EFFECTS_LAURIANNA = 2,
+	ERECT_BARRIER = 3,
+	SPRITE_EFFECTS_ZAURIEL = 4,
+	DRAGON_SHAPESHIFT = 5,
+	PARTING_REMARKS = 6,
+	BEGIN_ZAURIEL_COMBAT = 7,
+	ZAURIEL_DIED = 8,
+	RITUAL_END = 9
 };
 
 void zaurielTeleportPartyAround object#() () {
@@ -43,19 +42,14 @@ void zaurielTeleportPartyAround object#() () {
 	//Get Zauriel's position:
 	struct<Position> pos = get_object_position();
 	//Find nearby eggs:
-	var eggs = 	pos->find_nearby(SHAPE_EGG, dist, MASK_EGG);
+	var eggs = pos->find_nearby(SHAPE_EGG, dist, MASK_EGG);
 	//Find nearby barriers:
 	var barriers = pos->find_nearby(SHAPE_BARRIER, 3 * dist, MASK_TRANSLUCENT);
 	var count = 0;
 	struct<Position> new_pos;
 	//The only four which are allowed to fight:
-	var companions = [
-		UI_get_avatar_ref(),
-		SHAMINO->get_npc_object(),
-		IOLO->get_npc_object(),
-		DUPRE->get_npc_object()
-	];
-
+	var companions = [UI_get_avatar_ref(), SHAMINO->get_npc_object(), IOLO->get_npc_object(),
+		DUPRE->get_npc_object()];
 	for (egg in eggs) {
 		//Each egg has a quality equal to the number
 		//of a joinable NPC
@@ -96,11 +90,10 @@ void zaurielTeleportPartyAround object#() () {
 	}
 }
 
-void zaurielUnfreezeFormerParty () {
+void zaurielUnfreezeFormerParty() {
 	struct<Position> pos = get_object_position();
 	//Find nearby eggs:
-	var eggs = 	pos->find_nearby(SHAPE_EGG, 20, MASK_EGG);
-
+	var eggs = pos->find_nearby(SHAPE_EGG, 20, MASK_EGG);
 	for (egg in eggs) {
 		//Each egg has a quality equal to the number
 		//of a joinable NPC
@@ -116,7 +109,6 @@ void zaurielRitualCutscene object#() () {
 	var barrier;
 	var body;
 	var zauriel_journal;
-
 	if (event == BEGIN_RITUAL) {
 		//item = ZAURIEL
 
@@ -128,10 +120,8 @@ void zaurielRitualCutscene object#() () {
 		LAURIANNA->set_item_shape(SHAPE_LAURIANNA_MONSTER);
 		LAURIANNA->set_last_created();
 		UI_update_last_created(pos);
-
 		pos = get_object_position();
 		UI_sprite_effect(ANIMATION_FIREWORKS, pos.x, pos.y, 0, 0, 0, -1);
-
 		item->begin_casting_mode();
 		//Zauriel script:
 		script item {
@@ -188,7 +178,8 @@ void zaurielRitualCutscene object#() () {
 			wait 2;
 			previous frame;
 			wait 2;
-			say "@...Ailem In BAL-ZEN@";wait 2;
+			say "@...Ailem In BAL-ZEN@";
+			wait 2;
 
 			//Actually shapeshift Zauriel:
 			call zaurielRitualCutscene, DRAGON_SHAPESHIFT;
@@ -211,14 +202,9 @@ void zaurielRitualCutscene object#() () {
 			//Begin combat:
 			call zaurielRitualCutscene, BEGIN_ZAURIEL_COMBAT;
 		}
-
 		var party = [UI_get_party_list(), LAURIANNA];
-		var companions = [
-			UI_get_avatar_ref(),
-			SHAMINO->get_npc_object(),
-			IOLO->get_npc_object(),
-			DUPRE->get_npc_object()
-		];
+		var companions = [UI_get_avatar_ref(), SHAMINO->get_npc_object(), IOLO->get_npc_object(),
+			DUPRE->get_npc_object()];
 		for (npc in party) {
 			if (!(npc in companions)) {
 				script npc {
@@ -289,7 +275,8 @@ void zaurielRitualCutscene object#() () {
 		}
 
 		//Speak using Dracothraxus' face:
-		DRACOTHRAXUS_FACE.say("@I am truly sorry, Avatar, but I cannot think of a more worthy foe to bring about my demise!");
+		DRACOTHRAXUS_FACE.say(
+			"@I am truly sorry, Avatar, but I cannot think of a more worthy foe to bring about my demise!");
 		say("@Let the world know that I fell in glorious battle for the fate of my daughter!@");
 	} else if (event == BEGIN_ZAURIEL_COMBAT) {
 		//item = ZAURIEL
@@ -323,9 +310,7 @@ void zaurielRitualCutscene object#() () {
 			wait 12;
 			remove;
 		}
-
 		unfreezeParty();
-
 		script item after 16 ticks call zaurielRitualCutscene, RITUAL_END;
 	} else if (event == RITUAL_END) {
 		//item = LAURIANNA
@@ -342,7 +327,6 @@ void zaurielRitualCutscene object#() () {
 			script obj remove;
 		}
 		zaurielUnfreezeFormerParty();
-
 		item->trueUnfreeze();
 
 		//Mark Laurianna's cure:

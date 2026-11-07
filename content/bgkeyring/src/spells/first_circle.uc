@@ -39,26 +39,26 @@
 	extern void spellLocate ();
 	extern void spellTranslate ();
 */
-
 enum first_circle_spells {
-	SPELL_AWAKEN_ALL				= 0,
-	SPELL_CREATE_FOOD				= 1,
-	SPELL_CURE						= 2,
-	SPELL_DETECT_TRAP				= 3,
-	SPELL_GREAT_DOUSE				= 4,
-	SPELL_GREAT_IGNITE				= 5,
-	SPELL_LIGHT						= 6,
-	SPELL_LOCATE					= 7,
-	SPELL_TRANSLATE					= 8
+	SPELL_AWAKEN_ALL = 0,
+	SPELL_CREATE_FOOD = 1,
+	SPELL_CURE = 2,
+	SPELL_DETECT_TRAP = 3,
+	SPELL_GREAT_DOUSE = 4,
+	SPELL_GREAT_IGNITE = 5,
+	SPELL_LIGHT = 6,
+	SPELL_LOCATE = 7,
+	SPELL_TRANSLATE = 8
 };
 
-void spellAwakenAll () {
+void spellAwakenAll() {
 	if (event == DOUBLECLICK) {
 		struct<Position> pos = get_object_position();
 		halt_scheduled();
 		item_say("@Vas An Zu@");
 		if (inMagicStorm()) {
-			UI_sprite_effect(ANIMATION_TELEPORT, (pos.x - pos.z/2), (pos.y - pos.z/2), 0, 0, 0, -1);
+			UI_sprite_effect(ANIMATION_TELEPORT,(pos.x - pos.z / 2),(pos.y - pos.z / 2), 0, 0, 0,
+				-1);
 			script item {
 				nohalt;
 				sfx 68;
@@ -84,7 +84,7 @@ void spellAwakenAll () {
 	}
 }
 
-void spellCreateFood () {
+void spellCreateFood() {
 	if (event == DOUBLECLICK) {
 		halt_scheduled();
 		item_say("@In Mani Ylem@");
@@ -109,7 +109,7 @@ void spellCreateFood () {
 	}
 }
 
-void spellCure (var target) {
+void spellCure(var target) {
 	if (event == DOUBLECLICK) {
 		//struct<ObjPos> target = UI_click_on_item();
 		halt_scheduled();
@@ -144,7 +144,7 @@ void spellCure (var target) {
 	}
 }
 
-void spellDetectTrap () {
+void spellDetectTrap() {
 	if (event == DOUBLECLICK) {
 		halt_scheduled();
 		item_say("@Wis Jux@");
@@ -164,7 +164,6 @@ void spellDetectTrap () {
 					call spellCenteredSpriteEffect, 16;
 				}
 			}
-
 			var openchests = find_nearby(SHAPE_CHEST, dist, MASK_ALL_UNSEEN);
 			var closedchests = find_nearby(SHAPE_LOCKED_CHEST, dist, MASK_ALL_UNSEEN);
 			var chests = (openchests & closedchests);
@@ -187,7 +186,7 @@ void spellDetectTrap () {
 	}
 }
 
-void spellGreatDouse () {
+void spellGreatDouse() {
 	if (event == DOUBLECLICK) {
 		halt_scheduled();
 		item_say("@Vas An Flam@");
@@ -198,8 +197,8 @@ void spellGreatDouse () {
 				actor frame raise_1h;
 				actor frame strike_1h;
 			}
-
-			var dousables = [SHAPE_TORCH_LIT, SHAPE_LIT_LAMP, SHAPE_LIGHTSOURCE_LIT, SHAPE_SCONCE_LIT];
+			var dousables = [SHAPE_TORCH_LIT, SHAPE_LIT_LAMP, SHAPE_LIGHTSOURCE_LIT,
+				SHAPE_SCONCE_LIT];
 			greatDouseIgnite(item, dousables);
 		} else {
 			script item {
@@ -213,7 +212,7 @@ void spellGreatDouse () {
 	}
 }
 
-void spellGreatIgnite () {
+void spellGreatIgnite() {
 	if (event == DOUBLECLICK) {
 		halt_scheduled();
 		item_say("@Vas In Flam@");
@@ -224,7 +223,6 @@ void spellGreatIgnite () {
 				actor frame reach_1h;
 				actor frame strike_1h;
 			}
-
 			var ignitables = [SHAPE_TORCH, SHAPE_LAMPPOST, SHAPE_LIGHTSOURCE, SHAPE_SCONCE];
 			greatDouseIgnite(item, ignitables);
 		} else {
@@ -239,7 +237,7 @@ void spellGreatIgnite () {
 	}
 }
 
-void spellLight () {
+void spellLight() {
 	if (event == DOUBLECLICK) {
 		halt_scheduled();
 		item_say("@In Lor@");
@@ -262,7 +260,7 @@ void spellLight () {
 	}
 }
 
-void spellLocate () {
+void spellLocate() {
 	if (event == DOUBLECLICK) {
 		item_say("@In Wis@");
 		if (inMagicStorm()) {
@@ -271,7 +269,6 @@ void spellLocate () {
 			var lat = ((pos.y - 0x46E) / 10);
 			var longstr;
 			var latstr;
-
 			if (longi < 0) {
 				longstr = " " + absoluteValueOf(longi) + " West";
 			} else {
@@ -303,7 +300,7 @@ void spellLocate () {
 	}
 }
 
-void spellTranslate () {
+void spellTranslate() {
 	if (event == DOUBLECLICK) {
 		halt_scheduled();
 		item_say("@Rel Wis@");

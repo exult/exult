@@ -19,6 +19,5 @@
  *	Author: Marzo Junior (reorganizing/updating code by Alun Bestor)
  *	Last Modified: 2006-03-19
  */
-
 const int SOUND_SHEARING = 0;
-const int SHEARED = 28;	//use the MET flag for determining if a sheep has been sheared previously
+const int SHEARED = 28;  //use the MET flag for determining if a sheep has been sheared previously

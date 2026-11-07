@@ -260,7 +260,7 @@ $datafiles_mingw"
 	if [[ -n "$patchdir" ]]; then
 		# We have a known patch dir.
 		# Search this dir, all mapXX subdirs and music subdir, if present.
-		for dirname in "$moddir/${patchdir%/}" $(find "$moddir/$patchdir" -type d -regex "$moddir/${patchdir}map[0-9A-Fa-f][0-9A-Fa-f]") $(find "$moddir/$patchdir" -type d -name "$moddir/${patchdir}music"); do
+		for dirname in "$moddir/${patchdir%/}" $(find "$moddir/$patchdir" -type d -regex "$moddir/${patchdir}map[0-9A-Fa-f][0-9A-Fa-f]") $(find "$moddir/$patchdir" -type d -wholename "$moddir/${patchdir}music"); do
 			# Compute automake rule name.
 			dirrule="${dirname#$moddir/}"
 			dirrule="${dirrule//[^a-zA-Z0-9]/}"

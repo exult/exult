@@ -63,14 +63,13 @@ void Guard18 object#(0x4ba) () {
 		delayedBark(GUARD18, "@Intruder!@", 5);
 		GUARD18->set_schedule_type(TALK);
 	}
-
 	if ((event == SCRIPTED || event == STARTED_TALKING) && !GUARD18->get_item_flag(SI_ZOMBIE)) {
 		GUARD18->run_schedule();
 		GUARD18->clear_item_say();
 		// Automaton face
 		UI_show_npc_face0(298);
-
-		say("@These doors have been sealed by the Serpent of Order, and none shall enter. By approaching thus far, thou hath shown thyself to be mine enemy.@");
+		say(
+			"@These doors have been sealed by the Serpent of Order, and none shall enter. By approaching thus far, thou hath shown thyself to be mine enemy.@");
 		say("@Now I must kill thee, lest the Serpent judge me unworthy. Bless my hammer, master!@");
 		delayedBark(GUARD18, "@I shall prevail!@", 3);
 		delayedBark(GUARD19, "@Chaos dogs!@", 18);

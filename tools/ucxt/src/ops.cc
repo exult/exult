@@ -22,6 +22,8 @@
 
 #include "ops.h"
 
+#include "files/utils.h"
+
 #include <cstdlib>
 #include <fstream>
 #include <sstream>
@@ -63,6 +65,30 @@ void ucxtInit::init(const Configuration& config, const UCOptions& options) {
 	sibeta_intrinsics_data = "u7sibetaintrinsics.data";
 	sibeta_intrinsics_root = "intrinsics";
 
+	const auto check_data_file = [&](const string& filename) {
+		const string path = datadir + filename;
+		if (!U7exists(path.c_str())) {
+			cerr << "Error: cannot open ucxt data file '" << get_system_path(path) << "'." << endl;
+			if (options.noconf) {
+				cerr << "With -nc, ucxt data files must be in the current directory. Run ucxt from the directory "
+						"containing these files, or omit -nc and set config/ucxt/root in exult.cfg."
+					 << endl;
+			} else {
+				cerr << "Check config/ucxt/root in exult.cfg and ensure the ucxt data files are installed there." << endl;
+			}
+			exit(1);
+		}
+	};
+	check_data_file(misc_data);
+	check_data_file(opcodes_data);
+	if (options.game_bg() || options.game_fov()) {
+		check_data_file(bg_intrinsics_data);
+	} else if (options.game_si() || options.game_ss()) {
+		check_data_file(si_intrinsics_data);
+	} else if (options.game_sib()) {
+		check_data_file(sibeta_intrinsics_data);
+	}
+
 	if (options.verbose) {
 		cout << "Initing misc..." << endl;
 	}
@@ -86,7 +112,8 @@ void ucxtInit::init(const Configuration& config, const UCOptions& options) {
 }
 
 string ucxtInit::get_datadir(const Configuration& config, const UCOptions& options) {
-	string datadir;
+	// Keep Configuration from treating -nc data files as user configuration files.
+	string datadir = options.noconf ? "./" : "";
 
 	// just to handle if people are going to compile with makefile.unix,
 	// unsupported, but occasionally useful

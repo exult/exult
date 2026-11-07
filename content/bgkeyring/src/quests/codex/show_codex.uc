@@ -24,8 +24,7 @@
  *	Author: Marzo Junior
  *	Last Modified: 2006-02-27
  */
-
-const int CODEX					= -295;
+const int CODEX = -295;
 
 void displayCodex object#() () {
 	if (event == SCRIPTED) {
@@ -49,7 +48,8 @@ void displayCodex object#() () {
 		UI_update_last_created([0xAA1, 0xAE7, 7]);
 		if (!gflags[SEEN_CODEX_ONCE]) {
 			//First time the Codex appears in the game; extended intro:
-			CODEX.say("Before you stands an image of the Codex of Ultimate Wisdom, brought forth from the Void by the combined actions of the Britannian and Gargoyle lenses.");
+			CODEX.say(
+				"Before you stands an image of the Codex of Ultimate Wisdom, brought forth from the Void by the combined actions of the Britannian and Gargoyle lenses.");
 			//Mark as done:
 			gflags[SEEN_CODEX_ONCE] = true;
 			giveExperience(100);
@@ -68,16 +68,14 @@ void displayCodex object#() () {
 			//		in a previous call to this function
 			//	-	Display the messages that haven't been displayed yet, and count
 			//		how many messages are being displayed
-			var msgs = [
-				"@Sacrifice is a virtue only if it is voluntary; to force others to Sacrifice of themselves is a grave injustice.~@Each man must be his own judge when determining how far he is willing to go to help others.@",
+			var msgs = ["@Sacrifice is a virtue only if it is voluntary; to force others to Sacrifice of themselves is a grave injustice.~@Each man must be his own judge when determining how far he is willing to go to help others.@",
 				"@The laws of the land are imperfect and do not always serve Justice.~@Keep always in mind that obeying or enforcing an unjust law is itself unjust.@",
 				"@Pride is the bane of Virtue. When one deems himself to be better or to know more than others,~@he is opening the gates to unvirtuous behaviour by disregarding Truth, Love and Courage.@",
 				"@The path to Spirituality is paved by wisdom and knowledge. Thou hast the need to know the right questions to ask,~@and hast to have learned enough of the world to be able to understand those questions.~@Spirituality is the never-ending search for the answers.@",
 				"@There is a fine line between Valor and recklessness; wisdom lies in being able to tell one from another.~@Know that discretion is the better part of Valor.@",
 				"@A life without enlightenment is a form of suffering about which the unenlightened is unaware.~@The enlightened can show their Compassion by fighting against such ignorance.@",
 				"@Honor is more than being true to his word and being willing to defend one's convictions.~@Honor is also the courage to -revise- one's convictions when they are shown to be flawed or based on false assumptions.@",
-				"@Honesty starts with one's self. Know thyself well, and maintain not a false assessment of thy knowledge or martial skills.~@Only when this is done can one achieve true enlightenment.@"
-			];
+				"@Honesty starts with one's self. Know thyself well, and maintain not a false assessment of thy knowledge or martial skills.~@Only when this is done can one achieve true enlightenment.@"];
 			for (msg in msgs with index) {
 				var codex_flag = VIEWED_CODEX_BASE + index;
 				var shrine_flag = MEDITATED_AT_SHRINE_BASE + index;
@@ -95,12 +93,10 @@ void displayCodex object#() () {
 					displayed_messages += 1;
 				}
 			}
-
 			var msg;
 			var single_message = "The Codex of Ultimate Wisdom closes after displaying its message and then returns to the Void, until such a time when it is needed again.";
 			var multi_message = "The Codex of Ultimate Wisdom closes after displaying its messages and then returns to the Void, until such a time when it is needed again.";
 			var no_messages = "You await expectantly for it to display a message, but the Codex remains closed.~Eventually, it returns to the Void until such a time as when it is needed.";
-
 			giveExperience(displayed_messages * 25);
 
 			//Now see what else happens:
@@ -119,18 +115,17 @@ void displayCodex object#() () {
 					//in their respective positions
 					say(ominous_turning, single_line);
 					say("@Speak ye the three-part Word of Passage!@");
-					var choices = [
-						"Infinity", "Singularity", "British",
-						"Avidus", "Malum", "Ignavus", "Veramocor",
-						"Inopia", "Vilis", "Infama", "Fallax"
-					];
+					var choices = ["Infinity", "Singularity", "British", "Avidus", "Malum",
+						"Ignavus", "Veramocor", "Inopia", "Vilis", "Infama", "Fallax"];
 					var choice = askForResponse(choices);
 					if (choice == "Veramocor") {
 						//Player knows what he is talking about!
 						CODEX.hide();
-						avatarSay("In an ominous tone, you speak the three-part Word of Passage, which you learned so long ago while you where still on the Quest of the Avatar: @Veramocor!@");
+						avatarSay(
+							"In an ominous tone, you speak the three-part Word of Passage, which you learned so long ago while you where still on the Quest of the Avatar: @Veramocor!@");
 						UI_earthquake(24);
-						say("The image of the Codex disappears suddenly, and something begins to happen.");
+						say(
+							"The image of the Codex disappears suddenly, and something begins to happen.");
 
 						//Mark quest as completed and give XP:
 						gflags[RELOCATE_CODEX_QUEST] = true;
@@ -146,28 +141,28 @@ void displayCodex object#() () {
 
 						//Animations & sounds:
 						struct<Position> pos = codex->get_object_position();
-						UI_sprite_effect(ANIMATION_CIRCLE_BARRIER, pos.x - pos.z/2, pos.y - pos.z/2 + 12, 0, -9, 0, -1);
-						UI_sprite_effect(ANIMATION_TELEPORT, pos.x - pos.z/2, pos.y - pos.z/2, 0, 0, 0, -1);
+						UI_sprite_effect(ANIMATION_CIRCLE_BARRIER, pos.x - pos.z / 2,
+							pos.y - pos.z / 2 + 12, 0, -9, 0, -1);
+						UI_sprite_effect(ANIMATION_TELEPORT, pos.x - pos.z / 2, pos.y - pos.z / 2,
+							0, 0, 0, -1);
 						UI_play_sound_effect(64);
 						//Delayed removal of the Codex:
-						script codex after 13 ticks	remove;
-
+						script codex after 13 ticks remove;
 						pos = [2719, 2801, 4];
 						var itemsofprinc = pos->find_nearby(SHAPE_ITEM_OF_PRINCIPLE, 3, MASK_NONE);
 						//Animations in the items of principle:
 						for (obj in itemsofprinc) {
 							pos = obj->get_object_position();
-							UI_sprite_effect(ANIMATION_PURPLE_BUBBLES, pos.x - pos.z/2, pos.y - pos.z/2, 0, 0, 0, -1);
+							UI_sprite_effect(ANIMATION_PURPLE_BUBBLES, pos.x - pos.z / 2,
+								pos.y - pos.z / 2, 0, 0, 0, -1);
 						}
-
 						abort;
-					} else if (choice in ["Infinity", "Singularity", "British"]) {
-						say("In an ominous tone, you speak the word of your choice: @",
-							choice, "!@");
+					} else if (choice in["Infinity", "Singularity", "British"]) {
+						say("In an ominous tone, you speak the word of your choice: @", choice,
+							"!@");
 						say("After a while, you realize that nothing happened at all.");
 					} else {
-						say("In an ominous tone, you speak the Word of Power: @",
-							choice,
+						say("In an ominous tone, you speak the Word of Power: @", choice,
 							"!@ The ground suddenly trembles.");
 						UI_earthquake(12);
 						say("After a while, you realize that nothing else happened.");
@@ -178,9 +173,11 @@ void displayCodex object#() () {
 				} else {
 					say(ominous_turning,
 						"you can see the instructions to relocating the Codex in the Void.");
-					say("@Look ye at the Codex symbol in the middle of this shrine. There shall ye place the Items of Principle.",
+					say(
+						"@Look ye at the Codex symbol in the middle of this shrine. There shall ye place the Items of Principle.",
 						"~@Each item must sit atop the circle which represents the same Principle.");
-					say("@Place then the Vortex Cube midway between the Items of Principle and the two Lenses, and read again from this Codex.@");
+					say(
+						"@Place then the Vortex Cube midway between the Items of Principle and the two Lenses, and read again from this Codex.@");
 					if (displayed_messages == 0) {
 						msg = single_message;
 					}
@@ -190,16 +187,17 @@ void displayCodex object#() () {
 					"the displayed message is none other than the one you need the most.");
 				say("@Know ye, seeker, that this Codex is in peril!",
 					"~@A malevolent entity called 'The Guardian' seeks to pervert this Codex and turn it into a weapon of conquest and oppression.");
-				say("@In order to prevent this, this Codex -must- be relocated unto another position in the Void.",
+				say(
+					"@In order to prevent this, this Codex -must- be relocated unto another position in the Void.",
 					"~@Bring thou the Vortex Cube unto this shrine, together with the Book of Truth, the Candle of Love and the Bell of Courage, and read once more from this Codex!@");
 				//The player visited all eight shrines, viewed all eight messages:
 				gflags[CODEX_ALL_EIGHT_SHRINES] = true;
 				giveExperience(50);
 				msg = multi_message;
-			} else if ((shrine_quests + displayed_messages >= 7) &&
-				(!gflags[VIEWED_CODEX_FOR_SPIRITUALITY] || !gflags[MEDITATED_AT_SPIRITUALITY]) &&
-				(gflags[BROKE_SPHERE] || !gflags[ORB_FIXED_TIMELORD]) &&
-				!gflags[ATTUNED_SPIRITUALITY_STONE]) {
+			} else if ((shrine_quests + displayed_messages >= 7) && (
+				!gflags[VIEWED_CODEX_FOR_SPIRITUALITY] || !gflags[MEDITATED_AT_SPIRITUALITY]) && (
+				gflags[BROKE_SPHERE] || !gflags[ORB_FIXED_TIMELORD])
+				&& !gflags[ATTUNED_SPIRITUALITY_STONE]) {
 				//The player has visited all shrines but the Shrine of Spirituality
 				//Also, player does not have access to that shrine
 				//This also happens if the player meditated at that shrine but
@@ -211,15 +209,14 @@ void displayCodex object#() () {
 				}
 				if (PARTY->count_objects(SHAPE_VIRTUE_STONE, QUALITY_ANY, 7)) {
 					//The party has the white virtue stone
-					say("@Hold the Virtue Stone of Spirituality in thy hand and speak ye the Word of Power of Spirituality!@");
-					var choices = [
-						"Avidus", "Malum", "Ignavus", "Veramocor",
-						"Inopia", "Vilis", "Infama", "Fallax"
-					];
+					say(
+						"@Hold the Virtue Stone of Spirituality in thy hand and speak ye the Word of Power of Spirituality!@");
+					var choices = ["Avidus", "Malum", "Ignavus", "Veramocor", "Inopia", "Vilis",
+						"Infama", "Fallax"];
 					var choice = askForResponse(choices);
-
 					CODEX.hide();
-					avatarSay("In an ominous tone, you speak the Word of Power: @" + choice + "!@ The ground trembles for a while afterwards.");
+					avatarSay(
+						"In an ominous tone, you speak the Word of Power: @" + choice + "!@ The ground trembles for a while afterwards.");
 					UI_earthquake(12);
 					if (choice == "Ignavus") {
 						//Player knows his Ultima Lore well!
@@ -235,14 +232,16 @@ void displayCodex object#() () {
 							gflags[SPIRITUALITY_STONE_QUEST] = false;
 							gflags[ATTUNED_SPIRITUALITY_STONE] = true;
 						}
-						say("The Virtue Stone glows brightly for a moment, and you sense the flux of magic.");
+						say(
+							"The Virtue Stone glows brightly for a moment, and you sense the flux of magic.");
 					} else {
 						say("After a while, you realize that nothing else happened.");
 					}
 					script codex remove;
 					abort;
 				} else {
-					say("@Bring ye the Virtue Stone of Spirituality unto this shrine. Once that is done, read again from this Codex",
+					say(
+						"@Bring ye the Virtue Stone of Spirituality unto this shrine. Once that is done, read again from this Codex",
 						"~@and learn how to attune the stone to the Shrine of Spirituality.@");
 					gflags[SPIRITUALITY_STONE_QUEST] = true;
 				}

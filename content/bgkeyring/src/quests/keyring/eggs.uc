@@ -22,7 +22,6 @@
  *	Author: Marzo Junior
  *	Last Modified: 2006-03-19
  */
-
 void eggNoOneThere object#() () {
 	if (event != EGG) {
 		return;
@@ -36,7 +35,6 @@ void eggNoOneThere object#() () {
 			wait 10;
 			say "@There is no one here.@";
 		}
-
 		script randomPartyMember() after 25 ticks {
 			nohalt;
 			say "@Maybe we should talk...@";
@@ -58,7 +56,8 @@ void eggDetectGem object#() () {
 	}
 	if (getQuestState() == PLAYER_HAS_GEM) {
 		//The player has the gem, so warn him it is time to use it:
-		randomPartySay("@Look, at how brightly the gem is glowing, Avatar! Maybe it is time to use it...@");
+		randomPartySay(
+			"@Look, at how brightly the gem is glowing, Avatar! Maybe it is time to use it...@");
 
 		//Delete the egg:
 		remove_item();
@@ -83,7 +82,7 @@ void eggCreateMageAndGoonsGoons object#() () {
 			script LAURIANNA after 10 ticks call beginCutsceneMageAndGoons, FIREWORKS_LAURIANNA;
 
 			//Make mage & goons hostile:
-			script AVATAR after 10 ticks  call beginCutsceneMageAndGoons, BEGIN_COMBAT;
+			script AVATAR after 10 ticks call beginCutsceneMageAndGoons, BEGIN_COMBAT;
 		} else {
 			//The mage has died, even if his goons are still alive; maybe the
 			//player died, or otherwise teleported away. In any case, the mage's
@@ -114,7 +113,6 @@ void eggLicheDialog object#() () {
 	}
 	//Find Joneleth the liche:
 	var liche = find_nearest(SHAPE_LICHE, 10);
-
 	if (UI_is_pc_inside()) {
 		//The Avatar is inside the hut; see if Joneleth exists:
 		if (!liche) {
@@ -127,8 +125,10 @@ void eggLicheDialog object#() () {
 
 		//Display Joneleth's face, and have him taunt the Avatar:
 		KEYRING_ENEMY->show_npc_face(JONELETH_FACE);
-		say("Before you stands a liche. @A living -thing- dares to intrude upon my domain!@ he hisses. @Brave, but foolish...");
-		say("@Ah, I can sense thou hast come to steal my gems! Thou hast but one thing to expect, mortal: death. DIE!@");
+		say(
+			"Before you stands a liche. @A living -thing- dares to intrude upon my domain!@ he hisses. @Brave, but foolish...");
+		say(
+			"@Ah, I can sense thou hast come to steal my gems! Thou hast but one thing to expect, mortal: death. DIE!@");
 
 		//Start fight:
 		liche->set_schedule_type(IN_COMBAT);
@@ -144,12 +144,10 @@ void eggCreateSpiderEggs object#() () {
 	}
 	//This function is needed only because monster eggs do not (yet)
 	//support shape >= 1024.
-
 	var egg;
 
 	//See how many eggs we will create:
 	var num_eggs = UI_die_roll(2, 4);
-
 	while (num_eggs > 0) {
 		//Create egg:
 		egg = UI_create_new_object(SHAPE_SPIDER_EGG);
@@ -169,13 +167,12 @@ void eggCreateSpiderEggs object#() () {
 void deleteLicheEggs object#() () {
 	//Count the number of gems of dispelling have been picked up:
 	var party_gems = PARTY->count_objects(SHAPE_GEM_OF_DISPELLING, QUALITY_ANY, FRAME_ANY);
-
 	if (!party_gems) {
 		//None; try again after a few ticks:
 		script item after 10 ticks call deleteLicheEggs;
 	} else {
 		//One or more; delete the relevant eggs:
-		deleteNearbyEggs([0x717, 0x825,0x0], 5);
+		deleteNearbyEggs([0x717, 0x825, 0x0], 5);
 	}
 }
 

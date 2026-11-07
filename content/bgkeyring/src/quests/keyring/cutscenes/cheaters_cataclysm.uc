@@ -26,13 +26,12 @@
  *	Author: Marzo Junior
  *	Last Modified: 2006-02-27
  */
-
 enum Cataclism_levels {
-	LAURIANNA_DIES						= 1,
-	LAURIANNA_INSANE					= 2,
-	CATACLISM_START						= 3,
-	ARMAGEDDON							= 4,
-	END_GAME							= 5
+	LAURIANNA_DIES = 1,
+	LAURIANNA_INSANE = 2,
+	CATACLISM_START = 3,
+	ARMAGEDDON = 4,
+	END_GAME = 5
 };
 
 void beginCataclysm object#() () {
@@ -52,7 +51,6 @@ void beginCataclysm object#() () {
 
 		//Long, long earthquake:
 		UI_earthquake(3600);
-
 		if (event == LAURIANNA_DIES) {
 			//Halt the above scripts:
 			ZAURIEL->halt_scheduled();
@@ -65,7 +63,6 @@ void beginCataclysm object#() () {
 			//Unfreeze Zauriel and Avatar:
 			ZAURIEL->unfreeze();
 			AVATAR->unfreeze();
-
 			struct<Position> pos = LAURIANNA->get_object_position();
 			//Laurianna will lie down unconscious and trigger the cataclysm:
 			UI_sprite_effect(ANIMATION_BIG_BLAST, pos.x, pos.y, 0, 0, 0, -1);
@@ -105,7 +102,6 @@ void beginCataclysm object#() () {
 					say "@Pretty birds. Dead birds.@";
 				};
 			}
-
 			script AVATAR after 18 ticks call beginCataclysm, CATACLISM_START;
 		}
 	} else if (event == CATACLISM_START) {
@@ -121,11 +117,8 @@ void beginCataclysm object#() () {
 		struct<Position> npc_pos = member->get_object_position();
 		struct<Position> avatar_pos = AVATAR->get_object_position();
 		//Get a random position around the Avatar:
-		struct<Position> rand_pos = [
-			avatar_pos.x + UI_get_random(41) - 21,
-			avatar_pos.y + UI_get_random(41) - 21,
-			0
-		];
+		struct<Position> rand_pos = [avatar_pos.x + UI_get_random(41) - 21,
+			avatar_pos.y + UI_get_random(41) - 21, 0];
 
 		//Random barks:
 		var barks = ["@Argh!@", "@Ouch!@", "@That hurts!@", "@Please stop!@"];
@@ -156,7 +149,6 @@ void beginCataclysm object#() () {
 
 		//Queue the next lightning bolts:
 		script AVATAR after 12 ticks call beginCataclysm, CATACLISM_START;
-
 		if (AVATAR->get_npc_prop(HEALTH) <= 5) {
 			//The Avatar is dying
 			//Halt cataclysm:
@@ -177,7 +169,8 @@ void beginCataclysm object#() () {
 		}
 	} else if (event == END_GAME) {
 		//Thus we reach the end of Britannia:
-		AVATAR.say("With your dying breath, you see the world of Britannia being sundered appart by violent earthquakes... then, darkness surrounds you.");
+		AVATAR.say(
+			"With your dying breath, you see the world of Britannia being sundered appart by violent earthquakes... then, darkness surrounds you.");
 		UI_restart_game();
 	}
 }

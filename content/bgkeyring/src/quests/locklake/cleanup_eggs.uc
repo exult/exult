@@ -22,8 +22,7 @@
  *	Author: Marzo Junior
  *	Last Modified: 2006-03-19
  */
-
-const int LOCK_LAKE_TIMER				= 0xC;
+const int LOCK_LAKE_TIMER = 0xC;
 
 void eggCleanLockLake object#() () {
 	if (event != EGG) {
@@ -34,7 +33,7 @@ void eggCleanLockLake object#() () {
 	//Get the eggs' quality:
 	var quality = get_item_quality();
 	//Base number of objects to remove:
-	var items_to_remove	= 10;
+	var items_to_remove = 10;
 
 	//Independent control of time for each of the eggs while
 	//using but a single timer:
@@ -43,12 +42,10 @@ void eggCleanLockLake object#() () {
 	static var last_elapsed_time_3;
 	static var last_elapsed_time_4;
 	static var last_elapsed_time_5;
-
 	if (gflags[LOCK_LAKE_BILL_SIGNED]) {
 		//Miranda's Bill has been signed, so the cleaning can start
 		//Check the elapsed time:
 		var elapsed_time = UI_get_timer(LOCK_LAKE_TIMER);
-
 		if (!elapsed_time) {
 			//No elapsed time means the timer does not exist yet;
 			//create timer and abort:
@@ -79,14 +76,13 @@ void eggCleanLockLake object#() () {
 		//Get the amount of time that elapsed since the last visit
 		//to this egg:
 		elapsed_time -= time;
-
 		if (elapsed_time <= 0) {
 			//No time elapsed or invalid time; abort:
 			abort;
 		}
 
 		//Get the center of the current cleaning session:
-		if (!(quality in [5, 7])) {
+		if (!(quality in[5, 7])) {
 			pos = get_object_position();
 		} else {
 			pos = [0x5D3, 0x44A, 0x0];
@@ -99,19 +95,14 @@ void eggCleanLockLake object#() () {
 		garbage = [garbage, pos->find_nearby(SHAPE_DIAPER, 50, MASK_NONE)];
 		garbage = [garbage, pos->find_nearby(SHAPE_BROKEN_ROOF, 50, MASK_NONE)];
 		garbage = [garbage, pos->find_nearby(SHAPE_ANCHOR, 50, MASK_NONE)];
-
 		garbage = [garbage, pos->find_nearby(SHAPE_CHAIR, 50, MASK_NONE)];
-
 		garbage = [garbage, pos->find_nearby(SHAPE_FOOD, 50, MASK_NONE)];
-
 		garbage = [garbage, pos->find_nearby(SHAPE_TOP, 50, MASK_NONE)];
 		garbage = [garbage, pos->find_nearby(SHAPE_HOOD, 50, MASK_NONE)];
 		garbage = [garbage, pos->find_nearby(SHAPE_PANTS, 50, MASK_NONE)];
 		garbage = [garbage, pos->find_nearby(SHAPE_CLOTH, 50, MASK_NONE)];
-
 		garbage = [garbage, pos->find_nearby(SHAPE_BODIES_3, 50, MASK_NONE)];
 		garbage = [garbage, pos->find_nearby(SHAPE_BODIES_4, 50, MASK_NONE)];
-
 		if (garbage) {
 			//Only do this if there is at least one garbage item
 			var obj;
@@ -119,7 +110,8 @@ void eggCleanLockLake object#() () {
 			var total_items = UI_get_array_size(garbage);
 			var rand;
 			//Split garbage in three categories according to condition checking:
-			var simple_garbage = [SHAPE_BROKEN_DISH, SHAPE_GARBAGE, SHAPE_STAIN, SHAPE_DIAPER, SHAPE_BROKEN_ROOF, SHAPE_ANCHOR];
+			var simple_garbage = [SHAPE_BROKEN_DISH, SHAPE_GARBAGE, SHAPE_STAIN, SHAPE_DIAPER,
+				SHAPE_BROKEN_ROOF, SHAPE_ANCHOR];
 			var clothing = [SHAPE_TOP, SHAPE_HOOD, SHAPE_PANTS, SHAPE_CLOTH];
 			var bodies = [SHAPE_BODIES_3, SHAPE_BODIES_4];
 			var itemshape;
@@ -127,7 +119,6 @@ void eggCleanLockLake object#() () {
 
 			//How many items will be cleaned this time:
 			items_to_remove = (elapsed_time + UI_die_roll(5, 12)) * 3;
-
 			for (obj in garbage) {
 				//For each garbage object in the list,
 				//Get a random number:
@@ -136,14 +127,13 @@ void eggCleanLockLake object#() () {
 				//Get the garbage's shape and position:
 				itemshape = obj->get_item_shape();
 				pos = obj->get_object_position();
-
 				if ((itemshape in simple_garbage)
-						//There are some clothing and food items which are
-						//inside houses and should not be removed:
-						|| (((itemshape in clothing) || (itemshape == SHAPE_FOOD)) && (pos.y < 1230))
-						//Only chairs of frame 21 (which are outside houses)
-						//should be removed:
-						|| ((itemshape == SHAPE_CHAIR) && (obj->get_item_frame() == 21))) {
+				//There are some clothing and food items which are
+				//inside houses and should not be removed:
+				|| (((itemshape in clothing) || (itemshape == SHAPE_FOOD)) && (pos.y < 1230))
+				//Only chairs of frame 21 (which are outside houses)
+				//should be removed:
+				|| ((itemshape == SHAPE_CHAIR) && (obj->get_item_frame() == 21))) {
 					//If we are here, the item can (at least in principle) be removed;
 					//use the random number above to see if we should remove the
 					//item or not:
@@ -183,7 +173,6 @@ void eggCleanLockLake object#() () {
 				//Increase likelyhood that next objects will be removed:
 				total_items -= 1;
 			}
-
 			if (unremovable_objects && (unremovable_objects == UI_get_array_size(garbage))) {
 				//If there are only unremovable objects left,
 				if (quality == 0) {
@@ -204,13 +193,9 @@ void eggCleanLockLake object#() () {
 			remove_item();
 			return;
 		}
-
-		var posx = [
-			0x59F, 0x5AF, 0x5BF, 0x5CF, 0x5DF, 0x5EF, 0x5CF, 0x5DF,
-			0x60F, 0x5FF, 0x5EF, 0x5DF
-		];
+		var posx = [0x59F, 0x5AF, 0x5BF, 0x5CF, 0x5DF, 0x5EF, 0x5CF, 0x5DF, 0x60F, 0x5FF, 0x5EF,
+			0x5DF];
 		var posy;
-
 		items_to_remove -= 9;
 		while (items_to_remove > 0) {
 			//Go in steps of 9
@@ -231,15 +216,15 @@ void eggCleanLockLake object#() () {
 			UI_create_new_object(SHAPE_FAKE_WATER);
 			//Put it in the correct place:
 			UI_update_last_created([posx[quality + 1], posy, 0]);
-			if (quality in [3, 7, 9, 11]) {
+			if (quality in[3, 7, 9, 11]) {
 				//These eggs are basically done
 				if (quality >= 9) {
 					//Some eggs have fly-generating eggs nearby;
 					//find fly eggs:
 					var fly_eggs = [UI_find_nearby([0x5CA, 0x4C6, 0x0], SHAPE_EGG, 5, MASK_EGG),
-									UI_find_nearby([0x5DB, 0x4D3, 0x0], SHAPE_EGG, 5, MASK_EGG),
-									UI_find_nearby([0x5E4, 0x4BE, 0x0], SHAPE_EGG, 5, MASK_EGG),
-									UI_find_nearby([0x600, 0x4C9, 0x0], SHAPE_EGG, 5, MASK_EGG)];
+						UI_find_nearby([0x5DB, 0x4D3, 0x0], SHAPE_EGG, 5, MASK_EGG), UI_find_nearby(
+						[0x5E4, 0x4BE, 0x0], SHAPE_EGG, 5, MASK_EGG), UI_find_nearby([0x600, 0x4C9,
+						0x0], SHAPE_EGG, 5, MASK_EGG)];
 					for (egg in fly_eggs) {
 						//Remove them all:
 						egg->remove_item();

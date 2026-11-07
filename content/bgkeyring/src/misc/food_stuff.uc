@@ -20,7 +20,6 @@
  *	Last Modified: 2006-03-19
  */
 
-
 //For baking:
 #include "misc/food_stuff/constants.uc"
 #include "misc/food_stuff/eggs.uc"

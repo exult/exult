@@ -36,19 +36,18 @@
 	extern void spellTelekinesis (struct<ObjPos> target);
 	extern void spellWizardEye ();
 */
-
 enum second_circle_spells {
-	SPELL_DESTROY_TRAP				= 0,
-	SPELL_ENCHANT					= 1,
-	SPELL_FIRE_BLAST				= 2,
-	SPELL_GREAT_LIGHT				= 3,
-	SPELL_MASS_CURE					= 4,
-	SPELL_PROTECTION				= 5,
-	SPELL_TELEKINESIS				= 6,
-	SPELL_WIZARD_EYE				= 7
+	SPELL_DESTROY_TRAP = 0,
+	SPELL_ENCHANT = 1,
+	SPELL_FIRE_BLAST = 2,
+	SPELL_GREAT_LIGHT = 3,
+	SPELL_MASS_CURE = 4,
+	SPELL_PROTECTION = 5,
+	SPELL_TELEKINESIS = 6,
+	SPELL_WIZARD_EYE = 7
 };
 
-void spellDestroyTrap (struct<ObjPos> target) {
+void spellDestroyTrap(struct<ObjPos> target) {
 	if (event == DOUBLECLICK) {
 		//struct<ObjPos> target = UI_click_on_item();
 		var dir = direction_from(target);
@@ -63,10 +62,9 @@ void spellDestroyTrap (struct<ObjPos> target) {
 				actor frame strike_2h;
 			}
 			var nearby_traps = target->find_nearby(SHAPE_TRAP, 2, MASK_ALL_UNSEEN);
-			struct<Position>& trappos = target;
+			struct<Position> &trappos = target;
 			for (trap in nearby_traps) {
 				trappos = trap->get_object_position();
-
 				trap->halt_scheduled();
 				trap->remove_item();
 				UI_sprite_effect(ANIMATION_GREEN_BUBBLES, trappos.x, trappos.y, 0, 0, 0, -1);
@@ -93,7 +91,7 @@ void spellDestroyTrap (struct<ObjPos> target) {
 	}
 }
 
-void spellEnchant (struct<ObjPos> target) {
+void spellEnchant(struct<ObjPos> target) {
 	var normal_missiles = [SHAPE_ARROWS, SHAPE_BOLTS];
 	var magic_missiles = [SHAPE_MAGIC_ARROWS, SHAPE_MAGIC_BOLTS];
 	if (event == DOUBLECLICK) {
@@ -128,7 +126,7 @@ void spellEnchant (struct<ObjPos> target) {
 	}
 }
 
-void spellFireBlast (struct<ObjPos> target) {
+void spellFireBlast(struct<ObjPos> target) {
 	if ((event == DOUBLECLICK) || (event == WEAPON)) {
 		//struct<ObjPos> target = UI_click_on_item();
 		halt_scheduled();
@@ -160,7 +158,7 @@ void spellFireBlast (struct<ObjPos> target) {
 	}
 }
 
-void spellGreatLight () {
+void spellGreatLight() {
 	if (event == DOUBLECLICK) {
 		halt_scheduled();
 		item_say("@Vas Lor@");
@@ -183,7 +181,7 @@ void spellGreatLight () {
 	}
 }
 
-void spellMassCure () {
+void spellMassCure() {
 	if (event == DOUBLECLICK) {
 		halt_scheduled();
 		struct<Position> pos = get_object_position();
@@ -217,7 +215,7 @@ void spellMassCure () {
 	}
 }
 
-void spellProtection (struct<ObjPos> target) {
+void spellProtection(struct<ObjPos> target) {
 	if (event == DOUBLECLICK) {
 		halt_scheduled();
 		//struct<ObjPos> target = UI_click_on_item();
@@ -232,12 +230,10 @@ void spellProtection (struct<ObjPos> target) {
 				actor frame raise_1h;
 				actor frame strike_2h;
 			}
-
 			script target after 5 ticks {
 				nohalt;
 				call spellClearFlag, PROTECTION;
 			}
-
 			obj_sprite_effect(ANIMATION_GREEN_BUBBLES, -2, -2, 0, 0, 0, -1);
 		} else {
 			script item {
@@ -252,14 +248,13 @@ void spellProtection (struct<ObjPos> target) {
 	}
 }
 
-void spellTelekinesis (struct<ObjPos> target) {
+void spellTelekinesis(struct<ObjPos> target) {
 	if (event == DOUBLECLICK) {
 		halt_scheduled();
 		//struct<ObjPos> target = UI_click_on_item();
 		if (target.obj == 0) {
 			return;
 		}
-
 		var dir = direction_from(target);
 		item_say("@Ort Por Ylem@");
 		if (inMagicStorm() && ((!target->is_npc()) && (target.obj != 0))) {
@@ -282,20 +277,21 @@ void spellTelekinesis (struct<ObjPos> target) {
 			}
 		}
 	} else if (event == WEAPON) {
-		var unusables = [SHAPE_LOOM, SHAPE_THREAD, SHAPE_SPINNING_WHEEL, SHAPE_WOOL, SHAPE_KITE, SHAPE_BUCKET, SHAPE_BELLOWS, SHAPE_KEG, SHAPE_CASK, SHAPE_STRENGTH_TESTER, SHAPE_WELLBASE, SHAPE_WELL, SHAPE_CHAIR, SHAPE_BEDROLL, SHAPE_BED_HORIZONTAL, SHAPE_BED_VERTICAL, SHAPE_ORB];
+		var unusables = [SHAPE_LOOM, SHAPE_THREAD, SHAPE_SPINNING_WHEEL, SHAPE_WOOL, SHAPE_KITE,
+			SHAPE_BUCKET, SHAPE_BELLOWS, SHAPE_KEG, SHAPE_CASK, SHAPE_STRENGTH_TESTER,
+			SHAPE_WELLBASE, SHAPE_WELL, SHAPE_CHAIR, SHAPE_BEDROLL, SHAPE_BED_HORIZONTAL,
+			SHAPE_BED_VERTICAL, SHAPE_ORB];
 		var usables2 = [SHAPE_WINCH_HORIZONTAL, SHAPE_WINCH_VERTICAL, SHAPE_SWITCH, SHAPE_LEVER];
 		var target_shape = get_item_shape();
 		if (target_shape in usables2) {
-			script item
-				call get_usecode_fun();
+			script item call get_usecode_fun();
 		} else if (!(target_shape in unusables)) {
-			script item
-				call get_usecode_fun(), DOUBLECLICK;
+			script item call get_usecode_fun(), DOUBLECLICK;
 		}
 	}
 }
 
-void spellWizardEye () {
+void spellWizardEye() {
 	if (event == DOUBLECLICK) {
 		item_say("@Por Ort Wis@");
 		if (inMagicStorm()) {

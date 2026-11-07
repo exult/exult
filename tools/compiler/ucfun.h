@@ -43,6 +43,7 @@ class Uc_function : public Uc_design_unit {
 	static std::vector<Uc_intrinsic_symbol*> intrinsics;
 	// Some intrinsic numbers:
 	static int add_answer, remove_answer, push_answers, pop_answers, show_face, remove_face, get_item_shape, get_usecode_fun;
+	static int show_face_slots[2], remove_face_slots[2];
 	static int num_global_statics;
 	Uc_scope   top;                     // Top-level scope.
 	Uc_function_symbol* proto;          // Function declaration.
@@ -199,12 +200,14 @@ public:
 		return get_intrinsic(pop_answers);
 	}
 
-	static Uc_intrinsic_symbol* get_show_face() {
-		return get_intrinsic(show_face);
+	static Uc_intrinsic_symbol* get_show_face(int slot = -1) {
+		setup_intrinsics();
+		return get_intrinsic(slot == -1 ? show_face : show_face_slots[slot]);
 	}
 
-	static Uc_intrinsic_symbol* get_remove_face() {
-		return get_intrinsic(remove_face);
+	static Uc_intrinsic_symbol* get_remove_face(int slot = -1) {
+		setup_intrinsics();
+		return get_intrinsic(slot == -1 ? remove_face : remove_face_slots[slot]);
 	}
 
 	static Uc_intrinsic_symbol* get_get_usecode_fun() {

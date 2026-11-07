@@ -39,20 +39,19 @@
 	extern void spellRestoration ();
 	extern void spellMassDispelField ();
 */
-
 enum seventh_circle_spells {
-	SPELL_CREATE_GOLD				= 0,
-	SPELL_DEATH_BOLT				= 1,
-	SPELL_DELAYED_BLAST				= 2,
-	SPELL_ENERGY_FIELD				= 3,
-	SPELL_ENERGY_MIST				= 4,
-	SPELL_MASS_CHARM				= 5,
-	SPELL_MASS_MIGHT				= 6,
-	SPELL_RESTORATION				= 7,
-	SPELL_MASS_DISPEL_FIELD			= 8
+	SPELL_CREATE_GOLD = 0,
+	SPELL_DEATH_BOLT = 1,
+	SPELL_DELAYED_BLAST = 2,
+	SPELL_ENERGY_FIELD = 3,
+	SPELL_ENERGY_MIST = 4,
+	SPELL_MASS_CHARM = 5,
+	SPELL_MASS_MIGHT = 6,
+	SPELL_RESTORATION = 7,
+	SPELL_MASS_DISPEL_FIELD = 8
 };
 
-void spellCreateGold (struct<ObjPos> target) {
+void spellCreateGold(struct<ObjPos> target) {
 	if (event == DOUBLECLICK) {
 		halt_scheduled();
 		//struct<ObjPos> target = UI_click_on_item();
@@ -84,7 +83,7 @@ void spellCreateGold (struct<ObjPos> target) {
 	}
 }
 
-void spellDeathBolt (struct<ObjPos> target) {
+void spellDeathBolt(struct<ObjPos> target) {
 	if ((event == DOUBLECLICK) || (event == WEAPON)) {
 		//struct<ObjPos> target = UI_click_on_item();
 		halt_scheduled();
@@ -116,7 +115,7 @@ void spellDeathBolt (struct<ObjPos> target) {
 	}
 }
 
-void spellDelayedBlast (struct<ObjPos> target) {
+void spellDelayedBlast(struct<ObjPos> target) {
 	if (event == DOUBLECLICK) {
 		var failed = false;
 		halt_scheduled();
@@ -137,12 +136,10 @@ void spellDelayedBlast (struct<ObjPos> target) {
 						nohalt;
 						attack;
 					}
-
 					script sprite after 14 ticks {
 						nohalt;
 						remove;
 					}
-
 					script item {
 						nohalt;
 						face dir;
@@ -151,7 +148,8 @@ void spellDelayedBlast (struct<ObjPos> target) {
 						actor frame cast_out;
 						actor frame cast_up;
 					}
-					UI_sprite_effect(ANIMATION_GREEN_BUBBLES, sprite_pos.x, sprite_pos.y, 0, 0, 0, -1);
+					UI_sprite_effect(ANIMATION_GREEN_BUBBLES, sprite_pos.x, sprite_pos.y, 0, 0, 0,
+						-1);
 				} else {
 					failed = true;
 				}
@@ -161,7 +159,6 @@ void spellDelayedBlast (struct<ObjPos> target) {
 		} else {
 			failed = true;
 		}
-
 		if (failed) {
 			script item {
 				nohalt;
@@ -175,7 +172,7 @@ void spellDelayedBlast (struct<ObjPos> target) {
 	}
 }
 
-void spellEnergyField (struct<ObjPos> target) {
+void spellEnergyField(struct<ObjPos> target) {
 	if (event == DOUBLECLICK) {
 		var failed = false;
 		halt_scheduled();
@@ -199,8 +196,7 @@ void spellEnergyField (struct<ObjPos> target) {
 				if (updlast) {
 					var delay = 200;
 					field->set_item_quality(delay);
-					script field after delay ticks
-						remove;
+					script field after delay ticks remove;
 				} else {
 					failed = true;
 				}
@@ -210,7 +206,6 @@ void spellEnergyField (struct<ObjPos> target) {
 		} else {
 			failed = true;
 		}
-
 		if (failed) {
 			script item {
 				nohalt;
@@ -223,7 +218,7 @@ void spellEnergyField (struct<ObjPos> target) {
 	}
 }
 
-void spellEnergyMist (struct<ObjPos> target) {
+void spellEnergyMist(struct<ObjPos> target) {
 	if (event == DOUBLECLICK) {
 		halt_scheduled();
 		//struct<ObjPos> target = UI_click_on_item();
@@ -255,7 +250,7 @@ void spellEnergyMist (struct<ObjPos> target) {
 	}
 }
 
-void spellMassCharm () {
+void spellMassCharm() {
 	if (event == DOUBLECLICK) {
 		halt_scheduled();
 		item_say("@Vas An Xen Ex@");
@@ -268,16 +263,15 @@ void spellMassCharm () {
 				actor frame cast_up;
 				actor frame strike_2h;
 			}
-
 			struct<Position> pos = get_object_position();
-			UI_sprite_effect(ANIMATION_TELEPORT, (pos.x - 2), (pos.y - 2), 0, 0, 0, -1);
+			UI_sprite_effect(ANIMATION_TELEPORT,(pos.x - 2),(pos.y - 2), 0, 0, 0, -1);
 			var dist = 25;
 			var nonparty_npcs = getNearbyNonPartyNPCs(dist);
 			for (npc in nonparty_npcs) {
 				if (UI_die_roll(1, 3) == 1) {
 					continue;
 				}
-				if (npc->get_npc_number() in [ANMANIVAS, FORANAMO, AVATAR]) {
+				if (npc->get_npc_number() in[ANMANIVAS, FORANAMO, AVATAR]) {
 					continue;
 				}
 				var scr = new script {
@@ -308,7 +302,7 @@ void spellMassCharm () {
 	}
 }
 
-void spellMassMight () {
+void spellMassMight() {
 	if (event == DOUBLECLICK) {
 		halt_scheduled();
 		item_say("@In Vas Por@");
@@ -320,11 +314,10 @@ void spellMassMight () {
 				actor frame cast_out;
 				actor frame cast_up;
 				actor frame strike_2h;
-				call  spellSetFlag, MIGHT;
+				call spellSetFlag, MIGHT;
 			}
 			struct<Position> pos = get_object_position();
-			UI_sprite_effect(ANIMATION_TELEPORT, (pos.x - 2), (pos.y - 2), 0, 0, 0, -1);
-
+			UI_sprite_effect(ANIMATION_TELEPORT,(pos.x - 2),(pos.y - 2), 0, 0, 0, -1);
 			var targets = getFriendlyTargetList(item, 25);
 			for (npc in targets) {
 				var delay = ((get_distance(npc) / 3) + 5);
@@ -346,7 +339,7 @@ void spellMassMight () {
 	}
 }
 
-void spellRestoration () {
+void spellRestoration() {
 	if (event == DOUBLECLICK) {
 		halt_scheduled();
 		item_say("@Vas Mani Hur@");
@@ -364,7 +357,7 @@ void spellRestoration () {
 				npc->clear_item_flag(POISONED);
 				var str = npc->get_npc_prop(STRENGTH);
 				var hps = npc->get_npc_prop(HEALTH);
-				npc->set_npc_prop(HEALTH, (str - hps));
+				npc->set_npc_prop(HEALTH,(str - hps));
 				npc->obj_sprite_effect(ANIMATION_GREEN_BUBBLES, -1, -1, 0, 0, 0, -1);
 			}
 		} else {
@@ -379,10 +372,11 @@ void spellRestoration () {
 	}
 }
 
-void spellMassDispelField () {
+void spellMassDispelField() {
 	if (event == DOUBLECLICK) {
 		halt_scheduled();
-		var field_shapes = [SHAPE_ENERGY_FIELD, SHAPE_FIRE_FIELD, SHAPE_POISON_FIELD, SHAPE_SLEEP_FIELD];
+		var field_shapes = [SHAPE_ENERGY_FIELD, SHAPE_FIRE_FIELD, SHAPE_POISON_FIELD,
+			SHAPE_SLEEP_FIELD];
 		item_say("@Vas An Grav@");
 		if (inMagicStorm()) {
 			script item {
@@ -392,7 +386,6 @@ void spellMassDispelField () {
 				actor frame cast_out;
 				actor frame strike_2h;
 			}
-
 			var dist = 25;
 			for (obj in field_shapes) {
 				var fields = find_nearby(obj, dist, MASK_NONE);

@@ -33,6 +33,8 @@ More information can be found in the accompanying files README and FAQ.  In addi
 
 The following guide is only for people that want to compile Exult for Android on their own. This is not needed if there is a current snapshot for Android available on our download page.
 
+The snapshot workflow keeps debug and unsigned release APKs when a fork has no Android signing secrets. To enable signing, configure `ANDROID_SIGNING_KEY` with the base64-encoded keystore, `ANDROID_KEY_ALIAS`, and `ANDROID_KEYSTORE_PASSWORD`; `ANDROID_KEY_PASSWORD` is optional and defaults to the keystore password. Partial configurations and invalid credentials fail before compilation. The official `exult/exult` snapshot workflow requires signing credentials. Completed APKs are uploaded even if a later step fails, and signed APKs are verified before being added to the artifacts.
+
 The Android APK is built as an optional component of a regular native Exult build. Before attempting to build the Android APK, follow [the instructions](..//INSTALL) to install any dependencies and build Exult for your desktop.
 
 In addition to the regular desktop Exult dependencies, you will need the android SDK and NDK. The easiest way to get these is to install Android Studio. You will also need to edit your path so that the build can find the `gradle` and `sdkmanager` commands.  Android Studio can be installed for free from [Google](https://developer.android.com/studio).

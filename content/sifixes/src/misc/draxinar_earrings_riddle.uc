@@ -21,11 +21,12 @@
  *
  *	2016-08-04 Written by Knight Captain
  */
-
 void DraxinarEarringsRiddle 0x822 () {
-	say("@A young noblewoman is getting ready for the Royal Ball. She has several types of earrings in her jewelry box, with two made of gold, three of silver, and four made of copper.@");
+	say(
+		"@A young noblewoman is getting ready for the Royal Ball. She has several types of earrings in her jewelry box, with two made of gold, three of silver, and four made of copper.@");
 	say("@The earrings, however, are all scattered about in the jewelry box.@");
-	say("@Without looking into the jewelry box, how many earrings would the noblewoman have to take	out of the jewelry box to insure a matched pair?@");
+	say(
+		"@Without looking into the jewelry box, how many earrings would the noblewoman have to take	out of the jewelry box to insure a matched pair?@");
 	var answer = UI_input_numeric_value(0, 10, 1, 0);
 	if (answer == 4) {
 		// Correct answer

@@ -70,7 +70,6 @@ enum Monitor_townplot {
 	FIRST_TALK_WITH_MARSTEN = 0x32,
 	TOLD_MARSTEN_SERVES_LORD_BRITISH = 0x2D,
 	RENOUNCED_BRITISH = 0xA5,
-
 	ASKED_LUTHER_ABOUT_BULLY = 0x42,
 	LUCILLA_SAYS_LUTHER_REPULSIVE = 0xAE,
 	CALLED_LUTHER_BRAGGART = 0xAF,
@@ -78,15 +77,11 @@ enum Monitor_townplot {
 	CALLED_LUTHER_BULLY = 0xB1,
 	LUTHER_CHALLENGED = 0x43,
 	DEFEATED_LUTHER = 0x41,
-
 	KNOWS_ABOUT_MONITOR_CLANS = 0x7F,
-
 	MONITOR_TRAINING = 0x83,
 	TRAINING_FLAG_SET = 0x84,
 	LEAVING_LIST_FIELD = 0x85,
-
 	ASK_LUCILLA_ABOUT_ANDRAL = 0x8F,
-
 	CREMATED_PIKEMAN = 0xBE
 };
 
@@ -105,11 +100,9 @@ enum Find_Batlin_subplot {
 enum Monitor_sex_subplots {
 	BRENDANN_PROPOSAL = 0x3D,
 	BRENDANN_TATTOO_COMPLIMENT = 0x3F,
-
 	COURTED_LUCILLA = 0x53,
 	ACCEPTED_LUCILLA_PROPOSAL = 0x54,
 	KNOWS_OF_LUCILLA_AND_SPEKTOR = 0x55,
-
 	GAINED_GWANI_CLOAK = 0x8A
 };
 
@@ -145,7 +138,7 @@ enum Kidnapping_of_Cantra_subplot {
 	SHAMINOS_KEEP_BARRIERS_GONE = 0x0,
 	KNOWS_CANTRA_IS_MISSING = 0x79,
 	WILL_FIND_CANTRA = 0x5B,
-	CURED_CANTRA = 0x47,     // Flag when Cantra is cured.
+	CURED_CANTRA = 0x47,  // Flag when Cantra is cured.
 	TOLD_CANTRA_IS_ALIVE = 0x96,
 	BATLIN_FLED_SHAMINOS_KEEP = 0x2E2,
 	HOUND_TRACKED_BATLIN = 0x25D
@@ -266,11 +259,11 @@ enum Spinebreaker_townplot {
 // The quotes are from http://www.it-he.org
 enum Bane_flags {
 	BANES_RELEASED = 0x4,
-	WANTONNESS_BANE_DEAD = 0xD3, // Haha! I am Dupre, bane of drunkenness!
+	WANTONNESS_BANE_DEAD = 0xD3,  // Haha! I am Dupre, bane of drunkenness!
 	INSANITY_BANE_DEAD = 0xD5,  // I am Iolo! Bane of shooting-the-Avatar-
-                                // through-the-heart-with-the-triple-crossbow!
-	ANARCHY_BANE_DEAD = 0xD4,   // Kneel before Shamino, bane of rapidly
-                                // diminishing consequence...
+	// through-the-heart-with-the-triple-crossbow!
+	ANARCHY_BANE_DEAD = 0xD4,  // Kneel before Shamino, bane of rapidly
+	// diminishing consequence...
 	KNOWS_OF_SOUL_GEMS = 0xFF,
 	SEEKING_SOUL_TRAP_SECRET = 0x12D
 };
@@ -278,12 +271,9 @@ enum Bane_flags {
 const int SHAMINO_RESURRECTED_BY_MONKS = 0x12B;
 const int AFTER_FREEDOM_NEWS = 0x135;
 const int SHAMINO_TELEPORTED_BY_MONKS = 0x13A;
-
 const int HAVE_CHILL_SPELL = 0x14B;
-
 const int CLEARED_FAWN_TOWER = 0x14E;
 const int FAWN_TRIAL_DONE_FIRST_DAY = 0x170;
-
 const int BEATRIX_PROTECTION = 0x25B;
 const int BEATRIX_FORGAVE_SHAMINO = 0x25C;
 
@@ -394,13 +384,11 @@ enum Silver_Seed_flags {
 	WEARING_BELT_OF_STRENGTH = 0x2E8,
 	EXPERIENCE_FROM_BELT_OF_STRENGTH = 0x2E9,
 	USED_AMULET_OF_BALANCE = 0x2EE,
-
 	ASKED_SUROK_TOO_MUCH = 0x2F4,
 	RED_ORB_PLACED = 0x2F5,
 	PURPLE_ORB_PLACED = 0x2F6,
 	BLUE_ORB_PLACED = 0x2F7,
 	YELLOW_ORB_PLACED = 0x2F8,
-
 	KNOW_YUREL_LOVES_CHEESE = 0x2FA,
 	HAVE_AMULET_OF_BALANCE = 0x2FB,
 	HAVE_SILVER_SEED = 0x2FC,
@@ -408,7 +396,6 @@ enum Silver_Seed_flags {
 	CASK_WAS_MOVED = 0x2FE,
 	ROPE_ON_WELL = 0x2FF,
 	HAVE_KEYRING = 0x300,
-
 	WEARING_GAUNTLETS_OF_QUICKNESS = 0x302,
 	HOLDING_ERINONS_AXE = 0x303,
 	EXPERIENCE_FROM_ERINONS_AXE = 0x304,
@@ -420,12 +407,11 @@ enum Silver_Seed_flags {
 	SOLVED_EARRINGS_RIDDLE = 0x30A,
 	SOLVED_LONGTOOTH_RIDDLE = 0x30B,
 	SOLVED_CLOTH_RIDDLE = 0x30C,
-	MET_ISSTANAR = 0x30D,							// He is a shape, not a real NPC.
+	MET_ISSTANAR = 0x30D,  // He is a shape, not a real NPC.
 	HAVE_PURPLE_ORB = 0x30E,
 	MET_RIEYA = 0x30F,
 	MET_DRUSILLA = 0x310,
 	MET_SOLARIA = 0x311,
-
 	PLANTED_SILVER_SEED = 0x313,
 	USED_IRON_MAIDEN = 0x314,
 	EXPERIENCE_FROM_RING_OF_REAGENTS = 0x315

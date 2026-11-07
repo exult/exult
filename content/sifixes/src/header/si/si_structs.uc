@@ -50,9 +50,9 @@ struct Position {
  *	array = removeFromArray(array, array[1]); (see also bg_externals.uc)
  */
 enum axes {
-	X = &struct<Position>::x,	//horizontal axis (numbered from west to east)
-	Y = &struct<Position>::y,	//vertical axis (numbered from north to south)
-	Z = &struct<Position>::z	//lift axis (numbered from ground to sky)
+	X = &struct<Position>::x,  //horizontal axis (numbered from west to east)
+	Y = &struct<Position>::y,  //vertical axis (numbered from north to south)
+	Z = &struct<Position>::z  //lift axis (numbered from ground to sky)
 };
 
 // Used by find_nearby

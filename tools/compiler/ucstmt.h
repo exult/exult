@@ -179,6 +179,18 @@ public:
 			std::map<std::string, Basic_block*>& labels, Uc_loop_data_stack& break_continue) override;
 };
 
+// An analyst-supplied script fact. This statement has no runtime instructions.
+class Uc_assume_script_statement : public Uc_statement {
+	Uc_var_symbol* variable;
+	int length;
+
+public:
+	Uc_assume_script_statement(Uc_var_symbol* var, int size) : variable(var), length(size) {}
+	void gen(
+			Uc_function* fun, std::vector<Basic_block*>& blocks, Basic_block*& curr, Basic_block* end,
+			std::map<std::string, Basic_block*>& labels, Uc_loop_data_stack& break_continue) override;
+};
+
 /*
  *  An IF statement:
  */

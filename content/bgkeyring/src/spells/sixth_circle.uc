@@ -36,19 +36,18 @@
 	extern void spellSleepField (struct<ObjPos> target);
 	extern void spellTremor ();
 */
-
 enum sixth_circle_spells {
-	SPELL_CAUSE_FEAR				= 0,
-	SPELL_CLONE						= 1,
-	SPELL_FIRE_RING					= 2,
-	SPELL_FLAME_STRIKE				= 3,
-	SPELL_MAGIC_STORM				= 4,
-	SPELL_POISON_FIELD				= 5,
-	SPELL_SLEEP_FIELD				= 6,
-	SPELL_TREMOR					= 7
+	SPELL_CAUSE_FEAR = 0,
+	SPELL_CLONE = 1,
+	SPELL_FIRE_RING = 2,
+	SPELL_FLAME_STRIKE = 3,
+	SPELL_MAGIC_STORM = 4,
+	SPELL_POISON_FIELD = 5,
+	SPELL_SLEEP_FIELD = 6,
+	SPELL_TREMOR = 7
 };
 
-void spellCauseFear () {
+void spellCauseFear() {
 	if (event == DOUBLECLICK) {
 		halt_scheduled();
 		item_say("@Quas Wis@");
@@ -77,7 +76,7 @@ void spellCauseFear () {
 	}
 }
 
-void spellClone (struct<ObjPos> target) {
+void spellClone(struct<ObjPos> target) {
 	if (event == DOUBLECLICK) {
 		//struct<ObjPos> target = UI_click_on_item();
 		var dir = direction_from(target);
@@ -106,7 +105,7 @@ void spellClone (struct<ObjPos> target) {
 	}
 }
 
-void spellFireRing (struct<ObjPos> target) {
+void spellFireRing(struct<ObjPos> target) {
 	if (event == DOUBLECLICK) {
 		//struct<ObjPos> target = UI_click_on_item();
 		halt_scheduled();
@@ -121,9 +120,8 @@ void spellFireRing (struct<ObjPos> target) {
 				actor frame strike_1h;
 				actor frame raise_1h;
 			}
-
-			var offset_x = [-1,  0,  1,  2,  2,  2,  1,  0, -1, -2, -2, -2];
-			var offset_y = [-2, -2, -2, -1,  0,  1,  2,  2,  2,  1,  0, -1];
+			var offset_x = [-1, 0, 1, 2, 2, 2, 1, 0, -1, -2, -2, -2];
+			var offset_y = [-2, -2, -2, -1, 0, 1, 2, 2, 2, 1, 0, -1];
 			var counter = 0;
 			while (counter < 12) {
 				counter += 1;
@@ -131,7 +129,7 @@ void spellFireRing (struct<ObjPos> target) {
 				var ring_y = (target.y + offset_y[counter]);
 				var ring_z = target.z;
 				var pos = [ring_x, ring_y, ring_z];
-				var pos2 = [ring_x, ring_y, (ring_z + 1)];
+				var pos2 = [ring_x, ring_y,(ring_z + 1)];
 				if (!UI_is_not_blocked(pos, SHAPE_DELAYED_EXPLOSION, 0)) {
 					pos = pos2;
 				}
@@ -162,7 +160,7 @@ void spellFireRing (struct<ObjPos> target) {
 	}
 }
 
-void spellFlameStrike () {
+void spellFlameStrike() {
 	if (event == DOUBLECLICK) {
 		halt_scheduled();
 		item_say("@Vas In Flam Grav@");
@@ -176,7 +174,6 @@ void spellFlameStrike () {
 				actor frame cast_out;
 				actor frame strike_2h;
 			}
-
 			var targets = getEnemyTargetList(item, 25);
 			for (npc in targets) {
 				struct<Position> pos = npc->get_object_position();
@@ -210,7 +207,7 @@ void spellFlameStrike () {
 	}
 }
 
-void spellMagicStorm () {
+void spellMagicStorm() {
 	if (event == DOUBLECLICK) {
 		halt_scheduled();
 		item_say("@Vas Oort Hur@");
@@ -227,12 +224,10 @@ void spellMagicStorm () {
 				actor frame strike_2h;
 				actor frame standing;
 			}
-
 			script item after 8 ticks {
 				nohalt;
 				call spellMagicStormEffect;
 			}
-
 			script item after delay ticks {
 				nohalt;
 				call stopMagicStorm;
@@ -250,7 +245,7 @@ void spellMagicStorm () {
 	}
 }
 
-void spellPoisonField (struct<ObjPos> target) {
+void spellPoisonField(struct<ObjPos> target) {
 	if (event == DOUBLECLICK) {
 		//struct<ObjPos> target = UI_click_on_item();
 		halt_scheduled();
@@ -287,7 +282,7 @@ void spellPoisonField (struct<ObjPos> target) {
 	}
 }
 
-void spellSleepField (struct<ObjPos> target) {
+void spellSleepField(struct<ObjPos> target) {
 	if (event == DOUBLECLICK) {
 		//struct<ObjPos> target = UI_click_on_item();
 		halt_scheduled();
@@ -302,7 +297,6 @@ void spellSleepField (struct<ObjPos> target) {
 				actor frame reach_1h;
 				actor frame strike_1h;
 			}
-
 			var field_x = (target.x + 1);
 			var field_y = (target.y + 1);
 			var field_z = target.z;
@@ -325,7 +319,7 @@ void spellSleepField (struct<ObjPos> target) {
 	}
 }
 
-void spellTremor () {
+void spellTremor() {
 	if (event == DOUBLECLICK) {
 		halt_scheduled();
 		item_say("@Vas Por Ylem@");

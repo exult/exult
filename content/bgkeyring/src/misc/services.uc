@@ -23,62 +23,59 @@
  *	Author: Marzo Junior
  *	Last Modified: 2006-02-27
  */
-
-
 enum selling_result {
-	NO_QUANTITY							= 0,
-	SELL_SUCCEEDED						= 1,
-	CANNOT_CARRY						= 2,
-	NOT_ENOUGH_GOLD						= 3
+	NO_QUANTITY = 0,
+	SELL_SUCCEEDED = 1,
+	CANNOT_CARRY = 2,
+	NOT_ENOUGH_GOLD = 3
 };
 
 enum healing_type {
-	USE_HERBS							= 1,
-	USE_BANDAGES						= 2,
-	USE_POTIONS							= 3,
-	USE_MAGIC							= 4
+	USE_HERBS = 1,
+	USE_BANDAGES = 2,
+	USE_POTIONS = 3,
+	USE_MAGIC = 4
 };
 
 enum healing_prices {
-	SERVICE_NONE						= 0,
-	SERVICE_CURE						= 1,
-	SERVICE_HEAL						= 2,
-	SERVICE_RESURRECT					= 3
+	SERVICE_NONE = 0,
+	SERVICE_CURE = 1,
+	SERVICE_HEAL = 2,
+	SERVICE_RESURRECT = 3
 };
 
-var giveItemsToParty (var quantity, var shapenum, var quality, var framenum, var flag, var unknown) {
+var giveItemsToParty(var quantity, var shapenum, var quality, var framenum, var flag, var unknown) {
 	var startcount = PARTY->count_objects(shapenum, quality, framenum);
 	var itemconts = UI_add_party_items(quantity, shapenum, quality, framenum, flag);
-
 	if (UI_get_array_size(itemconts) == 1) {
 		return [0, 0];
 	} else {
 		var finalcount = PARTY->count_objects(shapenum, quality, framenum);
 		var delta = finalcount - startcount;
-
 		var companions = removeFromArrayByIndex(itemconts, 1);
-
 		if (companions) {
 			if (quantity == 1) {
-				say("@Thou art so encumbered! Perhaps one of thy friends might be willing to carry this?@");
+				say(
+					"@Thou art so encumbered! Perhaps one of thy friends might be willing to carry this?@");
 			} else {
 				say("@Thou art so encumbered! Let me give some of this to thy friends.@");
 			}
-			var msgs = ["@I'll help carry it.@", "@I will carry that.@", "@I will carry some.@", "@Let me help with that.@"];
-
+			var msgs = ["@I'll help carry it.@", "@I will carry that.@", "@I will carry some.@",
+				"@Let me help with that.@"];
 			for (npc in companions) {
-				interjectIfPossible(UI_get_npc_number(npc), msgs[UI_get_random(UI_get_array_size(msgs))]);
+				interjectIfPossible(UI_get_npc_number(npc),
+					msgs[UI_get_random(UI_get_array_size(msgs))]);
 			}
 		}
-
 		if (delta > 0) {
 			if (quantity == 1) {
 				say("@Since thou art so encumbered, I shall set this upon the ground.@");
 			} else if (delta == 1) {
-				say("@Since not one of you can hold another, I shall place this last remaining one upon the ground.@");
+				say(
+					"@Since not one of you can hold another, I shall place this last remaining one upon the ground.@");
 			} else {
-				say("@Since thou art so encumbered, I shall place the remaining ",
-				    delta, " of these upon the ground.@");
+				say("@Since thou art so encumbered, I shall place the remaining ", delta,
+					" of these upon the ground.@");
 			}
 			struct<Position> pos = AVATAR->get_object_position();
 			var groundobjs = shapenum->create_new_object();
@@ -105,7 +102,8 @@ var giveItemsToParty (var quantity, var shapenum, var quality, var framenum, var
 	}
 }
 
-var sellAmountToPartyExt (var shapenum, var framenum, var base_quant, var price, var max_quant, var min_quant, var money_shape) {
+var sellAmountToPartyExt(var shapenum, var framenum, var base_quant, var price, var max_quant,
+	var min_quant, var money_shape) {
 	var amount;
 	var finalquant;
 
@@ -114,7 +112,6 @@ var sellAmountToPartyExt (var shapenum, var framenum, var base_quant, var price,
 		money_shape = SHAPE_GOLD;
 	}
 	var partygold = PARTY->count_objects(money_shape, QUALITY_ANY, FRAME_ANY);
-
 	if (max_quant == 0) {
 		amount = 1;
 	} else {
@@ -138,7 +135,7 @@ var sellAmountToPartyExt (var shapenum, var framenum, var base_quant, var price,
 	}
 }
 
-var promptForPayment (var price, var dialog) {
+var promptForPayment(var price, var dialog) {
 	if (price > 0) {
 		say(dialog[2], price, dialog[3]);
 		if (askYesNo()) {
@@ -166,7 +163,6 @@ void serviceMultipleSpellHealing object#() () {
 		var circle = getSpellCircle(spellname);
 		var spell = getIndexForSpell(circle, spellname);
 		var targetlist = service_healing_targets;
-
 		if (isTargetedSpell(circle, spell)) {
 			var target = targetlist[1];
 			targetlist = removeFromArray(targetlist, target);
@@ -174,7 +170,6 @@ void serviceMultipleSpellHealing object#() () {
 		} else {
 			targetlist = [];
 		}
-
 		if (targetlist) {
 			script item after 8 ticks {
 				nohalt;
@@ -183,209 +178,170 @@ void serviceMultipleSpellHealing object#() () {
 		} else {
 			service_healing_spell = "";
 		}
-
 		service_healing_targets = targetlist;
-
-		npcCastSpellDialog(item,
-			spellname,
-			spellitemGetTalkCast(get_npc_number()));
+		npcCastSpellDialog(item, spellname, spellitemGetTalkCast(get_npc_number()));
 	}
 }
 
-var getServiceHealingDialog (var npcnum) {
+var getServiceHealingDialog(var npcnum) {
 	switch (npcnum) {
-		case REYNA:
-			return [
-				"@What is thy need?@",
-				"@I must charge thee ", " gold. Is this price agreeable?@",
-				"@I am sorry, " + getPoliteTitle() + ", but thou dost not have enough gold. Perhaps, I will be able to aid thee next time.@",
-				"@Then I cannot help thee, " + getPoliteTitle() + ". I am truly sorry, but my fees are set.@",
-				"@Who needs to be ", "?@",
-				"@None of you seem to be wounded.@~~She appears pleased.",
-				"@None of you seem to be poisoned.@~~She appears pleased.",
-				"@I am sorry, but thou hast not presented anyone to me who requires mine assistance. If there is someone who truly needs my skills, I must have a closer look.@",
-				"@Art thou sure? Some of thy friends still need to be healed.@",
-				"@Art thou sure? Some of thy friends still appear to be poisoned.@",
-				"@Art thou sure? Some of thy friends still appear to require mine aid.@",
-				"@I am glad of that, " + getPoliteTitle() + ". I am happy to help those in need, but I would be far happier if there were never a need!@"
-			];
-		case CSIL:
-			return [
-				"@Which of my services dost thou have need of?@",
-				"@My price is ", " gold. Is this price agreeable?@",
-				"@Tsk, tsk. Thou dost not have enough gold for the service. I do hope I may help thee another day.@",
-				"@Then thou must look elsewhere for that service.@",
-				"@Who dost thou wish to be ", "?@",
-				"@It pleases me that none of you are wounded.@",
-				"@I am pleased that none of you are poisoned.@",
-				"@I do not see anyone who needs resurrecting. I must be able to see the body to resurrect. If thou art carrying thy friend, pray lay them on the ground so that I may attend to them.@",
-				"@Art thou sure? Some of thy friends still need to be healed.@",
-				"@Art thou sure? Some of thy friends still appear to be poisoned.@",
-				"@Art thou sure? Some of thy friends still appear to require mine aid.@",
-				"@Very well. It pleases me that thou art healthy.@"
-			];
-		case ELAD:
-			return [
-				"@Which of my services dost thou have need of?@",
-				"@My price is ", " gold. Dost thou agree?@",
-				"@Thou dost not have that much gold! Mayhaps thou couldst return with more and purchase the service then.@",
-				"@Then thou must look elsewhere for that service.@",
-				"@Whom dost thou wish to have ", "?@",
-				"@Well, I do not see anyone wounded here.@ He laughs.",
-				"@Well, no one here is poisoned, it seems.@ He laughs.",
-				"@Well, I do not seem to see anyone who needs mine assistance. Unless thou art carrying someone in thy packs....@ He laughs.",
-				"@Art thou sure? Some of thy friends still need to be healed.@",
-				"@Art thou sure? Some of thy friends still appear to be poisoned.@",
-				"@Art thou sure? Some of thy friends still appear to require mine aid.@",
-				"@Though I want thy business, I am pleased to see my services are not needed!@"
-			];
-		case LEIGH:
-			return [
-				"@Which of my services dost thou have need of?@",
-				"@My price is ", " gold. Art thou interested?@",
-				"@Thou dost not have enough gold! Mayhaps thou couldst return when thou hast more.@",
-				"@Then thou must go elsewhere.@",
-				"@Who dost thou wish to have ", "?@",
-				"@None of you seem to be wounded.@~~She appears pleased.",
-				"@None of you seem to be poisoned.@~~She appears pleased.",
-				"@There seems to be no one who needs such assistance. Perhaps, if I have overlooked anyone, thou couldst set him or her before me.@",
-				"@Art thou sure? Some of thy friends still need to be healed.@",
-				"@Art thou sure? Some of thy friends still appear to be poisoned.@",
-				"@Art thou sure? Some of thy friends still appear to require mine aid.@",
-				"@Excellent, thou art uninjured!@"
-			];
-		case INMANILEM:
-			return [
-				"@To need which of my services?@",
-				"@To charge ", " gold. To still want my services?@",
-				"@To have not that much gold! To perhaps return with more and purchase the service then.@",
-				"@To be sorry. To look elsewhere for that service then.@",
-				"@To want to ", " whom?@",
-				"@To not see anyone in need of healing.@",
-				"@To not see anyone poisoned.@",
-				"@To not see anyone who is in need of resurrection. To have to see the body to save the spirit. To lay your companion on the ground so that I may return them to this world.@",
-				"@To ask if thou art sure. To see that some of thy friends still need to be healed.@",
-				"@To ask if thou art sure. To see that some of thy friends still appear to be poisoned.@",
-				"@To ask if thou art sure. To see that some of thy friends still appear to require mine aid.@",
-				"@To have no need for my healing.@"
-			];
-		case CHANTU:
-			return [
-				"@Which of my services dost thou need?@",
-				"@My price is ", " gold. Is this satisfactory?@",
-				"@Thou dost not have any gold. I am truly sorry. I cannot help thee until thou canst provide the proper fee.@ Chantu bows respectfully.",
-				"@Then I am truly sorry. I must charge what I must charge. We do not live in prosperous times.@",
-				"@Who dost thou wish to be ", "?@",
-				"@I apologize, " + getPoliteTitle() + ", but I do not see anyone who is in need of healing.@",
-				"@I apologize, " + getPoliteTitle() + ", but I do not see anyone who needs to be cured of poison.@",
-				"@I apologize, " + getPoliteTitle() + ", but I do not see anyone who is in need of resurrection. I must be able to see the body to save the spirit. If thou art carrying thy misfortunate friend, pray lay them on the ground so that I may return them to this world.@",
-				"@Some of thy friends still need to be healed; I will be here shouldst thou reconsider.@",
-				"@Some of thy friends still appear to be poisoned; I will be here shouldst thou reconsider.@",
-				"@Some of thy friends still appear to require mine aid; I will be here shouldst thou reconsider.@",
-				"@So thou art healthy? 'Tis good news. If thou dost need my services in the future, do not hesitate to return.@"
-			];
-		case JAANA:
-			return [
-				"@Which of my services dost thou have need of?@",
-				"@My price is ", " gold. Is this price agreeable?@",
-				"@Thou dost not have that much gold! Mayhaps thou couldst return with more and purchase the service then.@",
-				"@Then thou must look elsewhere for that service.@",
-				"@Who dost thou wish to be ", "?@",
-				"@I do not see anyone who is in need of healing.@",
-				"@I do not see anyone who needs to be cured of poison.@",
-				"@I do believe I am going blind. I do not see anyone who is in need of resurrection. Art thou fooling me again, or art thou hiding the injured one? I must be able to see the person to help them. If thou art carrying thy friend in thy pack, pray lay them on the ground so that I may perform my duties as thou hast requested.@",
-				"@Art thou sure? I believe that some of thy friends still need to be healed.@",
-				"@Art thou sure? I believe that some of thy friends still appear to be poisoned.@",
-				"@Art thou sure? I believe that some of thy friends still appear to require mine aid.@",
-				"@Avatar! Thou dost tell me to prepare to heal and then thou dost tell me 'Nobody'! Is this thine idea of a joke? Healing is a serious business!@"
-			];
-		case LAURIANNA:
-			return [
-				"@Which mode of healing dost thou wish?@",
-				"", "",
-				"",
-				"",
-				"@Who dost thou wish to be ", "?@",
-				"@None of you seem to be wounded.@~~She appears pleased.",
-				"@None of you seem to be poisoned.@~~She appears pleased.",
-				"@I am sorry, but thou hast not presented anyone to me who requires mine assistance. If there is someone who truly needs my skills, I must have a closer look.@",
-				"@Art thou sure? Some of thy friends still need to be healed.@",
-				"@Art thou sure? Some of thy friends still appear to be poisoned.@",
-				"@Art thou sure? Some of thy friends still appear to require mine aid.@",
-				"@I am glad that thou art not in need of healing!@"
-			];
-		case LORD_BRITISH:
-			return [
-				"@Of which service dost thou have need?@",
-				"", "",
-				"",
-				"",
-				"@Who dost thou wish to be ", "?@",
-				"@I do apologize, " + getAvatarName() + ", but I do not see anyone who must be healed.@",
-				"@I do apologize, " + getAvatarName() + ", but I do not see anyone who must be cured of poison.@",
-				"@I do apologize, " + getAvatarName() + ", but I do not see anyone who must be resurrected. I must be able to see the body. If thou art carrying thine unlucky companion, please lay them on the ground.@",
-				"@Art thou sure? I can see that some of thy friends still need to be healed.@",
-				"@Art thou sure? I can see that some of thy friends still appear to be poisoned.@",
-				"@Art thou sure? I can see that some of thy friends still appear to require mine aid.@",
-				"@'Tis good to hear that thou art well. Do not hesitate to come and see me if thou dost need healing of any kind.@"
-			];
+	case REYNA:
+		return ["@What is thy need?@", "@I must charge thee ", " gold. Is this price agreeable?@",
+			"@I am sorry, " + getPoliteTitle() + ", but thou dost not have enough gold. Perhaps, I will be able to aid thee next time.@",
+			"@Then I cannot help thee, " + getPoliteTitle() + ". I am truly sorry, but my fees are set.@",
+			"@Who needs to be ", "?@", "@None of you seem to be wounded.@~~She appears pleased.",
+			"@None of you seem to be poisoned.@~~She appears pleased.",
+			"@I am sorry, but thou hast not presented anyone to me who requires mine assistance. If there is someone who truly needs my skills, I must have a closer look.@",
+			"@Art thou sure? Some of thy friends still need to be healed.@",
+			"@Art thou sure? Some of thy friends still appear to be poisoned.@",
+			"@Art thou sure? Some of thy friends still appear to require mine aid.@",
+			"@I am glad of that, " + getPoliteTitle() + ". I am happy to help those in need, but I would be far happier if there were never a need!@"];
+	case CSIL:
+		return ["@Which of my services dost thou have need of?@", "@My price is ",
+			" gold. Is this price agreeable?@",
+			"@Tsk, tsk. Thou dost not have enough gold for the service. I do hope I may help thee another day.@",
+			"@Then thou must look elsewhere for that service.@", "@Who dost thou wish to be ", "?@",
+			"@It pleases me that none of you are wounded.@",
+			"@I am pleased that none of you are poisoned.@",
+			"@I do not see anyone who needs resurrecting. I must be able to see the body to resurrect. If thou art carrying thy friend, pray lay them on the ground so that I may attend to them.@",
+			"@Art thou sure? Some of thy friends still need to be healed.@",
+			"@Art thou sure? Some of thy friends still appear to be poisoned.@",
+			"@Art thou sure? Some of thy friends still appear to require mine aid.@",
+			"@Very well. It pleases me that thou art healthy.@"];
+	case ELAD:
+		return ["@Which of my services dost thou have need of?@", "@My price is ",
+			" gold. Dost thou agree?@",
+			"@Thou dost not have that much gold! Mayhaps thou couldst return with more and purchase the service then.@",
+			"@Then thou must look elsewhere for that service.@", "@Whom dost thou wish to have ",
+			"?@", "@Well, I do not see anyone wounded here.@ He laughs.",
+			"@Well, no one here is poisoned, it seems.@ He laughs.",
+			"@Well, I do not seem to see anyone who needs mine assistance. Unless thou art carrying someone in thy packs....@ He laughs.",
+			"@Art thou sure? Some of thy friends still need to be healed.@",
+			"@Art thou sure? Some of thy friends still appear to be poisoned.@",
+			"@Art thou sure? Some of thy friends still appear to require mine aid.@",
+			"@Though I want thy business, I am pleased to see my services are not needed!@"];
+	case LEIGH:
+		return ["@Which of my services dost thou have need of?@", "@My price is ",
+			" gold. Art thou interested?@",
+			"@Thou dost not have enough gold! Mayhaps thou couldst return when thou hast more.@",
+			"@Then thou must go elsewhere.@", "@Who dost thou wish to have ", "?@",
+			"@None of you seem to be wounded.@~~She appears pleased.",
+			"@None of you seem to be poisoned.@~~She appears pleased.",
+			"@There seems to be no one who needs such assistance. Perhaps, if I have overlooked anyone, thou couldst set him or her before me.@",
+			"@Art thou sure? Some of thy friends still need to be healed.@",
+			"@Art thou sure? Some of thy friends still appear to be poisoned.@",
+			"@Art thou sure? Some of thy friends still appear to require mine aid.@",
+			"@Excellent, thou art uninjured!@"];
+	case INMANILEM:
+		return ["@To need which of my services?@", "@To charge ",
+			" gold. To still want my services?@",
+			"@To have not that much gold! To perhaps return with more and purchase the service then.@",
+			"@To be sorry. To look elsewhere for that service then.@", "@To want to ", " whom?@",
+			"@To not see anyone in need of healing.@", "@To not see anyone poisoned.@",
+			"@To not see anyone who is in need of resurrection. To have to see the body to save the spirit. To lay your companion on the ground so that I may return them to this world.@",
+			"@To ask if thou art sure. To see that some of thy friends still need to be healed.@",
+			"@To ask if thou art sure. To see that some of thy friends still appear to be poisoned.@",
+			"@To ask if thou art sure. To see that some of thy friends still appear to require mine aid.@",
+			"@To have no need for my healing.@"];
+	case CHANTU:
+		return ["@Which of my services dost thou need?@", "@My price is ",
+			" gold. Is this satisfactory?@",
+			"@Thou dost not have any gold. I am truly sorry. I cannot help thee until thou canst provide the proper fee.@ Chantu bows respectfully.",
+			"@Then I am truly sorry. I must charge what I must charge. We do not live in prosperous times.@",
+			"@Who dost thou wish to be ", "?@",
+			"@I apologize, " + getPoliteTitle() + ", but I do not see anyone who is in need of healing.@",
+			"@I apologize, " + getPoliteTitle() + ", but I do not see anyone who needs to be cured of poison.@",
+			"@I apologize, " + getPoliteTitle() + ", but I do not see anyone who is in need of resurrection. I must be able to see the body to save the spirit. If thou art carrying thy misfortunate friend, pray lay them on the ground so that I may return them to this world.@",
+			"@Some of thy friends still need to be healed; I will be here shouldst thou reconsider.@",
+			"@Some of thy friends still appear to be poisoned; I will be here shouldst thou reconsider.@",
+			"@Some of thy friends still appear to require mine aid; I will be here shouldst thou reconsider.@",
+			"@So thou art healthy? 'Tis good news. If thou dost need my services in the future, do not hesitate to return.@"];
+	case JAANA:
+		return ["@Which of my services dost thou have need of?@", "@My price is ",
+			" gold. Is this price agreeable?@",
+			"@Thou dost not have that much gold! Mayhaps thou couldst return with more and purchase the service then.@",
+			"@Then thou must look elsewhere for that service.@", "@Who dost thou wish to be ", "?@",
+			"@I do not see anyone who is in need of healing.@",
+			"@I do not see anyone who needs to be cured of poison.@",
+			"@I do believe I am going blind. I do not see anyone who is in need of resurrection. Art thou fooling me again, or art thou hiding the injured one? I must be able to see the person to help them. If thou art carrying thy friend in thy pack, pray lay them on the ground so that I may perform my duties as thou hast requested.@",
+			"@Art thou sure? I believe that some of thy friends still need to be healed.@",
+			"@Art thou sure? I believe that some of thy friends still appear to be poisoned.@",
+			"@Art thou sure? I believe that some of thy friends still appear to require mine aid.@",
+			"@Avatar! Thou dost tell me to prepare to heal and then thou dost tell me 'Nobody'! Is this thine idea of a joke? Healing is a serious business!@"];
+	case LAURIANNA:
+		return ["@Which mode of healing dost thou wish?@", "", "", "", "",
+			"@Who dost thou wish to be ", "?@",
+			"@None of you seem to be wounded.@~~She appears pleased.",
+			"@None of you seem to be poisoned.@~~She appears pleased.",
+			"@I am sorry, but thou hast not presented anyone to me who requires mine assistance. If there is someone who truly needs my skills, I must have a closer look.@",
+			"@Art thou sure? Some of thy friends still need to be healed.@",
+			"@Art thou sure? Some of thy friends still appear to be poisoned.@",
+			"@Art thou sure? Some of thy friends still appear to require mine aid.@",
+			"@I am glad that thou art not in need of healing!@"];
+	case LORD_BRITISH:
+		return ["@Of which service dost thou have need?@", "", "", "", "",
+			"@Who dost thou wish to be ", "?@",
+			"@I do apologize, " + getAvatarName() + ", but I do not see anyone who must be healed.@",
+			"@I do apologize, " + getAvatarName() + ", but I do not see anyone who must be cured of poison.@",
+			"@I do apologize, " + getAvatarName() + ", but I do not see anyone who must be resurrected. I must be able to see the body. If thou art carrying thine unlucky companion, please lay them on the ground.@",
+			"@Art thou sure? I can see that some of thy friends still need to be healed.@",
+			"@Art thou sure? I can see that some of thy friends still appear to be poisoned.@",
+			"@Art thou sure? I can see that some of thy friends still appear to require mine aid.@",
+			"@'Tis good to hear that thou art well. Do not hesitate to come and see me if thou dost need healing of any kind.@"];
 	}
 }
 
-var getServiceHealingPricelist (var npcnum) {
+var getServiceHealingPricelist(var npcnum) {
 	switch (npcnum) {
-		case REYNA:
-			if (gflags[GAVE_REYNA_FLOWERS]) {
-				return [5, 15, 200];
-			} else {
-				return [10, 30, 400];
-			}
-		case JAANA:
-			if ((npcnum->get_npc_object() in UI_get_party_list()) ||
-				(npcnum->get_schedule_type() == WAIT)) {
-				return 0;
-			} else {
-				return [15, 30, 400];
-			}
-		case LAURIANNA:
-		case LORD_BRITISH:
+	case REYNA:
+		if (gflags[GAVE_REYNA_FLOWERS]) {
+			return [5, 15, 200];
+		} else {
+			return [10, 30, 400];
+		}
+	case JAANA:
+		if ((npcnum->get_npc_object() in UI_get_party_list())
+			|| (npcnum->get_schedule_type() == WAIT)) {
 			return 0;
-		case CSIL:
-			return [30, 40, 450];
-		case ELAD:
-			return [10, 25, 425];
-		case LEIGH:
-			return [8, 25, 385];
-		case INMANILEM:
-			return [10, 25, 430];
-		case CHANTU:
+		} else {
 			return [15, 30, 400];
+		}
+	case LAURIANNA:
+	case LORD_BRITISH:
+		return 0;
+	case CSIL:
+		return [30, 40, 450];
+	case ELAD:
+		return [10, 25, 425];
+	case LEIGH:
+		return [8, 25, 385];
+	case INMANILEM:
+		return [10, 25, 430];
+	case CHANTU:
+		return [15, 30, 400];
 	}
 }
 
-void serviceHeal () {
+void serviceHeal() {
 	UI_push_answers();
-
 	var npcnum = get_npc_number();
 	// Ensure proper initialization:
 	var npcind = spellitemGetNPCIndex(npcnum);
 	var dialog = getServiceHealingDialog(npcnum);
 	var price_list = getServiceHealingPricelist(npcnum);
-	var magicheal = (!get_item_flag(NECROMANCER) && (get_item_flag(MAGE_CLASS) || get_item_flag(BARD_CLASS)));
-
+	var magicheal = (!get_item_flag(NECROMANCER) && (get_item_flag(MAGE_CLASS)
+		|| get_item_flag(BARD_CLASS)));
 	var choices = ["none"];
 	var healing_spells = [];
-
 	if (magicheal) {
-		healing_spells = getLeveledSpellList(item,
-				get_item_flag(HEALER),
-				["Cure", "Mass cure", "Heal", "Great heal", "Restoration", "Resurrect", "Mass resurrect"],
-				[1, 2, 3, 5, 7, 8, 8],
-				global_spells_unknown[npcind]);
+		healing_spells = getLeveledSpellList(item, get_item_flag(HEALER),["Cure", "Mass cure",
+			"Heal", "Great heal", "Restoration", "Resurrect", "Mass resurrect"],[1, 2, 3, 5, 7, 8,
+			8], global_spells_unknown[npcind]);
 		if (("Cure" in healing_spells) || ("Mass cure" in healing_spells)) {
 			choices << "curing";
 		}
-		if (("Heal" in healing_spells) || ("Great heal" in healing_spells) || ("Restoration" in healing_spells)) {
+		if (("Heal" in healing_spells) || ("Great heal" in healing_spells)
+			|| ("Restoration" in healing_spells)) {
 			choices << "healing";
 		}
 		if (("Resurrect" in healing_spells) || ("Mass resurrect" in healing_spells)) {
@@ -394,7 +350,6 @@ void serviceHeal () {
 	} else {
 		choices << ["curing", "healing"];
 	}
-
 	say(dialog[1]);
 	var reply = chooseFromMenu2([choices]) - 1;
 	if (reply) {
@@ -417,7 +372,6 @@ void serviceHeal () {
 				}
 			}
 		}
-
 		var numtargets = UI_get_array_size(targets);
 		if (numtargets == 0) {
 			if (reply == SERVICE_HEAL) {
@@ -453,7 +407,6 @@ void serviceHeal () {
 			} else if (price_list) {
 				heal_everyone = false;
 			}
-
 			if (!choice) {
 				targets = 0;
 				if (reply == SERVICE_HEAL) {
@@ -467,10 +420,10 @@ void serviceHeal () {
 				var price = price_list[reply];
 				if (heal_everyone && price) {
 					if (magicheal) {
-						if (((reply == SERVICE_HEAL) && ("Restoration" in healing_spells)) ||
-							((reply == SERVICE_CURE) && ("Mass cure" in healing_spells)) ||
-							((reply == SERVICE_RESURRECT) && ("Mass resurrect" in healing_spells))) {
-							price = (price * 5)/2;
+						if (((reply == SERVICE_HEAL) && ("Restoration" in healing_spells)) || (
+							(reply == SERVICE_CURE) && ("Mass cure" in healing_spells)) || (
+							(reply == SERVICE_RESURRECT) && ("Mass resurrect" in healing_spells))) {
+							price = (price * 5) / 2;
 						} else {
 							price *= numtargets;
 						}
@@ -485,7 +438,6 @@ void serviceHeal () {
 					targets = 0;
 				}
 			}
-
 			if (targets) {
 				if (magicheal) {
 					var spell = 0;
@@ -520,14 +472,13 @@ void serviceHeal () {
 				//don't know enough spells.
 				if (reply == SERVICE_HEAL) {
 					var verbs = [" dresses ", " tends to "];
-					var msgs = [
-						"'s wounds with bandages soaked in an infusion of Ginseng. The wounds heal quickly afterwards.@",
+					var msgs = ["'s wounds with bandages soaked in an infusion of Ginseng. The wounds heal quickly afterwards.@",
 						"'s wounds and feeds the patient a yellow potion, which immediately closes the wounds.@",
-						"'s wounds by applying a herbal unguent upon them. Not long afterwards, the wounds are fully healed.@"
-					];
+						"'s wounds by applying a herbal unguent upon them. Not long afterwards, the wounds are fully healed.@"];
 					while (numtargets) {
 						var currtarget = targets[numtargets];
-						say("@"+ get_npc_name() + verbs[UI_get_random(UI_get_array_size(verbs))] + currtarget->get_npc_name() + msgs[UI_get_random(UI_get_array_size(msgs))]);
+						say(
+							"@" + get_npc_name() + verbs[UI_get_random(UI_get_array_size(verbs))] + currtarget->get_npc_name() + msgs[UI_get_random(UI_get_array_size(msgs))]);
 						var str = currtarget->get_npc_prop(STRENGTH);
 						var hps = currtarget->get_npc_prop(HEALTH);
 						currtarget->set_npc_prop(HEALTH, str - hps);
@@ -535,19 +486,19 @@ void serviceHeal () {
 					}
 				} else if (reply == SERVICE_CURE) {
 					var verbs = [" feeds ", " gives "];
-					var msgs = [
-						" an infusion of Ginseng, which nullifies the potion after a while.@",
+					var msgs = [" an infusion of Ginseng, which nullifies the potion after a while.@",
 						" a red potion, which cancels the poison almost immeditatelly.@",
-						" a herbal antidote. After a while, the poison is gone.@"
-					];
+						" a herbal antidote. After a while, the poison is gone.@"];
 					while (numtargets) {
 						var currtarget = targets[numtargets];
-						say("@"+ get_npc_name() + verbs[UI_get_random(UI_get_array_size(verbs))] + currtarget->get_npc_name() + msgs[UI_get_random(UI_get_array_size(msgs))]);
+						say(
+							"@" + get_npc_name() + verbs[UI_get_random(UI_get_array_size(verbs))] + currtarget->get_npc_name() + msgs[UI_get_random(UI_get_array_size(msgs))]);
 						currtarget->clear_item_flag(POISONED);
 						numtargets -= 1;
 					}
 				} else if (reply == SERVICE_RESURRECT) {
-					say("@This message should never appear. Warn the programmer: there is a bug with resurrection and normal healing.@");
+					say(
+						"@This message should never appear. Warn the programmer: there is a bug with resurrection and normal healing.@");
 				}
 			}
 		}

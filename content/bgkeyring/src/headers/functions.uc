@@ -39,7 +39,7 @@ var randomIndex(var array) {
 
 //Returns true if the specified object is the avatar, false otherwise.
 var isAvatar(var object) {
-	return (object->get_npc_object() == UI_get_avatar_ref());
+	return(object->get_npc_object() == UI_get_avatar_ref());
 }
 
 //Check if the player has met the specified person (i.e. whether their Met flag has been set).
@@ -53,7 +53,7 @@ var hasMet(var npc) {
 //Can take an NPC constant or an object reference.
 var inParty(var npc) {
 	npc = npc->get_npc_object();
-	return (npc in UI_get_party_list());
+	return(npc in UI_get_party_list());
 }
 
 //quick bark/say functions, useful for testing. See also randomPartySay() and randomPartyBark() (original functions)
@@ -62,12 +62,12 @@ void avatarBark(var line) {
 		AVATAR->item_say(line);
 	}
 }
+
 void avatarSay(var line) {
 	if (canTalk(AVATAR)) {
 		AVATAR.say(line);
 	}
 }
-
 
 //Moving-stuff-around functions
 //-----------------------------
@@ -136,12 +136,10 @@ var moveToLocation(var object, var pos) {
 		} else {
 			UI_update_last_created(orig_pos);
 		}
-
 		UI_flash_mouse(CURSOR_WONT_FIT);
 		return false;
 	}
 }
-
 
 //generic get-item-from-container/world script, used by item interactions. It is used at the end of a march-to-container script, to play an appropriate animation and transfer the item into the player's inventory.
 //once the item has been picked up, it will call the item's function with event = SCRIPTED.
@@ -188,16 +186,13 @@ void pickUpItem object#() () {
 	}
 }
 
-
 //Pathfind to the target item and pick it up once you get there (using pickUpItem). After this has happened, the item's function will be called with event = SCRIPTED. This is commonly used for item interactions that require the Avatar to be carrying the item first.
-void gotoAndGet (var target) {
+void gotoAndGet(var target) {
 	var offsetx;
 	var offsety;
 	var container;
 	var func;
-
 	UI_close_gumps();
-
 	if (target->get_container()) {
 		//item is contained by someone/thing - march the avatar over to the container and pick it up
 		container = getOuterContainer(target);
@@ -212,7 +207,6 @@ void gotoAndGet (var target) {
 		} else {
 			offsetx = [0, 1, -1, 1];
 			offsety = [2, 1, 2, 0];
-
 			gotoObject(container, offsetx, offsety, -3, pickUpItem, target, 2);
 		}
 	} else {
@@ -227,9 +221,8 @@ void gotoAndGet (var target) {
 }
 
 //returns true if obj is contained by target, or false otherwise
-var containedBy (var obj, var target) {
+var containedBy(var obj, var target) {
 	var container;
-
 	container = obj->get_container();
 	while (container) {
 		if (container == target) {
@@ -240,17 +233,14 @@ var containedBy (var obj, var target) {
 	return false;
 }
 
-
 //Animation functions
 //-------------------
 
 //returns the direction (N/S/W/E) that the NPC is currently facing
-var getFacing (var npc) {
+var getFacing(var npc) {
 	var direction;
 	var framenum;
-
 	framenum = npc->get_item_frame_rot();
-
 	if (framenum >= EAST_FRAMESET) {
 		direction = EAST;
 	} else if (framenum >= WEST_FRAMESET) {
@@ -260,31 +250,30 @@ var getFacing (var npc) {
 	} else {
 		direction = NORTH;
 	}
-
 	return direction;
 }
 
 //Simple function to reverse a direction (NORTH becomes SOUTH, etc.)
-var invertDirection (var direction) {
-	return (direction + 4) % 8;
+var invertDirection(var direction) {
+	return(direction + 4) % 8;
 }
 
 //Gold-related functions (for streamlining shopping)
 //--------------------------------------------------
 
 //returns the total amount of gold the party has
-var countGold (var amount) {
+var countGold(var amount) {
 	return PARTY->count_objects(SHAPE_GOLD, QUALITY_ANY, FRAME_ANY);
 }
 
 //returns true if the party has <amount> gold, false otherwise
-var hasGold (var amount) {
+var hasGold(var amount) {
 	var num_gold = PARTY->count_objects(SHAPE_GOLD, QUALITY_ANY, FRAME_ANY);
-	return (num_gold >= amount);
+	return(num_gold >= amount);
 }
 
 //tries to deduct <amount> from the party's gold: returns true if they had the cash, or false if they can't afford it
-var chargeGold (var amount) {
+var chargeGold(var amount) {
 	if (hasGold(amount)) {
 		return UI_remove_party_items(amount, SHAPE_GOLD, QUALITY_ANY, FRAME_ANY, true);
 	} else {
@@ -293,11 +282,9 @@ var chargeGold (var amount) {
 }
 
 //give <amount> gold to the party: returns true if successful, false otherwise
-var giveGold (var amount) {
+var giveGold(var amount) {
 	return UI_add_party_items(amount, SHAPE_GOLD, QUALITY_ANY, FRAME_ANY, true);
 }
-
-
 
 //Script-related functions (used in script{} blocks)
 //--------------------------------------------------
@@ -308,6 +295,7 @@ var giveGold (var amount) {
 void freeze object#() () {
 	set_item_flag(BG_DONT_MOVE);
 }
+
 void unfreeze object#() () {
 	clear_item_flag(BG_DONT_MOVE);
 }

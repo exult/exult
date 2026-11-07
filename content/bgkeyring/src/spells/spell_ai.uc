@@ -49,13 +49,12 @@
 	AI_DIVINER						= 62,
 	AI_THAUMATURGE					= 63
 */
-
-void aiCastHealing (var allies, var eff_level, var in_party, var in_combat) {
+void aiCastHealing(var allies, var eff_level, var in_party, var in_combat) {
 	if (get_item_flag(HEALER)) {
 		eff_level = 8;
 		if (get_item_flag(BARD_CLASS)) {
 			//Effectively rounding up
-			eff_level = (eff_level+1)/2;
+			eff_level = (eff_level + 1) / 2;
 		}
 	}
 
@@ -90,7 +89,7 @@ void aiCastHealing (var allies, var eff_level, var in_party, var in_combat) {
 	}
 	if (eff_level >= 7) {
 		//See if it is worthwhile to use restoration:
-		if ((badlywounded_size > 1) || (wounded_size > 3 ) || (hurt_size > 5)) {
+		if ((badlywounded_size > 1) || (wounded_size > 3) || (hurt_size > 5)) {
 			//It is; cast it:
 			npcCastSpellBark(item, 0, 7, SPELL_RESTORATION);
 		}
@@ -98,8 +97,7 @@ void aiCastHealing (var allies, var eff_level, var in_party, var in_combat) {
 	//Not worthwhile (or possible) to use restoration;
 	//see if we should use great heal or cure:
 	if (eff_level >= 5) {
-		if (wounded_size &&
-			(poisoned_size + paralyzed_size < 4)) {
+		if (wounded_size && (poisoned_size + paralyzed_size < 4)) {
 			//It is; cast it:
 			var target = wounded[UI_get_random(wounded_size)];
 			npcCastSpellBark(item, target, 5, SPELL_GREAT_HEAL);
@@ -108,11 +106,9 @@ void aiCastHealing (var allies, var eff_level, var in_party, var in_combat) {
 	//Not worthwhile (or possible) to use great heal;
 	//see if we should use heal or cure:
 	if (eff_level >= 3) {
-		if ((wounded_size &&
-			(poisoned_size + paralyzed_size < 4)) ||
-			(!in_combat &&
-			 (hurt_size > 1))) {
-				//It is; cast it:
+		if ((wounded_size && (poisoned_size + paralyzed_size < 4)) || (!in_combat
+			&& (hurt_size > 1))) {
+			//It is; cast it:
 			var target = wounded[UI_get_random(wounded_size)];
 			if (!in_combat && !target) {
 				target = hurt[UI_get_random(hurt_size)];
@@ -156,20 +152,17 @@ void aiCastHealing (var allies, var eff_level, var in_party, var in_combat) {
 	}
 }
 
-void aiCastBuffing (var allies, var enemies, var eff_level, var in_party, var in_combat) {
+void aiCastBuffing(var allies, var enemies, var eff_level, var in_party, var in_combat) {
 	//No need to cast buffing spells if outside combat
 	if (!in_combat) {
 		return;
 	}
-
 	var badlywounded = [];
 	var wounded = [];
 	var hurt = [];
-
 	var badlywounded_size = 0;
 	var wounded_size = 0;
 	var hurt_size = 0;
-
 	var enemy_count = UI_get_array_size(enemies);
 
 	//See if we should protect anyone:
@@ -210,15 +203,16 @@ void aiCastBuffing (var allies, var enemies, var eff_level, var in_party, var in
 	var nomassmight = filterListByFlag(allies, MIGHT, false);
 	var nomassmight_size = UI_get_array_size(nomassmight);
 	if (eff_level >= 7) {
-		if (nomassmight && 3*UI_get_array_size(allies) < enemy_count) {
+		if (nomassmight && 3 * UI_get_array_size(allies) < enemy_count) {
 			//It is; cast it:
 			npcCastSpellBark(item, 0, 7, SPELL_MASS_MIGHT);
 		}
 	}
 
 	//See if anyone needs magic ammo:
-	var xbowmen = filterListByEquipedObject(allies, [SHAPE_CROSSBOW, SHAPE_TRIPLE_XBOW], BG_WEAPON_HAND);
-	var bowmen = filterListByEquipedObject(allies, [SHAPE_BOW, SHAPE_MAGIC_BOW], BG_WEAPON_HAND);
+	var xbowmen = filterListByEquipedObject(allies,[SHAPE_CROSSBOW, SHAPE_TRIPLE_XBOW],
+		BG_WEAPON_HAND);
+	var bowmen = filterListByEquipedObject(allies,[SHAPE_BOW, SHAPE_MAGIC_BOW], BG_WEAPON_HAND);
 	xbowmen = filterListByEquipedObject(xbowmen, SHAPE_BOLTS, BG_QUIVER);
 	bowmen = filterListByEquipedObject(bowmen, SHAPE_ARROWS, BG_QUIVER);
 	var xbowmen_size = UI_get_array_size(xbowmen);
@@ -239,9 +233,8 @@ void aiCastBuffing (var allies, var enemies, var eff_level, var in_party, var in
 	}
 
 	//See if anyone needs a recharge
-	var wand_users = filterListByEquipedObject(allies,
-									[SHAPE_LIGHTNING_WAND, SHAPE_FIRE_WAND, SHAPE_FIREDOOM_STAFF],
-									BG_WEAPON_HAND);
+	var wand_users = filterListByEquipedObject(allies,[SHAPE_LIGHTNING_WAND, SHAPE_FIRE_WAND,
+		SHAPE_FIREDOOM_STAFF], BG_WEAPON_HAND);
 	var wand_users_size = UI_get_array_size(wand_users);
 	if (eff_level >= 4) {
 		if (wand_users_size) {
@@ -254,7 +247,6 @@ void aiCastBuffing (var allies, var enemies, var eff_level, var in_party, var in
 				}
 				wand_users_size -= 1;
 			}
-
 			if (target) {
 				npcCastSpellBark(item, target, 4, SPELL_RECHARGE_MAGIC);
 			}
@@ -268,9 +260,8 @@ void aiMain object#() () {
 		nohalt;
 		call aiMain;
 	}
-
-	if (get_item_flag(DEAD) || get_item_flag(ASLEEP) ||
-		get_item_flag(CHARMED) || get_item_flag(CONFUSION)) {
+	if (get_item_flag(DEAD) || get_item_flag(ASLEEP) || get_item_flag(CHARMED)
+		|| get_item_flag(CONFUSION)) {
 		//NPC is dead, asleep, paralyzed, charmed or confused...
 		//Will make characters more dangerous when they are
 		//charmed or confused, but it is enough for now.
@@ -281,19 +272,9 @@ void aiMain object#() () {
 
 	//Search for spellcasting item, if any:
 	var spellitem;
-	var party_spellcasters = [
-		IOLO,					SHAMINO,
-		DUPRE, 					MARIAH,
-		JAANA,					LAURIANNA,
-		JULIA
-	];
-	var spellitem_shapes   = [
-		SHAPE_IOLOS_LUTE,		SHAPE_SPELL_AMULET,
-		SHAPE_SPELL_AMULET,		SHAPE_SPELL_SPELLBOOK,
-		SHAPE_SPELL_SPELLBOOK,	SHAPE_SPELL_SPELLBOOK,
-		SHAPE_JULIAS_HAMMER
-	];
-
+	var party_spellcasters = [IOLO, SHAMINO, DUPRE, MARIAH, JAANA, LAURIANNA, JULIA];
+	var spellitem_shapes = [SHAPE_IOLOS_LUTE, SHAPE_SPELL_AMULET, SHAPE_SPELL_AMULET,
+		SHAPE_SPELL_SPELLBOOK, SHAPE_SPELL_SPELLBOOK, SHAPE_SPELL_SPELLBOOK, SHAPE_JULIAS_HAMMER];
 	if (in_party && get_npc_number() in party_spellcasters) {
 		var i = 1;
 		var item_shape = 0;
@@ -309,19 +290,15 @@ void aiMain object#() () {
 			abort;
 		}
 	}
-
 	var in_combat = false;
-
 	if (in_party && UI_in_combat()) {
 		in_combat = true;
 	} else if (get_schedule_type() == IN_COMBAT) {
 		in_combat = true;
 	}
-
 	var align = get_alignment();
 	var allies = [];
 	var enemies = [];
-
 	if (align == 1 || in_party) {
 		allies = getFriendlyTargetList(item, 30);
 		enemies = getEnemyTargetList(item, 30);
@@ -333,7 +310,6 @@ void aiMain object#() () {
 		//No enemies?????
 		allies = [item];
 	}
-
 	var level = getNPCLevel(item);
 	//Cheat mode:
 	if (get_item_flag(ARCHWIZARD) || level > 8) {
@@ -343,13 +319,12 @@ void aiMain object#() () {
 	//if using archwizard mode:
 	if (get_item_flag(BARD_CLASS)) {
 		//Effectively rounding up
-		level = (level+1)/2;
+		level = (level + 1) / 2;
 	} else if (!get_item_flag(MAGE_CLASS)) {
 		//If not bard- or mage-class, leave:
 		//Should NEVER happen...
 		abort;
 	}
-
 	var str = get_npc_prop(STRENGTH);
 	var hps = get_npc_prop(HEALTH);
 
@@ -363,18 +338,5 @@ void aiMain object#() () {
 	if (get_item_flag(AI_HEALING)) {
 		aiCastHealing(allies, level, in_party, in_combat);
 		aiCastBuffing(allies, enemies, level, in_party, in_combat);
-
 	}
-
-
-
-
-
-
-
-
-
-
-
-
 }

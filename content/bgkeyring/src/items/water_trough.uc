@@ -19,8 +19,8 @@
  *	Author: Marzo Junior
  *	Last Modified: 2006-03-19
  */
+extern void useBucketOnTrough();
 
-extern void useBucketOnTrough ();
 void VerticalTrough shape#(0x2CF) () {
 	var offsetx = [1, 1, -2, -2, 0, -1, 0, -1];
 	var offsety = [-1, -2, -1, -2, 1, 1, -4, -4];

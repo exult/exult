@@ -24,13 +24,11 @@
 void Shears shape#(0x2BA) () {
 	struct<ObjPos> target;
 	var target_shape;
-
 	if (event != DOUBLECLICK) {
 		return;
 	}
 	target = UI_click_on_item();
 	target_shape = target->get_item_shape();
-
 	if (target_shape == SHAPE_CLOTH) {
 		target->set_item_shape(SHAPE_BANDAGE);
 		target->set_item_frame(UI_die_roll(0, 2));

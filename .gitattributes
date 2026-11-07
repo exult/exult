@@ -70,6 +70,7 @@
 *.mm		text diff=objc
 *.ll		text diff=cpp
 *.rc		text
+*.sh		text eol=lf
 *.uc		text
 *.yy		text diff=cpp
 

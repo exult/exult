@@ -22,39 +22,35 @@
  *	Author: Marzo Junior
  *	Last Modified: 2006-03-19
  */
+const int SHRINE_FACES = -296;
 
-const int SHRINE_FACES					= -296;
 //Each shrine with its own 'face':
 enum shrines {
-	SHRINE_SACRIFICE					= 1,
-	SHRINE_JUSTICE						= 2,
-	SHRINE_HUMILITY						= 3,
-	SHRINE_SPIRITUALITY					= 4,
-	SHRINE_VALOR						= 5,
-	SHRINE_COMPASSION					= 6,
-	SHRINE_HONOR						= 7,
-	SHRINE_HONESTY						= 8,
-	SHRINE_SACRIFICE_DEFILED			= 9
+	SHRINE_SACRIFICE = 1,
+	SHRINE_JUSTICE = 2,
+	SHRINE_HUMILITY = 3,
+	SHRINE_SPIRITUALITY = 4,
+	SHRINE_VALOR = 5,
+	SHRINE_COMPASSION = 6,
+	SHRINE_HONOR = 7,
+	SHRINE_HONESTY = 8,
+	SHRINE_SACRIFICE_DEFILED = 9
 };
 
 enum shrine_codex_quest_levels {
-	CODEX_NOT_STARTED					= 0,
-	GOT_FROM_SHRINE						= 1,
-	WENT_TO_CODEX						= 2,
-	FINISHED_QUEST						= 3
+	CODEX_NOT_STARTED = 0,
+	GOT_FROM_SHRINE = 1,
+	WENT_TO_CODEX = 2,
+	FINISHED_QUEST = 3
 };
+
 //Easter egg:
-const int BOOK_OF_FORGOTTEN_MANTRAS		= 29;
+const int BOOK_OF_FORGOTTEN_MANTRAS = 29;
 
 void Shrine shape#(0x463) () {
-	var shrines = [
-		"Sacrifice", "Justice", "Humility", "Spirituality",
-		"Valor", "Compassion", "Honor", "Honesty"
-	];
-	var mantras = [
-		"Cah", "Beh", "Lum", "Om",
-		"Ra", "Mu", "Summ", "Ahm"
-	];
+	var shrines = ["Sacrifice", "Justice", "Humility", "Spirituality", "Valor", "Compassion",
+		"Honor", "Honesty"];
+	var mantras = ["Cah", "Beh", "Lum", "Om", "Ra", "Mu", "Summ", "Ahm"];
 	if (event == DOUBLECLICK) {
 		//Determine shrine's face and position:
 		var shrine_frame = get_item_frame() + 1;
@@ -62,9 +58,9 @@ void Shrine shape#(0x463) () {
 		var runes;
 		//Determine if the party has the correct rune:
 		if (shrine_frame == SHRINE_SACRIFICE_DEFILED) {
-		 	runes = PARTY->count_objects(SHAPE_RUNE, QUALITY_ANY, 0);
+			runes = PARTY->count_objects(SHAPE_RUNE, QUALITY_ANY, 0);
 		} else {
-		 	runes = PARTY->count_objects(SHAPE_RUNE, QUALITY_ANY, shrine_frame - 1);
+			runes = PARTY->count_objects(SHAPE_RUNE, QUALITY_ANY, shrine_frame - 1);
 		}
 		if (!runes) {
 			//Nope, doesn't have it:
@@ -75,10 +71,10 @@ void Shrine shape#(0x463) () {
 			//playing 'Stones':
 			UI_close_gumps();
 			UI_play_music(22, 0);
-
 			if (shrine_frame == SHRINE_SACRIFICE_DEFILED) {
 				//The shrine of sacrifice starts defiled, and covered in blood
-				AVATAR.say("You stand before the Shrine of Sacrifice. The Shrine is broken and defiled, with blood stains all over the altar.",
+				AVATAR.say(
+					"You stand before the Shrine of Sacrifice. The Shrine is broken and defiled, with blood stains all over the altar.",
 					"~Whatever peace there once was here is now long gone.");
 				say("Do you wish to say anything?");
 				//Not saying anything leaves it defiled
@@ -92,33 +88,21 @@ void Shrine shape#(0x463) () {
 					} else if (choice == 2) {
 						//Poor, poor Avatar...
 						say("Which mantra do you speak?");
-						if (PARTY->count_objects(SHAPE_BOOK, BOOK_OF_FORGOTTEN_MANTRAS, FRAME_ANY)) {
+						if (PARTY->count_objects(SHAPE_BOOK, BOOK_OF_FORGOTTEN_MANTRAS,
+							FRAME_ANY)) {
 							//Easter egg: the Book of Forgotten Mantras adds more options
 							var all_mantras;
 							all_mantras[1] = mantras;
-							all_mantras[2] = [
-									"Akk", "Hor", "Kra", "Maow", "Detra", "Sa",
-									"Nok", "Spank"
-							];
-							all_mantras[3] = [
-									"A", "Mi", "Ah", "Xiop", "Yof", "Ow", "Ta",
-									"Goo"
-							];
-							all_mantras[4] = [
-									"Si", "Yam", "Vil", "Wez", "Forat", "Asg",
-									"Sem", "Tex"
-							];
-							all_mantras[5] = [
-									"As", "Hiy", "Eyac", "Hodis", "Ni", "Baw",
-									"Fes", "Upa"
-							];
-							all_mantras[6] = [
-									"Yuit", "Swer", "Xes", "Led", "Zep", "Bok",
-									"Mar", "Sak"
-							];
-							all_mantras[7] = [
-									"Ces", "Blah", "Swu"
-							];
+							all_mantras[2] = ["Akk", "Hor", "Kra", "Maow", "Detra", "Sa", "Nok",
+								"Spank"];
+							all_mantras[3] = ["A", "Mi", "Ah", "Xiop", "Yof", "Ow", "Ta", "Goo"];
+							all_mantras[4] = ["Si", "Yam", "Vil", "Wez", "Forat", "Asg", "Sem",
+								"Tex"];
+							all_mantras[5] = ["As", "Hiy", "Eyac", "Hodis", "Ni", "Baw", "Fes",
+								"Upa"];
+							all_mantras[6] = ["Yuit", "Swer", "Xes", "Led", "Zep", "Bok", "Mar",
+								"Sak"];
+							all_mantras[7] = ["Ces", "Blah", "Swu"];
 							var page = 1;
 							var numpages = 7;
 							while (true) {
@@ -127,28 +111,19 @@ void Shrine shape#(0x463) () {
 								var prev;
 								var shift;
 								if (page == 1) {
-									choices = [
-											"nothing", "next",
-											all_mantras[page]
-									];
-									next  =  2;
-									prev  = -1;
-									shift =  1;
+									choices = ["nothing", "next", all_mantras[page]];
+									next = 2;
+									prev = -1;
+									shift = 1;
 								} else if (page == numpages) {
-									choices = [
-											"nothing", "previous",
-											all_mantras[page]
-									];
-									next  = -1;
-									prev  =  2;
-									shift =  1;
+									choices = ["nothing", "previous", all_mantras[page]];
+									next = -1;
+									prev = 2;
+									shift = 1;
 								} else {
-									choices = [
-											"nothing", "next", "previous",
-											all_mantras[page]
-									];
-									next  = 2;
-									prev  = 3;
+									choices = ["nothing", "next", "previous", all_mantras[page]];
+									next = 2;
+									prev = 3;
 									shift = 2;
 								}
 								choice = chooseFromMenu2(choices);
@@ -167,8 +142,7 @@ void Shrine shape#(0x463) () {
 								var mantras = all_mantras[page];
 								choice = mantras[choice - 1];
 							}
-						}
-						else {
+						} else {
 							choice = chooseFromMenu2(["nothing", mantras]);
 							if (choice != 1) {
 								choice = mantras[choice - 1];
@@ -178,8 +152,7 @@ void Shrine shape#(0x463) () {
 							//Or maybe not...
 							say("You walk away from the shrine, leaving it in its present state.");
 						} else {
-							say("In an ominous tone, you speak the mantra: @",
-								choice, "!@",
+							say("In an ominous tone, you speak the mantra: @", choice, "!@",
 								"~After waiting for a while, you realize nothing has happened.");
 							if (isNearby(DUPRE) && choice == "Ni") {
 								DUPRE.say("@We are the knights who say... Ni!@");
@@ -188,20 +161,17 @@ void Shrine shape#(0x463) () {
 					} else {
 						//This is a wise Avatar!
 						say("Which Word of Power do you speak?");
-						var words_of_power = [
-							"Avidus", "Malum", "Ignavus", "Veramocor",
-							"Inopia", "Vilis", "Infama", "Fallax"
-						];
+						var words_of_power = ["Avidus", "Malum", "Ignavus", "Veramocor", "Inopia",
+							"Vilis", "Infama", "Fallax"];
 						choice = chooseFromMenu2(["nothing", words_of_power]);
 						if (choice == 1) {
 							//Or maybe not...
 							say("You walk away from the shrine, leaving it in its present state.");
 						} else {
 							choice = words_of_power[choice - 1];
-							say("In an ominous tone, you speak the Word of Power: @",
-								choice, "!@ The ground suddenly trembles.");
+							say("In an ominous tone, you speak the Word of Power: @", choice,
+								"!@ The ground suddenly trembles.");
 							UI_earthquake(12);
-
 							if (choice == "Avidus") {
 								//The right choice, of course.
 								giveExperience(50);
@@ -210,10 +180,10 @@ void Shrine shape#(0x463) () {
 								obj_sprite_effect(ANIMATION_TELEPORT, 0, 0, 0, 0, 0, -1);
 								set_item_frame(SHRINE_SACRIFICE - 1);
 								UI_play_sound_effect2(64, item);
-
-								var bloodstains = pos->find_nearby(SHAPE_BLOOD, 20, MASK_TRANSLUCENT);
+								var bloodstains = pos->find_nearby(SHAPE_BLOOD, 20,
+									MASK_TRANSLUCENT);
 								for (blood in bloodstains) {
-									script blood after (3*get_distance(blood))/2 ticks remove;
+									script blood after(3 * get_distance(blood)) / 2 ticks remove;
 								}
 							} else {
 								say("After a while, you realize that nothing else happened.");
@@ -228,7 +198,8 @@ void Shrine shape#(0x463) () {
 			SHRINE_FACES->show_npc_face(shrine_frame - 1);
 			say("You stand before the Shrine of ", shrines[shrine_frame],
 				". The Shrine is a quiet and peaceful place, amidst the turmoil that is Britannia nowadays.");
-			say("A mystical voice sounds inside your head as you approach the altar. @Welcome, seeker. Dost thou wish to meditate at this altar?@");
+			say(
+				"A mystical voice sounds inside your head as you approach the altar. @Welcome, seeker. Dost thou wish to meditate at this altar?@");
 			if (!askYesNo()) {
 				//Avatar doesn't wish to meditate, so leave:
 				abort;
@@ -250,9 +221,9 @@ void Shrine shape#(0x463) () {
 			//Determine the place where the Avatar will meditate:
 			var dir = direction_from(AVATAR);
 			pos.z -= 4;
-			if (dir in [NORTHWEST, NORTH, NORTHEAST]) {
+			if (dir in[NORTHWEST, NORTH, NORTHEAST]) {
 				pos.y -= 2;
-			} else if (dir in [SOUTHWEST, SOUTH, SOUTHEAST]) {
+			} else if (dir in[SOUTHWEST, SOUTH, SOUTHEAST]) {
 				pos.y += 2;
 			} else if (dir == EAST) {
 				pos.x += 4;
@@ -276,7 +247,6 @@ void Shrine shape#(0x463) () {
 			if (UI_is_pc_female()) {
 				noun = "she";
 			}
-
 			const int BARK_COUNT = 3;
 			var rand = UI_get_random(BARK_COUNT);
 			var delay = UI_die_roll(5, 11);
@@ -351,7 +321,6 @@ void Shrine shape#(0x463) () {
 		//Find shrine and determine which shrine it is:
 		var shrine = find_nearest(SHAPE_SHRINE, 5);
 		var shrine_frame = shrine->get_item_frame() + 1;
-
 		if (chosen_mantra != shrine_frame) {
 			//Wrong mantra for shrine
 			AVATAR.say("You had difficulty focusing your thoughts, and could not meditate.");
@@ -388,24 +357,22 @@ void Shrine shape#(0x463) () {
 			xpbonus = 75;
 		}
 		giveExperience(xpbonus);
-
 		SHRINE_FACES->show_npc_face(shrine_frame - 1);
 		say("After a while, you feel a sense of calm and inner peace.");
 		if (codex_quest_level == CODEX_NOT_STARTED) {
 			//Got a sacred quest to see the Codex:
-			say("A mystical voice sounds inside your head, and a sacred quest is ordained. @Go thou to the Codex, seeker, to learn about ",
-			    shrines[shrine_frame] + "!@");
+			say(
+				"A mystical voice sounds inside your head, and a sacred quest is ordained. @Go thou to the Codex, seeker, to learn about ",
+				shrines[shrine_frame] + "!@");
 		} else if (codex_quest_level == WENT_TO_CODEX) {
 			//Returning from Codex:
-			say("Once again, the mystical voice sounds inside your head. @Well done, seeker! Use well thy newfound enlightenment!@");
+			say(
+				"Once again, the mystical voice sounds inside your head. @Well done, seeker! Use well thy newfound enlightenment!@");
 		}
 
 		//NPC banther:
 		if (UI_get_array_size(UI_get_party_list()) > 1) {
-			var barks = [
-				"@It's about time!@",
-				"@We should be going...@"
-			];
+			var barks = ["@It's about time!@", "@We should be going...@"];
 			var rand = UI_get_random(2 * UI_get_array_size(barks));
 			if (rand > UI_get_array_size(barks)) {
 				abort;

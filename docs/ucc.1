@@ -49,11 +49,13 @@ Categories are goto, integer\-coercion, shape\-to\-function,
 constant\-condition, unreachable\-code, implicit\-return\-type,
 implicit\-function\-kind, autonumber, missing\-game, missing\-itemref,
 constructor\-arguments, unknown\-directives, unknown\-escape\-sequence,
-function\-id\-alias, and general.
+function\-id\-alias, script\-mismatch, and general.
 All categories except function\-id\-alias are enabled by default.
 The function\-id\-alias category warns about compatible declarations that
 give different names to the same explicit function ID. Both names remain
 usable. Incompatible declarations and multiple definitions remain errors.
+The script\-mismatch category warns when &, &=, or << combines a value
+tracked as a script with a value not tracked as a script.
 .TP
 .B \-Wall, \-Wno\-all
 Enable or disable all warning categories.
@@ -68,6 +70,46 @@ Disable all warning categories. Hard errors remain enabled.
 .TP
 .B \-\-
 End options, allowing an input filename beginning with a hyphen.
+
+.SH SCRIPT EXPRESSIONS
+Arrays and scripts carry compiler metadata with an optional known length.
+Assignments propagate these facts; control-flow merges retain a length only
+when all incoming paths agree. The new script expression marks a value as a
+script. Concatenation with &, &=, or << produces a script when either operand
+is a script and warns when only one operand is tracked as a script.
+.PP
+A repeat command can expand a constructed script:
+.nf
+var commands = new script { nop; wait 1; };
+script item { repeat 3 *commands; }
+.fi
+Parenthesized operands such as *(first & second) are also supported.
+The dereferenced single-count form concatenates the operand with a separate
+three-element script tail containing repeat, the negative operand length,
+and the count. It uses normal repeat even when syntactically nested.
+The operand must be tracked as a script with a known length; otherwise
+compilation fails. Dereferencing a script containing a repeat as the body of
+another repeat is also an error, since its inner counters would be exhausted
+after the first outer iteration. Repeats inside new script use normal repeat
+encoding; syntactically nested and explicit two-count repeats retain their
+resetting encoding.
+
+.SS Analysis assumptions
+The statement assume_script(variable, length); records that a non-class
+variable contains a script of the given length. The length must be a
+nonnegative compile-time integer constant expression.
+.nf
+assume_script(animationCommands, 26);
+script item { repeat 2 *animationCommands; }
+.fi
+This is a trusted analysis annotation: it emits no runtime instructions and
+does not initialize, convert, or validate the variable's runtime value.
+It can refine unknown metadata or mark an ordinary array as a script.
+A known scalar value or a different known length is a compilation error.
+Known repeats remain tracked, so the assumption cannot bypass the restriction
+on dereferencing scripts containing repeats.
+The fact follows aliases and normal control-flow merges; reassignment and
+calls that can change shared variables invalidate it in the usual way.
 
 .SH DIAGNOSTICS
 Diagnostics are written to standard error and include the source filename,

@@ -38,19 +38,18 @@
 	extern void spellWeather ();
 	extern void spellDetectCharges (struct<ObjPos> target);
 */
-
 enum linear_spells {
-	SPELL_AWAKEN					= 0,
-	SPELL_DOUSE						= 1,
-	SPELL_FIREWORKS					= 2,
-	SPELL_GLIMMER					= 3,
-	SPELL_IGNITE					= 4,
-	SPELL_THUNDER					= 5,
-	SPELL_WEATHER					= 6,
-	SPELL_DETECT_CHARGES			= 7			//NPC-only spell
+	SPELL_AWAKEN = 0,
+	SPELL_DOUSE = 1,
+	SPELL_FIREWORKS = 2,
+	SPELL_GLIMMER = 3,
+	SPELL_IGNITE = 4,
+	SPELL_THUNDER = 5,
+	SPELL_WEATHER = 6,
+	SPELL_DETECT_CHARGES = 7  //NPC-only spell
 };
 
-void spellAwaken (struct<ObjPos> target) {
+void spellAwaken(struct<ObjPos> target) {
 	if (event == DOUBLECLICK) {
 		halt_scheduled();
 		var dir = direction_from(target);
@@ -79,7 +78,7 @@ void spellAwaken (struct<ObjPos> target) {
 	}
 }
 
-void spellDouse (struct<ObjPos> target) {
+void spellDouse(struct<ObjPos> target) {
 	if (event == DOUBLECLICK) {
 		halt_scheduled();
 		//struct<ObjPos> target = UI_click_on_item();
@@ -105,7 +104,8 @@ void spellDouse (struct<ObjPos> target) {
 		}
 	} else if (event == WEAPON) {
 		var target_shape = get_item_shape();
-		if (target_shape in [SHAPE_TORCH_LIT, SHAPE_LIT_LAMP, SHAPE_LIGHTSOURCE_LIT, SHAPE_SCONCE_LIT]) {
+		if (target_shape in[SHAPE_TORCH_LIT, SHAPE_LIT_LAMP, SHAPE_LIGHTSOURCE_LIT,
+			SHAPE_SCONCE_LIT]) {
 			script item {
 				nohalt;
 				call get_usecode_fun(), DOUBLECLICK;
@@ -117,7 +117,7 @@ void spellDouse (struct<ObjPos> target) {
 	}
 }
 
-void spellFireworks () {
+void spellFireworks() {
 	if (event == DOUBLECLICK) {
 		halt_scheduled();
 		item_say("@Bet Ort@");
@@ -140,7 +140,7 @@ void spellFireworks () {
 	}
 }
 
-void spellGlimmer () {
+void spellGlimmer() {
 	if (event == DOUBLECLICK) {
 		halt_scheduled();
 		item_say("@Bet Lor@");
@@ -163,7 +163,7 @@ void spellGlimmer () {
 	}
 }
 
-void spellIgnite (struct<ObjPos> target) {
+void spellIgnite(struct<ObjPos> target) {
 	if (event == DOUBLECLICK) {
 		halt_scheduled();
 		//struct<ObjPos> target = UI_click_on_item();
@@ -191,7 +191,7 @@ void spellIgnite (struct<ObjPos> target) {
 		}
 	} else if (event == WEAPON) {
 		var target_shape = get_item_shape();
-		if (target_shape in [SHAPE_TORCH, SHAPE_LAMPPOST, SHAPE_LIGHTSOURCE, SHAPE_SCONCE]) {
+		if (target_shape in[SHAPE_TORCH, SHAPE_LAMPPOST, SHAPE_LIGHTSOURCE, SHAPE_SCONCE]) {
 			script item {
 				nohalt;
 				call get_usecode_fun(), DOUBLECLICK;
@@ -202,7 +202,7 @@ void spellIgnite (struct<ObjPos> target) {
 	}
 }
 
-void spellThunder () {
+void spellThunder() {
 	if (event == DOUBLECLICK) {
 		halt_scheduled();
 		item_say("@Vas Kal@");
@@ -224,7 +224,7 @@ void spellThunder () {
 	}
 }
 
-void spellWeather () {
+void spellWeather() {
 	if (event == DOUBLECLICK) {
 		halt_scheduled();
 		item_say("@Rel Hur@");
@@ -252,14 +252,15 @@ void spellWeather () {
 	}
 }
 
-void spellDetectCharges (struct<ObjPos> target) {
+void spellDetectCharges(struct<ObjPos> target) {
 	if (event == DOUBLECLICK) {
 		halt_scheduled();
 		//struct<ObjPos> target = UI_click_on_item();
 		var target_shape = target->get_item_shape();
 		var dir = direction_from(target);
 		item_say("@Wis Ort@");
-		if (inMagicStorm() && (target_shape in [SHAPE_LIGHTNING_WAND, SHAPE_FIRE_WAND, SHAPE_FIREDOOM_STAFF])) {
+		if (inMagicStorm() && (target_shape in[SHAPE_LIGHTNING_WAND, SHAPE_FIRE_WAND,
+			SHAPE_FIREDOOM_STAFF])) {
 			var bark = "@" + target->get_item_quality() + " charges left@";
 			script item {
 				nohalt;

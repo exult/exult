@@ -26,7 +26,6 @@ extern void serpentbondAddNPCsBackToParty object#(0x7D7) ();
 /*
  *	Fifth Circle Spells
  */
-
 void spellSurprise object#(0x667) () {
 	var nearbynpcs;
 	var party;
@@ -35,7 +34,6 @@ void spellSurprise object#(0x667) () {
 	var npc;
 	var delay;
 	var rand;
-
 	if (event == DOUBLECLICK) {
 		halt_scheduled();
 		item_say("@Ex Jux Hur@");
@@ -96,11 +94,9 @@ void spellSurprise object#(0x667) () {
 	}
 }
 
-
 /*
  *	Sixth Circle Spells
  */
-
 void spellCreateAmmo object#(0x66E) () {
 	var obj;
 	var bows;
@@ -146,12 +142,11 @@ void spellCreateAmmo object#(0x66E) () {
 		if (crossbows > bows) {
 			missile_shape = SHAPE_BOLT;
 		}
-
 		obj = missile_shape->create_new_object();
 		if (obj) {
 			pos = AVATAR->get_object_position();
 			amount = (getNPCLevel(AVATAR) * 8);
-			rand = UI_die_roll(amount, (amount + 20));
+			rand = UI_die_roll(amount,(amount + 20));
 
 			// Original:
 			// const int MAX_AMMO = 99;
@@ -160,7 +155,6 @@ void spellCreateAmmo object#(0x66E) () {
 			if (rand > MAX_AMMO) {
 				rand = MAX_AMMO;
 			}
-
 			obj->set_item_flag(TEMPORARY);
 			obj->set_item_quantity(rand);
 			UI_update_last_created(pos);
@@ -168,16 +162,13 @@ void spellCreateAmmo object#(0x66E) () {
 	}
 }
 
-
 /*
  *	Seventh Circle Spells
  */
-
 void spellVibrate object#(0x676) () {
 	struct<ObjPos> target;
 	var target_shape;
 	var dir;
-
 	if (event == DOUBLECLICK) {
 		target = UI_click_on_item();
 		target_shape = target->get_item_shape();
@@ -221,44 +212,38 @@ void spellVibrate object#(0x676) () {
 		var array_size = UI_get_array_size(npcitems);
 		var index;
 		var mincount;
-		mincount = count_objects(SHAPE_USECODE_CONTAINER, QUALITY_ANY, FRAME_ANY)
-		     + count_objects(SHAPE_PATH_EGG, QUALITY_ANY, FRAME_ANY);
-
+		mincount = count_objects(SHAPE_USECODE_CONTAINER, QUALITY_ANY,
+			FRAME_ANY) + count_objects(SHAPE_PATH_EGG, QUALITY_ANY, FRAME_ANY);
 		if (array_size > mincount) {
 			while (index < array_size) {
 				index += 1;
 				target_shape = npcitems[index]->get_item_shape();
-				if ((target_shape != SHAPE_PATH_EGG) &&
-				  (target_shape != SHAPE_USECODE_CONTAINER)) {
+				if ((target_shape != SHAPE_PATH_EGG) && (target_shape != SHAPE_USECODE_CONTAINER)) {
 					break;
 				}
 			}
 
 			// Just for safety:
 			target_shape = npcitems[index]->get_item_shape();
-			if ((target_shape == SHAPE_PATH_EGG) ||
-			    (target_shape == SHAPE_USECODE_CONTAINER)) {
+			if ((target_shape == SHAPE_PATH_EGG) || (target_shape == SHAPE_USECODE_CONTAINER)) {
 				return;
 			}
-
 			if (index <= array_size) {
 				curritem = npcitems[index]->set_last_created();
 				if (curritem) {
-
 					pos = get_object_position();
 					updworked = UI_update_last_created(pos);
-
 					if (!updworked) {
 						updworked = UI_update_last_created([(pos.x - 2), pos.y, pos.z]);
 					}
 					if (!updworked) {
-						updworked = UI_update_last_created([pos.x, (pos.y - 2), pos.z]);
+						updworked = UI_update_last_created([pos.x,(pos.y - 2), pos.z]);
 					}
 					if (!updworked) {
 						updworked = UI_update_last_created([(pos.x + 2), pos.y, pos.z]);
 					}
 					if (!updworked) {
-						updworked = UI_update_last_created([pos.x, (pos.y + 2), pos.z]);
+						updworked = UI_update_last_created([pos.x,(pos.y + 2), pos.z]);
 					}
 					if (!updworked) {
 						curritem->remove_item();
@@ -274,11 +259,9 @@ void spellVibrate object#(0x676) () {
 	}
 }
 
-
 /*
  *	Eighth Circle Spells
  */
-
 void spellCreateIce object#(0x678) () {
 	var failed;
 	struct<ObjPos> target;
@@ -287,7 +270,6 @@ void spellCreateIce object#(0x678) () {
 	var field_z;
 	var pos;
 	var field;
-
 	failed = false;
 	if (event == DOUBLECLICK) {
 		halt_scheduled();
@@ -308,10 +290,8 @@ void spellCreateIce object#(0x678) () {
 						actor frame reach_1h;
 						actor frame strike_1h;
 					}
-
 					field->set_item_flag(TEMPORARY);
-					script field after 200 ticks
-						remove;
+					script field after 200 ticks remove;
 				} else {
 					failed = true;
 				}
@@ -321,7 +301,6 @@ void spellCreateIce object#(0x678) () {
 		} else {
 			failed = true;
 		}
-
 		if (failed) {
 			script item {
 				nohalt;
@@ -381,7 +360,6 @@ void spellSerpentBond object#(0x67D) () {
 				call serpentbondRemoveNPCsFromParty;
 				sfx 67;
 			}
-
 			script getPathEgg(5, 1) after 300 ticks {
 				nohalt;
 				finish;
@@ -405,16 +383,13 @@ void spellSerpentBond object#(0x67D) () {
 	} else if (event == SCRIPTED) {
 		struct<Position> pos = get_object_position();
 		var snakepos = [pos.x + 2, pos.y + 2, pos.z];
-
 		var insnakemaze = false;
 		// Check to see if the Avatar is inside the snake maze:
-		if ((pos.x > 0x550) && (pos.x < 0x573) &&
-		  (pos.y > 0x1EA) && (pos.y < 0x212)) {
+		if ((pos.x > 0x550) && (pos.x < 0x573) && (pos.y > 0x1EA) && (pos.y < 0x212)) {
 			insnakemaze = true;
 		}
-
-		if (getAvatarLocationID() != DREAM_WORLD && !insnakemaze &&
-			UI_is_not_blocked(snakepos, SHAPE_MALE_AVATAR, 1)) {
+		if (getAvatarLocationID() != DREAM_WORLD && !insnakemaze && UI_is_not_blocked(snakepos,
+			SHAPE_MALE_AVATAR, 1)) {
 			if (AVATAR->get_item_flag(POLYMORPH)) {
 				AVATAR->set_polymorph(SHAPE_MALE_AVATAR);
 			}
@@ -446,7 +421,6 @@ void spellFireSnake object#(0x67E) () {
 	struct<Position> pos;
 	var duration = 4;
 	var oldfield;
-
 	if (event == DOUBLECLICK) {
 		target = UI_click_on_item();
 		dir = direction_from(target);
@@ -459,13 +433,11 @@ void spellFireSnake object#(0x67E) () {
 				target->set_item_frame(31);
 				target->set_item_flag(TEMPORARY);
 				UI_update_last_created(pos);
-
-				script target after (get_distance(target) + 3) ticks {
+				script target after(get_distance(target) + 3) ticks {
 					nohalt;
 					remove;
 				}
 			}
-
 			script item {
 				face dir;
 				actor frame reach_1h;
@@ -475,22 +447,20 @@ void spellFireSnake object#(0x67E) () {
 			field = UI_create_new_object(SHAPE_FIRE_FIELD);
 			if (field) {
 				pos = get_object_position();
-				if (dir in [NORTHWEST, NORTH, NORTHEAST]) {
+				if (dir in[NORTHWEST, NORTH, NORTHEAST]) {
 					field_y = pos.y - 2;
-				} else if (dir in [SOUTHWEST, SOUTH, SOUTHEAST]) {
+				} else if (dir in[SOUTHWEST, SOUTH, SOUTHEAST]) {
 					field_y = pos.y + 2;
 				} else {
 					field_y = pos.y;
 				}
-
-				if (dir in [NORTHWEST, WEST, SOUTHWEST]) {
+				if (dir in[NORTHWEST, WEST, SOUTHWEST]) {
 					field_x = pos.x - 2;
-				} else if (dir in [NORTHEAST, EAST, SOUTHEAST]) {
+				} else if (dir in[NORTHEAST, EAST, SOUTHEAST]) {
 					field_x = pos.x + 2;
 				} else {
 					field_x = pos.x;
 				}
-
 				field_z = pos.z;
 				pos = [field_x, field_y, field_z];
 				UI_update_last_created(pos);
@@ -500,7 +470,6 @@ void spellFireSnake object#(0x67E) () {
 					nohalt;
 					remove;
 				}
-
 				script target {
 					nohalt;
 					call spellFireSnake;
@@ -518,33 +487,27 @@ void spellFireSnake object#(0x67E) () {
 		}
 	} else if (event == SCRIPTED) {
 		oldfield = find_nearest(SHAPE_FIRE_FIELD, 36);
-
 		dir = oldfield->direction_from(item);
 		field = UI_create_new_object(SHAPE_FIRE_FIELD);
 		if (field) {
 			pos = oldfield->get_object_position();
-			if (dir in [NORTHWEST, NORTH, NORTHEAST]) {
+			if (dir in[NORTHWEST, NORTH, NORTHEAST]) {
 				field_y = pos.y - 1;
-			} else if (dir in [SOUTHWEST, SOUTH, SOUTHEAST]) {
+			} else if (dir in[SOUTHWEST, SOUTH, SOUTHEAST]) {
 				field_y = pos.y + 1;
 			} else {
 				field_y = pos.y;
 			}
-
-			if (dir in [NORTHWEST, WEST, SOUTHWEST]) {
+			if (dir in[NORTHWEST, WEST, SOUTHWEST]) {
 				field_x = pos.x - 1;
-			} else if (dir in [NORTHEAST, EAST, SOUTHEAST]) {
+			} else if (dir in[NORTHEAST, EAST, SOUTHEAST]) {
 				field_x = pos.x + 1;
 			} else {
 				field_x = pos.x;
 			}
-
 			field_z = pos.z;
 			pos = [field_x, field_y, field_z];
-
-
-			if (!UI_is_not_blocked(pos, SHAPE_FIRE_FIELD, 0) &&
-			  get_distance(oldfield) > 1) {
+			if (!UI_is_not_blocked(pos, SHAPE_FIRE_FIELD, 0) && get_distance(oldfield) > 1) {
 				// Try going up:
 				pos.z = field_z + 1;
 				if (!UI_is_not_blocked(pos, SHAPE_FIRE_FIELD, 0)) {
@@ -556,16 +519,13 @@ void spellFireSnake object#(0x67E) () {
 					}
 				}
 			}
-
 			UI_update_last_created(pos);
 			field->set_item_quality(duration);
 			field->set_item_flag(TEMPORARY);
-
 			script field after duration ticks {
 				nohalt;
 				remove;
 			}
-
 			if (get_distance(oldfield) == 0) {
 				// oldfield->firesnakeExplode();
 				oldfield->attack_object(oldfield, 704);
@@ -575,7 +535,6 @@ void spellFireSnake object#(0x67E) () {
 				field->attack_object(field, 704);
 				return;
 			}
-
 			script item {
 				nohalt;
 				call spellFireSnake;
@@ -588,7 +547,6 @@ void spellFireSnake object#(0x67E) () {
 /*
  *	Ninth Circle Spells
  */
-
 void spellStopStorm object#(0x684) () {
 	if (event == DOUBLECLICK) {
 		halt_scheduled();
@@ -600,7 +558,6 @@ void spellStopStorm object#(0x684) () {
 				actor frame strike_1h;
 				sfx 57;
 			}
-
 			if (UI_get_weather() != 3) {
 				UI_set_weather(0);
 			}
@@ -622,11 +579,11 @@ void spellImbalance object#(0x687) () {
 		halt_scheduled();
 		item_say("@Kal Vas An Grav@");
 		if (notInMagicStorm()) {
-			obj_sprite_effect(ANIMATION_TELEPORT,  -2, -2, -3, -3, 0, -1);
-			obj_sprite_effect(ANIMATION_TELEPORT,  -2, -2,  3, -3, 0, -1);
-			obj_sprite_effect(ANIMATION_TELEPORT,  -2, -2,  3,  3, 0, -1);
-			obj_sprite_effect(ANIMATION_TELEPORT,  -2, -2, -3,  3, 0, -1);
-			obj_sprite_effect(ANIMATION_TELEPORT2, -2, -2,  0,  0, 0, -1);
+			obj_sprite_effect(ANIMATION_TELEPORT, -2, -2, -3, -3, 0, -1);
+			obj_sprite_effect(ANIMATION_TELEPORT, -2, -2, 3, -3, 0, -1);
+			obj_sprite_effect(ANIMATION_TELEPORT, -2, -2, 3, 3, 0, -1);
+			obj_sprite_effect(ANIMATION_TELEPORT, -2, -2, -3, 3, 0, -1);
+			obj_sprite_effect(ANIMATION_TELEPORT2, -2, -2, 0, 0, 0, -1);
 			script item {
 				nohalt;
 				actor frame raise_1h;
@@ -639,7 +596,7 @@ void spellImbalance object#(0x687) () {
 			delay = (15 + getNPCLevel(AVATAR));
 			while (delay != 0) {
 				delay -= 1;
-				script AVATAR after (delay + 10) ticks {
+				script AVATAR after(delay + 10) ticks {
 					nohalt;
 					call createImbalanceFields;
 				}

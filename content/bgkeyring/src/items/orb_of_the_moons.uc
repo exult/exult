@@ -36,24 +36,23 @@ enum moongate_destinations {
 	MOONGLOW			= 9,
 };
 */
-
 enum moongate_destinations_new {
-	BRITAIN				= 1,
-	JHELOM				= 2,
-	YEW					= 3,
-	MINOC				= 4,
-	TRINSIC				= 5,
-	SKARA_BRAE			= 6,
-	NEW_MAGINCIA		= 7,
-	MOONGLOW			= 8,
-	COMPASSION			= 9,
-	VALOR				= 10,
-	JUSTICE				= 11,
-	SACRIFICE			= 12,
-	HONOR				= 13,
-	SPIRITUALITY		= 14,
-	HUMILITY			= 15,
-	HONESTY				= 16
+	BRITAIN = 1,
+	JHELOM = 2,
+	YEW = 3,
+	MINOC = 4,
+	TRINSIC = 5,
+	SKARA_BRAE = 6,
+	NEW_MAGINCIA = 7,
+	MOONGLOW = 8,
+	COMPASSION = 9,
+	VALOR = 10,
+	JUSTICE = 11,
+	SACRIFICE = 12,
+	HONOR = 13,
+	SPIRITUALITY = 14,
+	HUMILITY = 15,
+	HONESTY = 16
 
 	/*
 	//Maybe I will add these locations in the future:
@@ -70,10 +69,8 @@ enum moongate_destinations_new {
 
 var isOrbMoongate 0x826 (var itemref) {
 	var orbmoongates;
-	orbmoongates = [
-		SHAPE_ORB_MOONGATE_HORIZONTAL, SHAPE_ORB_MOONGATE_NW_SE,
-		SHAPE_ORB_MOONGATE_VERTICAL, SHAPE_ORB_MOONGATE_NE_SW
-	];
+	orbmoongates = [SHAPE_ORB_MOONGATE_HORIZONTAL, SHAPE_ORB_MOONGATE_NW_SE,
+		SHAPE_ORB_MOONGATE_VERTICAL, SHAPE_ORB_MOONGATE_NE_SW];
 	if ((itemref->get_item_shape()) in orbmoongates) {
 		return true;
 	} else {
@@ -97,48 +94,40 @@ var getMoongateDestination 0x823 (var moongate) {
 	//there are many) I blame on the sphere generator :-).
 	var dest_X = [
 	//Cities:	Britain, 		Jhelom, 		Yew, 			Minoc, 			Trinsic,
-				0x04CF, 		0x0105, 		0x0207, 		0x073F, 		0x03FF,
+	0x04CF, 0x0105, 0x0207, 0x073F, 0x03FF,
 	//			Skara Brae, 	New Magincia	Moonglow
-				0x0237, 		0x087F, 		0x0B3F,
+	0x0237, 0x087F, 0x0B3F,
 	//Shrines:	Compassion, 	Valor,  		Justice, 		Sacrifice, 		Honor,
-				0x05B8, 		0x01FB, 		0x02EE, 		0x08F1, 		0x0363,
+	0x05B8, 0x01FB, 0x02EE, 0x08F1, 0x0363,
 	//			Spirituality,	Humility, 		Honesty
-				0x0B67, 		0x0B22, 		0x0A99
-	];
-
+	0x0B67, 0x0B22, 0x0A99];
 	var dest_Y = [
 	//Cities:	Britain, 		Jhelom, 		Yew, 			Minoc, 			Trinsic,
-				0x0522, 		0x0B0A, 		0x01EB, 		0x0192, 		0x0983,
+	0x0522, 0x0B0A, 0x01EB, 0x0192, 0x0983,
 	//			Skara Brae, 	New Magincia	Moonglow
-				0x0649, 		0x0922, 		0x0712,
+	0x0649, 0x0922, 0x0712,
 	//Shrines:	Compassion, 	Valor,  		Justice, 		Sacrifice, 		Honor,
-				0x054C, 		0x0A70, 		0x008C, 		0x03C6, 		0x09DE,
+	0x054C, 0x0A70, 0x008C, 0x03C6, 0x09DE,
 	//			Spirituality,	Humility, 		Honesty
-				0x0963, 		0x09C6, 		0x048C
-	];
-
+	0x0963, 0x09C6, 0x048C];
 	var dest_Z = [
 	//Cities:	Britain, 		Jhelom, 		Yew, 			Minoc, 			Trinsic,
-				0x0000, 		0x0000, 		0x0000, 		0x0000, 		0x0001,
+	0x0000, 0x0000, 0x0000, 0x0000, 0x0001,
 	//			Skara Brae, 	New Magincia	Moonglow
-				0x0000, 		0x0000, 		0x0002,
+	0x0000, 0x0000, 0x0002,
 	//Shrines:	Compassion, 	Valor,  		Justice, 		Sacrifice, 		Honor,
-				0x0000, 		0x0000, 		0x0000, 		0x0000, 		0x0000,
+	0x0000, 0x0000, 0x0000, 0x0000, 0x0000,
 	//			Spirituality,	Humility, 		Honesty
-				0x0001, 		0x0000, 		0x0000
-	];
-
+	0x0001, 0x0000, 0x0000];
 	var dest_map = [
 	//Cities:	Britain, 		Jhelom, 		Yew, 			Minoc, 			Trinsic,
-				0, 				0, 				0, 				0, 				0,
+	0, 0, 0, 0, 0,
 	//			Skara Brae, 	New Magincia	Moonglow
-				0, 				0, 				0,
+	0, 0, 0,
 	//Shrines:	Compassion, 	Valor,  		Justice, 		Sacrifice, 		Honor,
-				0, 				0, 				0, 				0, 				0,
+	0, 0, 0, 0, 0,
 	//			Spirituality,	Humility, 		Honesty
-				1, 				0, 				0
-	];
-
+	1, 0, 0];
 	var dest_index;
 	var dest_pos;
 
@@ -172,7 +161,7 @@ void enterMoongate 0x824 (var moongate) {
 	var var0004;
 
 	//Check to see if the moongate hurts instead of teleports:
-	if((UI_die_roll(1, 3) == 1) && (!(moongate->get_item_quality() == SPIRITUALITY))) {
+	if ((UI_die_roll(1, 3) == 1) && (!(moongate->get_item_quality() == SPIRITUALITY))) {
 		//Bad moongate, harm avatar
 		AVATAR->reduce_health(HEALTH, 3, ETHEREAL_DAMAGE);
 
@@ -186,9 +175,9 @@ void enterMoongate 0x824 (var moongate) {
 
 		//Play the falling-down/kneeling-in-pain animation associated
 		//with being wounded when trying to use a moongate:
-		if ((moongate_shape == SHAPE_STANDING_RED_MOONGATE) ||
-				(moongate_shape == SHAPE_STANDING_BLUE_MOONGATE) ||
-				 (moongate_shape == SHAPE_ORB_MOONGATE_HORIZONTAL)) {
+		if ((moongate_shape == SHAPE_STANDING_RED_MOONGATE) || (
+			moongate_shape == SHAPE_STANDING_BLUE_MOONGATE) || (
+			moongate_shape == SHAPE_ORB_MOONGATE_HORIZONTAL)) {
 			avatar_pos = badMoongateAnim(avatar_pos, moongate_pos, &struct<Position>::y);
 		} else {
 			avatar_pos = badMoongateAnim(avatar_pos, moongate_pos, &struct<Position>::x);
@@ -206,7 +195,6 @@ void enterMoongate 0x824 (var moongate) {
 		//Teleport avatar to destination:
 		var dest = getMoongateDestination(moongate);
 		PARTY->move_object(dest);
-
 		script AVATAR {
 			nohalt;
 			call exitMoongate;
@@ -234,7 +222,6 @@ void Orb_of_the_Moons shape#(0x311) () {
 		randomPartyBark(["@How odd!@", "@It worked before.@"]);
 		return;
 	}
-
 	if (event == DOUBLECLICK) {
 		//If the avatar hasn't left Trinsic the proper way AND if he is
 		//inside the greater Trinsic area, the orb won't work:
@@ -254,12 +241,9 @@ void Orb_of_the_Moons shape#(0x311) () {
 
 		//Find the direction of the throw:
 		direction = AVATAR->find_direction(target_coords);
-
-		var moongateshapes = [
-			SHAPE_ORB_MOONGATE_HORIZONTAL, SHAPE_ORB_MOONGATE_NW_SE, SHAPE_ORB_MOONGATE_VERTICAL,
-			SHAPE_ORB_MOONGATE_NE_SW, SHAPE_ORB_MOONGATE_HORIZONTAL, SHAPE_ORB_MOONGATE_NW_SE,
-			SHAPE_ORB_MOONGATE_VERTICAL, SHAPE_ORB_MOONGATE_NE_SW
-		];
+		var moongateshapes = [SHAPE_ORB_MOONGATE_HORIZONTAL, SHAPE_ORB_MOONGATE_NW_SE,
+			SHAPE_ORB_MOONGATE_VERTICAL, SHAPE_ORB_MOONGATE_NE_SW, SHAPE_ORB_MOONGATE_HORIZONTAL,
+			SHAPE_ORB_MOONGATE_NW_SE, SHAPE_ORB_MOONGATE_VERTICAL, SHAPE_ORB_MOONGATE_NE_SW];
 		moongate_shape = moongateshapes[direction + 1];
 
 		//Change the position to make moongate centered on target pos:
@@ -275,7 +259,6 @@ void Orb_of_the_Moons shape#(0x311) () {
 
 		//See if the target destination is blocked:
 		blocked = (!UI_is_not_blocked(target_coords, moongate_shape, 0));
-
 		if (blocked) {
 			//It is blocked; attempt to circumvent it by incrementing
 			//the Z coordinate and give up trying after 3 tries:
@@ -381,7 +364,7 @@ void Orb_of_the_Moons shape#(0x311) () {
 		avatar_pos = AVATAR->get_object_position();
 
 		//Determine coord offset for avatar destination:
-		if (!(direction in [EAST, WEST])) {
+		if (!(direction in[EAST, WEST])) {
 			if ((target_coords.y < avatar_pos.y)) {
 				coord_offset = 1;
 			} else {
@@ -389,7 +372,7 @@ void Orb_of_the_Moons shape#(0x311) () {
 			}
 			target_coords.y += coord_offset;
 		}
-		if (!(direction in [NORTH, SOUTH])) {
+		if (!(direction in[NORTH, SOUTH])) {
 			if ((target_coords.x < avatar_pos.x)) {
 				coord_offset = 1;
 			} else {
@@ -407,7 +390,6 @@ void Orb_of_the_Moons shape#(0x311) () {
 		//	calls function with event = eventid and item = itemref
 		//	when he gets there.
 		arrived_dest = UI_path_run_usecode(target_coords, Orb_of_the_Moons, moongate, PATH_SUCCESS);
-
 		if (arrived_dest) {
 			//UI_set_path_failure(function, itemref, eventid)
 			//	Should the avatar not reach the destination, (say,
@@ -424,12 +406,11 @@ void Orb_of_the_Moons shape#(0x311) () {
 				//... and give it back to the avatar:
 				UI_add_party_items(1, SHAPE_ORB, 0, 0, false);
 			}
-		}else {
+		} else {
 			//Destination unreachable, close moongate:
 			closeOrbMoongate(moongate);
 		}
 	}
-
 	if (event == PATH_FAILURE) {
 		//The player interrupted the avatar before reaching the moongate:
 		//Sanity check: make sure we ARE talking about a moongate:

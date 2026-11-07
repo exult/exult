@@ -22,8 +22,7 @@
  *	Author: Marzo Junior
  *	Last Modified: 2006-02-27
  */
-
-void monsterStats (var monster, var stats) {
+void monsterStats(var monster, var stats) {
 	var stat_value;
 	//IDs of the properties to set:
 	var stat_ids = [STRENGTH, DEXTERITY, INTELLIGENCE, HEALTH, COMBAT];
@@ -34,12 +33,12 @@ void monsterStats (var monster, var stats) {
 	}
 }
 
-void monsterEquipment (var monster, var contshape, var arms, var arms_quality, var pouch_content, var pouch_frames, var pouch_quantities, var pouch_qualities) {
+void monsterEquipment(var monster, var contshape, var arms, var arms_quality, var pouch_content,
+	var pouch_frames, var pouch_quantities, var pouch_qualities) {
 	var bag;
 	var new_obj;
 	var index;
-
-	for (itemnum in arms with /*counter*/index) {
+	for (itemnum in arms with  /*counter*/ index) {
 		//For each item in arms,
 		//increment counter:
 		//index += 1;
@@ -76,7 +75,9 @@ void monsterEquipment (var monster, var contshape, var arms, var arms_quality, v
 	}
 }
 
-var monsterCreate (var shapenum, var npcid, var pos, var facedir, var stats, var arms, var arms_quality, var pouch_content, var pouch_frames, var pouch_quantities, var pouch_qualities) {
+var monsterCreate(var shapenum, var npcid, var pos, var facedir, var stats, var arms,
+	var arms_quality, var pouch_content, var pouch_frames, var pouch_quantities,
+	var pouch_qualities) {
 	//Create the monster:
 	var monster = UI_create_new_object(shapenum);
 	//Initially set monster to be neutral:
@@ -85,7 +86,6 @@ var monsterCreate (var shapenum, var npcid, var pos, var facedir, var stats, var
 	monster->set_schedule_type(WAIT);
 	//Make him temporary:
 	monster->set_item_flag(TEMPORARY);
-
 	if (!gflags[PLAYER_USED_GEM]) {
 		//Ensure monster is invisible before the Avatar
 		//uses the gem:
@@ -95,7 +95,8 @@ var monsterCreate (var shapenum, var npcid, var pos, var facedir, var stats, var
 	//Set the monster's attributes:
 	monsterStats(monster, stats);
 	//Give him some equipment:
-	monsterEquipment(monster, SHAPE_BACKPACK, arms, arms_quality, pouch_content, pouch_frames, pouch_quantities, pouch_qualities);
+	monsterEquipment(monster, SHAPE_BACKPACK, arms, arms_quality, pouch_content, pouch_frames,
+		pouch_quantities, pouch_qualities);
 	//Set NPC ID to requested value:
 	monster->set_npc_id(npcid);
 	if (npcid == ID_MAGE_OR_GOON) {
@@ -113,25 +114,16 @@ var monsterCreate (var shapenum, var npcid, var pos, var facedir, var stats, var
 	return monster;
 }
 
-void createMageAndGoons () {
+void createMageAndGoons() {
 	//This function is a rather boring long list of equipment. You can just look
 	//at the mage to see how it is done, and skip all the rest...
 	var monster_stats;
-	var leather_armor = [
-		SHAPE_LEATHER_HELM, SHAPE_LEATHER_ARMOR, SHAPE_LEATHER_COLLAR,
-		SHAPE_LEATHER_GLOVES, SHAPE_LEATHER_LEGGINGS, SHAPE_LEATHER_BOOTS
-	];
-
-	var chain_armor   = [
-		SHAPE_CHAIN_COIF, SHAPE_CHAIN_ARMOUR, SHAPE_GORGET,
-		SHAPE_GAUNTLETS, SHAPE_CHAIN_LEGGINGS, SHAPE_LEATHER_BOOTS
-	];
-
-	var plate_armor   = [
-		SHAPE_GREAT_HELM, SHAPE_PLATE_ARMOUR, SHAPE_GORGET,
-		SHAPE_GAUNTLETS, SHAPE_PLATE_LEGGINGS, SHAPE_LEATHER_BOOTS
-	];
-
+	var leather_armor = [SHAPE_LEATHER_HELM, SHAPE_LEATHER_ARMOR, SHAPE_LEATHER_COLLAR,
+		SHAPE_LEATHER_GLOVES, SHAPE_LEATHER_LEGGINGS, SHAPE_LEATHER_BOOTS];
+	var chain_armor = [SHAPE_CHAIN_COIF, SHAPE_CHAIN_ARMOUR, SHAPE_GORGET, SHAPE_GAUNTLETS,
+		SHAPE_CHAIN_LEGGINGS, SHAPE_LEATHER_BOOTS];
+	var plate_armor = [SHAPE_GREAT_HELM, SHAPE_PLATE_ARMOUR, SHAPE_GORGET, SHAPE_GAUNTLETS,
+		SHAPE_PLATE_LEGGINGS, SHAPE_LEATHER_BOOTS];
 	var pouch_content;
 	var pouch_frames;
 	var pouch_quantities;
@@ -139,170 +131,89 @@ void createMageAndGoons () {
 	var monster_equip;
 	var monster_qualities;
 
-
 	//Create the mage and his equipment:
 	monster_stats = [12, 12, 26, 12, 18];
-	pouch_content = [
-		SHAPE_LIGHTNING_WAND,
-		SHAPE_REAGENT, SHAPE_REAGENT, SHAPE_REAGENT, SHAPE_REAGENT,
-		SHAPE_REAGENT, SHAPE_REAGENT, SHAPE_REAGENT, SHAPE_REAGENT
-	];
-	pouch_frames = [
-		0,
-		0, 1, 2, 3,
-		4, 5, 6, 7
-	];
-	pouch_quantities = [
-		1,
-		21, 17, 16, 14,
-		24, 22, 17, 19
-	];
-	pouch_qualities = [
-		80,
-		0, 0, 0, 0,
-		0, 0, 0, 0
-	];
+	pouch_content = [SHAPE_LIGHTNING_WAND, SHAPE_REAGENT, SHAPE_REAGENT, SHAPE_REAGENT,
+		SHAPE_REAGENT, SHAPE_REAGENT, SHAPE_REAGENT, SHAPE_REAGENT, SHAPE_REAGENT];
+	pouch_frames = [0, 0, 1, 2, 3, 4, 5, 6, 7];
+	pouch_quantities = [1, 21, 17, 16, 14, 24, 22, 17, 19];
+	pouch_qualities = [80, 0, 0, 0, 0, 0, 0, 0, 0];
 	monster_equip = [SHAPE_FIREBOLT, SHAPE_LIGHTNING, leather_armor];
 	monster_qualities = [40, 40, 0, 0, 0, 0, 0, 0];
-
-	var mage = monsterCreate(SHAPE_MAGE_MALE, ID_MAGE_OR_GOON, [254, 1170, 0], WEST,
-			monster_stats, monster_equip, monster_qualities,
-			pouch_content, pouch_frames, pouch_quantities, pouch_qualities);
+	var mage = monsterCreate(SHAPE_MAGE_MALE, ID_MAGE_OR_GOON,[254, 1170, 0], WEST, monster_stats,
+		monster_equip, monster_qualities, pouch_content, pouch_frames, pouch_quantities,
+		pouch_qualities);
 	mage->set_usecode_fun(registerDeathOfMageOrGoon);
-
-
-	pouch_qualities = [
-		0,
-		0, 0, 0, 0,
-		0, 0, 0, 0
-	];
+	pouch_qualities = [0, 0, 0, 0, 0, 0, 0, 0, 0];
 
 	//Create the gargoyle and his equipment:
 	monster_stats = [24, 12, 12, 24, 20];
-	pouch_content	 = [
-		SHAPE_JEWELRY,
-		SHAPE_JEWELRY, SHAPE_JEWELRY, SHAPE_JEWELRY, SHAPE_JEWELRY,
-		SHAPE_JEWELRY, SHAPE_JEWELRY, SHAPE_JEWELRY, SHAPE_JEWELRY,
-		SHAPE_JEWELRY, SHAPE_JEWELRY, SHAPE_JEWELRY, SHAPE_JEWELRY,
-		SHAPE_JEWELRY, SHAPE_JEWELRY, SHAPE_JEWELRY, SHAPE_JEWELRY,
-		SHAPE_JEWELRY, SHAPE_JEWELRY, SHAPE_JEWELRY, SHAPE_JEWELRY,
-		SHAPE_JEWELRY, SHAPE_JEWELRY, SHAPE_JEWELRY, SHAPE_JEWELRY,
-		SHAPE_FOOD, SHAPE_FOOD, SHAPE_FOOD, SHAPE_FOOD
-	];
-	pouch_frames = [
-		0,
-		0, 1, 2, 3,
-		0, 1, 2, 3,
-		0, 1, 2, 3,
-		0, 1, 2, 3,
-		4, 5, 6, 7,
-		4, 5, 6, 7,
-		FRAME_VENISON, FRAME_VENISON, FRAME_VENISON, FRAME_VENISON
-	];
-	pouch_quantities = [
-		1,
-		1, 1, 1, 1,
-		1, 1, 1, 1,
-		1, 1, 1, 1,
-		1, 1, 1, 1,
-		1, 1, 1, 1,
-		1, 1, 1, 1,
-		1, 1, 1, 1
-	];
+	pouch_content = [SHAPE_JEWELRY, SHAPE_JEWELRY, SHAPE_JEWELRY, SHAPE_JEWELRY, SHAPE_JEWELRY,
+		SHAPE_JEWELRY, SHAPE_JEWELRY, SHAPE_JEWELRY, SHAPE_JEWELRY, SHAPE_JEWELRY, SHAPE_JEWELRY,
+		SHAPE_JEWELRY, SHAPE_JEWELRY, SHAPE_JEWELRY, SHAPE_JEWELRY, SHAPE_JEWELRY, SHAPE_JEWELRY,
+		SHAPE_JEWELRY, SHAPE_JEWELRY, SHAPE_JEWELRY, SHAPE_JEWELRY, SHAPE_JEWELRY, SHAPE_JEWELRY,
+		SHAPE_JEWELRY, SHAPE_JEWELRY, SHAPE_FOOD, SHAPE_FOOD, SHAPE_FOOD, SHAPE_FOOD];
+	pouch_frames = [0, 0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3, 4, 5, 6, 7, 4, 5, 6, 7,
+		FRAME_VENISON, FRAME_VENISON, FRAME_VENISON, FRAME_VENISON];
+	pouch_quantities = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+		1, 1, 1, 1];
 	monster_equip = [SHAPE_2H_HAMMER, chain_armor];
 	monster_qualities = [0, 0, 0, 0, 0, 0, 0];
-
-	var garg = monsterCreate(SHAPE_GARGOYLE_WARRIOR, ID_MAGE_OR_GOON, [263, 1170, 0], EAST,
-			monster_stats, monster_equip, monster_qualities,
-			pouch_content, pouch_frames, pouch_quantities, pouch_qualities);
+	var garg = monsterCreate(SHAPE_GARGOYLE_WARRIOR, ID_MAGE_OR_GOON,[263, 1170, 0], EAST,
+		monster_stats, monster_equip, monster_qualities, pouch_content, pouch_frames,
+		pouch_quantities, pouch_qualities);
 	garg->set_usecode_fun(registerDeathOfMageOrGoon);
-
 
 	//Create the troll and his equipment:
 	monster_stats = [16, 10, 6, 16, 17];
-	pouch_content	 = [
-		SHAPE_FOOD, SHAPE_FOOD, SHAPE_FOOD, SHAPE_FOOD,
-		SHAPE_GEM, SHAPE_GEM, SHAPE_GEM, SHAPE_GEM,
-		SHAPE_GEM, SHAPE_GEM, SHAPE_GEM, SHAPE_GEM
-	];
-	pouch_frames = [
-		FRAME_CHICKEN, FRAME_CHICKEN, FRAME_CHICKEN, FRAME_CHICKEN,
-		0, 1, 2, 3,
-		4, 5, 6, 7
-	];
-	pouch_quantities = [
-		1, 1, 1, 1,
-		1, 1, 1, 1,
-		1, 1, 1, 1
-	];
+	pouch_content = [SHAPE_FOOD, SHAPE_FOOD, SHAPE_FOOD, SHAPE_FOOD, SHAPE_GEM, SHAPE_GEM,
+		SHAPE_GEM, SHAPE_GEM, SHAPE_GEM, SHAPE_GEM, SHAPE_GEM, SHAPE_GEM];
+	pouch_frames = [FRAME_CHICKEN, FRAME_CHICKEN, FRAME_CHICKEN, FRAME_CHICKEN, 0, 1, 2, 3, 4, 5, 6,
+		7];
+	pouch_quantities = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1];
 	monster_equip = [SHAPE_MORNINGSTAR, SHAPE_SPIKEDSHIELD, leather_armor];
 	monster_qualities = [0, 0, 0, 0, 0, 0, 0, 0];
-
-	var troll = monsterCreate(SHAPE_TROLL, ID_MAGE_OR_GOON, [249, 1164, 0], WEST,
-			monster_stats, monster_equip, monster_qualities,
-			pouch_content, pouch_frames, pouch_quantities, pouch_qualities);
+	var troll = monsterCreate(SHAPE_TROLL, ID_MAGE_OR_GOON,[249, 1164, 0], WEST, monster_stats,
+		monster_equip, monster_qualities, pouch_content, pouch_frames, pouch_quantities,
+		pouch_qualities);
 	troll->set_usecode_fun(registerDeathOfMageOrGoon);
-
 
 	//Create the cyclops and his equipment:
 	monster_stats = [22, 17, 6, 22, 18];
-	pouch_content	 = [
-		SHAPE_FOOD, SHAPE_FOOD, SHAPE_FOOD, SHAPE_FOOD,
-		SHAPE_FOOD, SHAPE_FOOD, SHAPE_GOLD_NUGGET, SHAPE_GOLD_NUGGET,
-		SHAPE_GOLD_NUGGET, SHAPE_GOLD_NUGGET, SHAPE_GOLD_NUGGET, SHAPE_GOLD_NUGGET
-	];
-	pouch_frames = [
-		FRAME_FLOUNDER, FRAME_FLOUNDER, FRAME_FLOUNDER, FRAME_FLOUNDER,
-		FRAME_FLOUNDER, FRAME_FLOUNDER, 0, 0,
-		0, 1, 1, 1
-	];
-	pouch_quantities = [
-		1, 1, 1, 1,
-		1, 1, 1, 1,
-		1, 1, 1, 1
-	];
+	pouch_content = [SHAPE_FOOD, SHAPE_FOOD, SHAPE_FOOD, SHAPE_FOOD, SHAPE_FOOD, SHAPE_FOOD,
+		SHAPE_GOLD_NUGGET, SHAPE_GOLD_NUGGET, SHAPE_GOLD_NUGGET, SHAPE_GOLD_NUGGET,
+		SHAPE_GOLD_NUGGET, SHAPE_GOLD_NUGGET];
+	pouch_frames = [FRAME_FLOUNDER, FRAME_FLOUNDER, FRAME_FLOUNDER, FRAME_FLOUNDER, FRAME_FLOUNDER,
+		FRAME_FLOUNDER, 0, 0, 0, 1, 1, 1];
+	pouch_quantities = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1];
 	monster_equip = [SHAPE_HALBERD, leather_armor];
 	monster_qualities = [0, 0, 0, 0, 0, 0, 0];
-
-	var cyclops = monsterCreate(SHAPE_CYCLOPS, ID_MAGE_OR_GOON, [241, 1164, 0], EAST,
-			monster_stats, monster_equip, monster_qualities,
-			pouch_content, pouch_frames, pouch_quantities, pouch_qualities);
+	var cyclops = monsterCreate(SHAPE_CYCLOPS, ID_MAGE_OR_GOON,[241, 1164, 0], EAST, monster_stats,
+		monster_equip, monster_qualities, pouch_content, pouch_frames, pouch_quantities,
+		pouch_qualities);
 	cyclops->set_usecode_fun(registerDeathOfMageOrGoon);
-
 
 	//Create the fighter and his equipment:
 	monster_stats = [20, 18, 12, 20, 22];
-	pouch_content = [
-		SHAPE_GOLD_BAR, SHAPE_GOLD_COIN,
-		SHAPE_FOOD, SHAPE_FOOD, SHAPE_FOOD, SHAPE_FOOD,
-		SHAPE_FOOD, SHAPE_FOOD, SHAPE_BOTTLE, SHAPE_BOTTLE
-	];
-	pouch_frames = [
-		0, 7,
-		FRAME_APPLE, FRAME_APPLE, FRAME_CARROT, FRAME_CARROT,
-		FRAME_SAUSAGES, FRAME_MUTTON, 13, 13
-	];
-	pouch_quantities = [
-		1, 35,
-		1, 1, 1, 1,
-		1, 1, 1, 1
-	];
+	pouch_content = [SHAPE_GOLD_BAR, SHAPE_GOLD_COIN, SHAPE_FOOD, SHAPE_FOOD, SHAPE_FOOD,
+		SHAPE_FOOD, SHAPE_FOOD, SHAPE_FOOD, SHAPE_BOTTLE, SHAPE_BOTTLE];
+	pouch_frames = [0, 7, FRAME_APPLE, FRAME_APPLE, FRAME_CARROT, FRAME_CARROT, FRAME_SAUSAGES,
+		FRAME_MUTTON, 13, 13];
+	pouch_quantities = [1, 35, 1, 1, 1, 1, 1, 1, 1, 1];
 	monster_equip = [SHAPE_2H_SWORD, plate_armor];
 	monster_qualities = [0, 0, 0, 0, 0, 0, 0];
-
-	var fighter = monsterCreate(SHAPE_FIGHTER_MALE, ID_MAGE_OR_GOON, [240, 1177, 0], WEST,
-			monster_stats, monster_equip,  monster_qualities,
-			pouch_content, pouch_frames, pouch_quantities, pouch_qualities);
+	var fighter = monsterCreate(SHAPE_FIGHTER_MALE, ID_MAGE_OR_GOON,[240, 1177, 0], WEST,
+		monster_stats, monster_equip, monster_qualities, pouch_content, pouch_frames,
+		pouch_quantities, pouch_qualities);
 	fighter->set_usecode_fun(registerDeathOfMageOrGoon);
 }
 
 extern void deathOfJoneleth object#() ();
 
-var createLichAndGems () {
+var createLichAndGems() {
 	var gem_count;
 	var gem;
 	var counter;
-
 	var pouch;
 	var liche;
 	var egg;
@@ -313,7 +224,6 @@ var createLichAndGems () {
 	pouch = UI_create_new_object(SHAPE_BAG);
 	//Set pouch to temporary:
 	pouch->set_item_flag(TEMPORARY);
-
 	while (counter < gem_count) {
 		//Increment counter:
 		counter += 1;
@@ -344,8 +254,7 @@ var createLichAndGems () {
 	//Place him in WAIT mode:
 	liche->set_usecode_fun(deathOfJoneleth);
 	//Put him in the correct spot:
-	UI_update_last_created([0x717, 0x825,0x0]);
-
+	UI_update_last_created([0x717, 0x825, 0x0]);
 	var spell;
 	//Create firebolt spell:
 	spell = UI_create_new_object(SHAPE_FIREBOLT);
@@ -368,11 +277,10 @@ var createLichAndGems () {
 
 	//Make Joneleth face south:
 	script liche face south;
-
 	return liche;
 }
 
-void deleteNearbyEggs (var pos, var dist) {
+void deleteNearbyEggs(var pos, var dist) {
 	//Find all nearby eggs within dist of pos:
 	var eggs = pos->find_nearby(SHAPE_EGG, dist, MASK_EGG);
 	//Halt scripts for item:
@@ -386,7 +294,7 @@ void deleteNearbyEggs (var pos, var dist) {
 	}
 }
 
-var getQuestState () {
+var getQuestState() {
 	//Boring function that returns a number indicating the
 	//overall progress of the Keyring Quest:
 	if (gflags[MAGE_KILLED]) {
