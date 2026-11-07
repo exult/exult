@@ -1,4 +1,4 @@
-/* ScaleFX Vulkan acceleration using SDL 3.4's GPU renderer.
+/* GPU scalers using SDL 3.4's GPU renderer.
  * Copyright (C) 2026 Exult Team. GPL-2.0-or-later.
  * Shader algorithm attribution and MIT license: scale_scalefx.h.
  */
@@ -13,11 +13,24 @@
 #include <new>
 #include <vector>
 #if SDL_VERSION_ATLEAST(3, 4, 0)
-#	include "shaders/scalefx_spirv.h"
+#	include "scaler_shaders.h"
+#	include "shaders/scalers_hq_lut.h"
 #endif
 namespace ScaleFX {
+	enum class Algorithm {
+		ScaleFX,
+		HQ2x,
+		HQ3x,
+		HQ4x,
+		SaI,
+		SuperSaI,
+		SuperEagle,
+		XBR
+	};
+
 	class GPU {
 		[[maybe_unused]] SDL_Renderer* renderer;
+		Algorithm                      algorithm;
 		[[maybe_unused]] bool          failed = false;
 #if SDL_VERSION_ATLEAST(3, 4, 0)
 		SDL_GPUDevice*                          device  = nullptr;
@@ -28,6 +41,7 @@ namespace ScaleFX {
 		std::array<SDL_GPUTexture*, 5>          targets{};
 		SDL_GPUTexture*                         source   = nullptr;
 		SDL_GPUTexture*                         metrics  = nullptr;
+		SDL_GPUTexture*                         lookup   = nullptr;
 		SDL_GPUTransferBuffer*                  transfer = nullptr;
 		SDL_Texture*                            result   = nullptr;
 		int                                     width = 0, height = 0, factor = 0;
@@ -64,6 +78,10 @@ namespace ScaleFX {
 				SDL_ReleaseGPUTexture(device, metrics);
 			}
 			metrics = nullptr;
+			if (lookup) {
+				SDL_ReleaseGPUTexture(device, lookup);
+			}
+			lookup = nullptr;
 			if (transfer) {
 				SDL_ReleaseGPUTransferBuffer(device, transfer);
 			}
@@ -106,7 +124,7 @@ namespace ScaleFX {
 			height = h;
 			factor = f;
 			device = SDL_GetGPURendererDevice(renderer);
-			if (!device || !(SDL_GetGPUShaderFormats(device) & SDL_GPU_SHADERFORMAT_SPIRV)) {
+			if (!device || !(SDL_GetGPUShaderFormats(device) & Shaders::native_format)) {
 				return false;
 			}
 			SDL_GPUSamplerCreateInfo si{};
@@ -124,7 +142,16 @@ namespace ScaleFX {
 			SDL_GPUTransferBufferCreateInfo ti{};
 			ti.usage = SDL_GPU_TRANSFERBUFFERUSAGE_UPLOAD;
 			ti.size  = Uint32(size_t(w) * size_t(h) * 4 + 256 * 256 * sizeof(float));
-			metrics  = texture(SDL_GPU_TEXTUREFORMAT_R32_FLOAT, SDL_GPU_TEXTUREUSAGE_SAMPLER, 256, 256);
+			metrics  = algorithm == Algorithm::ScaleFX
+							   ? texture(SDL_GPU_TEXTUREFORMAT_R32_FLOAT, SDL_GPU_TEXTUREUSAGE_SAMPLER, 256, 256)
+							   : texture(SDL_GPU_TEXTUREFORMAT_R8G8B8A8_UNORM, SDL_GPU_TEXTUREUSAGE_SAMPLER, 256, 1);
+			if (algorithm != Algorithm::ScaleFX) {
+				ti.size += sizeof(Shaders::hq_lookup);
+				lookup = texture(SDL_GPU_TEXTUREFORMAT_R16_UINT, SDL_GPU_TEXTUREUSAGE_SAMPLER, 512, 384);
+				if (!lookup) {
+					return false;
+				}
+			}
 			if (!metrics) {
 				return false;
 			}
@@ -133,8 +160,10 @@ namespace ScaleFX {
 				return false;
 			}
 			for (int i = 0; i < 5; ++i) {
-				const auto format  = (i == 0 || i == 1 || i == 3) ? SDL_GPU_TEXTUREFORMAT_R32G32B32A32_FLOAT
-																  : SDL_GPU_TEXTUREFORMAT_R8G8B8A8_UNORM;
+				const auto format  = i == 4                            ? SDL_GPU_TEXTUREFORMAT_R8G8B8A8_UNORM
+									 : algorithm != Algorithm::ScaleFX ? SDL_GPU_TEXTUREFORMAT_R32G32B32A32_UINT
+									 : (i == 0 || i == 1 || i == 3)    ? SDL_GPU_TEXTUREFORMAT_R32G32B32A32_FLOAT
+																	   : SDL_GPU_TEXTUREFORMAT_R8G8B8A8_UNORM;
 				targets[size_t(i)] = texture(
 						format, SDL_GPU_TEXTUREUSAGE_COLOR_TARGET | SDL_GPU_TEXTUREUSAGE_SAMPLER, i == 4 ? w * f : w,
 						i == 4 ? h * f : h);
@@ -142,44 +171,39 @@ namespace ScaleFX {
 					return false;
 				}
 			}
-			SDL_GPUShaderCreateInfo vi{};
-			vi.code       = reinterpret_cast<const Uint8*>(Shaders::passvertex);
-			vi.code_size  = sizeof(Shaders::passvertex);
-			vi.entrypoint = "main";
-			vi.format     = SDL_GPU_SHADERFORMAT_SPIRV;
-			vi.stage      = SDL_GPU_SHADERSTAGE_VERTEX;
-			vertex        = SDL_CreateGPUShader(device, &vi);
+			vertex = Shaders::create(device, Shaders::code(Shaders::passvertex), SDL_GPU_SHADERSTAGE_VERTEX, 0, 0);
 			if (!vertex) {
 				return false;
 			}
-			const uint32_t* code[] = {Shaders::pass0, Shaders::pass1, Shaders::pass2, Shaders::pass3, Shaders::pass4};
-			const size_t    length[]
-					= {sizeof(Shaders::pass0), sizeof(Shaders::pass1), sizeof(Shaders::pass2), sizeof(Shaders::pass3),
-					   sizeof(Shaders::pass4)};
-			for (int i = 0; i < 5; ++i) {
-				SDL_GPUShaderCreateInfo info{};
-				info.code                = reinterpret_cast<const Uint8*>(code[i]);
-				info.code_size           = length[i];
-				info.entrypoint          = "main";
-				info.format              = SDL_GPU_SHADERFORMAT_SPIRV;
-				info.stage               = SDL_GPU_SHADERSTAGE_FRAGMENT;
-				info.num_samplers        = (i == 0 || i == 2 || i == 4) ? 2 : 1;
-				info.num_uniform_buffers = 1;
-				shaders[size_t(i)]       = SDL_CreateGPUShader(device, &info);
-				if (!shaders[size_t(i)]) {
+			const Shaders::Code code[]
+					= {Shaders::code(Shaders::pass0), Shaders::code(Shaders::pass1), Shaders::code(Shaders::pass2),
+					   Shaders::code(Shaders::pass3), Shaders::code(Shaders::pass4)};
+			for (int i = 0; i < (algorithm == Algorithm::ScaleFX ? 5 : 2); ++i) {
+				const auto   shader_code = algorithm == Algorithm::ScaleFX ? code[i]
+										   : i == 0                        ? Shaders::code(Shaders::scalers)
+																		   : Shaders::code(Shaders::scalersoutput);
+				const Uint32 samplers = algorithm == Algorithm::ScaleFX ? ((i == 0 || i == 2 || i == 4) ? 2 : 1) : i == 0 ? 3 : 4;
+				shaders[i]            = Shaders::create(device, shader_code, SDL_GPU_SHADERSTAGE_FRAGMENT, samplers, 1);
+				if (!shaders[i]) {
 					return false;
 				}
-				SDL_GPUColorTargetDescription target{};
-				target.format = (i == 0 || i == 1 || i == 3) ? SDL_GPU_TEXTUREFORMAT_R32G32B32A32_FLOAT
-															 : SDL_GPU_TEXTUREFORMAT_R8G8B8A8_UNORM;
+				SDL_GPUColorTargetDescription descriptions[4]{};
+				const Uint32                  count = algorithm != Algorithm::ScaleFX && i == 0 ? 4 : 1;
+				for (Uint32 k = 0; k < count; ++k) {
+					descriptions[k].format = algorithm == Algorithm::ScaleFX
+													 ? ((i == 0 || i == 1 || i == 3) ? SDL_GPU_TEXTUREFORMAT_R32G32B32A32_FLOAT
+																					 : SDL_GPU_TEXTUREFORMAT_R8G8B8A8_UNORM)
+											 : i == 0 ? SDL_GPU_TEXTUREFORMAT_R32G32B32A32_UINT
+													  : SDL_GPU_TEXTUREFORMAT_R8G8B8A8_UNORM;
+				}
 				SDL_GPUGraphicsPipelineCreateInfo pi{};
 				pi.vertex_shader                         = vertex;
-				pi.fragment_shader                       = shaders[size_t(i)];
+				pi.fragment_shader                       = shaders[i];
 				pi.primitive_type                        = SDL_GPU_PRIMITIVETYPE_TRIANGLELIST;
-				pi.target_info.num_color_targets         = 1;
-				pi.target_info.color_target_descriptions = &target;
-				pipelines[size_t(i)]                     = SDL_CreateGPUGraphicsPipeline(device, &pi);
-				if (!pipelines[size_t(i)]) {
+				pi.target_info.num_color_targets         = count;
+				pi.target_info.color_target_descriptions = descriptions;
+				pipelines[i]                             = SDL_CreateGPUGraphicsPipeline(device, &pi);
+				if (!pipelines[i]) {
 					return false;
 				}
 			}
@@ -202,7 +226,11 @@ namespace ScaleFX {
 		}
 #endif
 	public:
-		explicit GPU(SDL_Renderer* r) : renderer(r) {}
+		explicit GPU(SDL_Renderer* r, Algorithm a = Algorithm::ScaleFX) : renderer(r), algorithm(a) {}
+
+		Algorithm method() const {
+			return algorithm;
+		}
 
 		GPU(const GPU&)            = delete;
 		GPU& operator=(const GPU&) = delete;
@@ -219,7 +247,7 @@ namespace ScaleFX {
 				return false;
 			}
 			auto* d = SDL_GetGPURendererDevice(r);
-			return d && (SDL_GetGPUShaderFormats(d) & SDL_GPU_SHADERFORMAT_SPIRV);
+			return d && (SDL_GetGPUShaderFormats(d) & Shaders::native_format);
 #else
 			(void)r;
 			return false;
@@ -245,15 +273,19 @@ namespace ScaleFX {
 
 		// Dirty is an output-damage rectangle in source coordinates; caller must
 		// expand actual source edits by six pixels, as for the CPU implementation.
-		bool update(SDL_Surface* input, SDL_Rect dirty, int f) {
+		bool update(SDL_Surface* input, SDL_Rect dirty, int f, SDL_Rect content = {0, 0, 0, 0}, SDL_Point origin = {-1, -1}) {
 #if SDL_VERSION_ATLEAST(3, 4, 0)
 			if (failed || !available(renderer)) {
 				return false;
 			}
-			if (!input || input->format != SDL_PIXELFORMAT_INDEX8 || (f != 3 && f != 4 && f != 6)) {
+			if (!input || input->format != SDL_PIXELFORMAT_INDEX8
+				|| (algorithm == Algorithm::ScaleFX ? (f != 3 && f != 4 && f != 6) : (f < 2 || f > 4))) {
 				return false;
 			}
 
+			if (origin.x < 0 || origin.y < 0) {
+				origin = {dirty.x, dirty.y};
+			}
 			bool ok = false;
 			try {
 				ok = [&] {
@@ -309,7 +341,7 @@ namespace ScaleFX {
 								mapped + size_t(y * width + input_area.x) * 4, upload.data() + size_t(y * width + input_area.x),
 								size_t(input_area.w) * 4);
 					}
-					if (changed) {
+					if (changed && algorithm == Algorithm::ScaleFX) {
 						auto* distances = mapped + size_t(width) * size_t(height) * 4;
 						for (size_t a = 0; a < 256; ++a) {
 							for (size_t b = 0; b <= a; ++b) {
@@ -322,6 +354,22 @@ namespace ScaleFX {
 							}
 						}
 						SDL_memcpy(distances, this->distances.data(), 256 * 256 * sizeof(float));
+					}
+					const size_t palette_offset = size_t(width) * height * 4;
+					if (algorithm != Algorithm::ScaleFX) {
+						if (changed) {
+							auto* dst = mapped + palette_offset;
+							for (size_t i = 0; i < 256; ++i) {
+								auto        c       = palette[i];
+								const Uint8 bytes[] = {c.r, c.g, c.b, 255};
+								SDL_memcpy(dst + i * 4, bytes, 4);
+							}
+						}
+						if (!initialized) {
+							SDL_memcpy(
+									mapped + palette_offset + 256 * 256 * sizeof(float), Shaders::hq_lookup,
+									sizeof(Shaders::hq_lookup));
+						}
 					}
 					SDL_UnmapGPUTransferBuffer(device, transfer);
 					auto* commands = SDL_AcquireGPUCommandBuffer(device);
@@ -351,14 +399,73 @@ namespace ScaleFX {
 						mt.transfer_buffer = transfer;
 						mt.offset          = Uint32(size_t(width) * size_t(height) * 4);
 						mt.pixels_per_row  = 256;
-						mt.rows_per_layer  = 256;
+						mt.rows_per_layer  = algorithm == Algorithm::ScaleFX ? 256 : 1;
 						SDL_GPUTextureRegion mr{};
 						mr.texture = metrics;
-						mr.w = mr.h = 256;
-						mr.d        = 1;
+						mr.w       = 256;
+						mr.h       = algorithm == Algorithm::ScaleFX ? 256 : 1;
+						mr.d       = 1;
 						SDL_UploadToGPUTexture(copy, &mt, &mr, false);
 					}
+					if (algorithm != Algorithm::ScaleFX && !initialized) {
+						SDL_GPUTextureTransferInfo lt{};
+						lt.transfer_buffer = transfer;
+						lt.offset          = Uint32(palette_offset + 256 * 256 * sizeof(float));
+						lt.pixels_per_row  = 512;
+						lt.rows_per_layer  = 384;
+						SDL_GPUTextureRegion lr{};
+						lr.texture = lookup;
+						lr.w       = 512;
+						lr.h       = 384;
+						lr.d       = 1;
+						SDL_UploadToGPUTexture(copy, &lt, &lr, false);
+					}
 					SDL_EndGPUCopyPass(copy);
+					if (algorithm != Algorithm::ScaleFX) {
+						if (content.w <= 0 || content.h <= 0) {
+							content = {0, 0, width, height};
+						}
+						const int params[] = {width, height, f, int(algorithm), width, content.y + content.h, origin.x, origin.y};
+						for (int stage = 0; stage < 2; ++stage) {
+							SDL_GPUColorTargetInfo colours[4]{};
+							const int              count = stage == 0 ? 4 : 1;
+							for (int k = 0; k < count; ++k) {
+								colours[k].texture  = targets[stage == 0 ? k : 4];
+								colours[k].load_op  = initialized ? SDL_GPU_LOADOP_LOAD : SDL_GPU_LOADOP_DONT_CARE;
+								colours[k].store_op = SDL_GPU_STOREOP_STORE;
+							}
+							auto* pass = SDL_BeginGPURenderPass(commands, colours, count, nullptr);
+							if (!pass) {
+								SDL_CancelGPUCommandBuffer(commands);
+								return false;
+							}
+							SDL_BindGPUGraphicsPipeline(pass, pipelines[stage]);
+							SDL_GPUTextureSamplerBinding bindings[4]{};
+							if (stage == 0) {
+								bindings[0] = {source, sampler};
+								bindings[1] = {metrics, sampler};
+								bindings[2] = {lookup, sampler};
+							} else {
+								for (int k = 0; k < 4; ++k) {
+									bindings[k] = {targets[k], sampler};
+								}
+							}
+							SDL_BindGPUFragmentSamplers(pass, 0, bindings, stage == 0 ? 3 : 4);
+							SDL_PushGPUFragmentUniformData(commands, 0, params, sizeof params);
+							const int       multiplier = stage == 0 ? 1 : f;
+							SDL_GPUViewport viewport{0, 0, float(width * multiplier), float(height * multiplier), 0, 1};
+							SDL_SetGPUViewport(pass, &viewport);
+							SDL_Rect clip{dirty.x * multiplier, dirty.y * multiplier, dirty.w * multiplier, dirty.h * multiplier};
+							SDL_SetGPUScissor(pass, &clip);
+							SDL_DrawGPUPrimitives(pass, 3, 1, 0, 0);
+							SDL_EndGPURenderPass(pass);
+						}
+						if (!SDL_SubmitGPUCommandBuffer(commands)) {
+							return false;
+						}
+						initialized = true;
+						return true;
+					}
 					const int params[] = {width, height, f, -1};
 					for (int i = 0; i < 5; ++i) {
 						const int halo = i == 0 ? 5 : i == 1 ? 4 : i == 2 ? 3 : 0;
@@ -402,11 +509,11 @@ namespace ScaleFX {
 					return true;
 				}();
 			} catch (const std::bad_alloc&) {
-				SDL_SetError("ScaleFX GPU upload allocation failed");
+				SDL_SetError("GPU scaler upload allocation failed");
 			}
 			if (!ok) {
 				failed = true;
-				SDL_Log("ScaleFX GPU unavailable; using CPU: %s", SDL_GetError());
+				SDL_Log("GPU scaler unavailable; using CPU: %s", SDL_GetError());
 				release();
 				std::vector<uint32_t>().swap(upload);
 			}
@@ -415,6 +522,8 @@ namespace ScaleFX {
 			(void)input;
 			(void)dirty;
 			(void)f;
+			(void)content;
+			(void)origin;
 			return false;
 #endif
 		}

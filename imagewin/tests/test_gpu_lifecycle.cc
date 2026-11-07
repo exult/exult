@@ -11,7 +11,7 @@ public:
 	using Image_window8::Image_window8;
 
 	bool enabled() const {
-		return scalefx_gpu_allowed();
+		return gpu_scalers_allowed();
 	}
 
 	bool gpu() const {
@@ -25,10 +25,17 @@ int main() {
 			throw std::runtime_error(SDL_GetError());
 		}
 		config = new Configuration;
-		config->set("config/video/scalefx_gpu", "auto", false);
+		config->set("config/video/scaler_gpu", "auto", false);
 		config->set("config/video/vsync", 0, false);
-		{
-			Window window(128, 96, 32, 24, 4, false, Image_window::ScaleFX, Image_window::Fit, Image_window::point);
+		for (const char* name :
+			 {"ScaleFX", "Hq2x", "Hq3x", "Hq4x", "2xSaI", "Super2xSaI", "SuperEagle", "2xBR", "3xBR", "4xBR", "Point"}) {
+			const int         method = Image_window::get_scaler_for_name(name);
+			const std::string label  = name;
+			const int         factor
+					= (label == "Hq2x" || label == "2xSaI" || label == "Super2xSaI" || label == "SuperEagle" || label == "2xBR") ? 2
+					  : (label == "Hq3x" || label == "3xBR") ? 3
+															 : 4;
+			Window window(128, 96, 32, 24, factor, false, method, Image_window::Fit, Image_window::point);
 			window.clear_clip();
 			if (!window.gpu()) {
 				throw std::runtime_error("No GPU renderer");
@@ -50,7 +57,8 @@ int main() {
 			if (!window.enabled()) {
 				throw std::runtime_error("Scene permanently disabled GPU acceleration");
 			}
-			window.set_ui_config(32, 24, Image_window::ScaleFX, Image_window::Fit, Image_window::point);
+			window.set_ui_config(
+					32, 24, label == "Point" ? int(Image_window::ScaleFX) : method, Image_window::Fit, Image_window::point);
 			int   layer  = window.create_layer("Lifecycle UI", 16, 12);
 			auto* pixels = window.get_layer_ibuf(layer);
 			pixels->fill8(255);
@@ -65,7 +73,7 @@ int main() {
 		delete config;
 		config = nullptr;
 		SDL_Quit();
-		std::cout << "GPU world -> scene -> transparent UI transition passed\n";
+		std::cout << "GPU scaler world -> scene -> transparent UI transitions and runtime UI selection passed\n";
 		return 0;
 	} catch (const std::exception& e) {
 		std::cerr << e.what() << '\n';

@@ -655,13 +655,15 @@ bool Image_window::create_scale_surfaces(int w, int h, int bpp) {
 	}
 	std::string gpu_mode;
 	config->value("config/video/scalefx_gpu", gpu_mode, "auto");
-	scalefx_gpu_enabled = gpu_mode != "no" && gpu_mode != "off" && gpu_mode != "0";
-	scalefx_gpu_world_failed = false;
+	config->value("config/video/scaler_gpu", gpu_mode, gpu_mode);
+	scaler_gpu_enabled      = gpu_mode != "no" && gpu_mode != "off" && gpu_mode != "0";
+	scaler_gpu_world_failed = false;
 	if (screen_renderer == nullptr) {
 #if SDL_VERSION_ATLEAST(3, 4, 0)
 		const char* requested_driver = SDL_GetHint(SDL_HINT_RENDER_DRIVER);
-		if (scaler == ScaleFX && scalefx_gpu_enabled
-			&& (!requested_driver || !*requested_driver || SDL_strcmp(requested_driver, "gpu") == 0)) {
+		// Keep the GPU renderer available when a scaler is selected later in
+		// UI Options; Point and the CPU scalers use the same SDL renderer API.
+		if (scaler_gpu_enabled && (!requested_driver || !*requested_driver || SDL_strcmp(requested_driver, "gpu") == 0)) {
 			screen_renderer = SDL_CreateGPURenderer(nullptr, screen_window);
 			if (screen_renderer && !::ScaleFX::GPU::available(screen_renderer)) {
 				SDL_DestroyRenderer(screen_renderer);
@@ -670,17 +672,17 @@ bool Image_window::create_scale_surfaces(int w, int h, int bpp) {
 			if (screen_renderer) {
 				auto*      device     = SDL_GetGPURendererDevice(screen_renderer);
 				const auto properties = SDL_GetGPUDeviceProperties(device);
-				SDL_Log("ScaleFX: SDL GPU renderer enabled (%s)",
+				SDL_Log("Scalers: SDL GPU renderer enabled (%s)",
 						SDL_GetStringProperty(properties, SDL_PROP_GPU_DEVICE_NAME_STRING, "unknown device"));
 			} else {
-				SDL_Log("ScaleFX: GPU renderer unavailable, using CPU: %s", SDL_GetError());
+				SDL_Log("Scalers: GPU renderer unavailable, using CPU: %s", SDL_GetError());
 				SDL_ClearError();
 			}
 		}
 #endif
 #if !SDL_VERSION_ATLEAST(3, 4, 0)
-		if (scaler == ScaleFX && scalefx_gpu_enabled) {
-			SDL_Log("ScaleFX: GPU acceleration requires SDL 3.4+; using CPU");
+		if (gpu_scaler_method(scaler) >= 0 && scaler_gpu_enabled) {
+			SDL_Log("Scalers: GPU acceleration requires SDL 3.4+; using CPU");
 		}
 #endif
 		if (!screen_renderer) {
@@ -1007,7 +1009,7 @@ void Image_window::show(int x, int y, int w, int h) {
 	if (h + y > buffer_h) {
 		h = buffer_h - y;
 	}
-	if (show_scalefx_gpu(x, y, w, h)) {
+	if (show_scaled_gpu(x, y, w, h)) {
 		return;
 	}
 	if (scalefx_gpu) {
@@ -2259,11 +2261,11 @@ void Image_window::composite_layers() {
 			layer.dirty = false;
 		}
 		SDL_Texture* display_texture = layer.texture;
-		if (scalefx_gpu_enabled && layer.is_opaque() && eff_ui_scaler(cfg) == ScaleFX && layer.scalefx_gpu
+		if (scaler_gpu_enabled && layer.is_opaque() && gpu_scaler_method(eff_ui_scaler(cfg)) >= 0 && layer.scalefx_gpu
 			&& layer.scalefx_gpu->output()) {
 			display_texture = layer.scalefx_gpu->output();
 		}
-		if (scalefx_gpu_enabled && !layer.is_opaque() && eff_ui_scaler(cfg) == ScaleFX && layer.scalefx_ui_gpu
+		if (scaler_gpu_enabled && !layer.is_opaque() && gpu_scaler_method(eff_ui_scaler(cfg)) >= 0 && layer.scalefx_ui_gpu
 			&& layer.scalefx_ui_gpu->output()) {
 			display_texture = layer.scalefx_ui_gpu->output();
 		}
@@ -2431,9 +2433,10 @@ void Image_window::show_scaled8to32_ScaleFX(int x, int y, int w, int h) {
 
 // The GPU path writes the existing world-cache texture directly. Composition,
 // screenshots, overlay ordering and final presentation remain in UpdateRect.
-bool Image_window::show_scalefx_gpu(int x, int y, int w, int h) {
-	if (!scalefx_gpu_enabled || scalefx_gpu_world_failed || scaler != ScaleFX || !::ScaleFX::GPU::available(screen_renderer)
-		|| ibuf->width + 2 * guard_band != draw_surface->w || ibuf->height + 2 * guard_band != draw_surface->h) {
+bool Image_window::show_scaled_gpu(int x, int y, int w, int h) {
+	if (!scaler_gpu_enabled || scaler_gpu_world_failed || gpu_scaler_method(scaler) < 0
+		|| !::ScaleFX::GPU::available(screen_renderer) || ibuf->width + 2 * guard_band != draw_surface->w
+		|| ibuf->height + 2 * guard_band != draw_surface->h) {
 		return false;
 	}
 	// Custom legacy fill scalers retain their CPU semantics. The video menu
@@ -2442,7 +2445,8 @@ bool Image_window::show_scalefx_gpu(int x, int y, int w, int h) {
 		return false;
 	}
 	if (!scalefx_gpu) {
-		scalefx_gpu = std::make_unique<::ScaleFX::GPU>(screen_renderer);
+		scalefx_gpu
+				= std::make_unique<::ScaleFX::GPU>(screen_renderer, static_cast<::ScaleFX::Algorithm>(gpu_scaler_method(scaler)));
 	}
 	const bool first_frame = scalefx_gpu->output() == nullptr;
 	SDL_Rect   damage{x + guard_band, y + guard_band, w, h};
@@ -2454,12 +2458,14 @@ bool Image_window::show_scalefx_gpu(int x, int y, int w, int h) {
 		damage.y = 0;
 		damage.h += guard_band;
 	}
-	if (!scalefx_gpu->update(draw_surface, damage, scale)) {
-		scalefx_gpu_world_failed = true;
+	if (!scalefx_gpu->update(
+				draw_surface, damage, scale, {guard_band, guard_band, ibuf->width, ibuf->height},
+				{x + guard_band, y + guard_band})) {
+		scaler_gpu_world_failed = true;
 		return false;
 	}
 	if (first_frame) {
-		SDL_Log("ScaleFX: GPU shaders active at %dx", scale);
+		SDL_Log("%s: GPU shaders active at %dx", get_name_for_scaler(scaler), scale);
 	}
 	auto* frame = scalefx_gpu->output();
 	if (!frame) {
@@ -2478,8 +2484,8 @@ bool Image_window::show_scalefx_gpu(int x, int y, int w, int h) {
 			= SDL_SetRenderTarget(screen_renderer, screen_texture_a) && SDL_RenderTexture(screen_renderer, frame, &source, &full);
 	SDL_SetRenderTarget(screen_renderer, saved);
 	if (!ok) {
-		scalefx_gpu_world_failed = true;
-		SDL_Log("ScaleFX world GPU copy failed; using CPU: %s", SDL_GetError());
+		scaler_gpu_world_failed = true;
+		SDL_Log("World GPU scaler copy failed; using CPU: %s", SDL_GetError());
 		SDL_ClearError();
 		return false;
 	}
@@ -2487,13 +2493,47 @@ bool Image_window::show_scalefx_gpu(int x, int y, int w, int h) {
 	return true;
 }
 
+int Image_window::gpu_scaler_method(int method) {
+	if (method < 0) {
+		return -1;
+	}
+	if (method == ScaleFX) {
+		return 0;
+	}
+	if (method == Hq2x) {
+		return 1;
+	}
+	if (method == Hq3x) {
+		return 2;
+	}
+	if (method == Hq4x) {
+		return 3;
+	}
+	if (method == SaI) {
+		return 4;
+	}
+	if (method == Super2xSaI) {
+		return 5;
+	}
+	if (method == SuperEagle) {
+		return 6;
+	}
+	if (method == _2xBR || method == _3xBR || method == _4xBR) {
+		return 7;
+	}
+	return -1;
+}
+
 bool Image_window::scale_layer_gpu(Layer& layer, SDL_Surface* source, int factor) {
-	if (!scalefx_gpu_enabled || !layer.is_opaque() || eff_ui_scaler(get_ui_cfg(layer.ui_kind)) != ScaleFX
+	if (!scaler_gpu_enabled || !layer.is_opaque() || gpu_scaler_method(eff_ui_scaler(get_ui_cfg(layer.ui_kind))) < 0
 		|| !::ScaleFX::GPU::available(screen_renderer)) {
 		return false;
 	}
-	if (!layer.scalefx_gpu) {
-		layer.scalefx_gpu = std::make_unique<::ScaleFX::GPU>(screen_renderer);
+	const auto method = static_cast<::ScaleFX::Algorithm>(gpu_scaler_method(eff_ui_scaler(get_ui_cfg(layer.ui_kind))));
+	if (!layer.scalefx_gpu || layer.scalefx_gpu->method() != method) {
+		layer.scalefx_gpu = std::make_unique<::ScaleFX::GPU>(screen_renderer, method);
 	}
-	return layer.scalefx_gpu->update(source, {0, 0, source->w, source->h}, factor);
+	return layer.scalefx_gpu->update(
+			source, {0, 0, source->w, source->h}, factor, {guard_band, guard_band, layer.logw, layer.logh},
+			{guard_band, guard_band});
 }

@@ -1194,6 +1194,8 @@
 					The scalers also work with higher resolutions than 320x200. To change the
 					scaling method either use the <Exult/> menu or change your exult.cfg -
 					see <ref target="exult_config"/>.
+					With SDL 3.4 or later, demanding scalers use GPU acceleration where available,
+					including UI layers. Set <strong>scaler_gpu</strong> to <strong>no</strong> to use the CPU.
 				</para>
 				<ul>
 					<li><strong>Point</strong><br/>
@@ -1220,16 +1222,8 @@
 						High quality scaler, that uses a lot of CPU cycles. Only 2x.</li>
 					<li><strong>HQ3X</strong><br/>
 						High quality scaler, that uses a lot of CPU cycles. Only 3x.</li>
-					<li><strong>ScaleFX</strong> by Sp00kyFox<br/>
-						Edge-aware pixel-art scaling at 3x, 4x, or 6x, preserving the original colours.
-						The original 3x shader output is preserved; 4x and 6x rasterize native diagonal contours.
-						Select ScaleFX in Video Options, or set <strong>scale_method</strong>
-						to <strong>ScaleFX</strong> and <strong>scale</strong> to <strong>3</strong>, <strong>4</strong>, or <strong>6</strong>
-						in exult.cfg. UI layer scalers inherit the selected factor, defaulting to 3x when unsupported.<br/>
-						With SDL 3.4 and a Vulkan driver, GPU scaling is used automatically for the world
-						and UI layers, including transparent overlays. Set <strong>scalefx_gpu</strong> to <strong>no</strong> under
-						<strong>video</strong> to force CPU scaling. Older SDL versions and unavailable
-						GPU support fall back to CPU.</li>
+					<li><strong>ScaleFX</strong><br/>
+						Edge-directed scaler with smooth diagonal contours. Supports 3x, 4x and 6x.</li>
 					<li><strong>HQ4X</strong><br/>
 						High quality scaler, that uses a *lot* of CPU cycles. Only 4x.</li>
 					<li><strong>2xBR</strong><br/>
@@ -2518,6 +2512,10 @@
 							<configtag name="scale_method">
 								2xSaI
 							<comment>**choose different scalers here - see <ref target="scaler"/> - applies to fullscreen if video settings are not shared.</comment>
+							</configtag>
+							<configtag name="scaler_gpu">
+								auto
+							<comment>**auto enables GPU acceleration for supported scalers; no uses the CPU.</comment>
 							</configtag>
 							<configtag name="scale">
 								2

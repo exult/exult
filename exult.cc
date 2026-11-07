@@ -3258,6 +3258,11 @@ void setup_video(
 		config->set((vidStr + "/fill_mode").c_str(), fmode_string, false);
 		config->set((vidStr + "/fill_scaler").c_str(), fillScalerName, false);
 	}
+	if (!config->key_exists("config/video/scaler_gpu")) {
+		std::string mode;
+		config->value("config/video/scalefx_gpu", mode, "auto");
+		config->set("config/video/scaler_gpu", mode, false);
+	}
 	if (video_init) {
 #ifdef DEBUG
 		cout << "Initializing Game_window to " << resx << " resX, " << resy << " resY, " << gw << " gameW, " << gh << " gameH, "

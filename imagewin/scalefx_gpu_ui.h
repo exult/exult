@@ -8,6 +8,7 @@
 namespace ScaleFX {
 	class UIGPU {
 		SDL_Renderer* renderer;
+		Algorithm     algorithm;
 #if SDL_VERSION_ATLEAST(3, 4, 0)
 		SDL_GPUDevice*                          device = nullptr;
 		std::array<std::unique_ptr<GPU>, 3>     colours;
@@ -110,7 +111,7 @@ namespace ScaleFX {
 				return false;
 			}
 			for (auto& c : colours) {
-				c = std::make_unique<GPU>(renderer);
+				c = std::make_unique<GPU>(renderer, algorithm);
 			}
 			palette = texture(256, 1);
 			final   = texture(width * f, height * f);
@@ -143,28 +144,13 @@ namespace ScaleFX {
 			if (!sampler) {
 				return false;
 			}
-			SDL_GPUShaderCreateInfo vi{};
-			vi.code       = reinterpret_cast<const Uint8*>(Shaders::passvertex);
-			vi.code_size  = sizeof(Shaders::passvertex);
-			vi.entrypoint = "main";
-			vi.format     = SDL_GPU_SHADERFORMAT_SPIRV;
-			vi.stage      = SDL_GPU_SHADERSTAGE_VERTEX;
-			vertex        = SDL_CreateGPUShader(device, &vi);
+			vertex = Shaders::create(device, Shaders::code(Shaders::passvertex), SDL_GPU_SHADERSTAGE_VERTEX, 0, 0);
 			if (!vertex) {
 				return false;
 			}
-			const uint32_t* codes[] = {Shaders::passreduce, Shaders::passmatte};
-			const size_t    sizes[] = {sizeof(Shaders::passreduce), sizeof(Shaders::passmatte)};
+			const Shaders::Code codes[] = {Shaders::code(Shaders::passreduce), Shaders::code(Shaders::passmatte)};
 			for (int i = 0; i < 2; ++i) {
-				SDL_GPUShaderCreateInfo info{};
-				info.code                = reinterpret_cast<const Uint8*>(codes[i]);
-				info.code_size           = sizes[i];
-				info.entrypoint          = "main";
-				info.format              = SDL_GPU_SHADERFORMAT_SPIRV;
-				info.stage               = SDL_GPU_SHADERSTAGE_FRAGMENT;
-				info.num_samplers        = i == 0 ? 2 : 6;
-				info.num_uniform_buffers = 1;
-				shaders[i]               = SDL_CreateGPUShader(device, &info);
+				shaders[i] = Shaders::create(device, codes[i], SDL_GPU_SHADERSTAGE_FRAGMENT, i == 0 ? 2 : 6, 1);
 				if (!shaders[i]) {
 					return false;
 				}
@@ -214,7 +200,11 @@ namespace ScaleFX {
 		}
 #endif
 	public:
-		explicit UIGPU(SDL_Renderer* r) : renderer(r) {}
+		explicit UIGPU(SDL_Renderer* r, Algorithm a = Algorithm::ScaleFX) : renderer(r), algorithm(a) {}
+
+		Algorithm method() const {
+			return algorithm;
+		}
 
 		~UIGPU() {
 #if SDL_VERSION_ATLEAST(3, 4, 0)
@@ -239,7 +229,8 @@ namespace ScaleFX {
 				SDL_Surface* source, int f, int transparent, const std::array<SDL_Color, 256>& base,
 				const std::array<SDL_Color, 256>& original, SDL_Rect content) {
 #if SDL_VERSION_ATLEAST(3, 4, 0)
-			if (!source || source->format != SDL_PIXELFORMAT_INDEX8 || (f != 3 && f != 4 && f != 6) || transparent < 0
+			if (!source || source->format != SDL_PIXELFORMAT_INDEX8
+				|| (algorithm == Algorithm::ScaleFX ? (f != 3 && f != 4 && f != 6) : (f < 2 || f > 4)) || transparent < 0
 				|| transparent > 255) {
 				return false;
 			}
@@ -291,7 +282,7 @@ namespace ScaleFX {
 					for (int i = 0; i < 3; ++i) {
 						fills[transparent] = {Uint8(i == 0 ? 255 : 0), Uint8(i == 1 ? 255 : 0), Uint8(i == 2 ? 255 : 0), 255};
 						if (!SDL_SetPaletteColors(pal, fills.data(), 0, 256)
-							|| !colours[i]->update(view, {0, 0, width, height}, f)) {
+							|| !colours[i]->update(view, {0, 0, width, height}, f, content, {content.x, content.y})) {
 							return false;
 						}
 					}
@@ -361,7 +352,7 @@ namespace ScaleFX {
 			}
 			if (!ok) {
 				failed = true;
-				SDL_Log("ScaleFX UI GPU unavailable; using CPU: %s", SDL_GetError());
+				SDL_Log("UI GPU scaler unavailable; using CPU: %s", SDL_GetError());
 				release();
 			}
 			return ok;

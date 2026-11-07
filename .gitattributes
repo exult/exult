@@ -94,3 +94,6 @@ Makefile.am eol=lf
 Makefile.in eol=lf
 configure.ac eol=lf
 flx.in eol=lf
+
+imagewin/shaders/scalers_*.h linguist-generated=true
+imagewin/shaders/scalers.frag linguist-generated=true

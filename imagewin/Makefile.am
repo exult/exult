@@ -50,13 +50,27 @@ libimagewin_la_SOURCES += \
 	scale_scalefx.h \
 	scalefx_gpu.h \
 	scalefx_gpu_ui.h \
-	shaders/scalefx_spirv.h \
+	scaler_shaders.h \
+	shaders/scalers_spirv.h \
+	shaders/scalers_metal.h \
+	shaders/scalers_dxil.h \
+	shaders/scalers_hq_lut.h \
 	scale_xbr.cc \
 	scale_xbr.h
 endif
 endif
 
 EXTRA_DIST = \
+	tests/run_gpu_tests.sh \
+	shaders/LICENSE.scalers \
+	tests/test_gpu_lifecycle.cc \
+	tests/test_gpu_scalers.cc \
+	tests/scaler_reference.h \
+	tests/scaler_reference.cc \
+	tests/hq_reference.cc \
+	shaders/generate_scalers.py \
+	shaders/scalers.frag \
+	shaders/scalers-output.frag \
 	tests/test_scalefx_gpu_ui.cc \
 	shaders/scalefx-reduce.frag \
 	shaders/scalefx-matte.frag \
@@ -69,12 +83,8 @@ EXTRA_DIST = \
 	shaders/scalefx-4.frag \
 	shaders/compile_scalefx.py \
 	tests/test_scalefx_gpu.cc \
-	tests/scalefx-gpu.md \
-	tests/README.md \
 	tests/test_scalefx.cc \
 	tests/benchmark_scalefx.cc \
 	tests/compare_scalefx.py \
-	tests/scalefx-notes.md \
-	tests/scalefx-comparison.png \
 	tests/slopes-32-24.txt \
 	tests/noise-17-19.txt

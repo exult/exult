@@ -261,9 +261,9 @@ public:
 private:
 	std::unique_ptr<ScaleFX::Workspace>               scalefx_workspace;
 	std::unique_ptr<ScaleFX::GPU>                     scalefx_gpu;
-	bool                                              scalefx_gpu_enabled = true;
-	bool                                              scalefx_gpu_world_failed = false;
-	bool                                              show_scalefx_gpu(int x, int y, int w, int h);
+	bool                                              scaler_gpu_enabled      = true;
+	bool                                              scaler_gpu_world_failed = false;
+	bool                                              show_scaled_gpu(int x, int y, int w, int h);
 	static ScalerVector                               p_scalers;
 	static std::map<uint32, Image_window::Resolution> p_resolutions;
 	static bool                                       any_res_allowed;
@@ -455,9 +455,11 @@ protected:
 	// into a 32-bit destination surface, by temporarily repointing the
 	// scaling state.  Returns false if the current scaler can't be used this
 	// way (arb or SDL scaler).  Used to apply the game scaler to layers.
-	bool scale_layer_gpu(Layer& layer, SDL_Surface* source, int factor);
-	bool scalefx_gpu_allowed() const {
-		return scalefx_gpu_enabled;
+	static int gpu_scaler_method(int method);
+	bool       scale_layer_gpu(Layer& layer, SDL_Surface* source, int factor);
+
+	bool gpu_scalers_allowed() const {
+		return scaler_gpu_enabled;
 	}
 	bool scale_layer_color(const Layer& layer, struct SDL_Surface* src8, int logw, int logh, struct SDL_Surface* dst32);
 	// Free any GPU textures owned by layers (e.g. before the renderer is

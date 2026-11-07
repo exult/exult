@@ -1,5 +1,6 @@
 // GPU UI consensus matting versus the existing CPU algorithm, without game data.
 #include "imagewin/scalefx_gpu_ui.h"
+#include "scaler_reference.h"
 
 #include <chrono>
 #include <iostream>
@@ -28,9 +29,15 @@ static void compare(
 			packed[j] = (Uint32(c.r) << 16) | (Uint32(c.g) << 8) | c.b;
 		}
 		passes[i].resize(size_t(w * h));
-		ScaleFX::scale(
-				static_cast<const Uint8*>(source->pixels), source->pitch, source->w, source->h, 0, 0, source->w, source->h, rgb,
-				passes[i].data(), w, packed, f);
+		if (gpu.method() == ScaleFX::Algorithm::ScaleFX) {
+			ScaleFX::scale(
+					static_cast<const Uint8*>(source->pixels), source->pitch, source->w, source->h, 0, 0, source->w, source->h, rgb,
+					passes[i].data(), w, packed, f);
+		} else {
+			auto palette         = base;
+			palette[transparent] = {Uint8(i == 0 ? 255 : 0), Uint8(i == 1 ? 255 : 0), Uint8(i == 2 ? 255 : 0), 255};
+			scaler_reference(int(gpu.method()), source, content, f, passes[i], {palette});
+		}
 	}
 	bool needs3  = false;
 	auto channel = [](Uint32 p, int shift) {
@@ -182,52 +189,69 @@ int main(int argc, char**) {
 			return Uint8(random >> 24);
 		};
 		{
-			ScaleFX::UIGPU gpu(renderer);
-			for (int size : {1, 9, 32}) {
-				for (int f : {3, 4, 6}) {
-					for (int pattern = 0; pattern < 4; ++pattern) {
-						auto* source = SDL_CreateSurface(size + 4, size + 6, SDL_PIXELFORMAT_INDEX8);
-						require(source != nullptr, "source");
-						std::array<SDL_Color, 256> base, original;
-						int                        transparent = pattern == 3 ? 0 : 255;
-						for (int i = 0; i < 256; ++i) {
-							base[i]       = {next(), next(), next(), 255};
-							original[i]   = base[i];
-							original[i].a = next();
+			for (auto method :
+				 {ScaleFX::Algorithm::ScaleFX, ScaleFX::Algorithm::HQ2x, ScaleFX::Algorithm::HQ3x, ScaleFX::Algorithm::HQ4x,
+				  ScaleFX::Algorithm::SaI, ScaleFX::Algorithm::SuperSaI, ScaleFX::Algorithm::SuperEagle, ScaleFX::Algorithm::XBR}) {
+				ScaleFX::UIGPU gpu(renderer, method);
+				for (int size : {1, 9, 32}) {
+					for (int f : {2, 3, 4, 6}) {
+						if (method == ScaleFX::Algorithm::ScaleFX && f == 2) {
+							continue;
 						}
-						original[transparent] = {0, 0, 0, 0};
-						base[1]               = {255, 0, 0, 255};
-						base[2]               = {0, 255, 0, 255};
-						base[3]               = {0, 0, 255, 255};
-						original[1]           = base[1];
-						original[2]           = base[2];
-						original[3]           = base[3];
-						SDL_Rect content{2, 2, size, size + 2};
-						for (int frame = 0; frame < 3; ++frame) {
-							for (int y = 0; y < source->h; ++y) {
-								for (int x = 0; x < source->w; ++x) {
-									Uint8 index = pattern == 0   ? Uint8(transparent)
-												  : pattern == 1 ? Uint8(next() % 2 ? transparent : 1)
-												  : pattern == 2 ? Uint8(x > y ? transparent : 1 + (x + y) % 3)
-																 : next();
-									static_cast<Uint8*>(source->pixels)[y * source->pitch + x] = index;
-								}
+						if (method != ScaleFX::Algorithm::ScaleFX && f == 6) {
+							continue;
+						}
+						const int a = int(method);
+						if (a >= 1 && a <= 3 && f != a + 1) {
+							continue;
+						}
+						if (a >= 4 && a <= 6 && f != 2) {
+							continue;
+						}
+						for (int pattern = 0; pattern < 4; ++pattern) {
+							auto* source = SDL_CreateSurface(size + 4, size + 6, SDL_PIXELFORMAT_INDEX8);
+							require(source != nullptr, "source");
+							std::array<SDL_Color, 256> base, original;
+							int                        transparent = pattern == 3 ? 0 : 255;
+							for (int i = 0; i < 256; ++i) {
+								base[i]       = {next(), next(), next(), 255};
+								original[i]   = base[i];
+								original[i].a = next();
 							}
-							// Edits, palette animation and alpha-only changes on retained resources.
-							base[4]       = {next(), next(), next(), 255};
-							original[4]   = base[4];
-							original[4].a = next();
-							require(gpu.update(source, f, transparent, base, original, content), "GPU UI update");
-							compare(renderer, gpu, source, f, transparent, base, original, content);
-							// Repeated damage with unchanged pixels takes the cache
-							// path; alpha-only overrides must still invalidate it.
-							require(gpu.update(source, f, transparent, base, original, content), "cached UI update");
-							compare(renderer, gpu, source, f, transparent, base, original, content);
-							original[1].a = Uint8(original[1].a / 2);
-							require(gpu.update(source, f, transparent, base, original, content), "alpha-only UI update");
-							compare(renderer, gpu, source, f, transparent, base, original, content);
+							original[transparent] = {0, 0, 0, 0};
+							base[1]               = {255, 0, 0, 255};
+							base[2]               = {0, 255, 0, 255};
+							base[3]               = {0, 0, 255, 255};
+							original[1]           = base[1];
+							original[2]           = base[2];
+							original[3]           = base[3];
+							SDL_Rect content{2, 2, size, size + 2};
+							for (int frame = 0; frame < 3; ++frame) {
+								for (int y = 0; y < source->h; ++y) {
+									for (int x = 0; x < source->w; ++x) {
+										Uint8 index = pattern == 0   ? Uint8(transparent)
+													  : pattern == 1 ? Uint8(next() % 2 ? transparent : 1)
+													  : pattern == 2 ? Uint8(x > y ? transparent : 1 + (x + y) % 3)
+																	 : next();
+										static_cast<Uint8*>(source->pixels)[y * source->pitch + x] = index;
+									}
+								}
+								// Edits, palette animation and alpha-only changes on retained resources.
+								base[4]       = {next(), next(), next(), 255};
+								original[4]   = base[4];
+								original[4].a = next();
+								require(gpu.update(source, f, transparent, base, original, content), "GPU UI update");
+								compare(renderer, gpu, source, f, transparent, base, original, content);
+								// Repeated damage with unchanged pixels takes the cache
+								// path; alpha-only overrides must still invalidate it.
+								require(gpu.update(source, f, transparent, base, original, content), "cached UI update");
+								compare(renderer, gpu, source, f, transparent, base, original, content);
+								original[1].a = Uint8(original[1].a / 2);
+								require(gpu.update(source, f, transparent, base, original, content), "alpha-only UI update");
+								compare(renderer, gpu, source, f, transparent, base, original, content);
+							}
+							SDL_DestroySurface(source);
 						}
-						SDL_DestroySurface(source);
 					}
 				}
 			}
@@ -252,7 +276,7 @@ int main(int argc, char**) {
 		SDL_DestroyTexture(anchor);
 		SDL_DestroyRenderer(renderer);
 		SDL_Quit();
-		std::cout << "GPU UI 3x/4x/6x consensus, transparency, intrinsic alpha, palettes and resize agree with CPU\n";
+		std::cout << "GPU scaler UI consensus, transparency, intrinsic alpha, palettes and resize agree with CPU\n";
 		return 0;
 	} catch (const std::exception& e) {
 		std::cerr << e.what() << '\n';

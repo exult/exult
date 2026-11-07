@@ -392,10 +392,11 @@ bool Image_window8::refresh_layer_scaled(Layer& layer, int factor) {
 		return true;
 	}
 
-	if (!layer.is_opaque() && scalefx_gpu_allowed() && eff_ui_scaler(get_ui_cfg(layer.ui_kind)) == ScaleFX
+	if (!layer.is_opaque() && gpu_scalers_allowed() && gpu_scaler_method(eff_ui_scaler(get_ui_cfg(layer.ui_kind))) >= 0
 		&& ::ScaleFX::GPU::available(screen_renderer)) {
-		if (!layer.scalefx_ui_gpu) {
-			layer.scalefx_ui_gpu = std::make_unique<::ScaleFX::UIGPU>(screen_renderer);
+		const auto method = static_cast<::ScaleFX::Algorithm>(gpu_scaler_method(eff_ui_scaler(get_ui_cfg(layer.ui_kind))));
+		if (!layer.scalefx_ui_gpu || layer.scalefx_ui_gpu->method() != method) {
+			layer.scalefx_ui_gpu = std::make_unique<::ScaleFX::UIGPU>(screen_renderer, method);
 		}
 		std::array<SDL_Color, 256> base, original;
 		std::copy_n(cols, 256, base.begin());
@@ -406,7 +407,8 @@ bool Image_window8::refresh_layer_scaled(Layer& layer, int factor) {
 		const bool first = layer.scalefx_ui_gpu->output() == nullptr;
 		if (layer.scalefx_ui_gpu->update(lsurf, factor, transp, base, original, {guard_band, guard_band, logw, logh})) {
 			if (first) {
-				SDL_Log("ScaleFX: GPU UI shaders active at %dx (%s)", factor, layer.get_name().c_str());
+				SDL_Log("%s: GPU UI shaders active at %dx (%s)", get_name_for_scaler(eff_ui_scaler(get_ui_cfg(layer.ui_kind))),
+						factor, layer.get_name().c_str());
 			}
 			return true;
 		}

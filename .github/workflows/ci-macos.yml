@@ -83,6 +83,24 @@ jobs:
           export PATH="$(brew --prefix bison)/bin:$(brew --prefix flex)/bin:$(brew --prefix libxml2)/bin:$PATH"
           export PKG_CONFIG_PATH="$(brew --prefix zlib)/lib/pkgconfig:$(brew --prefix libxml2)/lib/pkgconfig:$(brew --prefix icu4c)/lib/pkgconfig"
           make -j3
+      - name: CPU and Metal scaler conformance
+        env:
+          SDL_GPU_DRIVER: metal
+          SDL_VIDEODRIVER: dummy
+        run: |
+          python3 - <<'PYMETAL'
+          from pathlib import Path
+          import re, subprocess, tempfile
+          text = Path("imagewin/shaders/scalers_metal.h").read_text()
+          with tempfile.TemporaryDirectory() as temporary:
+              modules = re.findall(r'inline constexpr char (\w+)\[\]=R"MSL\((.*?)\)MSL";', text, re.S)
+              assert len(modules) == 10, "Missing Metal shader assets"
+              for name, source in modules:
+                  path = Path(temporary) / (name + ".metal")
+                  path.write_text(source)
+                  subprocess.run(["xcrun", "-sdk", "macosx", "metal", "-std=metal2.1", "-c", str(path), "-o", str(path.with_suffix(".air"))], check=True)
+          PYMETAL
+          sh imagewin/tests/run_gpu_tests.sh --allow-no-gpu
   notify:
     if: ${{ always() }}
     needs:

@@ -127,18 +127,14 @@ jobs:
             CXX=${OVERRIDE_CXX} CC=${OVERRIDE_CC}
       - name: Build
         run: make -j 2
-      - name: ScaleFX CPU and Vulkan conformance
+      - name: CPU and Vulkan scaler conformance
         env:
           CXX: ${{ matrix.cxx }}
           SDL_VIDEODRIVER: offscreen
+          SDL_GPU_DRIVER: vulkan
         run: |
           export LD_LIBRARY_PATH="$(pkg-config --variable=libdir sdl3):${LD_LIBRARY_PATH:-}"
-          "${CXX}" -std=c++17 -O2 -I. imagewin/tests/test_scalefx.cc -o /tmp/test-scalefx
-          /tmp/test-scalefx
-          "${CXX}" -std=c++17 -O2 -I. imagewin/tests/test_scalefx_gpu.cc $(pkg-config --cflags --libs sdl3) -o /tmp/test-scalefx-gpu
-          /tmp/test-scalefx-gpu
-          "${CXX}" -std=c++17 -O2 -I. imagewin/tests/test_scalefx_gpu_ui.cc $(pkg-config --cflags --libs sdl3) -o /tmp/test-scalefx-gpu-ui
-          /tmp/test-scalefx-gpu-ui
+          sh imagewin/tests/run_gpu_tests.sh
   notify:
     if: ${{ always() }}
     needs:

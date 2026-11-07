@@ -94,6 +94,11 @@ jobs:
           "/c/Program Files (x86)/Inno Setup 6/ISCC.exe" -DMINGW_SYS=${{ matrix.sys }} exult_studio_installer.iss
           "/c/Program Files (x86)/Inno Setup 6/ISCC.exe" -DMINGW_SYS=${{ matrix.sys }} exult_tools_installer.iss
           "/c/Program Files (x86)/Inno Setup 6/ISCC.exe" -DMINGW_SYS=${{ matrix.sys }} exult_shpplugin_installer.iss
+      - name: CPU and Direct3D 12 scaler conformance
+        env:
+          SDL_GPU_DRIVER: direct3d12
+          SDL_VIDEODRIVER: dummy
+        run: sh imagewin/tests/run_gpu_tests.sh --allow-no-gpu
   notify:
     if: ${{ always() }}
     needs:
