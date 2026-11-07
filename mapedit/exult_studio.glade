@@ -28532,7 +28532,7 @@
             <property name="vexpand">False</property>
             <property name="label-xalign">0</property>
             <child>
-              <!-- n-columns=2 n-rows=2 -->
+              <!-- n-columns=2 n-rows=3 -->
               <object class="GtkGrid" id="table24">
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
@@ -28558,6 +28558,7 @@
                     <property name="adjustment">adjustment20</property>
                     <property name="climb-rate">1</property>
                     <property name="numeric">True</property>
+                    <signal name="value-changed" handler="on_new_shape_num_changed" swapped="no"/>
                   </object>
                   <packing>
                     <property name="left-attach">1</property>
@@ -28631,6 +28632,30 @@
                     <property name="left-attach">0</property>
                     <property name="top-attach">1</property>
                     <property name="width">1</property>
+                    <property name="height">1</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkCheckButton" id="new_shape_flat">
+                    <property name="label" translatable="yes">8x8 flat (terrain tile)</property>
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="receives-default">False</property>
+                    <property name="halign">fill</property>
+                    <property name="valign">center</property>
+                    <property name="margin-start">0</property>
+                    <property name="margin-end">2</property>
+                    <property name="margin-top">1</property>
+                    <property name="margin-bottom">0</property>
+                    <property name="hexpand">False</property>
+                    <property name="vexpand">False</property>
+                    <property name="draw-indicator">True</property>
+                    <signal name="toggled" handler="on_new_shape_flat_toggled" swapped="no"/>
+                  </object>
+                  <packing>
+                    <property name="left-attach">0</property>
+                    <property name="top-attach">2</property>
+                    <property name="width">2</property>
                     <property name="height">1</property>
                   </packing>
                 </child>
