@@ -13,6 +13,58 @@ void require(bool ok, const char* what) {
 	}
 }
 
+namespace ScaleFX {
+	struct GPUProbe {
+		static void diagnose(GPU& gpu, const Workspace& cpu, SDL_Surface* source) {
+			for (int stage = 0; stage < 2; ++stage) {
+				SDL_GPUTransferBufferCreateInfo info{};
+				info.usage   = SDL_GPU_TRANSFERBUFFERUSAGE_DOWNLOAD;
+				info.size    = Uint32(size_t(source->w) * source->h * 16);
+				auto* buffer = SDL_CreateGPUTransferBuffer(gpu.device, &info);
+				require(buffer != nullptr, "diagnostic transfer");
+				auto* commands = SDL_AcquireGPUCommandBuffer(gpu.device);
+				require(commands != nullptr, "diagnostic commands");
+				auto* pass = SDL_BeginGPUCopyPass(commands);
+				require(pass != nullptr, "diagnostic copy");
+				SDL_GPUTextureRegion region{};
+				region.texture = gpu.targets[stage];
+				region.w       = source->w;
+				region.h       = source->h;
+				region.d       = 1;
+				SDL_GPUTextureTransferInfo transfer{};
+				transfer.transfer_buffer = buffer;
+				transfer.pixels_per_row  = source->w;
+				transfer.rows_per_layer  = source->h;
+				SDL_DownloadFromGPUTexture(pass, &region, &transfer);
+				SDL_EndGPUCopyPass(pass);
+				require(SDL_SubmitGPUCommandBuffer(commands) && SDL_WaitForGPUIdle(gpu.device), "diagnostic readback");
+				auto* values = static_cast<const float*>(SDL_MapGPUTransferBuffer(gpu.device, buffer, false));
+				require(values != nullptr, "diagnostic map");
+				size_t count = 0;
+				for (int y = 0; y < source->h; ++y) {
+					for (int x = 0; x < source->w; ++x) {
+						for (int channel = 0; channel < 4; ++channel) {
+							const auto expected = (stage == 0 ? cpu.metric.get(x, y) : cpu.strengths.get(x, y))[channel];
+							const auto actual   = values[(y * source->w + x) * 4 + channel];
+							if (actual != expected) {
+								if (!count) {
+									std::cerr << "::error title=ScaleFX intermediate::stage=" << stage << " xy=" << x << "," << y
+											  << " channel=" << channel << " GPU=" << std::hexfloat << actual << " CPU=" << expected
+											  << std::defaultfloat << "\n";
+								}
+								++count;
+							}
+						}
+					}
+				}
+				std::cerr << "ScaleFX stage " << stage << " differing components: " << count << "\n";
+				SDL_UnmapGPUTransferBuffer(gpu.device, buffer);
+				SDL_ReleaseGPUTransferBuffer(gpu.device, buffer);
+			}
+		}
+	};
+}    // namespace ScaleFX
+
 void compare(SDL_Renderer* renderer, ScaleFX::GPU& gpu, SDL_Surface* source, int f, SDL_Texture* cached = nullptr) {
 	auto*                         palette = SDL_GetSurfacePalette(source);
 	std::array<ScaleFX::RGB, 256> rgb;
@@ -24,9 +76,10 @@ void compare(SDL_Renderer* renderer, ScaleFX::GPU& gpu, SDL_Surface* source, int
 		colours[i] = SDL_MapRGBA(format, nullptr, c.r, c.g, c.b, 255);
 	}
 	std::vector<Uint32> cpu(size_t(source->w * source->h * f * f));
+	ScaleFX::Workspace  workspace;
 	ScaleFX::scale(
 			static_cast<const Uint8*>(source->pixels), source->pitch, source->w, source->h, 0, 0, source->w, source->h, rgb,
-			cpu.data(), source->w * f, colours, f);
+			cpu.data(), source->w * f, colours, f, workspace);
 	auto* saved_target = SDL_GetRenderTarget(renderer);
 	require(SDL_SetRenderTarget(renderer, cached ? cached : gpu.output()), "read target");
 	auto* pixels = SDL_RenderReadPixels(renderer, nullptr);
@@ -51,6 +104,7 @@ void compare(SDL_Renderer* renderer, ScaleFX::GPU& gpu, SDL_Surface* source, int
 	SDL_DestroySurface(pixels);
 	SDL_SetRenderTarget(renderer, saved_target);
 	if (differences) {
+		ScaleFX::GPUProbe::diagnose(gpu, workspace, source);
 		throw std::runtime_error(std::to_string(differences) + " GPU/CPU differences");
 	}
 }
@@ -63,6 +117,8 @@ int main(int argc, char**) {
 			std::cerr << "GPU unavailable: " << SDL_GetError() << '\n';
 			return 77;
 		}
+		std::cerr << "GPU test backend=" << SDL_GetGPUDeviceDriver(SDL_GetGPURendererDevice(renderer))
+				  << " platform=" << SDL_GetPlatform() << "\n";
 		// SDL's windowless GPU renderer requires a valid target even when
 		// flushing state commands; there is no swapchain/backbuffer.
 		auto* anchor = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA32, SDL_TEXTUREACCESS_TARGET, 1, 1);

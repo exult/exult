@@ -29,6 +29,7 @@ namespace ScaleFX {
 	};
 
 	class GPU {
+		friend struct GPUProbe;
 		[[maybe_unused]] SDL_Renderer* renderer;
 		Algorithm                      algorithm;
 		[[maybe_unused]] bool          failed = false;
