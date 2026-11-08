@@ -22,6 +22,8 @@ def block(s, start):
     return s[a+1:b-1]
 
 COMMON = '''#version 450
+layout(location=0) in vec4 v_color;
+layout(location=1) in vec2 v_uv;
 // Generated from Exult's CPU scalers by generate_scalers.py; do not edit.
 // HQx: MaxSt, LGPL-2.0-or-later. 2xSaI: Derek Liauw Kie Fa, LGPL-2.0-or-later.
 // xBR: Hyllian, Zenju and Marzo Sette Torres Junior, GPL-2.0-or-later.

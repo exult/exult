@@ -5,6 +5,7 @@
 #include <chrono>
 #include <iostream>
 #include <stdexcept>
+#include <string>
 
 #if SDL_VERSION_ATLEAST(3, 4, 0)
 void require(bool ok, const char* what) {
