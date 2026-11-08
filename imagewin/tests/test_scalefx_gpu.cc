@@ -17,6 +17,60 @@ void require(bool ok, const char* what) {
 namespace ScaleFX {
 	struct GPUProbe {
 		static void diagnose(GPU& gpu, const Workspace& cpu, SDL_Surface* source) {
+			// Inspect the inputs independently of shader arithmetic. Use aligned
+			// rows so this diagnostic also works with D3D12 texture readback.
+			for (int input = 0; input < 2; ++input) {
+				const int                       w = input ? 256 : source->w, h = input ? 256 : source->h;
+				const int                       stride = (w + 63) & ~63;
+				SDL_GPUTransferBufferCreateInfo info{};
+				info.usage   = SDL_GPU_TRANSFERBUFFERUSAGE_DOWNLOAD;
+				info.size    = Uint32(stride * h * 4);
+				auto* buffer = SDL_CreateGPUTransferBuffer(gpu.device, &info);
+				require(buffer != nullptr, "input diagnostic transfer");
+				auto* commands = SDL_AcquireGPUCommandBuffer(gpu.device);
+				require(commands != nullptr, "input diagnostic commands");
+				auto* pass = SDL_BeginGPUCopyPass(commands);
+				require(pass != nullptr, "input diagnostic copy");
+				SDL_GPUTextureRegion region{};
+				region.texture = input ? gpu.metrics : gpu.source;
+				region.w       = w;
+				region.h       = h;
+				region.d       = 1;
+				SDL_GPUTextureTransferInfo transfer{};
+				transfer.transfer_buffer = buffer;
+				transfer.pixels_per_row  = stride;
+				transfer.rows_per_layer  = h;
+				SDL_DownloadFromGPUTexture(pass, &region, &transfer);
+				SDL_EndGPUCopyPass(pass);
+				require(SDL_SubmitGPUCommandBuffer(commands) && SDL_WaitForGPUIdle(gpu.device), "input diagnostic readback");
+				const auto* values = static_cast<const Uint8*>(SDL_MapGPUTransferBuffer(gpu.device, buffer, false));
+				require(values != nullptr, "input diagnostic map");
+				size_t differences = 0;
+				for (int y = 0; y < h; ++y) {
+					for (int x = 0; x < w; ++x) {
+						Uint32 expected, actual;
+						if (input) {
+							SDL_memcpy(&expected, &gpu.distances[y * 256 + x], 4);
+						} else {
+							const Uint8 index   = static_cast<const Uint8*>(source->pixels)[y * source->pitch + x];
+							const auto  c       = SDL_GetSurfacePalette(source)->colors[index];
+							const Uint8 bytes[] = {c.r, c.g, c.b, index};
+							SDL_memcpy(&expected, bytes, 4);
+						}
+						SDL_memcpy(&actual, values + (y * stride + x) * 4, 4);
+						if (actual != expected) {
+							if (!differences) {
+								std::cerr << "::error title=ScaleFX GPU input::input=" << input << " xy=" << x << ',' << y
+										  << " GPU=" << std::hex << actual << " CPU=" << expected << std::dec << '\n';
+							}
+							++differences;
+						}
+					}
+				}
+				std::cerr << "ScaleFX input " << input << " differing pixels: " << differences << '\n';
+				SDL_UnmapGPUTransferBuffer(gpu.device, buffer);
+				SDL_ReleaseGPUTransferBuffer(gpu.device, buffer);
+			}
 			for (int stage = 0; stage < 2; ++stage) {
 				SDL_GPUTransferBufferCreateInfo info{};
 				info.usage   = SDL_GPU_TRANSFERBUFFERUSAGE_DOWNLOAD;
@@ -66,6 +120,9 @@ namespace ScaleFX {
 	};
 }    // namespace ScaleFX
 
+static const char* update_kind  = "full";
+static int         test_pattern = 0;
+
 void compare(SDL_Renderer* renderer, ScaleFX::GPU& gpu, SDL_Surface* source, int f, SDL_Texture* cached = nullptr) {
 	auto*                         palette = SDL_GetSurfacePalette(source);
 	std::array<ScaleFX::RGB, 256> rgb;
@@ -94,8 +151,10 @@ void compare(SDL_Renderer* renderer, ScaleFX::GPU& gpu, SDL_Surface* source, int
 			SDL_memcpy(&actual, static_cast<const Uint8*>(rgba->pixels) + y * rgba->pitch + x * 4, 4);
 			if (actual != cpu[size_t(y * rgba->w + x)]) {
 				if (differences == 0) {
-					std::cerr << f << "x first difference " << x << ',' << y << " GPU " << std::hex << actual << " CPU "
-							  << cpu[size_t(y * rgba->w + x)] << std::dec << '\n';
+					std::cerr << "::error title=ScaleFX comparison::source=" << source->w << "x" << source->h
+							  << " pattern=" << test_pattern << " update=" << update_kind << " " << f << "x first difference " << x
+							  << ',' << y << " GPU " << std::hex << actual << " CPU " << cpu[size_t(y * rgba->w + x)] << std::dec
+							  << '\n';
 				}
 				++differences;
 			}
@@ -132,6 +191,7 @@ int main(int argc, char**) {
 		{
 			ScaleFX::GPU gpu(renderer);
 			for (int pattern = 0; pattern < 3; ++pattern) {
+				test_pattern = pattern;
 				for (int size : {1, 7, 32, 64}) {
 					for (int factor : {3, 4, 6}) {
 						auto* source = SDL_CreateSurface(size, size + 2, SDL_PIXELFORMAT_INDEX8);
@@ -157,6 +217,7 @@ int main(int argc, char**) {
 																											: next();
 							}
 						}
+						update_kind = "full";
 						require(gpu.update(source, {0, 0, source->w, source->h}, factor), "GPU full update");
 						compare(renderer, gpu, source, factor);
 						if (pattern == 0 && size == 32 && factor == 6) {
@@ -185,8 +246,9 @@ int main(int argc, char**) {
 						int x = size / 2, y = source->h / 2;
 						static_cast<Uint8*>(source->pixels)[y * source->pitch + x] ^= 3;
 						SDL_Rect dirty{std::max(0, x - 6), std::max(0, y - 6), 0, 0};
-						dirty.w = std::min(source->w, x + 7) - dirty.x;
-						dirty.h = std::min(source->h, y + 7) - dirty.y;
+						dirty.w     = std::min(source->w, x + 7) - dirty.x;
+						dirty.h     = std::min(source->h, y + 7) - dirty.y;
+						update_kind = "dirty";
 						require(gpu.update(source, dirty, factor), "GPU dirty update");
 						compare(renderer, gpu, source, factor);
 						for (const auto edge : {
@@ -197,14 +259,16 @@ int main(int argc, char**) {
                         }) {
 							static_cast<Uint8*>(source->pixels)[edge[1] * source->pitch + edge[0]] ^= 1;
 							SDL_Rect region{std::max(0, edge[0] - 6), std::max(0, edge[1] - 6), 0, 0};
-							region.w = std::min(size, edge[0] + 7) - region.x;
-							region.h = std::min(source->h, edge[1] + 7) - region.y;
+							region.w    = std::min(size, edge[0] + 7) - region.x;
+							region.h    = std::min(source->h, edge[1] + 7) - region.y;
+							update_kind = "boundary";
 							require(gpu.update(source, region, factor), "GPU boundary update");
 							compare(renderer, gpu, source, factor);
 						}
 						const Uint8 changed = static_cast<const Uint8*>(source->pixels)[0];
 						colours[changed].r ^= 127;
 						require(SDL_SetPaletteColors(pal, colours.data(), 0, 256), "palette change");
+						update_kind = "palette";
 						require(gpu.update(source, {x, y, 1, 1}, factor), "GPU palette update");
 						compare(renderer, gpu, source, factor);
 						SDL_DestroySurface(source);
