@@ -155,11 +155,11 @@ namespace ScaleFX {
 			if (!sampler) {
 				return false;
 			}
-			vertex = Shaders::create(device, Shaders::code(Shaders::passvertex), SDL_GPU_SHADERSTAGE_VERTEX, 0, 0);
+			vertex = Shaders::create(device, Shaders::code(device, Shaders::passvertex), SDL_GPU_SHADERSTAGE_VERTEX, 0, 0);
 			if (!vertex) {
 				return false;
 			}
-			const Shaders::Code codes[] = {Shaders::code(Shaders::passreduce), Shaders::code(Shaders::passmatte)};
+			const Shaders::Code codes[] = {Shaders::code(device, Shaders::passreduce), Shaders::code(device, Shaders::passmatte)};
 			for (int i = 0; i < 2; ++i) {
 				shaders[i] = Shaders::create(device, codes[i], SDL_GPU_SHADERSTAGE_FRAGMENT, i == 0 ? 2 : 6, 1);
 				if (!shaders[i]) {

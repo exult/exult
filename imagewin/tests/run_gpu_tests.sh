@@ -18,6 +18,8 @@ if ! pkg-config --atleast-version=3.4 sdl3; then
     echo "SKIP: native GPU tests require SDL 3.4+; CPU fallback passed"
     exit 0
 fi
+"$CXX" -std=c++17 -O2 -I. imagewin/tests/test_shader_selection.cc $sdl_flags -o "$test_dir/shaders"
+"$test_dir/shaders"
 for factor in 2 3 4; do
     "$CXX" -std=c++17 -O2 -I. -Iheaders $(pkg-config --cflags sdl3) -DTEST_HQ_FACTOR="$factor" \
         -c imagewin/tests/hq_reference.cc -o "$test_dir/hq$factor.o"

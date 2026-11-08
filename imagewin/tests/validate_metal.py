@@ -11,8 +11,13 @@ parser.add_argument('--sdk', choices=('macosx', 'iphoneos', 'iphonesimulator'), 
 args = parser.parse_args()
 root = Path(__file__).resolve().parents[2]
 ios = args.sdk != 'macosx'
-header = root / 'imagewin/shaders' / ('scalers_ios.h' if ios else 'scalers_metal.h')
-modules = re.findall(r'inline constexpr char (\w+)\[\]=R"MSL\((.*?)\)MSL";', header.read_text(), re.S)
+header = root / 'imagewin/shaders' / 'scalers_metal.h'
+modules = []
+for name, initializer in re.findall(r'inline constexpr char (\w+)\[\]=\{(.*?)\};', header.read_text(), re.S):
+    data = bytes(int(value) for value in re.findall(r'\d+', initializer))
+    if not data or data[-1] != 0:
+        raise SystemExit('Missing Metal source terminator')
+    modules.append((name, data[:-1].decode('ascii')))
 if len(modules) != 10:
     raise SystemExit('Missing embedded Metal shader modules')
 with tempfile.TemporaryDirectory() as temporary:

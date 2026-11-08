@@ -164,7 +164,7 @@ namespace ScaleFX {
 			height = h;
 			factor = f;
 			device = SDL_GetGPURendererDevice(renderer);
-			if (!device || !(SDL_GetGPUShaderFormats(device) & Shaders::native_format)) {
+			if (!Shaders::supports(device)) {
 				return false;
 			}
 			// Avoid the observed D3D12 scissored-draw corruption. Render full
@@ -226,17 +226,18 @@ namespace ScaleFX {
 					return false;
 				}
 			}
-			vertex = Shaders::create(device, Shaders::code(Shaders::passvertex), SDL_GPU_SHADERSTAGE_VERTEX, 0, 0);
+			vertex = Shaders::create(device, Shaders::code(device, Shaders::passvertex), SDL_GPU_SHADERSTAGE_VERTEX, 0, 0);
 			if (!vertex) {
 				return false;
 			}
 			const Shaders::Code code[]
-					= {Shaders::code(Shaders::pass0), Shaders::code(Shaders::pass1), Shaders::code(Shaders::pass2),
-					   Shaders::code(Shaders::pass3), Shaders::code(Shaders::pass4)};
+					= {Shaders::code(device, Shaders::pass0), Shaders::code(device, Shaders::pass1),
+					   Shaders::code(device, Shaders::pass2), Shaders::code(device, Shaders::pass3),
+					   Shaders::code(device, Shaders::pass4)};
 			for (int i = 0; i < (algorithm == Algorithm::ScaleFX ? 5 : 2); ++i) {
 				const auto   shader_code = algorithm == Algorithm::ScaleFX ? code[i]
-										   : i == 0                        ? Shaders::code(Shaders::scalers)
-																		   : Shaders::code(Shaders::scalersoutput);
+										   : i == 0                        ? Shaders::code(device, Shaders::scalers)
+																		   : Shaders::code(device, Shaders::scalersoutput);
 				const Uint32 samplers = algorithm == Algorithm::ScaleFX ? ((i == 0 || i == 2 || i == 4) ? 2 : 1) : i == 0 ? 3 : 4;
 				shaders[i]            = Shaders::create(device, shader_code, SDL_GPU_SHADERSTAGE_FRAGMENT, samplers, 1);
 				if (!shaders[i]) {
@@ -302,7 +303,7 @@ namespace ScaleFX {
 				return false;
 			}
 			auto* d = SDL_GetGPURendererDevice(r);
-			return d && (SDL_GetGPUShaderFormats(d) & Shaders::native_format);
+			return Shaders::supports(d);
 #else
 			(void)r;
 			return false;

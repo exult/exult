@@ -99,6 +99,11 @@ jobs:
           SDL_GPU_DRIVER: direct3d12
           SDL_VIDEODRIVER: dummy
         run: sh imagewin/tests/run_gpu_tests.sh --allow-no-gpu
+      - name: CPU and Vulkan scaler conformance
+        env:
+          SDL_GPU_DRIVER: vulkan
+          SDL_VIDEODRIVER: windows
+        run: sh imagewin/tests/run_gpu_tests.sh --allow-no-gpu
   notify:
     if: ${{ always() }}
     needs:

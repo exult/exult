@@ -31,6 +31,8 @@ try {
     $env:SDL_VIDEODRIVER = 'dummy'
     Run-Test "$testRoot/fallback.exe"
     $env:SDL_VIDEODRIVER = $originalVideo
+    Compile-Test @('imagewin/tests/test_shader_selection.cc', "/Fe:$testRoot/shaders.exe", "/Fo:$testRoot/shaders.obj", $lib)
+    Run-Test "$testRoot/shaders.exe"
     $references = @()
     foreach ($factor in 2,3,4) {
         $object = "$testRoot/hq$factor.obj"

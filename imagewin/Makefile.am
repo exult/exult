@@ -53,7 +53,6 @@ libimagewin_la_SOURCES += \
 	scaler_shaders.h \
 	shaders/scalers_spirv.h \
 	shaders/scalers_metal.h \
-	shaders/scalers_ios.h \
 	shaders/scalers_dxil.h \
 	shaders/scalers_hq_lut.h \
 	scale_xbr.cc \
@@ -66,6 +65,7 @@ EXTRA_DIST = \
 	tests/validate_metal.py \
 	tests/run_gpu_tests.ps1 \
 	tests/test_gpu_fallback.cc \
+	tests/test_shader_selection.cc \
 	tests/run_gpu_tests.sh \
 	shaders/LICENSE.scalers \
 	tests/test_gpu_lifecycle.cc \
