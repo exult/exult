@@ -2533,7 +2533,15 @@ bool Image_window::scale_layer_gpu(Layer& layer, SDL_Surface* source, int factor
 	if (!layer.scalefx_gpu || layer.scalefx_gpu->method() != method) {
 		layer.scalefx_gpu = std::make_unique<::ScaleFX::GPU>(screen_renderer, method);
 	}
-	return layer.scalefx_gpu->update(
+	const bool first = layer.scalefx_gpu->output() == nullptr;
+	if (!layer.scalefx_gpu->update(
 			source, {0, 0, source->w, source->h}, factor, {guard_band, guard_band, layer.logw, layer.logh},
-			{guard_band, guard_band});
+			{guard_band, guard_band})) {
+		return false;
+	}
+	if (first) {
+		SDL_Log("%s: GPU scene shaders active at %dx (%s)", get_name_for_scaler(eff_ui_scaler(get_ui_cfg(layer.ui_kind))),
+			factor, layer.get_name().c_str());
+	}
+	return true;
 }

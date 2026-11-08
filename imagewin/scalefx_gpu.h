@@ -377,11 +377,37 @@ namespace ScaleFX {
 						const Uint8 bytes[] = {c.r, c.g, c.b, Uint8(i)};
 						SDL_memcpy(&colours[i], bytes, 4);
 					}
+					int left = width, top = height, right = -1, bottom = -1;
 					for (int y = input_area.y; y < input_area.y + input_area.h; ++y) {
 						const auto* row = static_cast<const Uint8*>(input->pixels) + y * input->pitch;
 						auto*       dst = upload.data() + size_t(y) * size_t(width);
 						for (int x = input_area.x; x < input_area.x + input_area.w; ++x) {
-							dst[x] = colours[row[x]];
+							const auto value = colours[row[x]];
+							if (dst[x] != value) {
+								left   = std::min(left, x);
+								top    = std::min(top, y);
+								right  = std::max(right, x);
+								bottom = std::max(bottom, y);
+								dst[x] = value;
+							}
+						}
+					}
+					// Scenes can request a full repaint for every mouse movement.
+					// Reuse retained ScaleFX output when source/palette are unchanged;
+					// otherwise restrict full repaint requests to the actual edits.
+					if (!changed && algorithm == Algorithm::ScaleFX) {
+						if (right < left) {
+							return true;
+						}
+						if (dirty.x == 0 && dirty.y == 0 && dirty.w == width && dirty.h == height) {
+							dirty.x      = std::max(0, left - radius);
+							dirty.y      = std::max(0, top - radius);
+							dirty.w      = std::min(width, right + radius + 1) - dirty.x;
+							dirty.h      = std::min(height, bottom + radius + 1) - dirty.y;
+							input_area.x = std::max(0, dirty.x - radius);
+							input_area.y = std::max(0, dirty.y - radius);
+							input_area.w = std::min(width, dirty.x + dirty.w + radius) - input_area.x;
+							input_area.h = std::min(height, dirty.y + dirty.h + radius) - input_area.y;
 						}
 					}
 					if (!SDL_FlushRenderer(renderer)) {

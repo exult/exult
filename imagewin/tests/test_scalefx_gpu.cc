@@ -243,6 +243,24 @@ int main(int argc, char**) {
 							SDL_DestroyTexture(cache);
 							SDL_DestroySurface(snapshot);
 						}
+						if (size == 32 && pattern == 0) {
+							// Menu-style full repaint requests must reuse unchanged
+							// frames and still refresh isolated edits and edge halos.
+							update_kind = "unchanged scene";
+							require(gpu.update(source, {0, 0, source->w, source->h}, factor), "cached scene update");
+							compare(renderer, gpu, source, factor);
+							for (const auto edit : {
+										 std::array<int, 2>{16, 17},
+                                          { 0,  0},
+                                          {31, 33}
+                            }) {
+								auto& pixel = static_cast<Uint8*>(source->pixels)[edit[1] * source->pitch + edit[0]];
+								pixel ^= 31;
+								update_kind = "edited scene";
+								require(gpu.update(source, {0, 0, source->w, source->h}, factor), "edited scene update");
+								compare(renderer, gpu, source, factor);
+							}
+						}
 						int x = size / 2, y = source->h / 2;
 						static_cast<Uint8*>(source->pixels)[y * source->pitch + x] ^= 3;
 						SDL_Rect dirty{std::max(0, x - 6), std::max(0, y - 6), 0, 0};
@@ -309,7 +327,7 @@ int main(int argc, char**) {
 				std::sort(samples.begin(), samples.end());
 				return samples[4];
 			};
-			std::cout << "factor,cpu_ms,gpu_completed_ms,gpu_dirty_completed_ms\n";
+			std::cout << "factor,cpu_ms,gpu_cached_full_request_ms,gpu_cached_dirty_request_ms\n";
 			{
 				ScaleFX::GPU       gpu(renderer);
 				ScaleFX::Workspace workspace;
