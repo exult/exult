@@ -153,7 +153,8 @@ namespace ScaleFX {
 			const uint64_t output_width = uint64_t(w) * f, output_height = uint64_t(h) * f;
 			const uint64_t row_bytes    = (uint64_t(w) * 4 + 255) & ~uint64_t(255);
 			const uint64_t source_bytes = (row_bytes * uint64_t(h) + 511) & ~uint64_t(511);
-			const uint64_t upload_bytes = source_bytes + 256 * 256 * sizeof(float) + sizeof(Shaders::hq_lookup);
+			const uint64_t upload_bytes = source_bytes + 256 * 256 * sizeof(float)
+										  + (sizeof(Shaders::hq_lookup) / sizeof(Shaders::hq_lookup[0]) * sizeof(float));
 			if (w <= 0 || h <= 0 || output_width > INT_MAX || output_height > INT_MAX || upload_bytes > UINT32_MAX) {
 				SDL_SetError("GPU scaler image exceeds supported allocation sizes");
 				return false;
@@ -190,8 +191,8 @@ namespace ScaleFX {
 									 ? texture(SDL_GPU_TEXTUREFORMAT_R32_FLOAT, SDL_GPU_TEXTUREUSAGE_SAMPLER, 256, 256)
 									 : texture(SDL_GPU_TEXTUREFORMAT_R8G8B8A8_UNORM, SDL_GPU_TEXTUREUSAGE_SAMPLER, 256, 1);
 			if (algorithm != Algorithm::ScaleFX) {
-				ti.size += sizeof(Shaders::hq_lookup);
-				lookup = texture(SDL_GPU_TEXTUREFORMAT_R16_UINT, SDL_GPU_TEXTUREUSAGE_SAMPLER, 512, 384);
+				ti.size += (sizeof(Shaders::hq_lookup) / sizeof(Shaders::hq_lookup[0]) * sizeof(float));
+				lookup = texture(SDL_GPU_TEXTUREFORMAT_R32_FLOAT, SDL_GPU_TEXTUREUSAGE_SAMPLER, 512, 384);
 				if (!lookup) {
 					return false;
 				}
@@ -203,9 +204,11 @@ namespace ScaleFX {
 			if (!transfer) {
 				return false;
 			}
+			// Packed 24-bit RGB and 16-bit HQ entries are exact numeric floats.
+			// This avoids D3D12 sampling capability restrictions on integer SRVs.
 			for (int i = 0; i < 5; ++i) {
 				const auto format  = i == 4                            ? SDL_GPU_TEXTUREFORMAT_R8G8B8A8_UNORM
-									 : algorithm != Algorithm::ScaleFX ? SDL_GPU_TEXTUREFORMAT_R32G32B32A32_UINT
+									 : algorithm != Algorithm::ScaleFX ? SDL_GPU_TEXTUREFORMAT_R32G32B32A32_FLOAT
 									 : (i == 0 || i == 1 || i == 3)    ? SDL_GPU_TEXTUREFORMAT_R32G32B32A32_FLOAT
 																	   : SDL_GPU_TEXTUREFORMAT_R8G8B8A8_UNORM;
 				targets[size_t(i)] = texture(
@@ -245,7 +248,7 @@ namespace ScaleFX {
 					descriptions[k].format = algorithm == Algorithm::ScaleFX
 													 ? ((i == 0 || i == 1 || i == 3) ? SDL_GPU_TEXTUREFORMAT_R32G32B32A32_FLOAT
 																					 : SDL_GPU_TEXTUREFORMAT_R8G8B8A8_UNORM)
-											 : i == 0 ? SDL_GPU_TEXTUREFORMAT_R32G32B32A32_UINT
+											 : i == 0 ? SDL_GPU_TEXTUREFORMAT_R32G32B32A32_FLOAT
 													  : SDL_GPU_TEXTUREFORMAT_R8G8B8A8_UNORM;
 				}
 				SDL_GPUGraphicsPipelineCreateInfo pi{};
@@ -423,9 +426,10 @@ namespace ScaleFX {
 							}
 						}
 						if (!initialized) {
-							SDL_memcpy(
-									mapped + palette_offset + 256 * 256 * sizeof(float), Shaders::hq_lookup,
-									sizeof(Shaders::hq_lookup));
+							auto* lut = reinterpret_cast<float*>(mapped + palette_offset + 256 * 256 * sizeof(float));
+							for (size_t i = 0; i < sizeof(Shaders::hq_lookup) / sizeof(Shaders::hq_lookup[0]); ++i) {
+								lut[i] = float(Shaders::hq_lookup[i]);
+							}
 						}
 					}
 					SDL_UnmapGPUTransferBuffer(device, transfer);

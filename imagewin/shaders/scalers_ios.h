@@ -2814,12 +2814,12 @@ struct Params
     int4 output_group;
 };
 
-constant spvUnsafeArray<uint, 15> _2977 = spvUnsafeArray<uint, 15>({ 4278317535u, 4294934529u, 3221225473u, 4294967295u, 1u, 4160749568u, 4294967295u, 4294967295u, 1u, 0u, 0u, 4292870144u, 4294967295u, 4294967295u, 4095u });
+constant spvUnsafeArray<uint, 15> _2973 = spvUnsafeArray<uint, 15>({ 4278317535u, 4294934529u, 3221225473u, 4294967295u, 1u, 4160749568u, 4294967295u, 4294967295u, 1u, 0u, 0u, 4292870144u, 4294967295u, 4294967295u, 4095u });
 
 struct main0_out
 {
-    uint4 Pattern0 [[color(0)]];
-    uint4 Pattern1 [[color(1)]];
+    float4 Pattern0 [[color(0)]];
+    float4 Pattern1 [[color(1)]];
 };
 
 static inline __attribute__((always_inline))
@@ -3011,7 +3011,7 @@ int exult_sfx_Interp10(thread const int& a, thread const int& b, thread const in
 }
 
 static inline __attribute__((always_inline))
-void exult_sfx_hq(texture2d<float> Source, sampler SourceSmplr, thread int2& position, constant Params& _285, texture2d<float> Palette, sampler PaletteSmplr, texture2d<uint> Lookup, sampler LookupSmplr, thread spvUnsafeArray<uint, 16>& pixels)
+void exult_sfx_hq(texture2d<float> Source, sampler SourceSmplr, thread int2& position, constant Params& _285, texture2d<float> Palette, sampler PaletteSmplr, texture2d<float> Lookup, sampler LookupSmplr, thread spvUnsafeArray<uint, 16>& pixels)
 {
     spvUnsafeArray<int, 10> yuv;
     yuv[0] = 0;
@@ -3312,17 +3312,17 @@ void exult_sfx_SaI(texture2d<float> Source, sampler SourceSmplr, thread int2& po
     uint product2;
     if ((colorA == colorD) && (colorB != colorC))
     {
-        bool _1279 = (colorA == colorE) && (colorB == colorL);
-        bool _1298;
-        if (!_1279)
+        bool _1275 = (colorA == colorE) && (colorB == colorL);
+        bool _1294;
+        if (!_1275)
         {
-            _1298 = (((colorA == colorC) && (colorA == colorF)) && (colorB != colorE)) && (colorB == colorJ);
+            _1294 = (((colorA == colorC) && (colorA == colorF)) && (colorB != colorE)) && (colorB == colorJ);
         }
         else
         {
-            _1298 = _1279;
+            _1294 = _1275;
         }
-        if (_1298)
+        if (_1294)
         {
             int param_30 = colorA;
             int3 param_31 = exult_sfx_rgb(param_30, Palette, PaletteSmplr);
@@ -3334,17 +3334,17 @@ void exult_sfx_SaI(texture2d<float> Source, sampler SourceSmplr, thread int2& po
             int param_33 = colorB;
             product = exult_sfx_Interpolate_2xSaI(param_32, param_33, Palette, PaletteSmplr);
         }
-        bool _1319 = (colorA == colorG) && (colorC == colorO);
-        bool _1338;
-        if (!_1319)
+        bool _1315 = (colorA == colorG) && (colorC == colorO);
+        bool _1334;
+        if (!_1315)
         {
-            _1338 = (((colorA == colorB) && (colorA == colorH)) && (colorG != colorC)) && (colorC == colorM);
+            _1334 = (((colorA == colorB) && (colorA == colorH)) && (colorG != colorC)) && (colorC == colorM);
         }
         else
         {
-            _1338 = _1319;
+            _1334 = _1315;
         }
-        if (_1338)
+        if (_1334)
         {
             int param_34 = colorA;
             int3 param_35 = exult_sfx_rgb(param_34, Palette, PaletteSmplr);
@@ -3364,17 +3364,17 @@ void exult_sfx_SaI(texture2d<float> Source, sampler SourceSmplr, thread int2& po
     {
         if ((colorB == colorC) && (colorA != colorD))
         {
-            bool _1375 = (colorB == colorF) && (colorA == colorH);
-            bool _1394;
-            if (!_1375)
+            bool _1371 = (colorB == colorF) && (colorA == colorH);
+            bool _1390;
+            if (!_1371)
             {
-                _1394 = (((colorB == colorE) && (colorB == colorD)) && (colorA != colorF)) && (colorA == colorI);
+                _1390 = (((colorB == colorE) && (colorB == colorD)) && (colorA != colorF)) && (colorA == colorI);
             }
             else
             {
-                _1394 = _1375;
+                _1390 = _1371;
             }
-            if (_1394)
+            if (_1390)
             {
                 int param_40 = colorB;
                 int3 param_41 = exult_sfx_rgb(param_40, Palette, PaletteSmplr);
@@ -3386,17 +3386,17 @@ void exult_sfx_SaI(texture2d<float> Source, sampler SourceSmplr, thread int2& po
                 int param_43 = colorB;
                 product = exult_sfx_Interpolate_2xSaI(param_42, param_43, Palette, PaletteSmplr);
             }
-            bool _1414 = (colorC == colorH) && (colorA == colorF);
-            bool _1433;
-            if (!_1414)
+            bool _1410 = (colorC == colorH) && (colorA == colorF);
+            bool _1429;
+            if (!_1410)
             {
-                _1433 = (((colorC == colorG) && (colorC == colorD)) && (colorA != colorH)) && (colorA == colorI);
+                _1429 = (((colorC == colorG) && (colorC == colorD)) && (colorA != colorH)) && (colorA == colorI);
             }
             else
             {
-                _1433 = _1414;
+                _1429 = _1410;
             }
-            if (_1433)
+            if (_1429)
             {
                 int param_44 = colorC;
                 int3 param_45 = exult_sfx_rgb(param_44, Palette, PaletteSmplr);
@@ -3725,9 +3725,9 @@ void exult_sfx_Super2xSaI(texture2d<float> Source, sampler SourceSmplr, thread i
                     {
                         int param_56 = color5;
                         int param_57 = color6;
-                        uint _2095 = exult_sfx_Interpolate_2xSaI(param_56, param_57, Palette, PaletteSmplr);
-                        product2b = _2095;
-                        product1b = _2095;
+                        uint _2091 = exult_sfx_Interpolate_2xSaI(param_56, param_57, Palette, PaletteSmplr);
+                        product2b = _2091;
+                        product1b = _2091;
                     }
                 }
             }
@@ -4062,9 +4062,9 @@ void exult_sfx_SuperEagle(texture2d<float> Source, sampler SourceSmplr, thread i
                     product1b = product2a;
                     int param_70 = color5;
                     int param_71 = color6;
-                    uint _2765 = exult_sfx_Interpolate_2xSaI(param_70, param_71, Palette, PaletteSmplr);
-                    product2b = _2765;
-                    product1a = _2765;
+                    uint _2761 = exult_sfx_Interpolate_2xSaI(param_70, param_71, Palette, PaletteSmplr);
+                    product2b = _2761;
+                    product1a = _2761;
                 }
                 else
                 {
@@ -4076,9 +4076,9 @@ void exult_sfx_SuperEagle(texture2d<float> Source, sampler SourceSmplr, thread i
                         product2b = product1a;
                         int param_74 = color5;
                         int param_75 = color6;
-                        uint _2781 = exult_sfx_Interpolate_2xSaI(param_74, param_75, Palette, PaletteSmplr);
-                        product2a = _2781;
-                        product1b = _2781;
+                        uint _2777 = exult_sfx_Interpolate_2xSaI(param_74, param_75, Palette, PaletteSmplr);
+                        product2a = _2777;
+                        product1b = _2777;
                     }
                     else
                     {
@@ -4153,7 +4153,7 @@ bool exult_sfx_steep(thread const int& a, thread const int& b)
         return left < right;
     }
     int k = a / 5;
-    return (_2977[k / 32] & (1u << uint(k % 32))) != 0u;
+    return (_2973[k / 32] & (1u << uint(k % 32))) != 0u;
 }
 
 static inline __attribute__((always_inline))
@@ -4177,8 +4177,8 @@ void exult_sfx_blend(thread const int2& p, thread const int3& colour, thread con
 {
     int2 param = p;
     int param_1 = rotation;
-    int _2887 = exult_sfx_outputIndex(param, param_1, _285);
-    int idx = _2887;
+    int _2883 = exult_sfx_outputIndex(param, param_1, _285);
+    int idx = _2883;
     uint param_2 = pixels[idx];
     int3 param_3 = ((colour * int3(n)) + (exult_sfx_unpack(param_2) * int3(m - n))) / int3(m);
     pixels[idx] = exult_sfx_pack(param_3);
@@ -4212,9 +4212,9 @@ void exult_sfx_put(thread const int2& p, thread const int3& colour, thread const
 {
     int2 param = p;
     int param_1 = rotation;
-    int _2914 = exult_sfx_outputIndex(param, param_1, _285);
+    int _2910 = exult_sfx_outputIndex(param, param_1, _285);
     int3 param_2 = colour;
-    pixels[_2914] = exult_sfx_pack(param_2);
+    pixels[_2910] = exult_sfx_pack(param_2);
 }
 
 static inline __attribute__((always_inline))
@@ -4694,108 +4694,108 @@ void exult_sfx_xbrPixel(thread const int& rotation, texture2d<float> Source, sam
 {
     int2 param = int2(-1, -2);
     int param_1 = rotation;
-    int2 _3546 = exult_sfx_rotateOffset(param, param_1);
-    int2 param_2 = _3546;
+    int2 _3542 = exult_sfx_rotateOffset(param, param_1);
+    int2 param_2 = _3542;
     int3 a1 = exult_sfx_fetchPixel(param_2, Source, SourceSmplr, position, _285).xyz;
     int2 param_3 = int2(0, -2);
     int param_4 = rotation;
-    int2 _3555 = exult_sfx_rotateOffset(param_3, param_4);
-    int2 param_5 = _3555;
+    int2 _3551 = exult_sfx_rotateOffset(param_3, param_4);
+    int2 param_5 = _3551;
     int3 b1 = exult_sfx_fetchPixel(param_5, Source, SourceSmplr, position, _285).xyz;
     int2 param_6 = int2(1, -2);
     int param_7 = rotation;
-    int2 _3564 = exult_sfx_rotateOffset(param_6, param_7);
-    int2 param_8 = _3564;
+    int2 _3560 = exult_sfx_rotateOffset(param_6, param_7);
+    int2 param_8 = _3560;
     int3 c1 = exult_sfx_fetchPixel(param_8, Source, SourceSmplr, position, _285).xyz;
     int2 param_9 = int2(-2, -1);
     int param_10 = rotation;
-    int2 _3573 = exult_sfx_rotateOffset(param_9, param_10);
-    int2 param_11 = _3573;
+    int2 _3569 = exult_sfx_rotateOffset(param_9, param_10);
+    int2 param_11 = _3569;
     int3 a0 = exult_sfx_fetchPixel(param_11, Source, SourceSmplr, position, _285).xyz;
     int2 param_12 = int2(-1);
     int param_13 = rotation;
-    int2 _3582 = exult_sfx_rotateOffset(param_12, param_13);
-    int2 param_14 = _3582;
+    int2 _3578 = exult_sfx_rotateOffset(param_12, param_13);
+    int2 param_14 = _3578;
     int3 a = exult_sfx_fetchPixel(param_14, Source, SourceSmplr, position, _285).xyz;
     int2 param_15 = int2(0, -1);
     int param_16 = rotation;
-    int2 _3591 = exult_sfx_rotateOffset(param_15, param_16);
-    int2 param_17 = _3591;
+    int2 _3587 = exult_sfx_rotateOffset(param_15, param_16);
+    int2 param_17 = _3587;
     int3 b = exult_sfx_fetchPixel(param_17, Source, SourceSmplr, position, _285).xyz;
     int2 param_18 = int2(1, -1);
     int param_19 = rotation;
-    int2 _3600 = exult_sfx_rotateOffset(param_18, param_19);
-    int2 param_20 = _3600;
+    int2 _3596 = exult_sfx_rotateOffset(param_18, param_19);
+    int2 param_20 = _3596;
     int3 c = exult_sfx_fetchPixel(param_20, Source, SourceSmplr, position, _285).xyz;
     int2 param_21 = int2(2, -1);
     int param_22 = rotation;
-    int2 _3609 = exult_sfx_rotateOffset(param_21, param_22);
-    int2 param_23 = _3609;
+    int2 _3605 = exult_sfx_rotateOffset(param_21, param_22);
+    int2 param_23 = _3605;
     int3 c4 = exult_sfx_fetchPixel(param_23, Source, SourceSmplr, position, _285).xyz;
     int2 param_24 = int2(-2, 0);
     int param_25 = rotation;
-    int2 _3618 = exult_sfx_rotateOffset(param_24, param_25);
-    int2 param_26 = _3618;
+    int2 _3614 = exult_sfx_rotateOffset(param_24, param_25);
+    int2 param_26 = _3614;
     int3 d0 = exult_sfx_fetchPixel(param_26, Source, SourceSmplr, position, _285).xyz;
     int2 param_27 = int2(-1, 0);
     int param_28 = rotation;
-    int2 _3627 = exult_sfx_rotateOffset(param_27, param_28);
-    int2 param_29 = _3627;
+    int2 _3623 = exult_sfx_rotateOffset(param_27, param_28);
+    int2 param_29 = _3623;
     int3 d = exult_sfx_fetchPixel(param_29, Source, SourceSmplr, position, _285).xyz;
     int2 param_30 = int2(0);
     int param_31 = rotation;
-    int2 _3635 = exult_sfx_rotateOffset(param_30, param_31);
-    int2 param_32 = _3635;
+    int2 _3631 = exult_sfx_rotateOffset(param_30, param_31);
+    int2 param_32 = _3631;
     int3 e = exult_sfx_fetchPixel(param_32, Source, SourceSmplr, position, _285).xyz;
     int2 param_33 = int2(1, 0);
     int param_34 = rotation;
-    int2 _3643 = exult_sfx_rotateOffset(param_33, param_34);
-    int2 param_35 = _3643;
+    int2 _3639 = exult_sfx_rotateOffset(param_33, param_34);
+    int2 param_35 = _3639;
     int3 f = exult_sfx_fetchPixel(param_35, Source, SourceSmplr, position, _285).xyz;
     int2 param_36 = int2(2, 0);
     int param_37 = rotation;
-    int2 _3651 = exult_sfx_rotateOffset(param_36, param_37);
-    int2 param_38 = _3651;
+    int2 _3647 = exult_sfx_rotateOffset(param_36, param_37);
+    int2 param_38 = _3647;
     int3 f4 = exult_sfx_fetchPixel(param_38, Source, SourceSmplr, position, _285).xyz;
     int2 param_39 = int2(-2, 1);
     int param_40 = rotation;
-    int2 _3660 = exult_sfx_rotateOffset(param_39, param_40);
-    int2 param_41 = _3660;
+    int2 _3656 = exult_sfx_rotateOffset(param_39, param_40);
+    int2 param_41 = _3656;
     int3 g0 = exult_sfx_fetchPixel(param_41, Source, SourceSmplr, position, _285).xyz;
     int2 param_42 = int2(-1, 1);
     int param_43 = rotation;
-    int2 _3669 = exult_sfx_rotateOffset(param_42, param_43);
-    int2 param_44 = _3669;
+    int2 _3665 = exult_sfx_rotateOffset(param_42, param_43);
+    int2 param_44 = _3665;
     int3 g = exult_sfx_fetchPixel(param_44, Source, SourceSmplr, position, _285).xyz;
     int2 param_45 = int2(0, 1);
     int param_46 = rotation;
-    int2 _3677 = exult_sfx_rotateOffset(param_45, param_46);
-    int2 param_47 = _3677;
+    int2 _3673 = exult_sfx_rotateOffset(param_45, param_46);
+    int2 param_47 = _3673;
     int3 h = exult_sfx_fetchPixel(param_47, Source, SourceSmplr, position, _285).xyz;
     int2 param_48 = int2(1);
     int param_49 = rotation;
-    int2 _3685 = exult_sfx_rotateOffset(param_48, param_49);
-    int2 param_50 = _3685;
+    int2 _3681 = exult_sfx_rotateOffset(param_48, param_49);
+    int2 param_50 = _3681;
     int3 i = exult_sfx_fetchPixel(param_50, Source, SourceSmplr, position, _285).xyz;
     int2 param_51 = int2(2, 1);
     int param_52 = rotation;
-    int2 _3693 = exult_sfx_rotateOffset(param_51, param_52);
-    int2 param_53 = _3693;
+    int2 _3689 = exult_sfx_rotateOffset(param_51, param_52);
+    int2 param_53 = _3689;
     int3 i4 = exult_sfx_fetchPixel(param_53, Source, SourceSmplr, position, _285).xyz;
     int2 param_54 = int2(-1, 2);
     int param_55 = rotation;
-    int2 _3702 = exult_sfx_rotateOffset(param_54, param_55);
-    int2 param_56 = _3702;
+    int2 _3698 = exult_sfx_rotateOffset(param_54, param_55);
+    int2 param_56 = _3698;
     int3 g5 = exult_sfx_fetchPixel(param_56, Source, SourceSmplr, position, _285).xyz;
     int2 param_57 = int2(0, 2);
     int param_58 = rotation;
-    int2 _3710 = exult_sfx_rotateOffset(param_57, param_58);
-    int2 param_59 = _3710;
+    int2 _3706 = exult_sfx_rotateOffset(param_57, param_58);
+    int2 param_59 = _3706;
     int3 h5 = exult_sfx_fetchPixel(param_59, Source, SourceSmplr, position, _285).xyz;
     int2 param_60 = int2(1, 2);
     int param_61 = rotation;
-    int2 _3718 = exult_sfx_rotateOffset(param_60, param_61);
-    int2 param_62 = _3718;
+    int2 _3714 = exult_sfx_rotateOffset(param_60, param_61);
+    int2 param_62 = _3714;
     int3 i5 = exult_sfx_fetchPixel(param_62, Source, SourceSmplr, position, _285).xyz;
     if (all(e == h) || all(e == f))
     {
@@ -4872,239 +4872,239 @@ void exult_sfx_xbrPixel(thread const int& rotation, texture2d<float> Source, sam
     int3 param_125 = b;
     int3 param_126 = f;
     int bf = (((exult_sfx_dist(param_117, param_118) + exult_sfx_dist(param_119, param_120)) + exult_sfx_dist(param_121, param_122)) + exult_sfx_dist(param_123, param_124)) + (4 * exult_sfx_dist(param_125, param_126));
-    bool _3940 = eg < dh;
-    bool _3949;
-    if (!_3940)
+    bool _3936 = eg < dh;
+    bool _3945;
+    if (!_3936)
     {
         int3 param_127 = e;
         int3 param_128 = d;
-        _3949 = exult_sfx_equals(param_127, param_128);
+        _3945 = exult_sfx_equals(param_127, param_128);
     }
     else
     {
-        _3949 = _3940;
+        _3945 = _3936;
     }
-    bool _3958;
-    if (!_3949)
+    bool _3954;
+    if (!_3945)
     {
         int3 param_129 = e;
         int3 param_130 = h;
-        _3958 = exult_sfx_equals(param_129, param_130);
+        _3954 = exult_sfx_equals(param_129, param_130);
     }
     else
     {
-        _3958 = _3949;
+        _3954 = _3945;
     }
-    bool _3982;
-    if (_3958)
+    bool _3978;
+    if (_3954)
     {
-        bool _3963 = ec < bf;
-        bool _3972;
-        if (!_3963)
+        bool _3959 = ec < bf;
+        bool _3968;
+        if (!_3959)
         {
             int3 param_131 = e;
             int3 param_132 = b;
-            _3972 = exult_sfx_equals(param_131, param_132);
+            _3968 = exult_sfx_equals(param_131, param_132);
         }
         else
         {
-            _3972 = _3963;
+            _3968 = _3959;
         }
-        bool _3981;
-        if (!_3972)
+        bool _3977;
+        if (!_3968)
         {
             int3 param_133 = e;
             int3 param_134 = f;
-            _3981 = exult_sfx_equals(param_133, param_134);
+            _3977 = exult_sfx_equals(param_133, param_134);
         }
         else
         {
-            _3981 = _3972;
+            _3977 = _3968;
         }
-        _3982 = _3981;
+        _3978 = _3977;
     }
     else
     {
-        _3982 = _3958;
+        _3978 = _3954;
     }
-    bool _4024;
-    if (_3982)
+    bool _4020;
+    if (_3978)
     {
         int3 param_135 = g;
         int3 param_136 = h;
-        bool _3989 = exult_sfx_equals(param_135, param_136);
-        bool _3997;
-        if (_3989)
+        bool _3985 = exult_sfx_equals(param_135, param_136);
+        bool _3993;
+        if (_3985)
         {
             int3 param_137 = h;
             int3 param_138 = i;
-            _3997 = exult_sfx_equals(param_137, param_138);
+            _3993 = exult_sfx_equals(param_137, param_138);
         }
         else
         {
-            _3997 = _3989;
+            _3993 = _3985;
         }
-        bool _4005;
-        if (_3997)
+        bool _4001;
+        if (_3993)
         {
             int3 param_139 = i;
             int3 param_140 = f;
-            _4005 = exult_sfx_equals(param_139, param_140);
+            _4001 = exult_sfx_equals(param_139, param_140);
         }
         else
         {
-            _4005 = _3997;
+            _4001 = _3993;
         }
-        bool _4013;
-        if (_4005)
+        bool _4009;
+        if (_4001)
         {
             int3 param_141 = f;
             int3 param_142 = c;
-            _4013 = exult_sfx_equals(param_141, param_142);
+            _4009 = exult_sfx_equals(param_141, param_142);
         }
         else
         {
-            _4013 = _4005;
+            _4009 = _4001;
         }
-        bool _4022;
-        if (_4013)
+        bool _4018;
+        if (_4009)
         {
             int3 param_143 = e;
             int3 param_144 = i;
-            _4022 = !exult_sfx_equals(param_143, param_144);
+            _4018 = !exult_sfx_equals(param_143, param_144);
         }
         else
         {
-            _4022 = _4013;
+            _4018 = _4009;
         }
-        _4024 = !_4022;
+        _4020 = !_4018;
     }
     else
     {
-        _4024 = _3982;
+        _4020 = _3978;
     }
-    bool _4066;
-    if (!_4024)
+    bool _4062;
+    if (!_4020)
     {
         int3 param_145 = d;
         int3 param_146 = h;
-        bool _4032 = exult_sfx_equals(param_145, param_146);
-        bool _4040;
-        if (_4032)
+        bool _4028 = exult_sfx_equals(param_145, param_146);
+        bool _4036;
+        if (_4028)
         {
             int3 param_147 = h;
             int3 param_148 = f;
-            _4040 = exult_sfx_equals(param_147, param_148);
+            _4036 = exult_sfx_equals(param_147, param_148);
         }
         else
         {
-            _4040 = _4032;
+            _4036 = _4028;
         }
-        bool _4048;
-        if (_4040)
+        bool _4044;
+        if (_4036)
         {
             int3 param_149 = a;
             int3 param_150 = e;
-            _4048 = exult_sfx_equals(param_149, param_150);
+            _4044 = exult_sfx_equals(param_149, param_150);
         }
         else
         {
-            _4048 = _4040;
+            _4044 = _4036;
         }
-        bool _4056;
-        if (_4048)
+        bool _4052;
+        if (_4044)
         {
             int3 param_151 = e;
             int3 param_152 = c;
-            _4056 = exult_sfx_equals(param_151, param_152);
+            _4052 = exult_sfx_equals(param_151, param_152);
         }
         else
         {
-            _4056 = _4048;
+            _4052 = _4044;
         }
-        bool _4065;
-        if (_4056)
+        bool _4061;
+        if (_4052)
         {
             int3 param_153 = h;
             int3 param_154 = e;
-            _4065 = !exult_sfx_equals(param_153, param_154);
+            _4061 = !exult_sfx_equals(param_153, param_154);
         }
         else
         {
-            _4065 = _4056;
+            _4061 = _4052;
         }
-        _4066 = _4065;
+        _4062 = _4061;
     }
     else
     {
-        _4066 = _4024;
+        _4062 = _4020;
     }
-    bool _4108;
-    if (!_4066)
+    bool _4104;
+    if (!_4062)
     {
         int3 param_155 = h;
         int3 param_156 = f;
-        bool _4074 = exult_sfx_equals(param_155, param_156);
-        bool _4082;
-        if (_4074)
+        bool _4070 = exult_sfx_equals(param_155, param_156);
+        bool _4078;
+        if (_4070)
         {
             int3 param_157 = f;
             int3 param_158 = b;
-            _4082 = exult_sfx_equals(param_157, param_158);
+            _4078 = exult_sfx_equals(param_157, param_158);
         }
         else
         {
-            _4082 = _4074;
+            _4078 = _4070;
         }
-        bool _4090;
-        if (_4082)
+        bool _4086;
+        if (_4078)
         {
             int3 param_159 = g;
             int3 param_160 = e;
-            _4090 = exult_sfx_equals(param_159, param_160);
+            _4086 = exult_sfx_equals(param_159, param_160);
         }
         else
         {
-            _4090 = _4082;
+            _4086 = _4078;
         }
-        bool _4098;
-        if (_4090)
+        bool _4094;
+        if (_4086)
         {
             int3 param_161 = e;
             int3 param_162 = a;
-            _4098 = exult_sfx_equals(param_161, param_162);
+            _4094 = exult_sfx_equals(param_161, param_162);
         }
         else
         {
-            _4098 = _4090;
+            _4094 = _4086;
         }
-        bool _4107;
-        if (_4098)
+        bool _4103;
+        if (_4094)
         {
             int3 param_163 = f;
             int3 param_164 = e;
-            _4107 = !exult_sfx_equals(param_163, param_164);
+            _4103 = !exult_sfx_equals(param_163, param_164);
         }
         else
         {
-            _4107 = _4098;
+            _4103 = _4094;
         }
-        _4108 = _4107;
+        _4104 = _4103;
     }
     else
     {
-        _4108 = _4066;
+        _4104 = _4062;
     }
-    bool _4117;
-    if (!_4108)
+    bool _4113;
+    if (!_4104)
     {
-        _4117 = (18 * hf) < (5 * ei);
+        _4113 = (18 * hf) < (5 * ei);
     }
     else
     {
-        _4117 = _4108;
+        _4113 = _4104;
     }
-    bool doBlendLine = _4117;
+    bool doBlendLine = _4113;
     if (hf < ei)
     {
         if (doBlendLine)
@@ -5179,7 +5179,7 @@ void exult_sfx_xbr(texture2d<float> Source, sampler SourceSmplr, thread int2& po
     }
 }
 
-fragment main0_out main0(constant Params& _285 [[buffer(0)]], texture2d<float> Source [[texture(0)]], texture2d<float> Palette [[texture(1)]], texture2d<uint> Lookup [[texture(2)]], sampler SourceSmplr [[sampler(0)]], sampler PaletteSmplr [[sampler(1)]], sampler LookupSmplr [[sampler(2)]], float4 gl_FragCoord [[position]])
+fragment main0_out main0(constant Params& _285 [[buffer(0)]], texture2d<float> Source [[texture(0)]], texture2d<float> Palette [[texture(1)]], texture2d<float> Lookup [[texture(2)]], sampler SourceSmplr [[sampler(0)]], sampler PaletteSmplr [[sampler(1)]], sampler LookupSmplr [[sampler(2)]], float4 gl_FragCoord [[position]])
 {
     main0_out out = {};
     int2 position = int2(gl_FragCoord.xy);
@@ -5219,8 +5219,8 @@ fragment main0_out main0(constant Params& _285 [[buffer(0)]], texture2d<float> S
         }
     }
     int start = _285.output_group.x * 8;
-    out.Pattern0 = uint4(pixels[start], pixels[start + 1], pixels[start + 2], pixels[start + 3]);
-    out.Pattern1 = uint4(pixels[start + 4], pixels[start + 5], pixels[start + 6], pixels[start + 7]);
+    out.Pattern0 = float4(float(pixels[start]), float(pixels[start + 1]), float(pixels[start + 2]), float(pixels[start + 3]));
+    out.Pattern1 = float4(float(pixels[start + 4]), float(pixels[start + 5]), float(pixels[start + 6]), float(pixels[start + 7]));
     return out;
 }
 
@@ -5242,7 +5242,7 @@ struct main0_out
     float4 FragColor [[color(0)]];
 };
 
-fragment main0_out main0(constant Params& _23 [[buffer(0)]], texture2d<uint> Pattern0 [[texture(0)]], texture2d<uint> Pattern1 [[texture(1)]], texture2d<uint> Pattern2 [[texture(2)]], texture2d<uint> Pattern3 [[texture(3)]], sampler Pattern0Smplr [[sampler(0)]], sampler Pattern1Smplr [[sampler(1)]], sampler Pattern2Smplr [[sampler(2)]], sampler Pattern3Smplr [[sampler(3)]], float4 gl_FragCoord [[position]])
+fragment main0_out main0(constant Params& _23 [[buffer(0)]], texture2d<float> Pattern0 [[texture(0)]], texture2d<float> Pattern1 [[texture(1)]], texture2d<float> Pattern2 [[texture(2)]], texture2d<float> Pattern3 [[texture(3)]], sampler Pattern0Smplr [[sampler(0)]], sampler Pattern1Smplr [[sampler(1)]], sampler Pattern2Smplr [[sampler(2)]], sampler Pattern3Smplr [[sampler(3)]], float4 gl_FragCoord [[position]])
 {
     main0_out out = {};
     int2 coord = int2(gl_FragCoord.xy);
@@ -5252,23 +5252,23 @@ fragment main0_out main0(constant Params& _23 [[buffer(0)]], texture2d<uint> Pat
     uint4 block;
     if (index < 4)
     {
-        block = Pattern0.read(uint2(p), 0);
+        block = uint4(Pattern0.read(uint2(p), 0));
     }
     else
     {
         if (index < 8)
         {
-            block = Pattern1.read(uint2(p), 0);
+            block = uint4(Pattern1.read(uint2(p), 0));
         }
         else
         {
             if (index < 12)
             {
-                block = Pattern2.read(uint2(p), 0);
+                block = uint4(Pattern2.read(uint2(p), 0));
             }
             else
             {
-                block = Pattern3.read(uint2(p), 0);
+                block = uint4(Pattern3.read(uint2(p), 0));
             }
         }
     }

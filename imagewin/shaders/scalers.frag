@@ -4,11 +4,11 @@ layout(location=1) in vec2 v_uv;
 // Generated from Exult's CPU scalers by generate_scalers.py; do not edit.
 // HQx: MaxSt, LGPL-2.0-or-later. 2xSaI: Derek Liauw Kie Fa, LGPL-2.0-or-later.
 // xBR: Hyllian, Zenju and Marzo Sette Torres Junior, GPL-2.0-or-later.
-layout(location=0) out uvec4 Pattern0;
-layout(location=1) out uvec4 Pattern1;
+layout(location=0) out vec4 Pattern0;
+layout(location=1) out vec4 Pattern1;
 layout(set=2,binding=0) uniform sampler2D Source;
 layout(set=2,binding=1) uniform sampler2D Palette;
-layout(set=2,binding=2) uniform usampler2D Lookup;
+layout(set=2,binding=2) uniform sampler2D Lookup;
 layout(std140,set=3,binding=0) uniform Params { ivec4 settings; ivec4 limits; ivec4 output_group; };
 uint pixels[16];
 ivec2 position;
@@ -888,6 +888,6 @@ void main() {
  case 7:xbr();break;
  }
  int start=output_group.x*8;
- Pattern0=uvec4(pixels[start],pixels[start+1],pixels[start+2],pixels[start+3]);
- Pattern1=uvec4(pixels[start+4],pixels[start+5],pixels[start+6],pixels[start+7]);
+ Pattern0=vec4(pixels[start],pixels[start+1],pixels[start+2],pixels[start+3]);
+ Pattern1=vec4(pixels[start+4],pixels[start+5],pixels[start+6],pixels[start+7]);
 }
