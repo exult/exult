@@ -67,6 +67,7 @@ jobs:
         sync: rsync
         copyback: false
         prepare: |
+          set -eux
           pkg update -v pkg || true
           pkg update -v || true
           pkg install gcc13
@@ -95,6 +96,7 @@ jobs:
           cmake --install build
           cd ..
         run: |
+          set -eux
           export PATH=/opt/local/bin:/opt/local/sbin:/usr/local/bin:$PATH
           export MANPATH=/opt/local/man:/opt/local/share/man:/usr/local/share/man:${MANPATH:-}
           export PKG_CONFIG_PATH=/opt/local/share/pkgconfig:/opt/local/lib/pkgconfig:/opt/ooce/lib/amd64/pkgconfig:/usr/local/lib/pkgconfig:${PKG_CONFIG_PATH:-}
@@ -103,7 +105,7 @@ jobs:
           ./configure --with-debug=extreme --enable-exult-studio --enable-exult-studio-support --enable-compiler \
             --enable-zip-support --enable-shared --enable-midi-sfx --enable-shp-thumbnailer --enable-data --enable-mods \
             --with-usecode-debugger=yes --enable-usecode-container --enable-nonreadied-objects --enable-aseprite-plugin \
-            CXX=clang++ CC=clang
+            CXX=/opt/gcc-13/bin/g++ CC=/opt/gcc-13/bin/gcc
           make -j 2
   notify:
     if: ${{ always() }}

@@ -98,7 +98,7 @@ jobs:
               for name, source in modules:
                   path = Path(temporary) / (name + ".metal")
                   path.write_text(source)
-                  subprocess.run(["xcrun", "-sdk", "macosx", "metal", "-std=metal2.1", "-c", str(path), "-o", str(path.with_suffix(".air"))], check=True)
+                  subprocess.run(["xcrun", "-sdk", "macosx", "metal", "-std=macos-metal2.1", "-c", str(path), "-o", str(path.with_suffix(".air"))], check=True)
           PYMETAL
           sh imagewin/tests/run_gpu_tests.sh --allow-no-gpu
   notify:
