@@ -35,13 +35,14 @@ namespace ScaleFX {
 		Algorithm                      algorithm;
 		[[maybe_unused]] bool          failed = false;
 #if SDL_VERSION_ATLEAST(3, 4, 0)
-		SDL_GPUDevice*                          device        = nullptr;
-		bool                                    full_analysis = false;
-		SDL_GPUSampler*                         sampler       = nullptr;
-		SDL_GPUShader*                          vertex        = nullptr;
+		SDL_GPUDevice*                          device     = nullptr;
+		bool                                    full_draws = false;
+		SDL_GPUSampler*                         sampler    = nullptr;
+		SDL_GPUShader*                          vertex     = nullptr;
 		std::array<SDL_GPUShader*, 5>           shaders{};
 		std::array<SDL_GPUGraphicsPipeline*, 5> pipelines{};
 		std::array<SDL_GPUTexture*, 5>          targets{};
+		SDL_GPUTexture*                         scratch  = nullptr;
 		SDL_GPUTexture*                         source   = nullptr;
 		SDL_GPUTexture*                         metrics  = nullptr;
 		SDL_GPUTexture*                         lookup   = nullptr;
@@ -74,6 +75,10 @@ namespace ScaleFX {
 				}
 				t = nullptr;
 			}
+			if (scratch) {
+				SDL_ReleaseGPUTexture(device, scratch);
+			}
+			scratch = nullptr;
 			if (source) {
 				SDL_ReleaseGPUTexture(device, source);
 			}
@@ -123,6 +128,24 @@ namespace ScaleFX {
 			return SDL_CreateGPUTexture(device, &info);
 		}
 
+		bool submit(SDL_GPUCommandBuffer* commands, const SDL_Rect& dirty, int f) {
+			if (full_draws) {
+				auto* copy = SDL_BeginGPUCopyPass(commands);
+				if (!copy) {
+					SDL_CancelGPUCommandBuffer(commands);
+					return false;
+				}
+				SDL_GPUTextureLocation from{}, to{};
+				from.texture = scratch;
+				to.texture   = targets[4];
+				from.x = to.x = dirty.x * f;
+				from.y = to.y = dirty.y * f;
+				SDL_CopyGPUTextureToTexture(copy, &from, &to, dirty.w * f, dirty.h * f, 1, false);
+				SDL_EndGPUCopyPass(copy);
+			}
+			return SDL_SubmitGPUCommandBuffer(commands);
+		}
+
 		bool prepare(int w, int h, int f) {
 			if (source && width == w && height == h && factor == f) {
 				return true;
@@ -143,10 +166,10 @@ namespace ScaleFX {
 			if (!device || !(SDL_GetGPUShaderFormats(device) & Shaders::native_format)) {
 				return false;
 			}
-			// D3D12 dirty analysis passes produce incorrect edge values even
-			// with verified source/LUT uploads. Rebuild the low-resolution
-			// intermediates there; source uploads and output damage stay partial.
-			full_analysis = SDL_strcmp(SDL_GetGPUDeviceDriver(device), "direct3d12") == 0;
+			// Avoid the observed D3D12 scissored-draw corruption. Render full
+			// passes into scratch storage, then copy only output damage.
+			// Input uploads and the retained output still preserve dirty regions.
+			full_draws = SDL_strcmp(SDL_GetGPUDeviceDriver(device), "direct3d12") == 0;
 			SDL_GPUSamplerCreateInfo si{};
 			si.min_filter = si.mag_filter = SDL_GPU_FILTER_NEAREST;
 			si.mipmap_mode                = SDL_GPU_SAMPLERMIPMAPMODE_NEAREST;
@@ -189,6 +212,14 @@ namespace ScaleFX {
 						format, SDL_GPU_TEXTUREUSAGE_COLOR_TARGET | SDL_GPU_TEXTUREUSAGE_SAMPLER, i == 4 ? w * f : w,
 						i == 4 ? h * f : h);
 				if (!targets[size_t(i)]) {
+					return false;
+				}
+			}
+			if (full_draws) {
+				scratch = texture(
+						SDL_GPU_TEXTUREFORMAT_R8G8B8A8_UNORM, SDL_GPU_TEXTUREUSAGE_COLOR_TARGET | SDL_GPU_TEXTUREUSAGE_SAMPLER,
+						w * f, h * f);
+				if (!scratch) {
 					return false;
 				}
 			}
@@ -463,7 +494,7 @@ namespace ScaleFX {
 							SDL_GPUColorTargetInfo colours[4]{};
 							const int              count = stage == 0 ? 2 : 1;
 							for (int k = 0; k < count; ++k) {
-								colours[k].texture  = targets[stage == 0 ? draw * 2 + k : 4];
+								colours[k].texture  = stage == 1 && full_draws ? scratch : targets[stage == 0 ? draw * 2 + k : 4];
 								colours[k].load_op  = initialized ? SDL_GPU_LOADOP_LOAD : SDL_GPU_LOADOP_DONT_CARE;
 								colours[k].store_op = SDL_GPU_STOREOP_STORE;
 							}
@@ -489,14 +520,14 @@ namespace ScaleFX {
 							SDL_GPUViewport viewport{0, 0, float(width * multiplier), float(height * multiplier), 0, 1};
 							SDL_SetGPUViewport(pass, &viewport);
 							SDL_Rect clip{dirty.x * multiplier, dirty.y * multiplier, dirty.w * multiplier, dirty.h * multiplier};
-							if (full_analysis && stage == 0) {
-								clip = {0, 0, width, height};
+							if (full_draws) {
+								clip = {0, 0, width * multiplier, height * multiplier};
 							}
 							SDL_SetGPUScissor(pass, &clip);
 							SDL_DrawGPUPrimitives(pass, 3, 1, 0, 0);
 							SDL_EndGPURenderPass(pass);
 						}
-						if (!SDL_SubmitGPUCommandBuffer(commands)) {
+						if (!submit(commands, dirty, f)) {
 							return false;
 						}
 						initialized = true;
@@ -508,7 +539,7 @@ namespace ScaleFX {
 						SDL_Rect  clip{std::max(0, dirty.x - halo), std::max(0, dirty.y - halo), 0, 0};
 						clip.w = std::min(width, dirty.x + dirty.w + halo) - clip.x;
 						clip.h = std::min(height, dirty.y + dirty.h + halo) - clip.y;
-						if (full_analysis && i < 4) {
+						if (full_draws) {
 							clip = {0, 0, width, height};
 						}
 						if (i == 4) {
@@ -518,7 +549,7 @@ namespace ScaleFX {
 							clip.h *= f;
 						}
 						SDL_GPUColorTargetInfo target{};
-						target.texture  = targets[size_t(i)];
+						target.texture  = i == 4 && full_draws ? scratch : targets[size_t(i)];
 						target.load_op  = initialized ? SDL_GPU_LOADOP_LOAD : SDL_GPU_LOADOP_DONT_CARE;
 						target.store_op = SDL_GPU_STOREOP_STORE;
 						auto* pass      = SDL_BeginGPURenderPass(commands, &target, 1, nullptr);
@@ -541,7 +572,7 @@ namespace ScaleFX {
 						SDL_DrawGPUPrimitives(pass, 3, 1, 0, 0);
 						SDL_EndGPURenderPass(pass);
 					}
-					if (!SDL_SubmitGPUCommandBuffer(commands)) {
+					if (!submit(commands, dirty, f)) {
 						return false;
 					}
 					initialized = true;
