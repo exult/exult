@@ -181,7 +181,7 @@ jobs:
       run: |
         $vs = & "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe" -latest -property installationPath
         & "$vs\Common7\Tools\Launch-VsDevShell.ps1" -Arch amd64 -HostArch amd64 -SkipAutomaticLocation
-        ./imagewin/tests/run_gpu_tests.ps1 -SDLRoot "${{ env.VCPKGCACHE_PATH }}/x64-windows" -AllowNoGPU
+        ./imagewin/tests/run_gpu_tests.ps1 -SDLRoot "${{ env.VCPKGCACHE_PATH }}/x64-windows/x64-windows" -AllowNoGPU
 
   ci-msvc-exult_studio:
     runs-on: windows-2022

@@ -2,6 +2,11 @@ param([Parameter(Mandatory=$true)][string]$SDLRoot, [switch]$AllowNoGPU)
 $ErrorActionPreference = 'Stop'
 Set-Location (Join-Path $PSScriptRoot '../..')
 $SDLRoot = (Resolve-Path $SDLRoot).Path
+foreach ($file in 'include/SDL3/SDL.h', 'lib/SDL3.lib', 'bin/SDL3.dll') {
+    if (-not (Test-Path -LiteralPath (Join-Path $SDLRoot $file) -PathType Leaf)) {
+        throw "Missing SDL dependency: $SDLRoot/$file. SDLRoot must contain include, lib and bin."
+    }
+}
 $testRoot = Join-Path ([IO.Path]::GetTempPath()) ('exult-scalers-' + [Guid]::NewGuid())
 New-Item -ItemType Directory $testRoot | Out-Null
 $originalPath = $env:PATH
