@@ -51,6 +51,7 @@ namespace ScaleFX {
 		std::array<SDL_Color, 256>              palette{};
 		std::vector<uint32_t>                   upload;
 		std::vector<float>                      distances;
+		size_t                                  palette_offset = 0;
 
 		void release() {
 			if (renderer) {
@@ -126,7 +127,9 @@ namespace ScaleFX {
 				return true;
 			}
 			const uint64_t output_width = uint64_t(w) * f, output_height = uint64_t(h) * f;
-			const uint64_t upload_bytes = uint64_t(w) * h * 4 + 256 * 256 * sizeof(float) + sizeof(Shaders::hq_lookup);
+			const uint64_t row_bytes    = (uint64_t(w) * 4 + 255) & ~uint64_t(255);
+			const uint64_t source_bytes = (row_bytes * uint64_t(h) + 511) & ~uint64_t(511);
+			const uint64_t upload_bytes = source_bytes + 256 * 256 * sizeof(float) + sizeof(Shaders::hq_lookup);
 			if (w <= 0 || h <= 0 || output_width > INT_MAX || output_height > INT_MAX || upload_bytes > UINT32_MAX) {
 				SDL_SetError("GPU scaler image exceeds supported allocation sizes");
 				return false;
@@ -152,11 +155,12 @@ namespace ScaleFX {
 				return false;
 			}
 			SDL_GPUTransferBufferCreateInfo ti{};
-			ti.usage = SDL_GPU_TRANSFERBUFFERUSAGE_UPLOAD;
-			ti.size  = Uint32(size_t(w) * size_t(h) * 4 + 256 * 256 * sizeof(float));
-			metrics  = algorithm == Algorithm::ScaleFX
-							   ? texture(SDL_GPU_TEXTUREFORMAT_R32_FLOAT, SDL_GPU_TEXTUREUSAGE_SAMPLER, 256, 256)
-							   : texture(SDL_GPU_TEXTUREFORMAT_R8G8B8A8_UNORM, SDL_GPU_TEXTUREUSAGE_SAMPLER, 256, 1);
+			ti.usage       = SDL_GPU_TRANSFERBUFFERUSAGE_UPLOAD;
+			palette_offset = size_t(source_bytes);
+			ti.size        = Uint32(palette_offset + 256 * 256 * sizeof(float));
+			metrics        = algorithm == Algorithm::ScaleFX
+									 ? texture(SDL_GPU_TEXTUREFORMAT_R32_FLOAT, SDL_GPU_TEXTUREUSAGE_SAMPLER, 256, 256)
+									 : texture(SDL_GPU_TEXTUREFORMAT_R8G8B8A8_UNORM, SDL_GPU_TEXTUREUSAGE_SAMPLER, 256, 1);
 			if (algorithm != Algorithm::ScaleFX) {
 				ti.size += sizeof(Shaders::hq_lookup);
 				lookup = texture(SDL_GPU_TEXTUREFORMAT_R16_UINT, SDL_GPU_TEXTUREUSAGE_SAMPLER, 512, 384);
@@ -348,13 +352,18 @@ namespace ScaleFX {
 					if (!mapped) {
 						return false;
 					}
-					for (int y = input_area.y; y < input_area.y + input_area.h; ++y) {
+					// Pack damage at offset zero with a D3D12-compatible row
+					// pitch. Palette/LUT uploads have 512-byte aligned offsets.
+					// This avoids SDL's temporary upload repacking and preserves
+					// partial texture updates on every backend.
+					const size_t row_bytes = (size_t(input_area.w) * 4 + 255) & ~size_t(255);
+					for (int row = 0; row < input_area.h; ++row) {
 						SDL_memcpy(
-								mapped + size_t(y * width + input_area.x) * 4, upload.data() + size_t(y * width + input_area.x),
+								mapped + size_t(row) * row_bytes, upload.data() + size_t(input_area.y + row) * width + input_area.x,
 								size_t(input_area.w) * 4);
 					}
 					if (changed && algorithm == Algorithm::ScaleFX) {
-						auto* distances = mapped + size_t(width) * size_t(height) * 4;
+						auto* distances = mapped + palette_offset;
 						for (size_t a = 0; a < 256; ++a) {
 							for (size_t b = 0; b <= a; ++b) {
 								if (!changed_entries[a] && !changed_entries[b]) {
@@ -367,7 +376,7 @@ namespace ScaleFX {
 						}
 						SDL_memcpy(distances, this->distances.data(), 256 * 256 * sizeof(float));
 					}
-					const size_t palette_offset = size_t(width) * height * 4;
+
 					if (algorithm != Algorithm::ScaleFX) {
 						if (changed) {
 							auto* dst = mapped + palette_offset;
@@ -395,9 +404,9 @@ namespace ScaleFX {
 					}
 					SDL_GPUTextureTransferInfo transfer_info{};
 					transfer_info.transfer_buffer = transfer;
-					transfer_info.offset          = Uint32(size_t(input_area.y * width + input_area.x) * 4);
-					transfer_info.pixels_per_row  = width;
-					transfer_info.rows_per_layer  = height;
+					transfer_info.offset          = 0;
+					transfer_info.pixels_per_row  = Uint32(row_bytes / 4);
+					transfer_info.rows_per_layer  = input_area.h;
 					SDL_GPUTextureRegion region{};
 					region.texture = source;
 					region.x       = input_area.x;
@@ -409,7 +418,7 @@ namespace ScaleFX {
 					if (changed) {
 						SDL_GPUTextureTransferInfo mt{};
 						mt.transfer_buffer = transfer;
-						mt.offset          = Uint32(size_t(width) * size_t(height) * 4);
+						mt.offset          = Uint32(palette_offset);
 						mt.pixels_per_row  = 256;
 						mt.rows_per_layer  = algorithm == Algorithm::ScaleFX ? 256 : 1;
 						SDL_GPUTextureRegion mr{};

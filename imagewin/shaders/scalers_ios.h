@@ -71,20 +71,20 @@ struct main0_out
 };
 
 static inline __attribute__((always_inline))
-float4 readTex(texture2d<float> image, sampler imageSmplr, thread const int2& offset, thread float4& gl_FragCoord)
+float4 exult_sfx_readTex(texture2d<float> image, sampler imageSmplr, thread const int2& offset, thread float4& gl_FragCoord)
 {
     return image.read(uint2(clamp(int2(gl_FragCoord.xy) + offset, int2(0), int2(image.get_width(), image.get_height()) - int2(1))), 0);
 }
 
 static inline __attribute__((always_inline))
-int indexAt(thread const int2& offset, thread float4& gl_FragCoord, texture2d<float> Source, sampler SourceSmplr)
+int exult_sfx_indexAt(thread const int2& offset, thread float4& gl_FragCoord, texture2d<float> Source, sampler SourceSmplr)
 {
     int2 param = offset;
-    return int(round(spvFMul(readTex(Source, SourceSmplr, param, gl_FragCoord).w, 255.0)));
+    return int(round(spvFMul(exult_sfx_readTex(Source, SourceSmplr, param, gl_FragCoord).w, 255.0)));
 }
 
 static inline __attribute__((always_inline))
-float metric(thread const int& a, thread const int& b, texture2d<float> Auxiliary, sampler AuxiliarySmplr)
+float exult_sfx_metric(thread const int& a, thread const int& b, texture2d<float> Auxiliary, sampler AuxiliarySmplr)
 {
     return Auxiliary.read(uint2(int2(b, a)), 0).x;
 }
@@ -93,20 +93,20 @@ fragment main0_out main0(texture2d<float> Auxiliary [[texture(0)]], texture2d<fl
 {
     main0_out out = {};
     int2 param = int2(0);
-    int e = indexAt(param, gl_FragCoord, Source, SourceSmplr);
+    int e = exult_sfx_indexAt(param, gl_FragCoord, Source, SourceSmplr);
     int2 param_1 = int2(-1);
     int param_2 = e;
-    int param_3 = indexAt(param_1, gl_FragCoord, Source, SourceSmplr);
+    int param_3 = exult_sfx_indexAt(param_1, gl_FragCoord, Source, SourceSmplr);
     int2 param_4 = int2(0, -1);
     int param_5 = e;
-    int param_6 = indexAt(param_4, gl_FragCoord, Source, SourceSmplr);
+    int param_6 = exult_sfx_indexAt(param_4, gl_FragCoord, Source, SourceSmplr);
     int2 param_7 = int2(1, -1);
     int param_8 = e;
-    int param_9 = indexAt(param_7, gl_FragCoord, Source, SourceSmplr);
+    int param_9 = exult_sfx_indexAt(param_7, gl_FragCoord, Source, SourceSmplr);
     int2 param_10 = int2(1, 0);
     int param_11 = e;
-    int param_12 = indexAt(param_10, gl_FragCoord, Source, SourceSmplr);
-    out.FragColor = float4(metric(param_2, param_3, Auxiliary, AuxiliarySmplr), metric(param_5, param_6, Auxiliary, AuxiliarySmplr), metric(param_8, param_9, Auxiliary, AuxiliarySmplr), metric(param_11, param_12, Auxiliary, AuxiliarySmplr));
+    int param_12 = exult_sfx_indexAt(param_10, gl_FragCoord, Source, SourceSmplr);
+    out.FragColor = float4(exult_sfx_metric(param_2, param_3, Auxiliary, AuxiliarySmplr), exult_sfx_metric(param_5, param_6, Auxiliary, AuxiliarySmplr), exult_sfx_metric(param_8, param_9, Auxiliary, AuxiliarySmplr), exult_sfx_metric(param_11, param_12, Auxiliary, AuxiliarySmplr));
     return out;
 }
 
@@ -192,13 +192,13 @@ struct main0_out
 };
 
 static inline __attribute__((always_inline))
-float4 readTex(texture2d<float> image, sampler imageSmplr, thread const int2& offset, thread float4& gl_FragCoord)
+float4 exult_sfx_readTex(texture2d<float> image, sampler imageSmplr, thread const int2& offset, thread float4& gl_FragCoord)
 {
     return image.read(uint2(clamp(int2(gl_FragCoord.xy) + offset, int2(0), int2(image.get_width(), image.get_height()) - int2(1))), 0);
 }
 
 static inline __attribute__((always_inline))
-float str(thread const float& d, thread const float2& a, thread const float2& b)
+float exult_sfx_str(thread const float& d, thread const float2& a, thread const float2& b)
 {
     float diff = spvFSub(a.x, a.y);
     float wght1 = fast::max(spvFSub(0.5, d), 0.0) / 0.5;
@@ -237,38 +237,38 @@ fragment main0_out main0(texture2d<float> Source [[texture(0)]], sampler SourceS
 {
     main0_out out = {};
     int2 param = int2(-1);
-    float4 A = readTex(Source, SourceSmplr, param, gl_FragCoord);
+    float4 A = exult_sfx_readTex(Source, SourceSmplr, param, gl_FragCoord);
     int2 param_1 = int2(0, -1);
-    float4 B = readTex(Source, SourceSmplr, param_1, gl_FragCoord);
+    float4 B = exult_sfx_readTex(Source, SourceSmplr, param_1, gl_FragCoord);
     int2 param_2 = int2(-1, 0);
-    float4 D = readTex(Source, SourceSmplr, param_2, gl_FragCoord);
+    float4 D = exult_sfx_readTex(Source, SourceSmplr, param_2, gl_FragCoord);
     int2 param_3 = int2(0);
-    float4 E = readTex(Source, SourceSmplr, param_3, gl_FragCoord);
+    float4 E = exult_sfx_readTex(Source, SourceSmplr, param_3, gl_FragCoord);
     int2 param_4 = int2(1, 0);
-    float4 F = readTex(Source, SourceSmplr, param_4, gl_FragCoord);
+    float4 F = exult_sfx_readTex(Source, SourceSmplr, param_4, gl_FragCoord);
     int2 param_5 = int2(-1, 1);
-    float4 G = readTex(Source, SourceSmplr, param_5, gl_FragCoord);
+    float4 G = exult_sfx_readTex(Source, SourceSmplr, param_5, gl_FragCoord);
     int2 param_6 = int2(0, 1);
-    float4 H = readTex(Source, SourceSmplr, param_6, gl_FragCoord);
+    float4 H = exult_sfx_readTex(Source, SourceSmplr, param_6, gl_FragCoord);
     int2 param_7 = int2(1);
-    float4 I = readTex(Source, SourceSmplr, param_7, gl_FragCoord);
+    float4 I = exult_sfx_readTex(Source, SourceSmplr, param_7, gl_FragCoord);
     float param_8 = D.z;
     float2 param_9 = float2(D.w, E.y);
     float2 param_10 = float2(A.w, D.y);
     float4 res;
-    res.x = str(param_8, param_9, param_10);
+    res.x = exult_sfx_str(param_8, param_9, param_10);
     float param_11 = F.x;
     float2 param_12 = float2(E.w, E.y);
     float2 param_13 = float2(B.w, F.y);
-    res.y = str(param_11, param_12, param_13);
+    res.y = exult_sfx_str(param_11, param_12, param_13);
     float param_14 = H.z;
     float2 param_15 = float2(E.w, H.y);
     float2 param_16 = float2(H.w, I.y);
-    res.z = str(param_14, param_15, param_16);
+    res.z = exult_sfx_str(param_14, param_15, param_16);
     float param_17 = H.x;
     float2 param_18 = float2(D.w, H.y);
     float2 param_19 = float2(G.w, G.y);
-    res.w = str(param_17, param_18, param_19);
+    res.w = exult_sfx_str(param_17, param_18, param_19);
     out.FragColor = res;
     return out;
 }
@@ -355,19 +355,19 @@ struct main0_out
 };
 
 static inline __attribute__((always_inline))
-float4 readTex(texture2d<float> image, sampler imageSmplr, thread const int2& offset, thread float4& gl_FragCoord)
+float4 exult_sfx_readTex(texture2d<float> image, sampler imageSmplr, thread const int2& offset, thread float4& gl_FragCoord)
 {
     return image.read(uint2(clamp(int2(gl_FragCoord.xy) + offset, int2(0), int2(image.get_width(), image.get_height()) - int2(1))), 0);
 }
 
 static inline __attribute__((always_inline))
-float4 dom(thread const float3& x, thread const float3& y, thread const float3& z, thread const float3& w)
+float4 exult_sfx_dom(thread const float3& x, thread const float3& y, thread const float3& z, thread const float3& w)
 {
     return spvFSub(float4(x.y, y.y, z.y, w.y) * 2.0, spvFAdd(float4(x.x, y.x, z.x, w.x), float4(x.z, y.z, z.z, w.z)));
 }
 
 static inline __attribute__((always_inline))
-float clear(thread const float2& crn, thread const float2& a, thread const float2& b)
+float exult_sfx_clear(thread const float2& crn, thread const float2& a, thread const float2& b)
 {
     bool _109 = crn.x >= fast::max(fast::min(a.x, a.y), fast::min(b.x, b.y));
     bool _126;
@@ -386,63 +386,63 @@ fragment main0_out main0(texture2d<float> Auxiliary [[texture(0)]], texture2d<fl
 {
     main0_out out = {};
     int2 param = int2(-1);
-    float4 A = readTex(Auxiliary, AuxiliarySmplr, param, gl_FragCoord);
+    float4 A = exult_sfx_readTex(Auxiliary, AuxiliarySmplr, param, gl_FragCoord);
     int2 param_1 = int2(0, -1);
-    float4 B = readTex(Auxiliary, AuxiliarySmplr, param_1, gl_FragCoord);
+    float4 B = exult_sfx_readTex(Auxiliary, AuxiliarySmplr, param_1, gl_FragCoord);
     int2 param_2 = int2(-1, 0);
-    float4 D = readTex(Auxiliary, AuxiliarySmplr, param_2, gl_FragCoord);
+    float4 D = exult_sfx_readTex(Auxiliary, AuxiliarySmplr, param_2, gl_FragCoord);
     int2 param_3 = int2(0);
-    float4 E = readTex(Auxiliary, AuxiliarySmplr, param_3, gl_FragCoord);
+    float4 E = exult_sfx_readTex(Auxiliary, AuxiliarySmplr, param_3, gl_FragCoord);
     int2 param_4 = int2(1, 0);
-    float4 F = readTex(Auxiliary, AuxiliarySmplr, param_4, gl_FragCoord);
+    float4 F = exult_sfx_readTex(Auxiliary, AuxiliarySmplr, param_4, gl_FragCoord);
     int2 param_5 = int2(-1, 1);
-    float4 G = readTex(Auxiliary, AuxiliarySmplr, param_5, gl_FragCoord);
+    float4 G = exult_sfx_readTex(Auxiliary, AuxiliarySmplr, param_5, gl_FragCoord);
     int2 param_6 = int2(0, 1);
-    float4 H = readTex(Auxiliary, AuxiliarySmplr, param_6, gl_FragCoord);
+    float4 H = exult_sfx_readTex(Auxiliary, AuxiliarySmplr, param_6, gl_FragCoord);
     int2 param_7 = int2(1);
-    float4 I = readTex(Auxiliary, AuxiliarySmplr, param_7, gl_FragCoord);
+    float4 I = exult_sfx_readTex(Auxiliary, AuxiliarySmplr, param_7, gl_FragCoord);
     int2 param_8 = int2(-1);
-    float4 As = readTex(Source, SourceSmplr, param_8, gl_FragCoord);
+    float4 As = exult_sfx_readTex(Source, SourceSmplr, param_8, gl_FragCoord);
     int2 param_9 = int2(0, -1);
-    float4 Bs = readTex(Source, SourceSmplr, param_9, gl_FragCoord);
+    float4 Bs = exult_sfx_readTex(Source, SourceSmplr, param_9, gl_FragCoord);
     int2 param_10 = int2(1, -1);
-    float4 Cs = readTex(Source, SourceSmplr, param_10, gl_FragCoord);
+    float4 Cs = exult_sfx_readTex(Source, SourceSmplr, param_10, gl_FragCoord);
     int2 param_11 = int2(-1, 0);
-    float4 Ds = readTex(Source, SourceSmplr, param_11, gl_FragCoord);
+    float4 Ds = exult_sfx_readTex(Source, SourceSmplr, param_11, gl_FragCoord);
     int2 param_12 = int2(0);
-    float4 Es = readTex(Source, SourceSmplr, param_12, gl_FragCoord);
+    float4 Es = exult_sfx_readTex(Source, SourceSmplr, param_12, gl_FragCoord);
     int2 param_13 = int2(1, 0);
-    float4 Fs = readTex(Source, SourceSmplr, param_13, gl_FragCoord);
+    float4 Fs = exult_sfx_readTex(Source, SourceSmplr, param_13, gl_FragCoord);
     int2 param_14 = int2(-1, 1);
-    float4 Gs = readTex(Source, SourceSmplr, param_14, gl_FragCoord);
+    float4 Gs = exult_sfx_readTex(Source, SourceSmplr, param_14, gl_FragCoord);
     int2 param_15 = int2(0, 1);
-    float4 Hs = readTex(Source, SourceSmplr, param_15, gl_FragCoord);
+    float4 Hs = exult_sfx_readTex(Source, SourceSmplr, param_15, gl_FragCoord);
     int2 param_16 = int2(1);
-    float4 Is = readTex(Source, SourceSmplr, param_16, gl_FragCoord);
+    float4 Is = exult_sfx_readTex(Source, SourceSmplr, param_16, gl_FragCoord);
     float4 jSx = float4(As.z, Bs.w, Es.x, Ds.y);
     float3 param_17 = As.yzw;
     float3 param_18 = Bs.zwx;
     float3 param_19 = Es.wxy;
     float3 param_20 = Ds.xyz;
-    float4 jDx = dom(param_17, param_18, param_19, param_20);
+    float4 jDx = exult_sfx_dom(param_17, param_18, param_19, param_20);
     float4 jSy = float4(Bs.z, Cs.w, Fs.x, Es.y);
     float3 param_21 = Bs.yzw;
     float3 param_22 = Cs.zwx;
     float3 param_23 = Fs.wxy;
     float3 param_24 = Es.xyz;
-    float4 jDy = dom(param_21, param_22, param_23, param_24);
+    float4 jDy = exult_sfx_dom(param_21, param_22, param_23, param_24);
     float4 jSz = float4(Es.z, Fs.w, Is.x, Hs.y);
     float3 param_25 = Es.yzw;
     float3 param_26 = Fs.zwx;
     float3 param_27 = Is.wxy;
     float3 param_28 = Hs.xyz;
-    float4 jDz = dom(param_25, param_26, param_27, param_28);
+    float4 jDz = exult_sfx_dom(param_25, param_26, param_27, param_28);
     float4 jSw = float4(Ds.z, Es.w, Hs.x, Gs.y);
     float3 param_29 = Ds.yzw;
     float3 param_30 = Es.zwx;
     float3 param_31 = Hs.wxy;
     float3 param_32 = Gs.xyz;
-    float4 jDw = dom(param_29, param_30, param_31, param_32);
+    float4 jDw = exult_sfx_dom(param_29, param_30, param_31, param_32);
     float4 zero4 = float4(0.0);
     float4 jx = fast::min(spvFMul(spvFSub(float4(1.0), step(jDx, zero4)), spvFAdd(spvFMul(step(jDx.yzwx, zero4), step(jDx.wxyz, zero4)), spvFSub(float4(1.0), step(spvFAdd(jDx, jDx.zwxy), spvFAdd(jDx.yzwx, jDx.wxyz))))), float4(1.0));
     float4 jy = fast::min(spvFMul(spvFSub(float4(1.0), step(jDy, zero4)), spvFAdd(spvFMul(step(jDy.yzwx, zero4), step(jDy.wxyz, zero4)), spvFSub(float4(1.0), step(spvFAdd(jDy, jDy.zwxy), spvFAdd(jDy.yzwx, jDy.wxyz))))), float4(1.0));
@@ -458,19 +458,19 @@ fragment main0_out main0(texture2d<float> Auxiliary [[texture(0)]], texture2d<fl
     float2 param_34 = float2(D.w, E.y);
     float2 param_35 = float2(A.w, D.y);
     float4 clr;
-    clr.x = clear(param_33, param_34, param_35);
+    clr.x = exult_sfx_clear(param_33, param_34, param_35);
     float2 param_36 = float2(F.x, E.z);
     float2 param_37 = float2(E.w, E.y);
     float2 param_38 = float2(B.w, F.y);
-    clr.y = clear(param_36, param_37, param_38);
+    clr.y = exult_sfx_clear(param_36, param_37, param_38);
     float2 param_39 = float2(H.z, I.x);
     float2 param_40 = float2(E.w, H.y);
     float2 param_41 = float2(H.w, I.y);
-    clr.z = clear(param_39, param_40, param_41);
+    clr.z = exult_sfx_clear(param_39, param_40, param_41);
     float2 param_42 = float2(H.x, G.z);
     float2 param_43 = float2(D.w, H.y);
     float2 param_44 = float2(G.w, G.y);
-    clr.w = clear(param_42, param_43, param_44);
+    clr.w = exult_sfx_clear(param_42, param_43, param_44);
     float4 h = float4(fast::min(D.w, A.w), fast::min(E.w, B.w), fast::min(E.w, H.w), fast::min(D.w, G.w));
     float4 v = float4(fast::min(E.y, D.y), fast::min(E.y, F.y), fast::min(H.y, I.y), fast::min(H.y, G.y));
     float4 orientation = spvFSub(float4(1.0), step(spvFAdd(h, float4(D.w, E.w, E.w, D.w)), spvFAdd(v, float4(E.y, E.y, H.y, H.y))));
@@ -514,37 +514,37 @@ struct main0_out
 };
 
 static inline __attribute__((always_inline))
-float4 readTex(texture2d<float> image, sampler imageSmplr, thread const int2& offset, thread float4& gl_FragCoord)
+float4 exult_sfx_readTex(texture2d<float> image, sampler imageSmplr, thread const int2& offset, thread float4& gl_FragCoord)
 {
     return image.read(uint2(clamp(int2(gl_FragCoord.xy) + offset, int2(0), int2(image.get_width(), image.get_height()) - int2(1))), 0);
 }
 
 static inline __attribute__((always_inline))
-bool4 loadCorn(thread const float4& x)
+bool4 exult_sfx_loadCorn(thread const float4& x)
 {
     return floor(mod(spvFAdd(x * 15.0, float4(0.5)), float4(2.0))) != float4(0.0);
 }
 
 static inline __attribute__((always_inline))
-bool4 loadHori(thread const float4& x)
+bool4 exult_sfx_loadHori(thread const float4& x)
 {
     return floor(mod(spvFAdd(x * 7.5, float4(0.25)), float4(2.0))) != float4(0.0);
 }
 
 static inline __attribute__((always_inline))
-bool4 loadVert(thread const float4& x)
+bool4 exult_sfx_loadVert(thread const float4& x)
 {
     return floor(mod(spvFAdd(x * 3.75, float4(0.125)), float4(2.0))) != float4(0.0);
 }
 
 static inline __attribute__((always_inline))
-bool4 loadOr(thread const float4& x)
+bool4 exult_sfx_loadOr(thread const float4& x)
 {
     return floor(mod(spvFAdd(x * 1.875, float4(0.0625)), float4(2.0))) != float4(0.0);
 }
 
 static inline __attribute__((always_inline))
-int level(thread const bool& l3, thread const bool& l4, thread const bool& l6)
+int exult_sfx_level(thread const bool& l3, thread const bool& l4, thread const bool& l6)
 {
     int _245;
     if (l6)
@@ -568,7 +568,7 @@ int level(thread const bool& l3, thread const bool& l4, thread const bool& l6)
 }
 
 static inline __attribute__((always_inline))
-float contour(thread const float& code, thread const float& hm, thread const float& vm, thread int& hl, thread int& vl)
+float exult_sfx_contour(thread const float& code, thread const float& hm, thread const float& vm, thread int& hl, thread int& vl)
 {
     if (code == 0.0)
     {
@@ -634,87 +634,87 @@ fragment main0_out main0(constant Params& _2040 [[buffer(0)]], texture2d<float> 
 {
     main0_out out = {};
     int2 param = int2(0);
-    float4 E = readTex(Source, SourceSmplr, param, gl_FragCoord);
+    float4 E = exult_sfx_readTex(Source, SourceSmplr, param, gl_FragCoord);
     int2 param_1 = int2(-1, 0);
-    float4 D = readTex(Source, SourceSmplr, param_1, gl_FragCoord);
+    float4 D = exult_sfx_readTex(Source, SourceSmplr, param_1, gl_FragCoord);
     int2 param_2 = int2(-2, 0);
-    float4 D0 = readTex(Source, SourceSmplr, param_2, gl_FragCoord);
+    float4 D0 = exult_sfx_readTex(Source, SourceSmplr, param_2, gl_FragCoord);
     int2 param_3 = int2(-3, 0);
-    float4 D1 = readTex(Source, SourceSmplr, param_3, gl_FragCoord);
+    float4 D1 = exult_sfx_readTex(Source, SourceSmplr, param_3, gl_FragCoord);
     int2 param_4 = int2(1, 0);
-    float4 F = readTex(Source, SourceSmplr, param_4, gl_FragCoord);
+    float4 F = exult_sfx_readTex(Source, SourceSmplr, param_4, gl_FragCoord);
     int2 param_5 = int2(2, 0);
-    float4 F0 = readTex(Source, SourceSmplr, param_5, gl_FragCoord);
+    float4 F0 = exult_sfx_readTex(Source, SourceSmplr, param_5, gl_FragCoord);
     int2 param_6 = int2(3, 0);
-    float4 F1 = readTex(Source, SourceSmplr, param_6, gl_FragCoord);
+    float4 F1 = exult_sfx_readTex(Source, SourceSmplr, param_6, gl_FragCoord);
     int2 param_7 = int2(0, -1);
-    float4 B = readTex(Source, SourceSmplr, param_7, gl_FragCoord);
+    float4 B = exult_sfx_readTex(Source, SourceSmplr, param_7, gl_FragCoord);
     int2 param_8 = int2(0, -2);
-    float4 B0 = readTex(Source, SourceSmplr, param_8, gl_FragCoord);
+    float4 B0 = exult_sfx_readTex(Source, SourceSmplr, param_8, gl_FragCoord);
     int2 param_9 = int2(0, -3);
-    float4 B1 = readTex(Source, SourceSmplr, param_9, gl_FragCoord);
+    float4 B1 = exult_sfx_readTex(Source, SourceSmplr, param_9, gl_FragCoord);
     int2 param_10 = int2(0, 1);
-    float4 H = readTex(Source, SourceSmplr, param_10, gl_FragCoord);
+    float4 H = exult_sfx_readTex(Source, SourceSmplr, param_10, gl_FragCoord);
     int2 param_11 = int2(0, 2);
-    float4 H0 = readTex(Source, SourceSmplr, param_11, gl_FragCoord);
+    float4 H0 = exult_sfx_readTex(Source, SourceSmplr, param_11, gl_FragCoord);
     int2 param_12 = int2(0, 3);
-    float4 H1 = readTex(Source, SourceSmplr, param_12, gl_FragCoord);
+    float4 H1 = exult_sfx_readTex(Source, SourceSmplr, param_12, gl_FragCoord);
     float4 param_13 = E;
-    bool4 Ec = loadCorn(param_13);
+    bool4 Ec = exult_sfx_loadCorn(param_13);
     float4 param_14 = E;
-    bool4 Eh = loadHori(param_14);
+    bool4 Eh = exult_sfx_loadHori(param_14);
     float4 param_15 = E;
-    bool4 Ev = loadVert(param_15);
+    bool4 Ev = exult_sfx_loadVert(param_15);
     float4 param_16 = E;
-    bool4 Eo = loadOr(param_16);
+    bool4 Eo = exult_sfx_loadOr(param_16);
     float4 param_17 = D;
-    bool4 Dc = loadCorn(param_17);
+    bool4 Dc = exult_sfx_loadCorn(param_17);
     float4 param_18 = D;
-    bool4 Dh = loadHori(param_18);
+    bool4 Dh = exult_sfx_loadHori(param_18);
     float4 param_19 = D;
-    bool4 Do = loadOr(param_19);
+    bool4 Do = exult_sfx_loadOr(param_19);
     float4 param_20 = D0;
-    bool4 D0c = loadCorn(param_20);
+    bool4 D0c = exult_sfx_loadCorn(param_20);
     float4 param_21 = D0;
-    bool4 D0h = loadHori(param_21);
+    bool4 D0h = exult_sfx_loadHori(param_21);
     float4 param_22 = D1;
-    bool4 D1h = loadHori(param_22);
+    bool4 D1h = exult_sfx_loadHori(param_22);
     float4 param_23 = F;
-    bool4 Fc = loadCorn(param_23);
+    bool4 Fc = exult_sfx_loadCorn(param_23);
     float4 param_24 = F;
-    bool4 Fh = loadHori(param_24);
+    bool4 Fh = exult_sfx_loadHori(param_24);
     float4 param_25 = F;
-    bool4 Fo = loadOr(param_25);
+    bool4 Fo = exult_sfx_loadOr(param_25);
     float4 param_26 = F0;
-    bool4 F0c = loadCorn(param_26);
+    bool4 F0c = exult_sfx_loadCorn(param_26);
     float4 param_27 = F0;
-    bool4 F0h = loadHori(param_27);
+    bool4 F0h = exult_sfx_loadHori(param_27);
     float4 param_28 = F1;
-    bool4 F1h = loadHori(param_28);
+    bool4 F1h = exult_sfx_loadHori(param_28);
     float4 param_29 = B;
-    bool4 Bc = loadCorn(param_29);
+    bool4 Bc = exult_sfx_loadCorn(param_29);
     float4 param_30 = B;
-    bool4 Bv = loadVert(param_30);
+    bool4 Bv = exult_sfx_loadVert(param_30);
     float4 param_31 = B;
-    bool4 Bo = loadOr(param_31);
+    bool4 Bo = exult_sfx_loadOr(param_31);
     float4 param_32 = B0;
-    bool4 B0c = loadCorn(param_32);
+    bool4 B0c = exult_sfx_loadCorn(param_32);
     float4 param_33 = B0;
-    bool4 B0v = loadVert(param_33);
+    bool4 B0v = exult_sfx_loadVert(param_33);
     float4 param_34 = B1;
-    bool4 B1v = loadVert(param_34);
+    bool4 B1v = exult_sfx_loadVert(param_34);
     float4 param_35 = H;
-    bool4 Hc = loadCorn(param_35);
+    bool4 Hc = exult_sfx_loadCorn(param_35);
     float4 param_36 = H;
-    bool4 Hv = loadVert(param_36);
+    bool4 Hv = exult_sfx_loadVert(param_36);
     float4 param_37 = H;
-    bool4 Ho = loadOr(param_37);
+    bool4 Ho = exult_sfx_loadOr(param_37);
     float4 param_38 = H0;
-    bool4 H0c = loadCorn(param_38);
+    bool4 H0c = exult_sfx_loadCorn(param_38);
     float4 param_39 = H0;
-    bool4 H0v = loadVert(param_39);
+    bool4 H0v = exult_sfx_loadVert(param_39);
     float4 param_40 = H1;
-    bool4 H1v = loadVert(param_40);
+    bool4 H1v = exult_sfx_loadVert(param_40);
     bool _494;
     if (Ec.x)
     {
@@ -2182,9 +2182,9 @@ fragment main0_out main0(constant Params& _2040 [[buffer(0)]], texture2d<float> 
         float param_47 = crn.x;
         float param_48 = mid.x;
         float param_49 = mid.w;
-        int param_50 = level(param_41, param_42, param_43);
-        int param_51 = level(param_44, param_45, param_46);
-        float _2086 = contour(param_47, param_48, param_49, param_50, param_51);
+        int param_50 = exult_sfx_level(param_41, param_42, param_43);
+        int param_51 = exult_sfx_level(param_44, param_45, param_46);
+        float _2086 = exult_sfx_contour(param_47, param_48, param_49, param_50, param_51);
         bool param_52 = lvl3y.x;
         bool param_53 = lvl4y.x;
         bool param_54 = lvl6y.x;
@@ -2194,9 +2194,9 @@ fragment main0_out main0(constant Params& _2040 [[buffer(0)]], texture2d<float> 
         float param_58 = crn.y;
         float param_59 = mid.x;
         float param_60 = mid.y;
-        int param_61 = level(param_52, param_53, param_54);
-        int param_62 = level(param_55, param_56, param_57);
-        float _2118 = contour(param_58, param_59, param_60, param_61, param_62);
+        int param_61 = exult_sfx_level(param_52, param_53, param_54);
+        int param_62 = exult_sfx_level(param_55, param_56, param_57);
+        float _2118 = exult_sfx_contour(param_58, param_59, param_60, param_61, param_62);
         bool param_63 = lvl3z.x;
         bool param_64 = lvl4z.x;
         bool param_65 = lvl6z.x;
@@ -2206,9 +2206,9 @@ fragment main0_out main0(constant Params& _2040 [[buffer(0)]], texture2d<float> 
         float param_69 = crn.z;
         float param_70 = mid.z;
         float param_71 = mid.y;
-        int param_72 = level(param_63, param_64, param_65);
-        int param_73 = level(param_66, param_67, param_68);
-        float _2150 = contour(param_69, param_70, param_71, param_72, param_73);
+        int param_72 = exult_sfx_level(param_63, param_64, param_65);
+        int param_73 = exult_sfx_level(param_66, param_67, param_68);
+        float _2150 = exult_sfx_contour(param_69, param_70, param_71, param_72, param_73);
         bool param_74 = lvl3w.x;
         bool param_75 = lvl4w.x;
         bool param_76 = lvl6w.x;
@@ -2218,9 +2218,9 @@ fragment main0_out main0(constant Params& _2040 [[buffer(0)]], texture2d<float> 
         float param_80 = crn.w;
         float param_81 = mid.z;
         float param_82 = mid.w;
-        int param_83 = level(param_74, param_75, param_76);
-        int param_84 = level(param_77, param_78, param_79);
-        float _2182 = contour(param_80, param_81, param_82, param_83, param_84);
+        int param_83 = exult_sfx_level(param_74, param_75, param_76);
+        int param_84 = exult_sfx_level(param_77, param_78, param_79);
+        float _2182 = exult_sfx_contour(param_80, param_81, param_82, param_83, param_84);
         out.FragColor = float4(_2086, _2118, _2150, _2182);
     }
     return out;
@@ -2337,7 +2337,7 @@ struct main0_out
 };
 
 static inline __attribute__((always_inline))
-float4 original(thread const int2& p, thread const int& code, texture2d<float> Auxiliary, sampler AuxiliarySmplr, constant Params& _50)
+float4 exult_sfx_original(thread const int2& p, thread const int& code, texture2d<float> Auxiliary, sampler AuxiliarySmplr, constant Params& _50)
 {
     return Auxiliary.read(uint2(clamp(p + _40[code], int2(0), _50.settings.xy - int2(1))), 0);
 }
@@ -2352,7 +2352,7 @@ fragment main0_out main0(constant Params& _50 [[buffer(0)]], texture2d<float> Au
     float4 encoded = Source.read(uint2(p), 0);
     int2 param = p;
     int param_1 = 0;
-    float4 centre = original(param, param_1, Auxiliary, AuxiliarySmplr, _50);
+    float4 centre = exult_sfx_original(param, param_1, Auxiliary, AuxiliarySmplr, _50);
     float4 colour = centre;
     if (f == 3)
     {
@@ -2430,7 +2430,7 @@ fragment main0_out main0(constant Params& _50 [[buffer(0)]], texture2d<float> Au
         }
         int2 param_2 = p;
         int param_3 = code;
-        colour = original(param_2, param_3, Auxiliary, AuxiliarySmplr, _50);
+        colour = exult_sfx_original(param_2, param_3, Auxiliary, AuxiliarySmplr, _50);
     }
     else
     {
@@ -2476,7 +2476,7 @@ fragment main0_out main0(constant Params& _50 [[buffer(0)]], texture2d<float> Au
             }
             int2 param_4 = p;
             int param_5 = code_1;
-            float4 candidate = original(param_4, param_5, Auxiliary, AuxiliarySmplr, _50);
+            float4 candidate = exult_sfx_original(param_4, param_5, Auxiliary, AuxiliarySmplr, _50);
             int index = int(round(spvFMul(candidate.w, 255.0)));
             int centre_index = int(round(spvFMul(centre.w, 255.0)));
             if ((depth == 0) && (index > centre_index))
@@ -2823,32 +2823,32 @@ struct main0_out
 };
 
 static inline __attribute__((always_inline))
-int4 fetchPixel(thread const int2& delta, texture2d<float> Source, sampler SourceSmplr, thread int2& position, constant Params& _285)
+int4 exult_sfx_fetchPixel(thread const int2& delta, texture2d<float> Source, sampler SourceSmplr, thread int2& position, constant Params& _285)
 {
     return int4(round(Source.read(uint2(clamp(position + delta, int2(0), int2(_285.settings.x, _285.limits.y) - int2(1))), 0) * 255.0));
 }
 
 static inline __attribute__((always_inline))
-int indexAt(thread const int& x, thread const int& y, texture2d<float> Source, sampler SourceSmplr, thread int2& position, constant Params& _285)
+int exult_sfx_indexAt(thread const int& x, thread const int& y, texture2d<float> Source, sampler SourceSmplr, thread int2& position, constant Params& _285)
 {
     int2 param = int2(x, y);
-    return fetchPixel(param, Source, SourceSmplr, position, _285).w;
+    return exult_sfx_fetchPixel(param, Source, SourceSmplr, position, _285).w;
 }
 
 static inline __attribute__((always_inline))
-int3 rgb(thread const int& index, texture2d<float> Palette, sampler PaletteSmplr)
+int3 exult_sfx_rgb(thread const int& index, texture2d<float> Palette, sampler PaletteSmplr)
 {
     return int3(round(Palette.read(uint2(int2(index, 0)), 0).xyz * 255.0));
 }
 
 static inline __attribute__((always_inline))
-uint pack(thread const int3& c)
+uint exult_sfx_pack(thread const int3& c)
 {
     return uint(((c.x << 16) | (c.y << 8)) | c.z);
 }
 
 static inline __attribute__((always_inline))
-int toYUV(thread const int& c)
+int exult_sfx_toYUV(thread const int& c)
 {
     uint r = uint(c >> 16) & 255u;
     uint g = uint(c >> 8) & 255u;
@@ -2860,7 +2860,7 @@ int toYUV(thread const int& c)
 }
 
 static inline __attribute__((always_inline))
-bool Diff(thread const int& a, thread const int& b)
+bool exult_sfx_Diff(thread const int& a, thread const int& b)
 {
     bool _368 = abs((a & 16711680) - (b & 16711680)) > 3145728;
     bool _381;
@@ -2885,27 +2885,27 @@ bool Diff(thread const int& a, thread const int& b)
 }
 
 static inline __attribute__((always_inline))
-int StoreRGB(thread const int& c)
+int exult_sfx_StoreRGB(thread const int& c)
 {
     return c & 16777215;
 }
 
 static inline __attribute__((always_inline))
-int Interp1(thread const int& a, thread const int& b)
+int exult_sfx_Interp1(thread const int& a, thread const int& b)
 {
     int param = ((a * 3) + b) >> 2;
-    return StoreRGB(param);
+    return exult_sfx_StoreRGB(param);
 }
 
 static inline __attribute__((always_inline))
-int Interp2(thread const int& a, thread const int& b, thread const int& c)
+int exult_sfx_Interp2(thread const int& a, thread const int& b, thread const int& c)
 {
     int param = (((a * 2) + b) + c) >> 2;
-    return StoreRGB(param);
+    return exult_sfx_StoreRGB(param);
 }
 
 static inline __attribute__((always_inline))
-int weighted(thread const int& a, thread const int& b, thread const int& c, thread const int& wa, thread const int& wb, thread const int& wc, thread const int& shift)
+int exult_sfx_weighted(thread const int& a, thread const int& b, thread const int& c, thread const int& wa, thread const int& wb, thread const int& wc, thread const int& shift)
 {
     int green = ((((a & 65280) * wa) + ((b & 65280) * wb)) + ((c & 65280) * wc)) & (65280 << shift);
     int rb = ((((a & 16711935) * wa) + ((b & 16711935) * wb)) + ((c & 16711935) * wc)) & (16711935 << shift);
@@ -2913,7 +2913,7 @@ int weighted(thread const int& a, thread const int& b, thread const int& c, thre
 }
 
 static inline __attribute__((always_inline))
-int Interp3(thread const int& a, thread const int& b)
+int exult_sfx_Interp3(thread const int& a, thread const int& b)
 {
     int param = a;
     int param_1 = b;
@@ -2922,11 +2922,11 @@ int Interp3(thread const int& a, thread const int& b)
     int param_4 = 1;
     int param_5 = 0;
     int param_6 = 3;
-    return weighted(param, param_1, param_2, param_3, param_4, param_5, param_6);
+    return exult_sfx_weighted(param, param_1, param_2, param_3, param_4, param_5, param_6);
 }
 
 static inline __attribute__((always_inline))
-int Interp4(thread const int& a, thread const int& b, thread const int& c)
+int exult_sfx_Interp4(thread const int& a, thread const int& b, thread const int& c)
 {
     int param = a;
     int param_1 = b;
@@ -2935,18 +2935,18 @@ int Interp4(thread const int& a, thread const int& b, thread const int& c)
     int param_4 = 7;
     int param_5 = 7;
     int param_6 = 4;
-    return weighted(param, param_1, param_2, param_3, param_4, param_5, param_6);
+    return exult_sfx_weighted(param, param_1, param_2, param_3, param_4, param_5, param_6);
 }
 
 static inline __attribute__((always_inline))
-int Interp5(thread const int& a, thread const int& b)
+int exult_sfx_Interp5(thread const int& a, thread const int& b)
 {
     int param = (a + b) >> 1;
-    return StoreRGB(param);
+    return exult_sfx_StoreRGB(param);
 }
 
 static inline __attribute__((always_inline))
-int Interp6(thread const int& a, thread const int& b, thread const int& c)
+int exult_sfx_Interp6(thread const int& a, thread const int& b, thread const int& c)
 {
     int param = a;
     int param_1 = b;
@@ -2955,11 +2955,11 @@ int Interp6(thread const int& a, thread const int& b, thread const int& c)
     int param_4 = 2;
     int param_5 = 1;
     int param_6 = 3;
-    return weighted(param, param_1, param_2, param_3, param_4, param_5, param_6);
+    return exult_sfx_weighted(param, param_1, param_2, param_3, param_4, param_5, param_6);
 }
 
 static inline __attribute__((always_inline))
-int Interp7(thread const int& a, thread const int& b, thread const int& c)
+int exult_sfx_Interp7(thread const int& a, thread const int& b, thread const int& c)
 {
     int param = a;
     int param_1 = b;
@@ -2968,11 +2968,11 @@ int Interp7(thread const int& a, thread const int& b, thread const int& c)
     int param_4 = 1;
     int param_5 = 1;
     int param_6 = 3;
-    return weighted(param, param_1, param_2, param_3, param_4, param_5, param_6);
+    return exult_sfx_weighted(param, param_1, param_2, param_3, param_4, param_5, param_6);
 }
 
 static inline __attribute__((always_inline))
-int Interp8(thread const int& a, thread const int& b)
+int exult_sfx_Interp8(thread const int& a, thread const int& b)
 {
     int param = a;
     int param_1 = b;
@@ -2981,11 +2981,11 @@ int Interp8(thread const int& a, thread const int& b)
     int param_4 = 3;
     int param_5 = 0;
     int param_6 = 3;
-    return weighted(param, param_1, param_2, param_3, param_4, param_5, param_6);
+    return exult_sfx_weighted(param, param_1, param_2, param_3, param_4, param_5, param_6);
 }
 
 static inline __attribute__((always_inline))
-int Interp9(thread const int& a, thread const int& b, thread const int& c)
+int exult_sfx_Interp9(thread const int& a, thread const int& b, thread const int& c)
 {
     int param = a;
     int param_1 = b;
@@ -2994,11 +2994,11 @@ int Interp9(thread const int& a, thread const int& b, thread const int& c)
     int param_4 = 3;
     int param_5 = 3;
     int param_6 = 3;
-    return weighted(param, param_1, param_2, param_3, param_4, param_5, param_6);
+    return exult_sfx_weighted(param, param_1, param_2, param_3, param_4, param_5, param_6);
 }
 
 static inline __attribute__((always_inline))
-int Interp10(thread const int& a, thread const int& b, thread const int& c)
+int exult_sfx_Interp10(thread const int& a, thread const int& b, thread const int& c)
 {
     int param = a;
     int param_1 = b;
@@ -3007,11 +3007,11 @@ int Interp10(thread const int& a, thread const int& b, thread const int& c)
     int param_4 = 1;
     int param_5 = 1;
     int param_6 = 4;
-    return weighted(param, param_1, param_2, param_3, param_4, param_5, param_6);
+    return exult_sfx_weighted(param, param_1, param_2, param_3, param_4, param_5, param_6);
 }
 
 static inline __attribute__((always_inline))
-void hq(texture2d<float> Source, sampler SourceSmplr, thread int2& position, constant Params& _285, texture2d<float> Palette, sampler PaletteSmplr, texture2d<uint> Lookup, sampler LookupSmplr, thread spvUnsafeArray<uint, 16>& pixels)
+void exult_sfx_hq(texture2d<float> Source, sampler SourceSmplr, thread int2& position, constant Params& _285, texture2d<float> Palette, sampler PaletteSmplr, texture2d<uint> Lookup, sampler LookupSmplr, thread spvUnsafeArray<uint, 16>& pixels)
 {
     spvUnsafeArray<int, 10> yuv;
     yuv[0] = 0;
@@ -3026,15 +3026,15 @@ void hq(texture2d<float> Source, sampler SourceSmplr, thread int2& position, con
         {
             int param = x;
             int param_1 = y;
-            w[k] = indexAt(param, param_1, Source, SourceSmplr, position, _285);
+            w[k] = exult_sfx_indexAt(param, param_1, Source, SourceSmplr, position, _285);
             int param_2 = w[k];
-            int3 colour = rgb(param_2, Palette, PaletteSmplr);
+            int3 colour = exult_sfx_rgb(param_2, Palette, PaletteSmplr);
             colour.x &= (-4);
             colour.y &= (-4);
             int3 param_3 = colour;
-            c[k] = int(pack(param_3));
+            c[k] = int(exult_sfx_pack(param_3));
             int param_4 = c[k];
-            yuv[k] = toYUV(param_4);
+            yuv[k] = exult_sfx_toYUV(param_4);
             k++;
         }
     }
@@ -3053,7 +3053,7 @@ void hq(texture2d<float> Source, sampler SourceSmplr, thread int2& position, con
         {
             int param_5 = yuv[5];
             int param_6 = yuv[k];
-            _715 = Diff(param_5, param_6);
+            _715 = exult_sfx_Diff(param_5, param_6);
         }
         else
         {
@@ -3073,7 +3073,7 @@ void hq(texture2d<float> Source, sampler SourceSmplr, thread int2& position, con
     int param_12 = yuv[8];
     int param_13 = yuv[8];
     int param_14 = yuv[4];
-    int edges = ((int(Diff(param_7, param_8)) | (Diff(param_9, param_10) ? 2 : 0)) | (Diff(param_11, param_12) ? 4 : 0)) | (Diff(param_13, param_14) ? 8 : 0);
+    int edges = ((int(exult_sfx_Diff(param_7, param_8)) | (exult_sfx_Diff(param_9, param_10) ? 2 : 0)) | (exult_sfx_Diff(param_11, param_12) ? 4 : 0)) | (exult_sfx_Diff(param_13, param_14) ? 8 : 0);
     int base = ((((_285.settings.w - 1) * 4096) + (edges * 256)) + pattern) * 16;
     k = 0;
     for (; k < (_285.settings.z * _285.settings.z); k++)
@@ -3089,14 +3089,14 @@ void hq(texture2d<float> Source, sampler SourceSmplr, thread int2& position, con
             case 0:
             {
                 int param_15 = a;
-                result = StoreRGB(param_15);
+                result = exult_sfx_StoreRGB(param_15);
                 break;
             }
             case 1:
             {
                 int param_16 = a;
                 int param_17 = b;
-                result = Interp1(param_16, param_17);
+                result = exult_sfx_Interp1(param_16, param_17);
                 break;
             }
             case 2:
@@ -3104,14 +3104,14 @@ void hq(texture2d<float> Source, sampler SourceSmplr, thread int2& position, con
                 int param_18 = a;
                 int param_19 = b;
                 int param_20 = third;
-                result = Interp2(param_18, param_19, param_20);
+                result = exult_sfx_Interp2(param_18, param_19, param_20);
                 break;
             }
             case 3:
             {
                 int param_21 = a;
                 int param_22 = b;
-                result = Interp3(param_21, param_22);
+                result = exult_sfx_Interp3(param_21, param_22);
                 break;
             }
             case 4:
@@ -3119,14 +3119,14 @@ void hq(texture2d<float> Source, sampler SourceSmplr, thread int2& position, con
                 int param_23 = a;
                 int param_24 = b;
                 int param_25 = third;
-                result = Interp4(param_23, param_24, param_25);
+                result = exult_sfx_Interp4(param_23, param_24, param_25);
                 break;
             }
             case 5:
             {
                 int param_26 = a;
                 int param_27 = b;
-                result = Interp5(param_26, param_27);
+                result = exult_sfx_Interp5(param_26, param_27);
                 break;
             }
             case 6:
@@ -3134,7 +3134,7 @@ void hq(texture2d<float> Source, sampler SourceSmplr, thread int2& position, con
                 int param_28 = a;
                 int param_29 = b;
                 int param_30 = third;
-                result = Interp6(param_28, param_29, param_30);
+                result = exult_sfx_Interp6(param_28, param_29, param_30);
                 break;
             }
             case 7:
@@ -3142,14 +3142,14 @@ void hq(texture2d<float> Source, sampler SourceSmplr, thread int2& position, con
                 int param_31 = a;
                 int param_32 = b;
                 int param_33 = third;
-                result = Interp7(param_31, param_32, param_33);
+                result = exult_sfx_Interp7(param_31, param_32, param_33);
                 break;
             }
             case 8:
             {
                 int param_34 = a;
                 int param_35 = b;
-                result = Interp8(param_34, param_35);
+                result = exult_sfx_Interp8(param_34, param_35);
                 break;
             }
             case 9:
@@ -3157,7 +3157,7 @@ void hq(texture2d<float> Source, sampler SourceSmplr, thread int2& position, con
                 int param_36 = a;
                 int param_37 = b;
                 int param_38 = third;
-                result = Interp9(param_36, param_37, param_38);
+                result = exult_sfx_Interp9(param_36, param_37, param_38);
                 break;
             }
             case 10:
@@ -3165,7 +3165,7 @@ void hq(texture2d<float> Source, sampler SourceSmplr, thread int2& position, con
                 int param_39 = a;
                 int param_40 = b;
                 int param_41 = third;
-                result = Interp10(param_39, param_40, param_41);
+                result = exult_sfx_Interp10(param_39, param_40, param_41);
                 break;
             }
         }
@@ -3174,16 +3174,16 @@ void hq(texture2d<float> Source, sampler SourceSmplr, thread int2& position, con
 }
 
 static inline __attribute__((always_inline))
-uint Interpolate_2xSaI(thread const int& a, thread const int& b, texture2d<float> Palette, sampler PaletteSmplr)
+uint exult_sfx_Interpolate_2xSaI(thread const int& a, thread const int& b, texture2d<float> Palette, sampler PaletteSmplr)
 {
     int param = a;
     int param_1 = b;
-    int3 param_2 = (rgb(param, Palette, PaletteSmplr) + rgb(param_1, Palette, PaletteSmplr)) >> int3(1);
-    return pack(param_2);
+    int3 param_2 = (exult_sfx_rgb(param, Palette, PaletteSmplr) + exult_sfx_rgb(param_1, Palette, PaletteSmplr)) >> int3(1);
+    return exult_sfx_pack(param_2);
 }
 
 static inline __attribute__((always_inline))
-int GetResult1(thread const int& A, thread const int& B, thread const int& C, thread const int& D)
+int exult_sfx_GetResult1(thread const int& A, thread const int& B, thread const int& C, thread const int& D)
 {
     int x = 0;
     int y = 0;
@@ -3213,28 +3213,28 @@ int GetResult1(thread const int& A, thread const int& B, thread const int& C, th
 }
 
 static inline __attribute__((always_inline))
-int GetResult2(thread const int& A, thread const int& B, thread const int& C, thread const int& D)
+int exult_sfx_GetResult2(thread const int& A, thread const int& B, thread const int& C, thread const int& D)
 {
     int param = A;
     int param_1 = B;
     int param_2 = C;
     int param_3 = D;
-    return -GetResult1(param, param_1, param_2, param_3);
+    return -exult_sfx_GetResult1(param, param_1, param_2, param_3);
 }
 
 static inline __attribute__((always_inline))
-uint QInterpolate_2xSaI(thread const int& a, thread const int& b, thread const int& c, thread const int& d, texture2d<float> Palette, sampler PaletteSmplr)
+uint exult_sfx_QInterpolate_2xSaI(thread const int& a, thread const int& b, thread const int& c, thread const int& d, texture2d<float> Palette, sampler PaletteSmplr)
 {
     int param = a;
     int param_1 = b;
     int param_2 = c;
     int param_3 = d;
-    int3 param_4 = (((rgb(param, Palette, PaletteSmplr) + rgb(param_1, Palette, PaletteSmplr)) + rgb(param_2, Palette, PaletteSmplr)) + rgb(param_3, Palette, PaletteSmplr)) >> int3(2);
-    return pack(param_4);
+    int3 param_4 = (((exult_sfx_rgb(param, Palette, PaletteSmplr) + exult_sfx_rgb(param_1, Palette, PaletteSmplr)) + exult_sfx_rgb(param_2, Palette, PaletteSmplr)) + exult_sfx_rgb(param_3, Palette, PaletteSmplr)) >> int3(2);
+    return exult_sfx_pack(param_4);
 }
 
 static inline __attribute__((always_inline))
-void SaI(texture2d<float> Source, sampler SourceSmplr, thread int2& position, constant Params& _285, texture2d<float> Palette, sampler PaletteSmplr, thread spvUnsafeArray<uint, 16>& pixels)
+void exult_sfx_SaI(texture2d<float> Source, sampler SourceSmplr, thread int2& position, constant Params& _285, texture2d<float> Palette, sampler PaletteSmplr, thread spvUnsafeArray<uint, 16>& pixels)
 {
     int x = position.x - _285.limits.z;
     int y = position.y - _285.limits.w;
@@ -3264,49 +3264,49 @@ void SaI(texture2d<float> Source, sampler SourceSmplr, thread int2& position, co
     }
     int param = 0 - prev1_xoff;
     int param_1 = ((0 - prev1_yoff) - 0) / 4096;
-    int colorI = indexAt(param, param_1, Source, SourceSmplr, position, _285);
+    int colorI = exult_sfx_indexAt(param, param_1, Source, SourceSmplr, position, _285);
     int param_2 = 0;
     int param_3 = (0 - prev1_yoff) / 4096;
-    int colorE = indexAt(param_2, param_3, Source, SourceSmplr, position, _285);
+    int colorE = exult_sfx_indexAt(param_2, param_3, Source, SourceSmplr, position, _285);
     int param_4 = 0 + next1_xoff;
     int param_5 = ((0 - prev1_yoff) + 0) / 4096;
-    int colorF = indexAt(param_4, param_5, Source, SourceSmplr, position, _285);
+    int colorF = exult_sfx_indexAt(param_4, param_5, Source, SourceSmplr, position, _285);
     int param_6 = 0 + next2_xoff;
     int param_7 = ((0 - prev1_yoff) + 0) / 4096;
-    int colorJ = indexAt(param_6, param_7, Source, SourceSmplr, position, _285);
+    int colorJ = exult_sfx_indexAt(param_6, param_7, Source, SourceSmplr, position, _285);
     int param_8 = 0 - prev1_xoff;
     int param_9 = 0;
-    int colorG = indexAt(param_8, param_9, Source, SourceSmplr, position, _285);
+    int colorG = exult_sfx_indexAt(param_8, param_9, Source, SourceSmplr, position, _285);
     int param_10 = 0;
     int param_11 = 0;
-    int colorA = indexAt(param_10, param_11, Source, SourceSmplr, position, _285);
+    int colorA = exult_sfx_indexAt(param_10, param_11, Source, SourceSmplr, position, _285);
     int param_12 = 0 + next1_xoff;
     int param_13 = 0;
-    int colorB = indexAt(param_12, param_13, Source, SourceSmplr, position, _285);
+    int colorB = exult_sfx_indexAt(param_12, param_13, Source, SourceSmplr, position, _285);
     int param_14 = 0 + next2_xoff;
     int param_15 = 0;
-    int colorK = indexAt(param_14, param_15, Source, SourceSmplr, position, _285);
+    int colorK = exult_sfx_indexAt(param_14, param_15, Source, SourceSmplr, position, _285);
     int param_16 = 0 - prev1_xoff;
     int param_17 = ((0 + next1_yoff) - 0) / 4096;
-    int colorH = indexAt(param_16, param_17, Source, SourceSmplr, position, _285);
+    int colorH = exult_sfx_indexAt(param_16, param_17, Source, SourceSmplr, position, _285);
     int param_18 = 0;
     int param_19 = (0 + next1_yoff) / 4096;
-    int colorC = indexAt(param_18, param_19, Source, SourceSmplr, position, _285);
+    int colorC = exult_sfx_indexAt(param_18, param_19, Source, SourceSmplr, position, _285);
     int param_20 = 0 + next1_xoff;
     int param_21 = ((0 + next1_yoff) + 0) / 4096;
-    int colorD = indexAt(param_20, param_21, Source, SourceSmplr, position, _285);
+    int colorD = exult_sfx_indexAt(param_20, param_21, Source, SourceSmplr, position, _285);
     int param_22 = 0 + next2_xoff;
     int param_23 = ((0 + next1_yoff) + 0) / 4096;
-    int colorL = indexAt(param_22, param_23, Source, SourceSmplr, position, _285);
+    int colorL = exult_sfx_indexAt(param_22, param_23, Source, SourceSmplr, position, _285);
     int param_24 = 0 - prev1_xoff;
     int param_25 = ((0 + next2_yoff) - 0) / 4096;
-    int colorM = indexAt(param_24, param_25, Source, SourceSmplr, position, _285);
+    int colorM = exult_sfx_indexAt(param_24, param_25, Source, SourceSmplr, position, _285);
     int param_26 = 0;
     int param_27 = (0 + next2_yoff) / 4096;
-    int colorN = indexAt(param_26, param_27, Source, SourceSmplr, position, _285);
+    int colorN = exult_sfx_indexAt(param_26, param_27, Source, SourceSmplr, position, _285);
     int param_28 = 0 + next1_xoff;
     int param_29 = ((0 + next2_yoff) + 0) / 4096;
-    int colorO = indexAt(param_28, param_29, Source, SourceSmplr, position, _285);
+    int colorO = exult_sfx_indexAt(param_28, param_29, Source, SourceSmplr, position, _285);
     uint product;
     uint product1;
     uint product2;
@@ -3325,14 +3325,14 @@ void SaI(texture2d<float> Source, sampler SourceSmplr, thread int2& position, co
         if (_1298)
         {
             int param_30 = colorA;
-            int3 param_31 = rgb(param_30, Palette, PaletteSmplr);
-            product = pack(param_31);
+            int3 param_31 = exult_sfx_rgb(param_30, Palette, PaletteSmplr);
+            product = exult_sfx_pack(param_31);
         }
         else
         {
             int param_32 = colorA;
             int param_33 = colorB;
-            product = Interpolate_2xSaI(param_32, param_33, Palette, PaletteSmplr);
+            product = exult_sfx_Interpolate_2xSaI(param_32, param_33, Palette, PaletteSmplr);
         }
         bool _1319 = (colorA == colorG) && (colorC == colorO);
         bool _1338;
@@ -3347,18 +3347,18 @@ void SaI(texture2d<float> Source, sampler SourceSmplr, thread int2& position, co
         if (_1338)
         {
             int param_34 = colorA;
-            int3 param_35 = rgb(param_34, Palette, PaletteSmplr);
-            product1 = pack(param_35);
+            int3 param_35 = exult_sfx_rgb(param_34, Palette, PaletteSmplr);
+            product1 = exult_sfx_pack(param_35);
         }
         else
         {
             int param_36 = colorA;
             int param_37 = colorC;
-            product1 = Interpolate_2xSaI(param_36, param_37, Palette, PaletteSmplr);
+            product1 = exult_sfx_Interpolate_2xSaI(param_36, param_37, Palette, PaletteSmplr);
         }
         int param_38 = colorA;
-        int3 param_39 = rgb(param_38, Palette, PaletteSmplr);
-        product2 = pack(param_39);
+        int3 param_39 = exult_sfx_rgb(param_38, Palette, PaletteSmplr);
+        product2 = exult_sfx_pack(param_39);
     }
     else
     {
@@ -3377,14 +3377,14 @@ void SaI(texture2d<float> Source, sampler SourceSmplr, thread int2& position, co
             if (_1394)
             {
                 int param_40 = colorB;
-                int3 param_41 = rgb(param_40, Palette, PaletteSmplr);
-                product = pack(param_41);
+                int3 param_41 = exult_sfx_rgb(param_40, Palette, PaletteSmplr);
+                product = exult_sfx_pack(param_41);
             }
             else
             {
                 int param_42 = colorA;
                 int param_43 = colorB;
-                product = Interpolate_2xSaI(param_42, param_43, Palette, PaletteSmplr);
+                product = exult_sfx_Interpolate_2xSaI(param_42, param_43, Palette, PaletteSmplr);
             }
             bool _1414 = (colorC == colorH) && (colorA == colorF);
             bool _1433;
@@ -3399,18 +3399,18 @@ void SaI(texture2d<float> Source, sampler SourceSmplr, thread int2& position, co
             if (_1433)
             {
                 int param_44 = colorC;
-                int3 param_45 = rgb(param_44, Palette, PaletteSmplr);
-                product1 = pack(param_45);
+                int3 param_45 = exult_sfx_rgb(param_44, Palette, PaletteSmplr);
+                product1 = exult_sfx_pack(param_45);
             }
             else
             {
                 int param_46 = colorA;
                 int param_47 = colorC;
-                product1 = Interpolate_2xSaI(param_46, param_47, Palette, PaletteSmplr);
+                product1 = exult_sfx_Interpolate_2xSaI(param_46, param_47, Palette, PaletteSmplr);
             }
             int param_48 = colorB;
-            int3 param_49 = rgb(param_48, Palette, PaletteSmplr);
-            product2 = pack(param_49);
+            int3 param_49 = exult_sfx_rgb(param_48, Palette, PaletteSmplr);
+            product2 = exult_sfx_pack(param_49);
         }
         else
         {
@@ -3419,57 +3419,57 @@ void SaI(texture2d<float> Source, sampler SourceSmplr, thread int2& position, co
                 if (colorA == colorB)
                 {
                     int param_50 = colorA;
-                    int3 param_51 = rgb(param_50, Palette, PaletteSmplr);
-                    product = pack(param_51);
+                    int3 param_51 = exult_sfx_rgb(param_50, Palette, PaletteSmplr);
+                    product = exult_sfx_pack(param_51);
                     int param_52 = colorA;
-                    int3 param_53 = rgb(param_52, Palette, PaletteSmplr);
-                    product1 = pack(param_53);
+                    int3 param_53 = exult_sfx_rgb(param_52, Palette, PaletteSmplr);
+                    product1 = exult_sfx_pack(param_53);
                     int param_54 = colorA;
-                    int3 param_55 = rgb(param_54, Palette, PaletteSmplr);
-                    product2 = pack(param_55);
+                    int3 param_55 = exult_sfx_rgb(param_54, Palette, PaletteSmplr);
+                    product2 = exult_sfx_pack(param_55);
                 }
                 else
                 {
                     int r = 0;
                     int param_56 = colorA;
                     int param_57 = colorC;
-                    product1 = Interpolate_2xSaI(param_56, param_57, Palette, PaletteSmplr);
+                    product1 = exult_sfx_Interpolate_2xSaI(param_56, param_57, Palette, PaletteSmplr);
                     int param_58 = colorA;
                     int param_59 = colorB;
-                    product = Interpolate_2xSaI(param_58, param_59, Palette, PaletteSmplr);
+                    product = exult_sfx_Interpolate_2xSaI(param_58, param_59, Palette, PaletteSmplr);
                     int param_60 = colorA;
                     int param_61 = colorB;
                     int param_62 = colorG;
                     int param_63 = colorE;
-                    r += GetResult1(param_60, param_61, param_62, param_63);
+                    r += exult_sfx_GetResult1(param_60, param_61, param_62, param_63);
                     int param_64 = colorB;
                     int param_65 = colorA;
                     int param_66 = colorK;
                     int param_67 = colorF;
-                    r += GetResult2(param_64, param_65, param_66, param_67);
+                    r += exult_sfx_GetResult2(param_64, param_65, param_66, param_67);
                     int param_68 = colorB;
                     int param_69 = colorA;
                     int param_70 = colorH;
                     int param_71 = colorN;
-                    r += GetResult2(param_68, param_69, param_70, param_71);
+                    r += exult_sfx_GetResult2(param_68, param_69, param_70, param_71);
                     int param_72 = colorA;
                     int param_73 = colorB;
                     int param_74 = colorL;
                     int param_75 = colorO;
-                    r += GetResult1(param_72, param_73, param_74, param_75);
+                    r += exult_sfx_GetResult1(param_72, param_73, param_74, param_75);
                     if (r > 0)
                     {
                         int param_76 = colorA;
-                        int3 param_77 = rgb(param_76, Palette, PaletteSmplr);
-                        product2 = pack(param_77);
+                        int3 param_77 = exult_sfx_rgb(param_76, Palette, PaletteSmplr);
+                        product2 = exult_sfx_pack(param_77);
                     }
                     else
                     {
                         if (r < 0)
                         {
                             int param_78 = colorB;
-                            int3 param_79 = rgb(param_78, Palette, PaletteSmplr);
-                            product2 = pack(param_79);
+                            int3 param_79 = exult_sfx_rgb(param_78, Palette, PaletteSmplr);
+                            product2 = exult_sfx_pack(param_79);
                         }
                         else
                         {
@@ -3477,7 +3477,7 @@ void SaI(texture2d<float> Source, sampler SourceSmplr, thread int2& position, co
                             int param_81 = colorB;
                             int param_82 = colorC;
                             int param_83 = colorD;
-                            product2 = QInterpolate_2xSaI(param_80, param_81, param_82, param_83, Palette, PaletteSmplr);
+                            product2 = exult_sfx_QInterpolate_2xSaI(param_80, param_81, param_82, param_83, Palette, PaletteSmplr);
                         }
                     }
                 }
@@ -3488,55 +3488,55 @@ void SaI(texture2d<float> Source, sampler SourceSmplr, thread int2& position, co
                 int param_85 = colorB;
                 int param_86 = colorC;
                 int param_87 = colorD;
-                product2 = QInterpolate_2xSaI(param_84, param_85, param_86, param_87, Palette, PaletteSmplr);
+                product2 = exult_sfx_QInterpolate_2xSaI(param_84, param_85, param_86, param_87, Palette, PaletteSmplr);
                 if ((((colorA == colorC) && (colorA == colorF)) && (colorB != colorE)) && (colorB == colorJ))
                 {
                     int param_88 = colorA;
-                    int3 param_89 = rgb(param_88, Palette, PaletteSmplr);
-                    product = pack(param_89);
+                    int3 param_89 = exult_sfx_rgb(param_88, Palette, PaletteSmplr);
+                    product = exult_sfx_pack(param_89);
                 }
                 else
                 {
                     if ((((colorB == colorE) && (colorB == colorD)) && (colorA != colorF)) && (colorA == colorI))
                     {
                         int param_90 = colorB;
-                        int3 param_91 = rgb(param_90, Palette, PaletteSmplr);
-                        product = pack(param_91);
+                        int3 param_91 = exult_sfx_rgb(param_90, Palette, PaletteSmplr);
+                        product = exult_sfx_pack(param_91);
                     }
                     else
                     {
                         int param_92 = colorA;
                         int param_93 = colorB;
-                        product = Interpolate_2xSaI(param_92, param_93, Palette, PaletteSmplr);
+                        product = exult_sfx_Interpolate_2xSaI(param_92, param_93, Palette, PaletteSmplr);
                     }
                 }
                 if ((((colorA == colorB) && (colorA == colorH)) && (colorG != colorC)) && (colorC == colorM))
                 {
                     int param_94 = colorA;
-                    int3 param_95 = rgb(param_94, Palette, PaletteSmplr);
-                    product1 = pack(param_95);
+                    int3 param_95 = exult_sfx_rgb(param_94, Palette, PaletteSmplr);
+                    product1 = exult_sfx_pack(param_95);
                 }
                 else
                 {
                     if ((((colorC == colorG) && (colorC == colorD)) && (colorA != colorH)) && (colorA == colorI))
                     {
                         int param_96 = colorC;
-                        int3 param_97 = rgb(param_96, Palette, PaletteSmplr);
-                        product1 = pack(param_97);
+                        int3 param_97 = exult_sfx_rgb(param_96, Palette, PaletteSmplr);
+                        product1 = exult_sfx_pack(param_97);
                     }
                     else
                     {
                         int param_98 = colorA;
                         int param_99 = colorC;
-                        product1 = Interpolate_2xSaI(param_98, param_99, Palette, PaletteSmplr);
+                        product1 = exult_sfx_Interpolate_2xSaI(param_98, param_99, Palette, PaletteSmplr);
                     }
                 }
             }
         }
     }
     int param_100 = colorA;
-    int3 param_101 = rgb(param_100, Palette, PaletteSmplr);
-    uint orig = pack(param_101);
+    int3 param_101 = exult_sfx_rgb(param_100, Palette, PaletteSmplr);
+    uint orig = exult_sfx_pack(param_101);
     pixels[0] = orig;
     pixels[1] = product;
     pixels[2] = product1;
@@ -3544,7 +3544,7 @@ void SaI(texture2d<float> Source, sampler SourceSmplr, thread int2& position, co
 }
 
 static inline __attribute__((always_inline))
-void Super2xSaI(texture2d<float> Source, sampler SourceSmplr, thread int2& position, constant Params& _285, texture2d<float> Palette, sampler PaletteSmplr, thread spvUnsafeArray<uint, 16>& pixels)
+void exult_sfx_Super2xSaI(texture2d<float> Source, sampler SourceSmplr, thread int2& position, constant Params& _285, texture2d<float> Palette, sampler PaletteSmplr, thread spvUnsafeArray<uint, 16>& pixels)
 {
     int x = position.x - _285.limits.z;
     int y = position.y - _285.limits.w;
@@ -3616,59 +3616,59 @@ void Super2xSaI(texture2d<float> Source, sampler SourceSmplr, thread int2& posit
     }
     int param = 0 - sub1;
     int param_1 = ((0 - prevl1) - 0) / 4096;
-    int colorB0 = indexAt(param, param_1, Source, SourceSmplr, position, _285);
+    int colorB0 = exult_sfx_indexAt(param, param_1, Source, SourceSmplr, position, _285);
     int param_2 = 0;
     int param_3 = (0 - prevl1) / 4096;
-    int colorB1 = indexAt(param_2, param_3, Source, SourceSmplr, position, _285);
+    int colorB1 = exult_sfx_indexAt(param_2, param_3, Source, SourceSmplr, position, _285);
     int param_4 = 0 + add1;
     int param_5 = ((0 - prevl1) + 0) / 4096;
-    int colorB2 = indexAt(param_4, param_5, Source, SourceSmplr, position, _285);
+    int colorB2 = exult_sfx_indexAt(param_4, param_5, Source, SourceSmplr, position, _285);
     int param_6 = (0 + add1) + add2;
     int param_7 = (((0 - prevl1) + 0) + 0) / 4096;
-    int colorB3 = indexAt(param_6, param_7, Source, SourceSmplr, position, _285);
+    int colorB3 = exult_sfx_indexAt(param_6, param_7, Source, SourceSmplr, position, _285);
     int param_8 = 0 - sub1;
     int param_9 = 0;
-    int color4 = indexAt(param_8, param_9, Source, SourceSmplr, position, _285);
+    int color4 = exult_sfx_indexAt(param_8, param_9, Source, SourceSmplr, position, _285);
     int param_10 = 0;
     int param_11 = 0;
-    int color5 = indexAt(param_10, param_11, Source, SourceSmplr, position, _285);
+    int color5 = exult_sfx_indexAt(param_10, param_11, Source, SourceSmplr, position, _285);
     int param_12 = 0 + add1;
     int param_13 = 0;
-    int color6 = indexAt(param_12, param_13, Source, SourceSmplr, position, _285);
+    int color6 = exult_sfx_indexAt(param_12, param_13, Source, SourceSmplr, position, _285);
     int param_14 = (0 + add1) + add2;
     int param_15 = 0;
-    int colorS2 = indexAt(param_14, param_15, Source, SourceSmplr, position, _285);
+    int colorS2 = exult_sfx_indexAt(param_14, param_15, Source, SourceSmplr, position, _285);
     int param_16 = 0 - sub1;
     int param_17 = ((0 + nextl1) - 0) / 4096;
-    int color1 = indexAt(param_16, param_17, Source, SourceSmplr, position, _285);
+    int color1 = exult_sfx_indexAt(param_16, param_17, Source, SourceSmplr, position, _285);
     int param_18 = 0;
     int param_19 = (0 + nextl1) / 4096;
-    int color2 = indexAt(param_18, param_19, Source, SourceSmplr, position, _285);
+    int color2 = exult_sfx_indexAt(param_18, param_19, Source, SourceSmplr, position, _285);
     int param_20 = 0 + add1;
     int param_21 = ((0 + nextl1) + 0) / 4096;
-    int color3 = indexAt(param_20, param_21, Source, SourceSmplr, position, _285);
+    int color3 = exult_sfx_indexAt(param_20, param_21, Source, SourceSmplr, position, _285);
     int param_22 = (0 + add1) + add2;
     int param_23 = (((0 + nextl1) + 0) + 0) / 4096;
-    int colorS1 = indexAt(param_22, param_23, Source, SourceSmplr, position, _285);
+    int colorS1 = exult_sfx_indexAt(param_22, param_23, Source, SourceSmplr, position, _285);
     int param_24 = 0 - sub1;
     int param_25 = (((0 + nextl1) + nextl2) - 0) / 4096;
-    int colorA0 = indexAt(param_24, param_25, Source, SourceSmplr, position, _285);
+    int colorA0 = exult_sfx_indexAt(param_24, param_25, Source, SourceSmplr, position, _285);
     int param_26 = 0;
     int param_27 = ((0 + nextl1) + nextl2) / 4096;
-    int colorA1 = indexAt(param_26, param_27, Source, SourceSmplr, position, _285);
+    int colorA1 = exult_sfx_indexAt(param_26, param_27, Source, SourceSmplr, position, _285);
     int param_28 = 0 + add1;
     int param_29 = (((0 + nextl1) + nextl2) + 0) / 4096;
-    int colorA2 = indexAt(param_28, param_29, Source, SourceSmplr, position, _285);
+    int colorA2 = exult_sfx_indexAt(param_28, param_29, Source, SourceSmplr, position, _285);
     int param_30 = (0 + add1) + add2;
     int param_31 = ((((0 + nextl1) + nextl2) + 0) + 0) / 4096;
-    int colorA3 = indexAt(param_30, param_31, Source, SourceSmplr, position, _285);
+    int colorA3 = exult_sfx_indexAt(param_30, param_31, Source, SourceSmplr, position, _285);
     uint product2b;
     uint product1b;
     if ((color2 == color6) && (color5 != color3))
     {
         int param_32 = color2;
-        int3 param_33 = rgb(param_32, Palette, PaletteSmplr);
-        product2b = pack(param_33);
+        int3 param_33 = exult_sfx_rgb(param_32, Palette, PaletteSmplr);
+        product2b = exult_sfx_pack(param_33);
         product1b = product2b;
     }
     else
@@ -3676,8 +3676,8 @@ void Super2xSaI(texture2d<float> Source, sampler SourceSmplr, thread int2& posit
         if ((color5 == color3) && (color2 != color6))
         {
             int param_34 = color5;
-            int3 param_35 = rgb(param_34, Palette, PaletteSmplr);
-            product2b = pack(param_35);
+            int3 param_35 = exult_sfx_rgb(param_34, Palette, PaletteSmplr);
+            product2b = exult_sfx_pack(param_35);
             product1b = product2b;
         }
         else
@@ -3689,27 +3689,27 @@ void Super2xSaI(texture2d<float> Source, sampler SourceSmplr, thread int2& posit
                 int param_37 = color6;
                 int param_38 = color4;
                 int param_39 = colorB1;
-                r += GetResult1(param_36, param_37, param_38, param_39);
+                r += exult_sfx_GetResult1(param_36, param_37, param_38, param_39);
                 int param_40 = color6;
                 int param_41 = color5;
                 int param_42 = colorA2;
                 int param_43 = colorS1;
-                r += GetResult2(param_40, param_41, param_42, param_43);
+                r += exult_sfx_GetResult2(param_40, param_41, param_42, param_43);
                 int param_44 = color6;
                 int param_45 = color5;
                 int param_46 = color1;
                 int param_47 = colorA1;
-                r += GetResult2(param_44, param_45, param_46, param_47);
+                r += exult_sfx_GetResult2(param_44, param_45, param_46, param_47);
                 int param_48 = color5;
                 int param_49 = color6;
                 int param_50 = colorB2;
                 int param_51 = colorS2;
-                r += GetResult1(param_48, param_49, param_50, param_51);
+                r += exult_sfx_GetResult1(param_48, param_49, param_50, param_51);
                 if (r > 0)
                 {
                     int param_52 = color6;
-                    int3 param_53 = rgb(param_52, Palette, PaletteSmplr);
-                    product2b = pack(param_53);
+                    int3 param_53 = exult_sfx_rgb(param_52, Palette, PaletteSmplr);
+                    product2b = exult_sfx_pack(param_53);
                     product1b = product2b;
                 }
                 else
@@ -3717,15 +3717,15 @@ void Super2xSaI(texture2d<float> Source, sampler SourceSmplr, thread int2& posit
                     if (r < 0)
                     {
                         int param_54 = color5;
-                        int3 param_55 = rgb(param_54, Palette, PaletteSmplr);
-                        product2b = pack(param_55);
+                        int3 param_55 = exult_sfx_rgb(param_54, Palette, PaletteSmplr);
+                        product2b = exult_sfx_pack(param_55);
                         product1b = product2b;
                     }
                     else
                     {
                         int param_56 = color5;
                         int param_57 = color6;
-                        uint _2095 = Interpolate_2xSaI(param_56, param_57, Palette, PaletteSmplr);
+                        uint _2095 = exult_sfx_Interpolate_2xSaI(param_56, param_57, Palette, PaletteSmplr);
                         product2b = _2095;
                         product1b = _2095;
                     }
@@ -3739,7 +3739,7 @@ void Super2xSaI(texture2d<float> Source, sampler SourceSmplr, thread int2& posit
                     int param_59 = color3;
                     int param_60 = color3;
                     int param_61 = color2;
-                    product2b = QInterpolate_2xSaI(param_58, param_59, param_60, param_61, Palette, PaletteSmplr);
+                    product2b = exult_sfx_QInterpolate_2xSaI(param_58, param_59, param_60, param_61, Palette, PaletteSmplr);
                 }
                 else
                 {
@@ -3749,13 +3749,13 @@ void Super2xSaI(texture2d<float> Source, sampler SourceSmplr, thread int2& posit
                         int param_63 = color2;
                         int param_64 = color2;
                         int param_65 = color2;
-                        product2b = QInterpolate_2xSaI(param_62, param_63, param_64, param_65, Palette, PaletteSmplr);
+                        product2b = exult_sfx_QInterpolate_2xSaI(param_62, param_63, param_64, param_65, Palette, PaletteSmplr);
                     }
                     else
                     {
                         int param_66 = color2;
                         int param_67 = color3;
-                        product2b = Interpolate_2xSaI(param_66, param_67, Palette, PaletteSmplr);
+                        product2b = exult_sfx_Interpolate_2xSaI(param_66, param_67, Palette, PaletteSmplr);
                     }
                 }
                 if ((((color6 == color3) && (color6 == colorB1)) && (color5 != colorB2)) && (color6 != colorB0))
@@ -3764,7 +3764,7 @@ void Super2xSaI(texture2d<float> Source, sampler SourceSmplr, thread int2& posit
                     int param_69 = color6;
                     int param_70 = color6;
                     int param_71 = color6;
-                    product1b = QInterpolate_2xSaI(param_68, param_69, param_70, param_71, Palette, PaletteSmplr);
+                    product1b = exult_sfx_QInterpolate_2xSaI(param_68, param_69, param_70, param_71, Palette, PaletteSmplr);
                 }
                 else
                 {
@@ -3774,13 +3774,13 @@ void Super2xSaI(texture2d<float> Source, sampler SourceSmplr, thread int2& posit
                         int param_73 = color5;
                         int param_74 = color5;
                         int param_75 = color5;
-                        product1b = QInterpolate_2xSaI(param_72, param_73, param_74, param_75, Palette, PaletteSmplr);
+                        product1b = exult_sfx_QInterpolate_2xSaI(param_72, param_73, param_74, param_75, Palette, PaletteSmplr);
                     }
                     else
                     {
                         int param_76 = color5;
                         int param_77 = color6;
-                        product1b = Interpolate_2xSaI(param_76, param_77, Palette, PaletteSmplr);
+                        product1b = exult_sfx_Interpolate_2xSaI(param_76, param_77, Palette, PaletteSmplr);
                     }
                 }
             }
@@ -3791,7 +3791,7 @@ void Super2xSaI(texture2d<float> Source, sampler SourceSmplr, thread int2& posit
     {
         int param_78 = color5;
         int param_79 = color2;
-        product2a = Interpolate_2xSaI(param_78, param_79, Palette, PaletteSmplr);
+        product2a = exult_sfx_Interpolate_2xSaI(param_78, param_79, Palette, PaletteSmplr);
     }
     else
     {
@@ -3799,13 +3799,13 @@ void Super2xSaI(texture2d<float> Source, sampler SourceSmplr, thread int2& posit
         {
             int param_80 = color5;
             int param_81 = color2;
-            product2a = Interpolate_2xSaI(param_80, param_81, Palette, PaletteSmplr);
+            product2a = exult_sfx_Interpolate_2xSaI(param_80, param_81, Palette, PaletteSmplr);
         }
         else
         {
             int param_82 = color2;
-            int3 param_83 = rgb(param_82, Palette, PaletteSmplr);
-            product2a = pack(param_83);
+            int3 param_83 = exult_sfx_rgb(param_82, Palette, PaletteSmplr);
+            product2a = exult_sfx_pack(param_83);
         }
     }
     uint product1a;
@@ -3813,7 +3813,7 @@ void Super2xSaI(texture2d<float> Source, sampler SourceSmplr, thread int2& posit
     {
         int param_84 = color5;
         int param_85 = color2;
-        product1a = Interpolate_2xSaI(param_84, param_85, Palette, PaletteSmplr);
+        product1a = exult_sfx_Interpolate_2xSaI(param_84, param_85, Palette, PaletteSmplr);
     }
     else
     {
@@ -3821,13 +3821,13 @@ void Super2xSaI(texture2d<float> Source, sampler SourceSmplr, thread int2& posit
         {
             int param_86 = color5;
             int param_87 = color2;
-            product1a = Interpolate_2xSaI(param_86, param_87, Palette, PaletteSmplr);
+            product1a = exult_sfx_Interpolate_2xSaI(param_86, param_87, Palette, PaletteSmplr);
         }
         else
         {
             int param_88 = color5;
-            int3 param_89 = rgb(param_88, Palette, PaletteSmplr);
-            product1a = pack(param_89);
+            int3 param_89 = exult_sfx_rgb(param_88, Palette, PaletteSmplr);
+            product1a = exult_sfx_pack(param_89);
         }
     }
     pixels[0] = product1a;
@@ -3837,17 +3837,17 @@ void Super2xSaI(texture2d<float> Source, sampler SourceSmplr, thread int2& posit
 }
 
 static inline __attribute__((always_inline))
-uint OInterpolate_2xSaI(thread const int& a, thread const int& b, thread const int& c, texture2d<float> Palette, sampler PaletteSmplr)
+uint exult_sfx_OInterpolate_2xSaI(thread const int& a, thread const int& b, thread const int& c, texture2d<float> Palette, sampler PaletteSmplr)
 {
     int param = a;
     int param_1 = b;
     int param_2 = c;
-    int3 param_3 = (((rgb(param, Palette, PaletteSmplr) * int3(6)) + rgb(param_1, Palette, PaletteSmplr)) + rgb(param_2, Palette, PaletteSmplr)) >> int3(3);
-    return pack(param_3);
+    int3 param_3 = (((exult_sfx_rgb(param, Palette, PaletteSmplr) * int3(6)) + exult_sfx_rgb(param_1, Palette, PaletteSmplr)) + exult_sfx_rgb(param_2, Palette, PaletteSmplr)) >> int3(3);
+    return exult_sfx_pack(param_3);
 }
 
 static inline __attribute__((always_inline))
-void SuperEagle(texture2d<float> Source, sampler SourceSmplr, thread int2& position, constant Params& _285, texture2d<float> Palette, sampler PaletteSmplr, thread spvUnsafeArray<uint, 16>& pixels)
+void exult_sfx_SuperEagle(texture2d<float> Source, sampler SourceSmplr, thread int2& position, constant Params& _285, texture2d<float> Palette, sampler PaletteSmplr, thread spvUnsafeArray<uint, 16>& pixels)
 {
     int x = position.x - _285.limits.z;
     int y = position.y - _285.limits.w;
@@ -3919,40 +3919,40 @@ void SuperEagle(texture2d<float> Source, sampler SourceSmplr, thread int2& posit
     }
     int param = 0;
     int param_1 = (0 - prevl1) / 4096;
-    int colorB1 = indexAt(param, param_1, Source, SourceSmplr, position, _285);
+    int colorB1 = exult_sfx_indexAt(param, param_1, Source, SourceSmplr, position, _285);
     int param_2 = 0 + add1;
     int param_3 = ((0 - prevl1) + 0) / 4096;
-    int colorB2 = indexAt(param_2, param_3, Source, SourceSmplr, position, _285);
+    int colorB2 = exult_sfx_indexAt(param_2, param_3, Source, SourceSmplr, position, _285);
     int param_4 = 0 - sub1;
     int param_5 = 0;
-    int color4 = indexAt(param_4, param_5, Source, SourceSmplr, position, _285);
+    int color4 = exult_sfx_indexAt(param_4, param_5, Source, SourceSmplr, position, _285);
     int param_6 = 0;
     int param_7 = 0;
-    int color5 = indexAt(param_6, param_7, Source, SourceSmplr, position, _285);
+    int color5 = exult_sfx_indexAt(param_6, param_7, Source, SourceSmplr, position, _285);
     int param_8 = 0 + add1;
     int param_9 = 0;
-    int color6 = indexAt(param_8, param_9, Source, SourceSmplr, position, _285);
+    int color6 = exult_sfx_indexAt(param_8, param_9, Source, SourceSmplr, position, _285);
     int param_10 = (0 + add1) + add2;
     int param_11 = 0;
-    int colorS2 = indexAt(param_10, param_11, Source, SourceSmplr, position, _285);
+    int colorS2 = exult_sfx_indexAt(param_10, param_11, Source, SourceSmplr, position, _285);
     int param_12 = 0 - sub1;
     int param_13 = ((0 + nextl1) - 0) / 4096;
-    int color1 = indexAt(param_12, param_13, Source, SourceSmplr, position, _285);
+    int color1 = exult_sfx_indexAt(param_12, param_13, Source, SourceSmplr, position, _285);
     int param_14 = 0;
     int param_15 = (0 + nextl1) / 4096;
-    int color2 = indexAt(param_14, param_15, Source, SourceSmplr, position, _285);
+    int color2 = exult_sfx_indexAt(param_14, param_15, Source, SourceSmplr, position, _285);
     int param_16 = 0 + add1;
     int param_17 = ((0 + nextl1) + 0) / 4096;
-    int color3 = indexAt(param_16, param_17, Source, SourceSmplr, position, _285);
+    int color3 = exult_sfx_indexAt(param_16, param_17, Source, SourceSmplr, position, _285);
     int param_18 = (0 + add1) + add2;
     int param_19 = (((0 + nextl1) + 0) + 0) / 4096;
-    int colorS1 = indexAt(param_18, param_19, Source, SourceSmplr, position, _285);
+    int colorS1 = exult_sfx_indexAt(param_18, param_19, Source, SourceSmplr, position, _285);
     int param_20 = 0;
     int param_21 = ((0 + nextl1) + nextl2) / 4096;
-    int colorA1 = indexAt(param_20, param_21, Source, SourceSmplr, position, _285);
+    int colorA1 = exult_sfx_indexAt(param_20, param_21, Source, SourceSmplr, position, _285);
     int param_22 = 0 + add1;
     int param_23 = (((0 + nextl1) + nextl2) + 0) / 4096;
-    int colorA2 = indexAt(param_22, param_23, Source, SourceSmplr, position, _285);
+    int colorA2 = exult_sfx_indexAt(param_22, param_23, Source, SourceSmplr, position, _285);
     uint product2a;
     uint product1b;
     uint product1a;
@@ -3960,8 +3960,8 @@ void SuperEagle(texture2d<float> Source, sampler SourceSmplr, thread int2& posit
     if ((color2 == color6) && (color5 != color3))
     {
         int param_24 = color2;
-        int3 param_25 = rgb(param_24, Palette, PaletteSmplr);
-        product2a = pack(param_25);
+        int3 param_25 = exult_sfx_rgb(param_24, Palette, PaletteSmplr);
+        product2a = exult_sfx_pack(param_25);
         product1b = product2a;
         if ((color1 == color2) || (color6 == colorB2))
         {
@@ -3969,13 +3969,13 @@ void SuperEagle(texture2d<float> Source, sampler SourceSmplr, thread int2& posit
             int param_27 = color2;
             int param_28 = color2;
             int param_29 = color5;
-            product1a = QInterpolate_2xSaI(param_26, param_27, param_28, param_29, Palette, PaletteSmplr);
+            product1a = exult_sfx_QInterpolate_2xSaI(param_26, param_27, param_28, param_29, Palette, PaletteSmplr);
         }
         else
         {
             int param_30 = color6;
             int param_31 = color5;
-            product1a = Interpolate_2xSaI(param_30, param_31, Palette, PaletteSmplr);
+            product1a = exult_sfx_Interpolate_2xSaI(param_30, param_31, Palette, PaletteSmplr);
         }
         if ((color6 == colorS2) || (color2 == colorA1))
         {
@@ -3983,13 +3983,13 @@ void SuperEagle(texture2d<float> Source, sampler SourceSmplr, thread int2& posit
             int param_33 = color2;
             int param_34 = color2;
             int param_35 = color3;
-            product2b = QInterpolate_2xSaI(param_32, param_33, param_34, param_35, Palette, PaletteSmplr);
+            product2b = exult_sfx_QInterpolate_2xSaI(param_32, param_33, param_34, param_35, Palette, PaletteSmplr);
         }
         else
         {
             int param_36 = color2;
             int param_37 = color3;
-            product2b = Interpolate_2xSaI(param_36, param_37, Palette, PaletteSmplr);
+            product2b = exult_sfx_Interpolate_2xSaI(param_36, param_37, Palette, PaletteSmplr);
         }
     }
     else
@@ -3997,8 +3997,8 @@ void SuperEagle(texture2d<float> Source, sampler SourceSmplr, thread int2& posit
         if ((color5 == color3) && (color2 != color6))
         {
             int param_38 = color5;
-            int3 param_39 = rgb(param_38, Palette, PaletteSmplr);
-            product1a = pack(param_39);
+            int3 param_39 = exult_sfx_rgb(param_38, Palette, PaletteSmplr);
+            product1a = exult_sfx_pack(param_39);
             product2b = product1a;
             if ((colorB1 == color5) || (color3 == colorS1))
             {
@@ -4006,13 +4006,13 @@ void SuperEagle(texture2d<float> Source, sampler SourceSmplr, thread int2& posit
                 int param_41 = color5;
                 int param_42 = color5;
                 int param_43 = color6;
-                product1b = QInterpolate_2xSaI(param_40, param_41, param_42, param_43, Palette, PaletteSmplr);
+                product1b = exult_sfx_QInterpolate_2xSaI(param_40, param_41, param_42, param_43, Palette, PaletteSmplr);
             }
             else
             {
                 int param_44 = color5;
                 int param_45 = color6;
-                product1b = Interpolate_2xSaI(param_44, param_45, Palette, PaletteSmplr);
+                product1b = exult_sfx_Interpolate_2xSaI(param_44, param_45, Palette, PaletteSmplr);
             }
             if ((color3 == colorA2) || (color4 == color5))
             {
@@ -4020,13 +4020,13 @@ void SuperEagle(texture2d<float> Source, sampler SourceSmplr, thread int2& posit
                 int param_47 = color5;
                 int param_48 = color5;
                 int param_49 = color5;
-                product2a = QInterpolate_2xSaI(param_46, param_47, param_48, param_49, Palette, PaletteSmplr);
+                product2a = exult_sfx_QInterpolate_2xSaI(param_46, param_47, param_48, param_49, Palette, PaletteSmplr);
             }
             else
             {
                 int param_50 = color3;
                 int param_51 = color2;
-                product2a = Interpolate_2xSaI(param_50, param_51, Palette, PaletteSmplr);
+                product2a = exult_sfx_Interpolate_2xSaI(param_50, param_51, Palette, PaletteSmplr);
             }
         }
         else
@@ -4038,31 +4038,31 @@ void SuperEagle(texture2d<float> Source, sampler SourceSmplr, thread int2& posit
                 int param_53 = color6;
                 int param_54 = color4;
                 int param_55 = colorB1;
-                r += GetResult1(param_52, param_53, param_54, param_55);
+                r += exult_sfx_GetResult1(param_52, param_53, param_54, param_55);
                 int param_56 = color6;
                 int param_57 = color5;
                 int param_58 = colorA2;
                 int param_59 = colorS1;
-                r += GetResult2(param_56, param_57, param_58, param_59);
+                r += exult_sfx_GetResult2(param_56, param_57, param_58, param_59);
                 int param_60 = color6;
                 int param_61 = color5;
                 int param_62 = color1;
                 int param_63 = colorA1;
-                r += GetResult2(param_60, param_61, param_62, param_63);
+                r += exult_sfx_GetResult2(param_60, param_61, param_62, param_63);
                 int param_64 = color5;
                 int param_65 = color6;
                 int param_66 = colorB2;
                 int param_67 = colorS2;
-                r += GetResult1(param_64, param_65, param_66, param_67);
+                r += exult_sfx_GetResult1(param_64, param_65, param_66, param_67);
                 if (r > 0)
                 {
                     int param_68 = color2;
-                    int3 param_69 = rgb(param_68, Palette, PaletteSmplr);
-                    product2a = pack(param_69);
+                    int3 param_69 = exult_sfx_rgb(param_68, Palette, PaletteSmplr);
+                    product2a = exult_sfx_pack(param_69);
                     product1b = product2a;
                     int param_70 = color5;
                     int param_71 = color6;
-                    uint _2765 = Interpolate_2xSaI(param_70, param_71, Palette, PaletteSmplr);
+                    uint _2765 = exult_sfx_Interpolate_2xSaI(param_70, param_71, Palette, PaletteSmplr);
                     product2b = _2765;
                     product1a = _2765;
                 }
@@ -4071,24 +4071,24 @@ void SuperEagle(texture2d<float> Source, sampler SourceSmplr, thread int2& posit
                     if (r < 0)
                     {
                         int param_72 = color5;
-                        int3 param_73 = rgb(param_72, Palette, PaletteSmplr);
-                        product1a = pack(param_73);
+                        int3 param_73 = exult_sfx_rgb(param_72, Palette, PaletteSmplr);
+                        product1a = exult_sfx_pack(param_73);
                         product2b = product1a;
                         int param_74 = color5;
                         int param_75 = color6;
-                        uint _2781 = Interpolate_2xSaI(param_74, param_75, Palette, PaletteSmplr);
+                        uint _2781 = exult_sfx_Interpolate_2xSaI(param_74, param_75, Palette, PaletteSmplr);
                         product2a = _2781;
                         product1b = _2781;
                     }
                     else
                     {
                         int param_76 = color5;
-                        int3 param_77 = rgb(param_76, Palette, PaletteSmplr);
-                        product1a = pack(param_77);
+                        int3 param_77 = exult_sfx_rgb(param_76, Palette, PaletteSmplr);
+                        product1a = exult_sfx_pack(param_77);
                         product2b = product1a;
                         int param_78 = color2;
-                        int3 param_79 = rgb(param_78, Palette, PaletteSmplr);
-                        product2a = pack(param_79);
+                        int3 param_79 = exult_sfx_rgb(param_78, Palette, PaletteSmplr);
+                        product2a = exult_sfx_pack(param_79);
                         product1b = product2a;
                     }
                 }
@@ -4098,19 +4098,19 @@ void SuperEagle(texture2d<float> Source, sampler SourceSmplr, thread int2& posit
                 int param_80 = color3;
                 int param_81 = color2;
                 int param_82 = color6;
-                product2b = OInterpolate_2xSaI(param_80, param_81, param_82, Palette, PaletteSmplr);
+                product2b = exult_sfx_OInterpolate_2xSaI(param_80, param_81, param_82, Palette, PaletteSmplr);
                 int param_83 = color5;
                 int param_84 = color6;
                 int param_85 = color2;
-                product1a = OInterpolate_2xSaI(param_83, param_84, param_85, Palette, PaletteSmplr);
+                product1a = exult_sfx_OInterpolate_2xSaI(param_83, param_84, param_85, Palette, PaletteSmplr);
                 int param_86 = color2;
                 int param_87 = color5;
                 int param_88 = color3;
-                product2a = OInterpolate_2xSaI(param_86, param_87, param_88, Palette, PaletteSmplr);
+                product2a = exult_sfx_OInterpolate_2xSaI(param_86, param_87, param_88, Palette, PaletteSmplr);
                 int param_89 = color6;
                 int param_90 = color5;
                 int param_91 = color3;
-                product1b = OInterpolate_2xSaI(param_89, param_90, param_91, Palette, PaletteSmplr);
+                product1b = exult_sfx_OInterpolate_2xSaI(param_89, param_90, param_91, Palette, PaletteSmplr);
             }
         }
     }
@@ -4121,7 +4121,7 @@ void SuperEagle(texture2d<float> Source, sampler SourceSmplr, thread int2& posit
 }
 
 static inline __attribute__((always_inline))
-int2 rotateOffset(thread int2& p, thread const int& rotation)
+int2 exult_sfx_rotateOffset(thread int2& p, thread const int& rotation)
 {
     for (int i = 0; i < rotation; i++)
     {
@@ -4131,20 +4131,20 @@ int2 rotateOffset(thread int2& p, thread const int& rotation)
 }
 
 static inline __attribute__((always_inline))
-int dist(thread const int3& a, thread const int3& b)
+int exult_sfx_dist(thread const int3& a, thread const int3& b)
 {
     int3 d = abs((a - b) * int3(3, 4, 2));
     return (d.x + d.y) + d.z;
 }
 
 static inline __attribute__((always_inline))
-bool equals(thread const int3& a, thread const int3& b)
+bool exult_sfx_equals(thread const int3& a, thread const int3& b)
 {
     return all(abs((a - b) * int3(3, 4, 2)) <= int3(18, 32, 8));
 }
 
 static inline __attribute__((always_inline))
-bool steep(thread const int& a, thread const int& b)
+bool exult_sfx_steep(thread const int& a, thread const int& b)
 {
     int left = 11 * a;
     int right = 5 * b;
@@ -4157,7 +4157,7 @@ bool steep(thread const int& a, thread const int& b)
 }
 
 static inline __attribute__((always_inline))
-int outputIndex(thread int2& p, thread const int& rotation, constant Params& _285)
+int exult_sfx_outputIndex(thread int2& p, thread const int& rotation, constant Params& _285)
 {
     for (int i = 0; i < rotation; i++)
     {
@@ -4167,144 +4167,144 @@ int outputIndex(thread int2& p, thread const int& rotation, constant Params& _28
 }
 
 static inline __attribute__((always_inline))
-int3 unpack(thread const uint& c)
+int3 exult_sfx_unpack(thread const uint& c)
 {
     return int3(int((c >> uint(16)) & 255u), int((c >> uint(8)) & 255u), int(c & 255u));
 }
 
 static inline __attribute__((always_inline))
-void blend(thread const int2& p, thread const int3& colour, thread const int& n, thread const int& m, thread const int& rotation, constant Params& _285, thread spvUnsafeArray<uint, 16>& pixels)
+void exult_sfx_blend(thread const int2& p, thread const int3& colour, thread const int& n, thread const int& m, thread const int& rotation, constant Params& _285, thread spvUnsafeArray<uint, 16>& pixels)
 {
     int2 param = p;
     int param_1 = rotation;
-    int _2887 = outputIndex(param, param_1, _285);
+    int _2887 = exult_sfx_outputIndex(param, param_1, _285);
     int idx = _2887;
     uint param_2 = pixels[idx];
-    int3 param_3 = ((colour * int3(n)) + (unpack(param_2) * int3(m - n))) / int3(m);
-    pixels[idx] = pack(param_3);
+    int3 param_3 = ((colour * int3(n)) + (exult_sfx_unpack(param_2) * int3(m - n))) / int3(m);
+    pixels[idx] = exult_sfx_pack(param_3);
 }
 
 static inline __attribute__((always_inline))
-void blendLineSteepAndShallow2(thread const int3& col, thread const int& rotation, constant Params& _285, thread spvUnsafeArray<uint, 16>& pixels)
+void exult_sfx_blendLineSteepAndShallow2(thread const int3& col, thread const int& rotation, constant Params& _285, thread spvUnsafeArray<uint, 16>& pixels)
 {
     int2 param = int2(0, 1);
     int3 param_1 = col;
     int param_2 = 1;
     int param_3 = 4;
     int param_4 = rotation;
-    blend(param, param_1, param_2, param_3, param_4, _285, pixels);
+    exult_sfx_blend(param, param_1, param_2, param_3, param_4, _285, pixels);
     int2 param_5 = int2(1, 0);
     int3 param_6 = col;
     int param_7 = 1;
     int param_8 = 4;
     int param_9 = rotation;
-    blend(param_5, param_6, param_7, param_8, param_9, _285, pixels);
+    exult_sfx_blend(param_5, param_6, param_7, param_8, param_9, _285, pixels);
     int2 param_10 = int2(1);
     int3 param_11 = col;
     int param_12 = 5;
     int param_13 = 6;
     int param_14 = rotation;
-    blend(param_10, param_11, param_12, param_13, param_14, _285, pixels);
+    exult_sfx_blend(param_10, param_11, param_12, param_13, param_14, _285, pixels);
 }
 
 static inline __attribute__((always_inline))
-void put(thread const int2& p, thread const int3& colour, thread const int& rotation, constant Params& _285, thread spvUnsafeArray<uint, 16>& pixels)
+void exult_sfx_put(thread const int2& p, thread const int3& colour, thread const int& rotation, constant Params& _285, thread spvUnsafeArray<uint, 16>& pixels)
 {
     int2 param = p;
     int param_1 = rotation;
-    int _2914 = outputIndex(param, param_1, _285);
+    int _2914 = exult_sfx_outputIndex(param, param_1, _285);
     int3 param_2 = colour;
-    pixels[_2914] = pack(param_2);
+    pixels[_2914] = exult_sfx_pack(param_2);
 }
 
 static inline __attribute__((always_inline))
-void blendLineSteepAndShallow3(thread const int3& col, thread const int& rotation, constant Params& _285, thread spvUnsafeArray<uint, 16>& pixels)
+void exult_sfx_blendLineSteepAndShallow3(thread const int3& col, thread const int& rotation, constant Params& _285, thread spvUnsafeArray<uint, 16>& pixels)
 {
     int2 param = int2(0, 2);
     int3 param_1 = col;
     int param_2 = 1;
     int param_3 = 4;
     int param_4 = rotation;
-    blend(param, param_1, param_2, param_3, param_4, _285, pixels);
+    exult_sfx_blend(param, param_1, param_2, param_3, param_4, _285, pixels);
     int2 param_5 = int2(2, 0);
     int3 param_6 = col;
     int param_7 = 1;
     int param_8 = 4;
     int param_9 = rotation;
-    blend(param_5, param_6, param_7, param_8, param_9, _285, pixels);
+    exult_sfx_blend(param_5, param_6, param_7, param_8, param_9, _285, pixels);
     int2 param_10 = int2(1, 2);
     int3 param_11 = col;
     int param_12 = 3;
     int param_13 = 4;
     int param_14 = rotation;
-    blend(param_10, param_11, param_12, param_13, param_14, _285, pixels);
+    exult_sfx_blend(param_10, param_11, param_12, param_13, param_14, _285, pixels);
     int2 param_15 = int2(2, 1);
     int3 param_16 = col;
     int param_17 = 3;
     int param_18 = 4;
     int param_19 = rotation;
-    blend(param_15, param_16, param_17, param_18, param_19, _285, pixels);
+    exult_sfx_blend(param_15, param_16, param_17, param_18, param_19, _285, pixels);
     int2 param_20 = int2(2);
     int3 param_21 = col;
     int param_22 = rotation;
-    put(param_20, param_21, param_22, _285, pixels);
+    exult_sfx_put(param_20, param_21, param_22, _285, pixels);
 }
 
 static inline __attribute__((always_inline))
-void blendLineSteepAndShallow4(thread const int3& col, thread const int& rotation, constant Params& _285, thread spvUnsafeArray<uint, 16>& pixels)
+void exult_sfx_blendLineSteepAndShallow4(thread const int3& col, thread const int& rotation, constant Params& _285, thread spvUnsafeArray<uint, 16>& pixels)
 {
     int2 param = int2(1, 3);
     int3 param_1 = col;
     int param_2 = 3;
     int param_3 = 4;
     int param_4 = rotation;
-    blend(param, param_1, param_2, param_3, param_4, _285, pixels);
+    exult_sfx_blend(param, param_1, param_2, param_3, param_4, _285, pixels);
     int2 param_5 = int2(3, 1);
     int3 param_6 = col;
     int param_7 = 3;
     int param_8 = 4;
     int param_9 = rotation;
-    blend(param_5, param_6, param_7, param_8, param_9, _285, pixels);
+    exult_sfx_blend(param_5, param_6, param_7, param_8, param_9, _285, pixels);
     int2 param_10 = int2(0, 3);
     int3 param_11 = col;
     int param_12 = 1;
     int param_13 = 4;
     int param_14 = rotation;
-    blend(param_10, param_11, param_12, param_13, param_14, _285, pixels);
+    exult_sfx_blend(param_10, param_11, param_12, param_13, param_14, _285, pixels);
     int2 param_15 = int2(3, 0);
     int3 param_16 = col;
     int param_17 = 1;
     int param_18 = 4;
     int param_19 = rotation;
-    blend(param_15, param_16, param_17, param_18, param_19, _285, pixels);
+    exult_sfx_blend(param_15, param_16, param_17, param_18, param_19, _285, pixels);
     int2 param_20 = int2(2);
     int3 param_21 = col;
     int param_22 = 1;
     int param_23 = 3;
     int param_24 = rotation;
-    blend(param_20, param_21, param_22, param_23, param_24, _285, pixels);
+    exult_sfx_blend(param_20, param_21, param_22, param_23, param_24, _285, pixels);
     int2 param_25 = int2(3);
     int3 param_26 = col;
     int param_27 = rotation;
-    put(param_25, param_26, param_27, _285, pixels);
+    exult_sfx_put(param_25, param_26, param_27, _285, pixels);
     int2 param_28 = int2(2, 3);
     int3 param_29 = col;
     int param_30 = rotation;
-    put(param_28, param_29, param_30, _285, pixels);
+    exult_sfx_put(param_28, param_29, param_30, _285, pixels);
     int2 param_31 = int2(3, 2);
     int3 param_32 = col;
     int param_33 = rotation;
-    put(param_31, param_32, param_33, _285, pixels);
+    exult_sfx_put(param_31, param_32, param_33, _285, pixels);
 }
 
 static inline __attribute__((always_inline))
-void blendLineSteepAndShallow(thread const int3& col, thread const int& rotation, constant Params& _285, thread spvUnsafeArray<uint, 16>& pixels)
+void exult_sfx_blendLineSteepAndShallow(thread const int3& col, thread const int& rotation, constant Params& _285, thread spvUnsafeArray<uint, 16>& pixels)
 {
     if (_285.settings.z == 2)
     {
         int3 param = col;
         int param_1 = rotation;
-        blendLineSteepAndShallow2(param, param_1, _285, pixels);
+        exult_sfx_blendLineSteepAndShallow2(param, param_1, _285, pixels);
     }
     else
     {
@@ -4312,106 +4312,106 @@ void blendLineSteepAndShallow(thread const int3& col, thread const int& rotation
         {
             int3 param_2 = col;
             int param_3 = rotation;
-            blendLineSteepAndShallow3(param_2, param_3, _285, pixels);
+            exult_sfx_blendLineSteepAndShallow3(param_2, param_3, _285, pixels);
         }
         else
         {
             int3 param_4 = col;
             int param_5 = rotation;
-            blendLineSteepAndShallow4(param_4, param_5, _285, pixels);
+            exult_sfx_blendLineSteepAndShallow4(param_4, param_5, _285, pixels);
         }
     }
 }
 
 static inline __attribute__((always_inline))
-void blendLineShallow2(thread const int3& col, thread const int& rotation, constant Params& _285, thread spvUnsafeArray<uint, 16>& pixels)
+void exult_sfx_blendLineShallow2(thread const int3& col, thread const int& rotation, constant Params& _285, thread spvUnsafeArray<uint, 16>& pixels)
 {
     int2 param = int2(0, 1);
     int3 param_1 = col;
     int param_2 = 1;
     int param_3 = 4;
     int param_4 = rotation;
-    blend(param, param_1, param_2, param_3, param_4, _285, pixels);
+    exult_sfx_blend(param, param_1, param_2, param_3, param_4, _285, pixels);
     int2 param_5 = int2(1);
     int3 param_6 = col;
     int param_7 = 3;
     int param_8 = 4;
     int param_9 = rotation;
-    blend(param_5, param_6, param_7, param_8, param_9, _285, pixels);
+    exult_sfx_blend(param_5, param_6, param_7, param_8, param_9, _285, pixels);
 }
 
 static inline __attribute__((always_inline))
-void blendLineShallow3(thread const int3& col, thread const int& rotation, constant Params& _285, thread spvUnsafeArray<uint, 16>& pixels)
+void exult_sfx_blendLineShallow3(thread const int3& col, thread const int& rotation, constant Params& _285, thread spvUnsafeArray<uint, 16>& pixels)
 {
     int2 param = int2(1, 2);
     int3 param_1 = col;
     int param_2 = 3;
     int param_3 = 4;
     int param_4 = rotation;
-    blend(param, param_1, param_2, param_3, param_4, _285, pixels);
+    exult_sfx_blend(param, param_1, param_2, param_3, param_4, _285, pixels);
     int2 param_5 = int2(2, 1);
     int3 param_6 = col;
     int param_7 = 1;
     int param_8 = 4;
     int param_9 = rotation;
-    blend(param_5, param_6, param_7, param_8, param_9, _285, pixels);
+    exult_sfx_blend(param_5, param_6, param_7, param_8, param_9, _285, pixels);
     int2 param_10 = int2(0, 2);
     int3 param_11 = col;
     int param_12 = 1;
     int param_13 = 4;
     int param_14 = rotation;
-    blend(param_10, param_11, param_12, param_13, param_14, _285, pixels);
+    exult_sfx_blend(param_10, param_11, param_12, param_13, param_14, _285, pixels);
     int2 param_15 = int2(2);
     int3 param_16 = col;
     int param_17 = rotation;
-    put(param_15, param_16, param_17, _285, pixels);
+    exult_sfx_put(param_15, param_16, param_17, _285, pixels);
 }
 
 static inline __attribute__((always_inline))
-void blendLineShallow4(thread const int3& col, thread const int& rotation, constant Params& _285, thread spvUnsafeArray<uint, 16>& pixels)
+void exult_sfx_blendLineShallow4(thread const int3& col, thread const int& rotation, constant Params& _285, thread spvUnsafeArray<uint, 16>& pixels)
 {
     int2 param = int2(3, 2);
     int3 param_1 = col;
     int param_2 = 3;
     int param_3 = 4;
     int param_4 = rotation;
-    blend(param, param_1, param_2, param_3, param_4, _285, pixels);
+    exult_sfx_blend(param, param_1, param_2, param_3, param_4, _285, pixels);
     int2 param_5 = int2(1, 3);
     int3 param_6 = col;
     int param_7 = 3;
     int param_8 = 4;
     int param_9 = rotation;
-    blend(param_5, param_6, param_7, param_8, param_9, _285, pixels);
+    exult_sfx_blend(param_5, param_6, param_7, param_8, param_9, _285, pixels);
     int2 param_10 = int2(2);
     int3 param_11 = col;
     int param_12 = 1;
     int param_13 = 4;
     int param_14 = rotation;
-    blend(param_10, param_11, param_12, param_13, param_14, _285, pixels);
+    exult_sfx_blend(param_10, param_11, param_12, param_13, param_14, _285, pixels);
     int2 param_15 = int2(0, 3);
     int3 param_16 = col;
     int param_17 = 1;
     int param_18 = 4;
     int param_19 = rotation;
-    blend(param_15, param_16, param_17, param_18, param_19, _285, pixels);
+    exult_sfx_blend(param_15, param_16, param_17, param_18, param_19, _285, pixels);
     int2 param_20 = int2(2, 3);
     int3 param_21 = col;
     int param_22 = rotation;
-    put(param_20, param_21, param_22, _285, pixels);
+    exult_sfx_put(param_20, param_21, param_22, _285, pixels);
     int2 param_23 = int2(3);
     int3 param_24 = col;
     int param_25 = rotation;
-    put(param_23, param_24, param_25, _285, pixels);
+    exult_sfx_put(param_23, param_24, param_25, _285, pixels);
 }
 
 static inline __attribute__((always_inline))
-void blendLineShallow(thread const int3& col, thread const int& rotation, constant Params& _285, thread spvUnsafeArray<uint, 16>& pixels)
+void exult_sfx_blendLineShallow(thread const int3& col, thread const int& rotation, constant Params& _285, thread spvUnsafeArray<uint, 16>& pixels)
 {
     if (_285.settings.z == 2)
     {
         int3 param = col;
         int param_1 = rotation;
-        blendLineShallow2(param, param_1, _285, pixels);
+        exult_sfx_blendLineShallow2(param, param_1, _285, pixels);
     }
     else
     {
@@ -4419,106 +4419,106 @@ void blendLineShallow(thread const int3& col, thread const int& rotation, consta
         {
             int3 param_2 = col;
             int param_3 = rotation;
-            blendLineShallow3(param_2, param_3, _285, pixels);
+            exult_sfx_blendLineShallow3(param_2, param_3, _285, pixels);
         }
         else
         {
             int3 param_4 = col;
             int param_5 = rotation;
-            blendLineShallow4(param_4, param_5, _285, pixels);
+            exult_sfx_blendLineShallow4(param_4, param_5, _285, pixels);
         }
     }
 }
 
 static inline __attribute__((always_inline))
-void blendLineSteep2(thread const int3& col, thread const int& rotation, constant Params& _285, thread spvUnsafeArray<uint, 16>& pixels)
+void exult_sfx_blendLineSteep2(thread const int3& col, thread const int& rotation, constant Params& _285, thread spvUnsafeArray<uint, 16>& pixels)
 {
     int2 param = int2(1, 0);
     int3 param_1 = col;
     int param_2 = 1;
     int param_3 = 4;
     int param_4 = rotation;
-    blend(param, param_1, param_2, param_3, param_4, _285, pixels);
+    exult_sfx_blend(param, param_1, param_2, param_3, param_4, _285, pixels);
     int2 param_5 = int2(1);
     int3 param_6 = col;
     int param_7 = 3;
     int param_8 = 4;
     int param_9 = rotation;
-    blend(param_5, param_6, param_7, param_8, param_9, _285, pixels);
+    exult_sfx_blend(param_5, param_6, param_7, param_8, param_9, _285, pixels);
 }
 
 static inline __attribute__((always_inline))
-void blendLineSteep3(thread const int3& col, thread const int& rotation, constant Params& _285, thread spvUnsafeArray<uint, 16>& pixels)
+void exult_sfx_blendLineSteep3(thread const int3& col, thread const int& rotation, constant Params& _285, thread spvUnsafeArray<uint, 16>& pixels)
 {
     int2 param = int2(2, 1);
     int3 param_1 = col;
     int param_2 = 3;
     int param_3 = 4;
     int param_4 = rotation;
-    blend(param, param_1, param_2, param_3, param_4, _285, pixels);
+    exult_sfx_blend(param, param_1, param_2, param_3, param_4, _285, pixels);
     int2 param_5 = int2(1, 2);
     int3 param_6 = col;
     int param_7 = 1;
     int param_8 = 4;
     int param_9 = rotation;
-    blend(param_5, param_6, param_7, param_8, param_9, _285, pixels);
+    exult_sfx_blend(param_5, param_6, param_7, param_8, param_9, _285, pixels);
     int2 param_10 = int2(2, 0);
     int3 param_11 = col;
     int param_12 = 1;
     int param_13 = 4;
     int param_14 = rotation;
-    blend(param_10, param_11, param_12, param_13, param_14, _285, pixels);
+    exult_sfx_blend(param_10, param_11, param_12, param_13, param_14, _285, pixels);
     int2 param_15 = int2(2);
     int3 param_16 = col;
     int param_17 = rotation;
-    put(param_15, param_16, param_17, _285, pixels);
+    exult_sfx_put(param_15, param_16, param_17, _285, pixels);
 }
 
 static inline __attribute__((always_inline))
-void blendLineSteep4(thread const int3& col, thread const int& rotation, constant Params& _285, thread spvUnsafeArray<uint, 16>& pixels)
+void exult_sfx_blendLineSteep4(thread const int3& col, thread const int& rotation, constant Params& _285, thread spvUnsafeArray<uint, 16>& pixels)
 {
     int2 param = int2(2, 3);
     int3 param_1 = col;
     int param_2 = 3;
     int param_3 = 4;
     int param_4 = rotation;
-    blend(param, param_1, param_2, param_3, param_4, _285, pixels);
+    exult_sfx_blend(param, param_1, param_2, param_3, param_4, _285, pixels);
     int2 param_5 = int2(3, 1);
     int3 param_6 = col;
     int param_7 = 3;
     int param_8 = 4;
     int param_9 = rotation;
-    blend(param_5, param_6, param_7, param_8, param_9, _285, pixels);
+    exult_sfx_blend(param_5, param_6, param_7, param_8, param_9, _285, pixels);
     int2 param_10 = int2(2);
     int3 param_11 = col;
     int param_12 = 1;
     int param_13 = 4;
     int param_14 = rotation;
-    blend(param_10, param_11, param_12, param_13, param_14, _285, pixels);
+    exult_sfx_blend(param_10, param_11, param_12, param_13, param_14, _285, pixels);
     int2 param_15 = int2(3, 0);
     int3 param_16 = col;
     int param_17 = 1;
     int param_18 = 4;
     int param_19 = rotation;
-    blend(param_15, param_16, param_17, param_18, param_19, _285, pixels);
+    exult_sfx_blend(param_15, param_16, param_17, param_18, param_19, _285, pixels);
     int2 param_20 = int2(3, 2);
     int3 param_21 = col;
     int param_22 = rotation;
-    put(param_20, param_21, param_22, _285, pixels);
+    exult_sfx_put(param_20, param_21, param_22, _285, pixels);
     int2 param_23 = int2(3);
     int3 param_24 = col;
     int param_25 = rotation;
-    put(param_23, param_24, param_25, _285, pixels);
+    exult_sfx_put(param_23, param_24, param_25, _285, pixels);
 }
 
 static inline __attribute__((always_inline))
-void blendLineSteep(thread const int3& col, thread const int& rotation, constant Params& _285, thread spvUnsafeArray<uint, 16>& pixels)
+void exult_sfx_blendLineSteep(thread const int3& col, thread const int& rotation, constant Params& _285, thread spvUnsafeArray<uint, 16>& pixels)
 {
     if (_285.settings.z == 2)
     {
         int3 param = col;
         int param_1 = rotation;
-        blendLineSteep2(param, param_1, _285, pixels);
+        exult_sfx_blendLineSteep2(param, param_1, _285, pixels);
     }
     else
     {
@@ -4526,80 +4526,80 @@ void blendLineSteep(thread const int3& col, thread const int& rotation, constant
         {
             int3 param_2 = col;
             int param_3 = rotation;
-            blendLineSteep3(param_2, param_3, _285, pixels);
+            exult_sfx_blendLineSteep3(param_2, param_3, _285, pixels);
         }
         else
         {
             int3 param_4 = col;
             int param_5 = rotation;
-            blendLineSteep4(param_4, param_5, _285, pixels);
+            exult_sfx_blendLineSteep4(param_4, param_5, _285, pixels);
         }
     }
 }
 
 static inline __attribute__((always_inline))
-void blendLineDiagonal2(thread const int3& col, thread const int& rotation, constant Params& _285, thread spvUnsafeArray<uint, 16>& pixels)
+void exult_sfx_blendLineDiagonal2(thread const int3& col, thread const int& rotation, constant Params& _285, thread spvUnsafeArray<uint, 16>& pixels)
 {
     int2 param = int2(1);
     int3 param_1 = col;
     int param_2 = 1;
     int param_3 = 2;
     int param_4 = rotation;
-    blend(param, param_1, param_2, param_3, param_4, _285, pixels);
+    exult_sfx_blend(param, param_1, param_2, param_3, param_4, _285, pixels);
 }
 
 static inline __attribute__((always_inline))
-void blendLineDiagonal3(thread const int3& col, thread const int& rotation, constant Params& _285, thread spvUnsafeArray<uint, 16>& pixels)
+void exult_sfx_blendLineDiagonal3(thread const int3& col, thread const int& rotation, constant Params& _285, thread spvUnsafeArray<uint, 16>& pixels)
 {
     int2 param = int2(2);
     int3 param_1 = col;
     int param_2 = 7;
     int param_3 = 8;
     int param_4 = rotation;
-    blend(param, param_1, param_2, param_3, param_4, _285, pixels);
+    exult_sfx_blend(param, param_1, param_2, param_3, param_4, _285, pixels);
     int2 param_5 = int2(2, 1);
     int3 param_6 = col;
     int param_7 = 1;
     int param_8 = 8;
     int param_9 = rotation;
-    blend(param_5, param_6, param_7, param_8, param_9, _285, pixels);
+    exult_sfx_blend(param_5, param_6, param_7, param_8, param_9, _285, pixels);
     int2 param_10 = int2(1, 2);
     int3 param_11 = col;
     int param_12 = 1;
     int param_13 = 8;
     int param_14 = rotation;
-    blend(param_10, param_11, param_12, param_13, param_14, _285, pixels);
+    exult_sfx_blend(param_10, param_11, param_12, param_13, param_14, _285, pixels);
 }
 
 static inline __attribute__((always_inline))
-void blendLineDiagonal4(thread const int3& col, thread const int& rotation, constant Params& _285, thread spvUnsafeArray<uint, 16>& pixels)
+void exult_sfx_blendLineDiagonal4(thread const int3& col, thread const int& rotation, constant Params& _285, thread spvUnsafeArray<uint, 16>& pixels)
 {
     int2 param = int2(3, 2);
     int3 param_1 = col;
     int param_2 = 1;
     int param_3 = 2;
     int param_4 = rotation;
-    blend(param, param_1, param_2, param_3, param_4, _285, pixels);
+    exult_sfx_blend(param, param_1, param_2, param_3, param_4, _285, pixels);
     int2 param_5 = int2(2, 3);
     int3 param_6 = col;
     int param_7 = 1;
     int param_8 = 2;
     int param_9 = rotation;
-    blend(param_5, param_6, param_7, param_8, param_9, _285, pixels);
+    exult_sfx_blend(param_5, param_6, param_7, param_8, param_9, _285, pixels);
     int2 param_10 = int2(3);
     int3 param_11 = col;
     int param_12 = rotation;
-    put(param_10, param_11, param_12, _285, pixels);
+    exult_sfx_put(param_10, param_11, param_12, _285, pixels);
 }
 
 static inline __attribute__((always_inline))
-void blendLineDiagonal(thread const int3& col, thread const int& rotation, constant Params& _285, thread spvUnsafeArray<uint, 16>& pixels)
+void exult_sfx_blendLineDiagonal(thread const int3& col, thread const int& rotation, constant Params& _285, thread spvUnsafeArray<uint, 16>& pixels)
 {
     if (_285.settings.z == 2)
     {
         int3 param = col;
         int param_1 = rotation;
-        blendLineDiagonal2(param, param_1, _285, pixels);
+        exult_sfx_blendLineDiagonal2(param, param_1, _285, pixels);
     }
     else
     {
@@ -4607,70 +4607,70 @@ void blendLineDiagonal(thread const int3& col, thread const int& rotation, const
         {
             int3 param_2 = col;
             int param_3 = rotation;
-            blendLineDiagonal3(param_2, param_3, _285, pixels);
+            exult_sfx_blendLineDiagonal3(param_2, param_3, _285, pixels);
         }
         else
         {
             int3 param_4 = col;
             int param_5 = rotation;
-            blendLineDiagonal4(param_4, param_5, _285, pixels);
+            exult_sfx_blendLineDiagonal4(param_4, param_5, _285, pixels);
         }
     }
 }
 
 static inline __attribute__((always_inline))
-void blendCorner2(thread const int3& col, thread const int& rotation, constant Params& _285, thread spvUnsafeArray<uint, 16>& pixels)
+void exult_sfx_blendCorner2(thread const int3& col, thread const int& rotation, constant Params& _285, thread spvUnsafeArray<uint, 16>& pixels)
 {
     int2 param = int2(1);
     int3 param_1 = col;
     int param_2 = 21;
     int param_3 = 100;
     int param_4 = rotation;
-    blend(param, param_1, param_2, param_3, param_4, _285, pixels);
+    exult_sfx_blend(param, param_1, param_2, param_3, param_4, _285, pixels);
 }
 
 static inline __attribute__((always_inline))
-void blendCorner3(thread const int3& col, thread const int& rotation, constant Params& _285, thread spvUnsafeArray<uint, 16>& pixels)
+void exult_sfx_blendCorner3(thread const int3& col, thread const int& rotation, constant Params& _285, thread spvUnsafeArray<uint, 16>& pixels)
 {
     int2 param = int2(2);
     int3 param_1 = col;
     int param_2 = 45;
     int param_3 = 100;
     int param_4 = rotation;
-    blend(param, param_1, param_2, param_3, param_4, _285, pixels);
+    exult_sfx_blend(param, param_1, param_2, param_3, param_4, _285, pixels);
 }
 
 static inline __attribute__((always_inline))
-void blendCorner4(thread const int3& col, thread const int& rotation, constant Params& _285, thread spvUnsafeArray<uint, 16>& pixels)
+void exult_sfx_blendCorner4(thread const int3& col, thread const int& rotation, constant Params& _285, thread spvUnsafeArray<uint, 16>& pixels)
 {
     int2 param = int2(3);
     int3 param_1 = col;
     int param_2 = 68;
     int param_3 = 100;
     int param_4 = rotation;
-    blend(param, param_1, param_2, param_3, param_4, _285, pixels);
+    exult_sfx_blend(param, param_1, param_2, param_3, param_4, _285, pixels);
     int2 param_5 = int2(2, 3);
     int3 param_6 = col;
     int param_7 = 9;
     int param_8 = 100;
     int param_9 = rotation;
-    blend(param_5, param_6, param_7, param_8, param_9, _285, pixels);
+    exult_sfx_blend(param_5, param_6, param_7, param_8, param_9, _285, pixels);
     int2 param_10 = int2(3, 2);
     int3 param_11 = col;
     int param_12 = 9;
     int param_13 = 100;
     int param_14 = rotation;
-    blend(param_10, param_11, param_12, param_13, param_14, _285, pixels);
+    exult_sfx_blend(param_10, param_11, param_12, param_13, param_14, _285, pixels);
 }
 
 static inline __attribute__((always_inline))
-void blendCorner(thread const int3& col, thread const int& rotation, constant Params& _285, thread spvUnsafeArray<uint, 16>& pixels)
+void exult_sfx_blendCorner(thread const int3& col, thread const int& rotation, constant Params& _285, thread spvUnsafeArray<uint, 16>& pixels)
 {
     if (_285.settings.z == 2)
     {
         int3 param = col;
         int param_1 = rotation;
-        blendCorner2(param, param_1, _285, pixels);
+        exult_sfx_blendCorner2(param, param_1, _285, pixels);
     }
     else
     {
@@ -4678,125 +4678,125 @@ void blendCorner(thread const int3& col, thread const int& rotation, constant Pa
         {
             int3 param_2 = col;
             int param_3 = rotation;
-            blendCorner3(param_2, param_3, _285, pixels);
+            exult_sfx_blendCorner3(param_2, param_3, _285, pixels);
         }
         else
         {
             int3 param_4 = col;
             int param_5 = rotation;
-            blendCorner4(param_4, param_5, _285, pixels);
+            exult_sfx_blendCorner4(param_4, param_5, _285, pixels);
         }
     }
 }
 
 static inline __attribute__((always_inline))
-void xbrPixel(thread const int& rotation, texture2d<float> Source, sampler SourceSmplr, thread int2& position, constant Params& _285, thread spvUnsafeArray<uint, 16>& pixels)
+void exult_sfx_xbrPixel(thread const int& rotation, texture2d<float> Source, sampler SourceSmplr, thread int2& position, constant Params& _285, thread spvUnsafeArray<uint, 16>& pixels)
 {
     int2 param = int2(-1, -2);
     int param_1 = rotation;
-    int2 _3546 = rotateOffset(param, param_1);
+    int2 _3546 = exult_sfx_rotateOffset(param, param_1);
     int2 param_2 = _3546;
-    int3 a1 = fetchPixel(param_2, Source, SourceSmplr, position, _285).xyz;
+    int3 a1 = exult_sfx_fetchPixel(param_2, Source, SourceSmplr, position, _285).xyz;
     int2 param_3 = int2(0, -2);
     int param_4 = rotation;
-    int2 _3555 = rotateOffset(param_3, param_4);
+    int2 _3555 = exult_sfx_rotateOffset(param_3, param_4);
     int2 param_5 = _3555;
-    int3 b1 = fetchPixel(param_5, Source, SourceSmplr, position, _285).xyz;
+    int3 b1 = exult_sfx_fetchPixel(param_5, Source, SourceSmplr, position, _285).xyz;
     int2 param_6 = int2(1, -2);
     int param_7 = rotation;
-    int2 _3564 = rotateOffset(param_6, param_7);
+    int2 _3564 = exult_sfx_rotateOffset(param_6, param_7);
     int2 param_8 = _3564;
-    int3 c1 = fetchPixel(param_8, Source, SourceSmplr, position, _285).xyz;
+    int3 c1 = exult_sfx_fetchPixel(param_8, Source, SourceSmplr, position, _285).xyz;
     int2 param_9 = int2(-2, -1);
     int param_10 = rotation;
-    int2 _3573 = rotateOffset(param_9, param_10);
+    int2 _3573 = exult_sfx_rotateOffset(param_9, param_10);
     int2 param_11 = _3573;
-    int3 a0 = fetchPixel(param_11, Source, SourceSmplr, position, _285).xyz;
+    int3 a0 = exult_sfx_fetchPixel(param_11, Source, SourceSmplr, position, _285).xyz;
     int2 param_12 = int2(-1);
     int param_13 = rotation;
-    int2 _3582 = rotateOffset(param_12, param_13);
+    int2 _3582 = exult_sfx_rotateOffset(param_12, param_13);
     int2 param_14 = _3582;
-    int3 a = fetchPixel(param_14, Source, SourceSmplr, position, _285).xyz;
+    int3 a = exult_sfx_fetchPixel(param_14, Source, SourceSmplr, position, _285).xyz;
     int2 param_15 = int2(0, -1);
     int param_16 = rotation;
-    int2 _3591 = rotateOffset(param_15, param_16);
+    int2 _3591 = exult_sfx_rotateOffset(param_15, param_16);
     int2 param_17 = _3591;
-    int3 b = fetchPixel(param_17, Source, SourceSmplr, position, _285).xyz;
+    int3 b = exult_sfx_fetchPixel(param_17, Source, SourceSmplr, position, _285).xyz;
     int2 param_18 = int2(1, -1);
     int param_19 = rotation;
-    int2 _3600 = rotateOffset(param_18, param_19);
+    int2 _3600 = exult_sfx_rotateOffset(param_18, param_19);
     int2 param_20 = _3600;
-    int3 c = fetchPixel(param_20, Source, SourceSmplr, position, _285).xyz;
+    int3 c = exult_sfx_fetchPixel(param_20, Source, SourceSmplr, position, _285).xyz;
     int2 param_21 = int2(2, -1);
     int param_22 = rotation;
-    int2 _3609 = rotateOffset(param_21, param_22);
+    int2 _3609 = exult_sfx_rotateOffset(param_21, param_22);
     int2 param_23 = _3609;
-    int3 c4 = fetchPixel(param_23, Source, SourceSmplr, position, _285).xyz;
+    int3 c4 = exult_sfx_fetchPixel(param_23, Source, SourceSmplr, position, _285).xyz;
     int2 param_24 = int2(-2, 0);
     int param_25 = rotation;
-    int2 _3618 = rotateOffset(param_24, param_25);
+    int2 _3618 = exult_sfx_rotateOffset(param_24, param_25);
     int2 param_26 = _3618;
-    int3 d0 = fetchPixel(param_26, Source, SourceSmplr, position, _285).xyz;
+    int3 d0 = exult_sfx_fetchPixel(param_26, Source, SourceSmplr, position, _285).xyz;
     int2 param_27 = int2(-1, 0);
     int param_28 = rotation;
-    int2 _3627 = rotateOffset(param_27, param_28);
+    int2 _3627 = exult_sfx_rotateOffset(param_27, param_28);
     int2 param_29 = _3627;
-    int3 d = fetchPixel(param_29, Source, SourceSmplr, position, _285).xyz;
+    int3 d = exult_sfx_fetchPixel(param_29, Source, SourceSmplr, position, _285).xyz;
     int2 param_30 = int2(0);
     int param_31 = rotation;
-    int2 _3635 = rotateOffset(param_30, param_31);
+    int2 _3635 = exult_sfx_rotateOffset(param_30, param_31);
     int2 param_32 = _3635;
-    int3 e = fetchPixel(param_32, Source, SourceSmplr, position, _285).xyz;
+    int3 e = exult_sfx_fetchPixel(param_32, Source, SourceSmplr, position, _285).xyz;
     int2 param_33 = int2(1, 0);
     int param_34 = rotation;
-    int2 _3643 = rotateOffset(param_33, param_34);
+    int2 _3643 = exult_sfx_rotateOffset(param_33, param_34);
     int2 param_35 = _3643;
-    int3 f = fetchPixel(param_35, Source, SourceSmplr, position, _285).xyz;
+    int3 f = exult_sfx_fetchPixel(param_35, Source, SourceSmplr, position, _285).xyz;
     int2 param_36 = int2(2, 0);
     int param_37 = rotation;
-    int2 _3651 = rotateOffset(param_36, param_37);
+    int2 _3651 = exult_sfx_rotateOffset(param_36, param_37);
     int2 param_38 = _3651;
-    int3 f4 = fetchPixel(param_38, Source, SourceSmplr, position, _285).xyz;
+    int3 f4 = exult_sfx_fetchPixel(param_38, Source, SourceSmplr, position, _285).xyz;
     int2 param_39 = int2(-2, 1);
     int param_40 = rotation;
-    int2 _3660 = rotateOffset(param_39, param_40);
+    int2 _3660 = exult_sfx_rotateOffset(param_39, param_40);
     int2 param_41 = _3660;
-    int3 g0 = fetchPixel(param_41, Source, SourceSmplr, position, _285).xyz;
+    int3 g0 = exult_sfx_fetchPixel(param_41, Source, SourceSmplr, position, _285).xyz;
     int2 param_42 = int2(-1, 1);
     int param_43 = rotation;
-    int2 _3669 = rotateOffset(param_42, param_43);
+    int2 _3669 = exult_sfx_rotateOffset(param_42, param_43);
     int2 param_44 = _3669;
-    int3 g = fetchPixel(param_44, Source, SourceSmplr, position, _285).xyz;
+    int3 g = exult_sfx_fetchPixel(param_44, Source, SourceSmplr, position, _285).xyz;
     int2 param_45 = int2(0, 1);
     int param_46 = rotation;
-    int2 _3677 = rotateOffset(param_45, param_46);
+    int2 _3677 = exult_sfx_rotateOffset(param_45, param_46);
     int2 param_47 = _3677;
-    int3 h = fetchPixel(param_47, Source, SourceSmplr, position, _285).xyz;
+    int3 h = exult_sfx_fetchPixel(param_47, Source, SourceSmplr, position, _285).xyz;
     int2 param_48 = int2(1);
     int param_49 = rotation;
-    int2 _3685 = rotateOffset(param_48, param_49);
+    int2 _3685 = exult_sfx_rotateOffset(param_48, param_49);
     int2 param_50 = _3685;
-    int3 i = fetchPixel(param_50, Source, SourceSmplr, position, _285).xyz;
+    int3 i = exult_sfx_fetchPixel(param_50, Source, SourceSmplr, position, _285).xyz;
     int2 param_51 = int2(2, 1);
     int param_52 = rotation;
-    int2 _3693 = rotateOffset(param_51, param_52);
+    int2 _3693 = exult_sfx_rotateOffset(param_51, param_52);
     int2 param_53 = _3693;
-    int3 i4 = fetchPixel(param_53, Source, SourceSmplr, position, _285).xyz;
+    int3 i4 = exult_sfx_fetchPixel(param_53, Source, SourceSmplr, position, _285).xyz;
     int2 param_54 = int2(-1, 2);
     int param_55 = rotation;
-    int2 _3702 = rotateOffset(param_54, param_55);
+    int2 _3702 = exult_sfx_rotateOffset(param_54, param_55);
     int2 param_56 = _3702;
-    int3 g5 = fetchPixel(param_56, Source, SourceSmplr, position, _285).xyz;
+    int3 g5 = exult_sfx_fetchPixel(param_56, Source, SourceSmplr, position, _285).xyz;
     int2 param_57 = int2(0, 2);
     int param_58 = rotation;
-    int2 _3710 = rotateOffset(param_57, param_58);
+    int2 _3710 = exult_sfx_rotateOffset(param_57, param_58);
     int2 param_59 = _3710;
-    int3 h5 = fetchPixel(param_59, Source, SourceSmplr, position, _285).xyz;
+    int3 h5 = exult_sfx_fetchPixel(param_59, Source, SourceSmplr, position, _285).xyz;
     int2 param_60 = int2(1, 2);
     int param_61 = rotation;
-    int2 _3718 = rotateOffset(param_60, param_61);
+    int2 _3718 = exult_sfx_rotateOffset(param_60, param_61);
     int2 param_62 = _3718;
-    int3 i5 = fetchPixel(param_62, Source, SourceSmplr, position, _285).xyz;
+    int3 i5 = exult_sfx_fetchPixel(param_62, Source, SourceSmplr, position, _285).xyz;
     if (all(e == h) || all(e == f))
     {
         return;
@@ -4811,7 +4811,7 @@ void xbrPixel(thread const int& rotation, texture2d<float> Source, sampler Sourc
     int3 param_70 = f4;
     int3 param_71 = h;
     int3 param_72 = f;
-    int hf = (((dist(param_63, param_64) + dist(param_65, param_66)) + dist(param_67, param_68)) + dist(param_69, param_70)) + (4 * dist(param_71, param_72));
+    int hf = (((exult_sfx_dist(param_63, param_64) + exult_sfx_dist(param_65, param_66)) + exult_sfx_dist(param_67, param_68)) + exult_sfx_dist(param_69, param_70)) + (4 * exult_sfx_dist(param_71, param_72));
     int3 param_73 = h;
     int3 param_74 = d;
     int3 param_75 = h;
@@ -4822,12 +4822,12 @@ void xbrPixel(thread const int& rotation, texture2d<float> Source, sampler Sourc
     int3 param_80 = b;
     int3 param_81 = e;
     int3 param_82 = i;
-    int ei = (((dist(param_73, param_74) + dist(param_75, param_76)) + dist(param_77, param_78)) + dist(param_79, param_80)) + (4 * dist(param_81, param_82));
+    int ei = (((exult_sfx_dist(param_73, param_74) + exult_sfx_dist(param_75, param_76)) + exult_sfx_dist(param_77, param_78)) + exult_sfx_dist(param_79, param_80)) + (4 * exult_sfx_dist(param_81, param_82));
     int3 param_83 = e;
     int3 param_84 = f;
     int3 param_85 = e;
     int3 param_86 = h;
-    int3 px = select(h, f, bool3(dist(param_83, param_84) <= dist(param_85, param_86)));
+    int3 px = select(h, f, bool3(exult_sfx_dist(param_83, param_84) <= exult_sfx_dist(param_85, param_86)));
     int3 param_87 = d0;
     int3 param_88 = g;
     int3 param_89 = g;
@@ -4838,7 +4838,7 @@ void xbrPixel(thread const int& rotation, texture2d<float> Source, sampler Sourc
     int3 param_94 = i;
     int3 param_95 = d;
     int3 param_96 = h;
-    int dh = (((dist(param_87, param_88) + dist(param_89, param_90)) + dist(param_91, param_92)) + dist(param_93, param_94)) + (4 * dist(param_95, param_96));
+    int dh = (((exult_sfx_dist(param_87, param_88) + exult_sfx_dist(param_89, param_90)) + exult_sfx_dist(param_91, param_92)) + exult_sfx_dist(param_93, param_94)) + (4 * exult_sfx_dist(param_95, param_96));
     int3 param_97 = b;
     int3 param_98 = d;
     int3 param_99 = d;
@@ -4849,7 +4849,7 @@ void xbrPixel(thread const int& rotation, texture2d<float> Source, sampler Sourc
     int3 param_104 = g5;
     int3 param_105 = e;
     int3 param_106 = g;
-    int eg = (((dist(param_97, param_98) + dist(param_99, param_100)) + dist(param_101, param_102)) + dist(param_103, param_104)) + (4 * dist(param_105, param_106));
+    int eg = (((exult_sfx_dist(param_97, param_98) + exult_sfx_dist(param_99, param_100)) + exult_sfx_dist(param_101, param_102)) + exult_sfx_dist(param_103, param_104)) + (4 * exult_sfx_dist(param_105, param_106));
     int3 param_107 = d;
     int3 param_108 = b;
     int3 param_109 = b;
@@ -4860,7 +4860,7 @@ void xbrPixel(thread const int& rotation, texture2d<float> Source, sampler Sourc
     int3 param_114 = c4;
     int3 param_115 = e;
     int3 param_116 = c;
-    int ec = (((dist(param_107, param_108) + dist(param_109, param_110)) + dist(param_111, param_112)) + dist(param_113, param_114)) + (4 * dist(param_115, param_116));
+    int ec = (((exult_sfx_dist(param_107, param_108) + exult_sfx_dist(param_109, param_110)) + exult_sfx_dist(param_111, param_112)) + exult_sfx_dist(param_113, param_114)) + (4 * exult_sfx_dist(param_115, param_116));
     int3 param_117 = a;
     int3 param_118 = e;
     int3 param_119 = e;
@@ -4871,14 +4871,14 @@ void xbrPixel(thread const int& rotation, texture2d<float> Source, sampler Sourc
     int3 param_124 = f4;
     int3 param_125 = b;
     int3 param_126 = f;
-    int bf = (((dist(param_117, param_118) + dist(param_119, param_120)) + dist(param_121, param_122)) + dist(param_123, param_124)) + (4 * dist(param_125, param_126));
+    int bf = (((exult_sfx_dist(param_117, param_118) + exult_sfx_dist(param_119, param_120)) + exult_sfx_dist(param_121, param_122)) + exult_sfx_dist(param_123, param_124)) + (4 * exult_sfx_dist(param_125, param_126));
     bool _3940 = eg < dh;
     bool _3949;
     if (!_3940)
     {
         int3 param_127 = e;
         int3 param_128 = d;
-        _3949 = equals(param_127, param_128);
+        _3949 = exult_sfx_equals(param_127, param_128);
     }
     else
     {
@@ -4889,7 +4889,7 @@ void xbrPixel(thread const int& rotation, texture2d<float> Source, sampler Sourc
     {
         int3 param_129 = e;
         int3 param_130 = h;
-        _3958 = equals(param_129, param_130);
+        _3958 = exult_sfx_equals(param_129, param_130);
     }
     else
     {
@@ -4904,7 +4904,7 @@ void xbrPixel(thread const int& rotation, texture2d<float> Source, sampler Sourc
         {
             int3 param_131 = e;
             int3 param_132 = b;
-            _3972 = equals(param_131, param_132);
+            _3972 = exult_sfx_equals(param_131, param_132);
         }
         else
         {
@@ -4915,7 +4915,7 @@ void xbrPixel(thread const int& rotation, texture2d<float> Source, sampler Sourc
         {
             int3 param_133 = e;
             int3 param_134 = f;
-            _3981 = equals(param_133, param_134);
+            _3981 = exult_sfx_equals(param_133, param_134);
         }
         else
         {
@@ -4932,13 +4932,13 @@ void xbrPixel(thread const int& rotation, texture2d<float> Source, sampler Sourc
     {
         int3 param_135 = g;
         int3 param_136 = h;
-        bool _3989 = equals(param_135, param_136);
+        bool _3989 = exult_sfx_equals(param_135, param_136);
         bool _3997;
         if (_3989)
         {
             int3 param_137 = h;
             int3 param_138 = i;
-            _3997 = equals(param_137, param_138);
+            _3997 = exult_sfx_equals(param_137, param_138);
         }
         else
         {
@@ -4949,7 +4949,7 @@ void xbrPixel(thread const int& rotation, texture2d<float> Source, sampler Sourc
         {
             int3 param_139 = i;
             int3 param_140 = f;
-            _4005 = equals(param_139, param_140);
+            _4005 = exult_sfx_equals(param_139, param_140);
         }
         else
         {
@@ -4960,7 +4960,7 @@ void xbrPixel(thread const int& rotation, texture2d<float> Source, sampler Sourc
         {
             int3 param_141 = f;
             int3 param_142 = c;
-            _4013 = equals(param_141, param_142);
+            _4013 = exult_sfx_equals(param_141, param_142);
         }
         else
         {
@@ -4971,7 +4971,7 @@ void xbrPixel(thread const int& rotation, texture2d<float> Source, sampler Sourc
         {
             int3 param_143 = e;
             int3 param_144 = i;
-            _4022 = !equals(param_143, param_144);
+            _4022 = !exult_sfx_equals(param_143, param_144);
         }
         else
         {
@@ -4988,13 +4988,13 @@ void xbrPixel(thread const int& rotation, texture2d<float> Source, sampler Sourc
     {
         int3 param_145 = d;
         int3 param_146 = h;
-        bool _4032 = equals(param_145, param_146);
+        bool _4032 = exult_sfx_equals(param_145, param_146);
         bool _4040;
         if (_4032)
         {
             int3 param_147 = h;
             int3 param_148 = f;
-            _4040 = equals(param_147, param_148);
+            _4040 = exult_sfx_equals(param_147, param_148);
         }
         else
         {
@@ -5005,7 +5005,7 @@ void xbrPixel(thread const int& rotation, texture2d<float> Source, sampler Sourc
         {
             int3 param_149 = a;
             int3 param_150 = e;
-            _4048 = equals(param_149, param_150);
+            _4048 = exult_sfx_equals(param_149, param_150);
         }
         else
         {
@@ -5016,7 +5016,7 @@ void xbrPixel(thread const int& rotation, texture2d<float> Source, sampler Sourc
         {
             int3 param_151 = e;
             int3 param_152 = c;
-            _4056 = equals(param_151, param_152);
+            _4056 = exult_sfx_equals(param_151, param_152);
         }
         else
         {
@@ -5027,7 +5027,7 @@ void xbrPixel(thread const int& rotation, texture2d<float> Source, sampler Sourc
         {
             int3 param_153 = h;
             int3 param_154 = e;
-            _4065 = !equals(param_153, param_154);
+            _4065 = !exult_sfx_equals(param_153, param_154);
         }
         else
         {
@@ -5044,13 +5044,13 @@ void xbrPixel(thread const int& rotation, texture2d<float> Source, sampler Sourc
     {
         int3 param_155 = h;
         int3 param_156 = f;
-        bool _4074 = equals(param_155, param_156);
+        bool _4074 = exult_sfx_equals(param_155, param_156);
         bool _4082;
         if (_4074)
         {
             int3 param_157 = f;
             int3 param_158 = b;
-            _4082 = equals(param_157, param_158);
+            _4082 = exult_sfx_equals(param_157, param_158);
         }
         else
         {
@@ -5061,7 +5061,7 @@ void xbrPixel(thread const int& rotation, texture2d<float> Source, sampler Sourc
         {
             int3 param_159 = g;
             int3 param_160 = e;
-            _4090 = equals(param_159, param_160);
+            _4090 = exult_sfx_equals(param_159, param_160);
         }
         else
         {
@@ -5072,7 +5072,7 @@ void xbrPixel(thread const int& rotation, texture2d<float> Source, sampler Sourc
         {
             int3 param_161 = e;
             int3 param_162 = a;
-            _4098 = equals(param_161, param_162);
+            _4098 = exult_sfx_equals(param_161, param_162);
         }
         else
         {
@@ -5083,7 +5083,7 @@ void xbrPixel(thread const int& rotation, texture2d<float> Source, sampler Sourc
         {
             int3 param_163 = f;
             int3 param_164 = e;
-            _4107 = !equals(param_163, param_164);
+            _4107 = !exult_sfx_equals(param_163, param_164);
         }
         else
         {
@@ -5111,46 +5111,46 @@ void xbrPixel(thread const int& rotation, texture2d<float> Source, sampler Sourc
         {
             int3 param_165 = f;
             int3 param_166 = g;
-            int fg = dist(param_165, param_166);
+            int fg = exult_sfx_dist(param_165, param_166);
             int3 param_167 = h;
             int3 param_168 = c;
-            int hc = dist(param_167, param_168);
+            int hc = exult_sfx_dist(param_167, param_168);
             bool ex2 = any(e != c) && any(b != c);
             bool ex3 = any(e != g) && any(d != g);
             int param_169 = fg;
             int param_170 = hc;
-            if (steep(param_169, param_170) && ex3)
+            if (exult_sfx_steep(param_169, param_170) && ex3)
             {
                 int param_171 = hc;
                 int param_172 = fg;
-                if (steep(param_171, param_172) && ex2)
+                if (exult_sfx_steep(param_171, param_172) && ex2)
                 {
                     int3 param_173 = px;
                     int param_174 = rotation;
-                    blendLineSteepAndShallow(param_173, param_174, _285, pixels);
+                    exult_sfx_blendLineSteepAndShallow(param_173, param_174, _285, pixels);
                 }
                 else
                 {
                     int3 param_175 = px;
                     int param_176 = rotation;
-                    blendLineShallow(param_175, param_176, _285, pixels);
+                    exult_sfx_blendLineShallow(param_175, param_176, _285, pixels);
                 }
             }
             else
             {
                 int param_177 = hc;
                 int param_178 = fg;
-                if (steep(param_177, param_178) && ex2)
+                if (exult_sfx_steep(param_177, param_178) && ex2)
                 {
                     int3 param_179 = px;
                     int param_180 = rotation;
-                    blendLineSteep(param_179, param_180, _285, pixels);
+                    exult_sfx_blendLineSteep(param_179, param_180, _285, pixels);
                 }
                 else
                 {
                     int3 param_181 = px;
                     int param_182 = rotation;
-                    blendLineDiagonal(param_181, param_182, _285, pixels);
+                    exult_sfx_blendLineDiagonal(param_181, param_182, _285, pixels);
                 }
             }
         }
@@ -5158,24 +5158,24 @@ void xbrPixel(thread const int& rotation, texture2d<float> Source, sampler Sourc
         {
             int3 param_183 = px;
             int param_184 = rotation;
-            blendCorner(param_183, param_184, _285, pixels);
+            exult_sfx_blendCorner(param_183, param_184, _285, pixels);
         }
     }
 }
 
 static inline __attribute__((always_inline))
-void xbr(texture2d<float> Source, sampler SourceSmplr, thread int2& position, constant Params& _285, thread spvUnsafeArray<uint, 16>& pixels)
+void exult_sfx_xbr(texture2d<float> Source, sampler SourceSmplr, thread int2& position, constant Params& _285, thread spvUnsafeArray<uint, 16>& pixels)
 {
     for (int i = 0; i < 16; i++)
     {
         int2 param = int2(0);
-        int3 param_1 = fetchPixel(param, Source, SourceSmplr, position, _285).xyz;
-        pixels[i] = pack(param_1);
+        int3 param_1 = exult_sfx_fetchPixel(param, Source, SourceSmplr, position, _285).xyz;
+        pixels[i] = exult_sfx_pack(param_1);
     }
     for (int r = 0; r < 4; r++)
     {
         int param_2 = r;
-        xbrPixel(param_2, Source, SourceSmplr, position, _285, pixels);
+        exult_sfx_xbrPixel(param_2, Source, SourceSmplr, position, _285, pixels);
     }
 }
 
@@ -5194,27 +5194,27 @@ fragment main0_out main0(constant Params& _285 [[buffer(0)]], texture2d<float> S
         case 2:
         case 3:
         {
-            hq(Source, SourceSmplr, position, _285, Palette, PaletteSmplr, Lookup, LookupSmplr, pixels);
+            exult_sfx_hq(Source, SourceSmplr, position, _285, Palette, PaletteSmplr, Lookup, LookupSmplr, pixels);
             break;
         }
         case 4:
         {
-            SaI(Source, SourceSmplr, position, _285, Palette, PaletteSmplr, pixels);
+            exult_sfx_SaI(Source, SourceSmplr, position, _285, Palette, PaletteSmplr, pixels);
             break;
         }
         case 5:
         {
-            Super2xSaI(Source, SourceSmplr, position, _285, Palette, PaletteSmplr, pixels);
+            exult_sfx_Super2xSaI(Source, SourceSmplr, position, _285, Palette, PaletteSmplr, pixels);
             break;
         }
         case 6:
         {
-            SuperEagle(Source, SourceSmplr, position, _285, Palette, PaletteSmplr, pixels);
+            exult_sfx_SuperEagle(Source, SourceSmplr, position, _285, Palette, PaletteSmplr, pixels);
             break;
         }
         case 7:
         {
-            xbr(Source, SourceSmplr, position, _285, pixels);
+            exult_sfx_xbr(Source, SourceSmplr, position, _285, pixels);
             break;
         }
     }

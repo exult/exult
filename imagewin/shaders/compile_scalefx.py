@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Regenerate embedded SPIR-V with glslangValidator (development-time only)."""
 import os
+import re
 from pathlib import Path
 import shutil
 import struct
@@ -45,8 +46,16 @@ def main():
     with tempfile.TemporaryDirectory() as temporary:
         for name, source in modules:
             binary = Path(temporary) / (name + ".spv")
+            # Metal imports its standard namespace. Prefix custom helpers to
+            # avoid collisions with types such as metal::level and overloads.
+            code = source.read_text()
+            helpers = set(re.findall(r"(?m)^\s*(?:void|float|int|uint|bool|[biu]?vec[234])\s+(\w+)\s*\(", code)) - {"main"}
+            for helper in sorted(helpers):
+                code = re.sub(r"\b" + re.escape(helper) + r"(?=\s*\()", "exult_sfx_" + helper, code)
+            portable_source = Path(temporary) / source.name
+            portable_source.write_text(code)
             subprocess.run([os.environ.get("GLSLANG_VALIDATOR", "glslangValidator"), "-V",
-                            "--target-env", "vulkan1.0", "-o", str(binary), str(source)], check=True)
+                            "--target-env", "vulkan1.0", "-o", str(binary), str(portable_source)], check=True)
             data = binary.read_bytes()
             words = strict_arithmetic(list(struct.unpack("<" + "I" * (len(data) // 4), data)))
             binary.write_bytes(struct.pack("<" + "I" * len(words), *words))
