@@ -90,9 +90,9 @@ void main() {
 	vec4 h = vec4(min(D.w, A.w), min(E.w, B.w), min(E.w, H.w), min(D.w, G.w));
 	vec4 v = vec4(min(E.y, D.y), min(E.y, F.y), min(H.y, I.y), min(H.y, G.y));
 
-	vec4 or   = GE(h + vec4(D.w, E.w, E.w, D.w), v + vec4(E.y, E.y, H.y, H.y));    // orientation
+	vec4 orientation   = GE(h + vec4(D.w, E.w, E.w, D.w), v + vec4(E.y, E.y, H.y, H.y));    // orientation
 	vec4 hori = LE(h, v) * clr;                                                    // horizontal edges
 	vec4 vert = GE(h, v) * clr;                                                    // vertical edges
 
-	FragColor = (res + 2. * hori + 4. * vert + 8. * or) / 15.;
+	FragColor = (res + 2. * hori + 4. * vert + 8. * orientation) / 15.;
 }

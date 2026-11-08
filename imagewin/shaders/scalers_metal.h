@@ -473,10 +473,10 @@ fragment main0_out main0(texture2d<float> Auxiliary [[texture(0)]], texture2d<fl
     clr.w = clear(param_42, param_43, param_44);
     float4 h = float4(fast::min(D.w, A.w), fast::min(E.w, B.w), fast::min(E.w, H.w), fast::min(D.w, G.w));
     float4 v = float4(fast::min(E.y, D.y), fast::min(E.y, F.y), fast::min(H.y, I.y), fast::min(H.y, G.y));
-    float4 or = spvFSub(float4(1.0), step(spvFAdd(h, float4(D.w, E.w, E.w, D.w)), spvFAdd(v, float4(E.y, E.y, H.y, H.y))));
+    float4 orientation = spvFSub(float4(1.0), step(spvFAdd(h, float4(D.w, E.w, E.w, D.w)), spvFAdd(v, float4(E.y, E.y, H.y, H.y))));
     float4 hori = spvFMul(spvFSub(float4(1.0), step(v, h)), clr);
     float4 vert = spvFMul(spvFSub(float4(1.0), step(h, v)), clr);
-    out.FragColor = spvFAdd(spvFAdd(spvFAdd(res, hori * 2.0), vert * 4.0), or * 8.0) / float4(15.0);
+    out.FragColor = spvFAdd(spvFAdd(spvFAdd(res, hori * 2.0), vert * 4.0), orientation * 8.0) / float4(15.0);
     return out;
 }
 
