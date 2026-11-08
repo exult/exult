@@ -109,7 +109,7 @@ int main() {
 		std::cout << "HQ2x/HQ3x/HQ4x, 2xSaI/Super2xSaI/SuperEagle and 2x/3x/4xBR GPU output agrees with CPU\n";
 		return 0;
 	} catch (const std::exception& e) {
-		std::cerr << e.what() << '\n';
+		std::cerr << "::error title=GPU conformance::" << e.what() << '\n';
 		return 1;
 	}
 }

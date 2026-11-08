@@ -7,7 +7,10 @@ test_dir=$(mktemp -d)
 trap 'rm -rf "$test_dir"' EXIT HUP INT TERM
 sdl_flags=$(pkg-config --cflags --libs sdl3)
 "$CXX" -std=c++17 -O2 -I. imagewin/tests/test_scalefx.cc -o "$test_dir/cpu"
-"$test_dir/cpu"
+if ! "$test_dir/cpu"; then
+    echo "::error title=CPU scaler fixtures::ScaleFX CPU regression failed on $(uname -m)"
+    exit 1
+fi
 "$CXX" -std=c++17 -O2 -I. -Iheaders imagewin/tests/test_gpu_fallback.cc $sdl_flags -o "$test_dir/fallback"
 SDL_VIDEODRIVER=dummy "$test_dir/fallback"
 if [ "${1:-}" = --fallback-only ]; then exit 0; fi

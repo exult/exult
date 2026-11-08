@@ -279,7 +279,7 @@ int main(int argc, char**) {
 		std::cout << "GPU scaler UI consensus, transparency, intrinsic alpha, palettes and resize agree with CPU\n";
 		return 0;
 	} catch (const std::exception& e) {
-		std::cerr << e.what() << '\n';
+		std::cerr << "::error title=GPU conformance::" << e.what() << '\n';
 		return 1;
 	}
 }
