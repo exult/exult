@@ -27,12 +27,10 @@ COMMON = '''#version 450
 // xBR: Hyllian, Zenju and Marzo Sette Torres Junior, GPL-2.0-or-later.
 layout(location=0) out uvec4 Pattern0;
 layout(location=1) out uvec4 Pattern1;
-layout(location=2) out uvec4 Pattern2;
-layout(location=3) out uvec4 Pattern3;
 layout(set=2,binding=0) uniform sampler2D Source;
 layout(set=2,binding=1) uniform sampler2D Palette;
 layout(set=2,binding=2) uniform usampler2D Lookup;
-layout(std140,set=3,binding=0) uniform Params { ivec4 settings; ivec4 limits; };
+layout(std140,set=3,binding=0) uniform Params { ivec4 settings; ivec4 limits; ivec4 output_group; };
 uint pixels[16];
 ivec2 position;
 ivec4 fetchPixel(ivec2 delta) {
@@ -287,9 +285,8 @@ if __name__=='__main__':
  case 4:SaI();break;case 5:Super2xSaI();break;case 6:SuperEagle();break;
  case 7:xbr();break;
  }
- Pattern0=uvec4(pixels[0],pixels[1],pixels[2],pixels[3]);
- Pattern1=uvec4(pixels[4],pixels[5],pixels[6],pixels[7]);
- Pattern2=uvec4(pixels[8],pixels[9],pixels[10],pixels[11]);
- Pattern3=uvec4(pixels[12],pixels[13],pixels[14],pixels[15]);
+ int start=output_group.x*8;
+ Pattern0=uvec4(pixels[start],pixels[start+1],pixels[start+2],pixels[start+3]);
+ Pattern1=uvec4(pixels[start+4],pixels[start+5],pixels[start+6],pixels[start+7]);
 }'''
     (ROOT/'scalers.frag').write_text('\n'.join(line.rstrip() for line in s.splitlines())+'\n')

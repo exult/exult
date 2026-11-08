@@ -84,6 +84,13 @@ namespace ScaleFX {
 		}
 
 		SDL_GPUTexture* texture(int w, int h) {
+			if (w <= 0 || h <= 0
+				|| !SDL_GPUTextureSupportsFormat(
+						device, SDL_GPU_TEXTUREFORMAT_R8G8B8A8_UNORM, SDL_GPU_TEXTURETYPE_2D,
+						SDL_GPU_TEXTUREUSAGE_SAMPLER | SDL_GPU_TEXTUREUSAGE_COLOR_TARGET)) {
+				SDL_SetError("GPU UI texture format or size is unsupported");
+				return nullptr;
+			}
 			SDL_GPUTextureCreateInfo t{};
 			t.type                 = SDL_GPU_TEXTURETYPE_2D;
 			t.format               = SDL_GPU_TEXTUREFORMAT_R8G8B8A8_UNORM;
@@ -100,6 +107,10 @@ namespace ScaleFX {
 				view->pixels = source->pixels;
 				view->pitch  = source->pitch;
 				return true;
+			}
+			if (source->w <= 0 || source->h <= 0 || uint64_t(source->w) * f > INT_MAX || uint64_t(source->h) * f > INT_MAX) {
+				SDL_SetError("GPU UI image exceeds supported dimensions");
+				return false;
 			}
 			release();
 			device = SDL_GetGPURendererDevice(renderer);

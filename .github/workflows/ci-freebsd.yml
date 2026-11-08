@@ -87,6 +87,7 @@ jobs:
             --with-usecode-debugger=yes --enable-usecode-container --enable-nonreadied-objects --enable-aseprite-plugin \
             CXX=clang++ CC=clang
           make -j 2
+          CXX=clang++ sh imagewin/tests/run_gpu_tests.sh --fallback-only
   notify:
     if: ${{ always() }}
     needs:

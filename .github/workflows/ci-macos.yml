@@ -88,18 +88,7 @@ jobs:
           SDL_GPU_DRIVER: metal
           SDL_VIDEODRIVER: dummy
         run: |
-          python3 - <<'PYMETAL'
-          from pathlib import Path
-          import re, subprocess, tempfile
-          text = Path("imagewin/shaders/scalers_metal.h").read_text()
-          with tempfile.TemporaryDirectory() as temporary:
-              modules = re.findall(r'inline constexpr char (\w+)\[\]=R"MSL\((.*?)\)MSL";', text, re.S)
-              assert len(modules) == 10, "Missing Metal shader assets"
-              for name, source in modules:
-                  path = Path(temporary) / (name + ".metal")
-                  path.write_text(source)
-                  subprocess.run(["xcrun", "-sdk", "macosx", "metal", "-std=macos-metal2.1", "-c", str(path), "-o", str(path.with_suffix(".air"))], check=True)
-          PYMETAL
+          python3 imagewin/tests/validate_metal.py --sdk macosx
           sh imagewin/tests/run_gpu_tests.sh --allow-no-gpu
   notify:
     if: ${{ always() }}

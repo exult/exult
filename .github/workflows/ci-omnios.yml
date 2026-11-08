@@ -106,7 +106,8 @@ jobs:
             --enable-zip-support --enable-shared --enable-midi-sfx --enable-shp-thumbnailer --enable-data --enable-mods \
             --with-usecode-debugger=yes --enable-usecode-container --enable-nonreadied-objects --enable-aseprite-plugin \
             CXX=/opt/gcc-13/bin/g++ CC=/opt/gcc-13/bin/gcc
-          make -j 2
+          gmake -j 2
+          CXX=/opt/gcc-13/bin/g++ sh imagewin/tests/run_gpu_tests.sh --fallback-only
   notify:
     if: ${{ always() }}
     needs:

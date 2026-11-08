@@ -8,7 +8,12 @@
 // Only compile the native backend into each application. No shader compiler
 // or shader translation library is needed on the player's machine.
 #	if defined(__APPLE__)
-#		include "shaders/scalers_metal.h"
+#		include <TargetConditionals.h>
+#		if TARGET_OS_IPHONE
+#			include "shaders/scalers_ios.h"
+#		else
+#			include "shaders/scalers_metal.h"
+#		endif
 #	elif defined(_WIN32)
 #		include "shaders/scalers_dxil.h"
 #	else

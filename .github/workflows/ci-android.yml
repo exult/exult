@@ -81,9 +81,11 @@ jobs:
           else
             sudo apt-fast update
           fi
-          sudo apt-fast install -y autoconf-archive ninja-build
+          sudo apt-fast install -y autoconf-archive ninja-build spirv-tools
       - name: Checkout code
         uses: actions/checkout@v6
+      - name: Validate Android Vulkan shaders
+        run: python3 imagewin/tests/validate_spirv.py
       - name: Run autoreconf
         run: |
           mkdir ./../build

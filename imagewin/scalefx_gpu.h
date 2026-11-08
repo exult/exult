@@ -10,6 +10,7 @@
 
 #include <algorithm>
 #include <array>
+#include <climits>
 #include <new>
 #include <vector>
 #if SDL_VERSION_ATLEAST(3, 4, 0)
@@ -105,6 +106,10 @@ namespace ScaleFX {
 		}
 
 		SDL_GPUTexture* texture(SDL_GPUTextureFormat format, SDL_GPUTextureUsageFlags usage, int w, int h) {
+			if (w <= 0 || h <= 0 || !SDL_GPUTextureSupportsFormat(device, format, SDL_GPU_TEXTURETYPE_2D, usage)) {
+				SDL_SetError("GPU scaler texture format or size is unsupported");
+				return nullptr;
+			}
 			SDL_GPUTextureCreateInfo info{};
 			info.type                 = SDL_GPU_TEXTURETYPE_2D;
 			info.format               = format;
@@ -119,6 +124,12 @@ namespace ScaleFX {
 		bool prepare(int w, int h, int f) {
 			if (source && width == w && height == h && factor == f) {
 				return true;
+			}
+			const uint64_t output_width = uint64_t(w) * f, output_height = uint64_t(h) * f;
+			const uint64_t upload_bytes = uint64_t(w) * h * 4 + 256 * 256 * sizeof(float) + sizeof(Shaders::hq_lookup);
+			if (w <= 0 || h <= 0 || output_width > INT_MAX || output_height > INT_MAX || upload_bytes > UINT32_MAX) {
+				SDL_SetError("GPU scaler image exceeds supported allocation sizes");
+				return false;
 			}
 			release();
 			width  = w;
@@ -189,7 +200,7 @@ namespace ScaleFX {
 					return false;
 				}
 				SDL_GPUColorTargetDescription descriptions[4]{};
-				const Uint32                  count = algorithm != Algorithm::ScaleFX && i == 0 ? 4 : 1;
+				const Uint32                  count = algorithm != Algorithm::ScaleFX && i == 0 ? 2 : 1;
 				for (Uint32 k = 0; k < count; ++k) {
 					descriptions[k].format = algorithm == Algorithm::ScaleFX
 													 ? ((i == 0 || i == 1 || i == 3) ? SDL_GPU_TEXTUREFORMAT_R32G32B32A32_FLOAT
@@ -426,12 +437,19 @@ namespace ScaleFX {
 						if (content.w <= 0 || content.h <= 0) {
 							content = {0, 0, width, height};
 						}
-						const int params[] = {width, height, f, int(algorithm), width, content.y + content.h, origin.x, origin.y};
-						for (int stage = 0; stage < 2; ++stage) {
+						int params[]
+								= {width, height, f, int(algorithm), width, content.y + content.h, origin.x, origin.y, 0, 0, 0, 0};
+						// Two 128-bit colour targets stay within the 32-byte
+						// attachment budget of older mobile Metal GPUs. Larger
+						// patterns are emitted in two groups before resolving.
+						const int groups = f == 2 ? 1 : 2;
+						for (int draw = 0; draw <= groups; ++draw) {
+							const int stage = draw < groups ? 0 : 1;
+							params[8]       = draw;
 							SDL_GPUColorTargetInfo colours[4]{};
-							const int              count = stage == 0 ? 4 : 1;
+							const int              count = stage == 0 ? 2 : 1;
 							for (int k = 0; k < count; ++k) {
-								colours[k].texture  = targets[stage == 0 ? k : 4];
+								colours[k].texture  = targets[stage == 0 ? draw * 2 + k : 4];
 								colours[k].load_op  = initialized ? SDL_GPU_LOADOP_LOAD : SDL_GPU_LOADOP_DONT_CARE;
 								colours[k].store_op = SDL_GPU_STOREOP_STORE;
 							}

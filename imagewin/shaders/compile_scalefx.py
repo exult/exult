@@ -33,9 +33,9 @@ def main():
     import argparse
     import sys
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--format", choices=("all", "spirv", "metal", "dxil"), default="all")
+    parser.add_argument("--format", choices=("all", "spirv", "metal", "ios", "dxil"), default="all")
     args = parser.parse_args()
-    formats = ("spirv", "metal", "dxil") if args.format == "all" else (args.format,)
+    formats = ("spirv", "metal", "ios", "dxil") if args.format == "all" else (args.format,)
     subprocess.run([sys.executable, str(ROOT / "generate_scalers.py")], check=True)
     modules = [(f"pass{i}", ROOT / f"scalefx-{i}.frag") for i in range(5)]
     modules += [(f"pass{i}", ROOT / f"scalefx-{i}.frag") for i in ("reduce", "matte")]
@@ -58,11 +58,12 @@ def main():
                     "    " + ",".join(f"0x{x:08x}" for x in words[i:i+8]) + ",\n"
                     for i in range(0, len(words), 8)) + "};\n")
             for fmt in (f for f in formats if f != "spirv"):
-                native = Path(temporary) / (name + (".metal" if fmt == "metal" else ".hlsl"))
-                options = ["--msl", "--msl-version", "20100"] if fmt == "metal" else ["--hlsl", "--shader-model", "60"]
+                native = Path(temporary) / (name + (".metal" if fmt in ("metal","ios") else ".hlsl"))
+                options = ["--msl", "--msl-version", "20100"] if fmt in ("metal","ios") else ["--hlsl", "--shader-model", "60"]
+                if fmt == "ios": options.append("--msl-ios")
                 subprocess.run([os.environ.get("SPIRV_CROSS", "spirv-cross"), str(binary), *options,
                                 "--output", str(native)], check=True)
-                if fmt == "metal":
+                if fmt in ("metal","ios"):
                     code = "#pragma clang fp contract(off)\n#pragma clang fp reassociate(off)\n" + native.read_text()
                     output[fmt].append(f'inline constexpr char {name}[]=R"MSL({code})MSL";\n')
                 else:

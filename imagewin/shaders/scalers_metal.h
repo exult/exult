@@ -2811,6 +2811,7 @@ struct Params
 {
     int4 settings;
     int4 limits;
+    int4 output_group;
 };
 
 constant spvUnsafeArray<uint, 15> _2977 = spvUnsafeArray<uint, 15>({ 4278317535u, 4294934529u, 3221225473u, 4294967295u, 1u, 4160749568u, 4294967295u, 4294967295u, 1u, 0u, 0u, 4292870144u, 4294967295u, 4294967295u, 4095u });
@@ -2819,8 +2820,6 @@ struct main0_out
 {
     uint4 Pattern0 [[color(0)]];
     uint4 Pattern1 [[color(1)]];
-    uint4 Pattern2 [[color(2)]];
-    uint4 Pattern3 [[color(3)]];
 };
 
 static inline __attribute__((always_inline))
@@ -5219,10 +5218,9 @@ fragment main0_out main0(constant Params& _285 [[buffer(0)]], texture2d<float> S
             break;
         }
     }
-    out.Pattern0 = uint4(pixels[0], pixels[1], pixels[2], pixels[3]);
-    out.Pattern1 = uint4(pixels[4], pixels[5], pixels[6], pixels[7]);
-    out.Pattern2 = uint4(pixels[8], pixels[9], pixels[10], pixels[11]);
-    out.Pattern3 = uint4(pixels[12], pixels[13], pixels[14], pixels[15]);
+    int start = _285.output_group.x * 8;
+    out.Pattern0 = uint4(pixels[start], pixels[start + 1], pixels[start + 2], pixels[start + 3]);
+    out.Pattern1 = uint4(pixels[start + 4], pixels[start + 5], pixels[start + 6], pixels[start + 7]);
     return out;
 }
 

@@ -60,6 +60,10 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v6
+      - name: Validate iOS and simulator Metal shaders
+        run: |
+          python3 imagewin/tests/validate_metal.py --sdk iphoneos
+          python3 imagewin/tests/validate_metal.py --sdk iphonesimulator
       - name: Build
         run: |
           xcodebuild build -scheme git_clone_release_dependencies -project ./ios/Exult.xcodeproj CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED="NO" CODE_SIGN_ENTITLEMENTS="" CODE_SIGNING_ALLOWED="NO"
