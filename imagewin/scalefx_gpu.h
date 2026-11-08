@@ -35,9 +35,10 @@ namespace ScaleFX {
 		Algorithm                      algorithm;
 		[[maybe_unused]] bool          failed = false;
 #if SDL_VERSION_ATLEAST(3, 4, 0)
-		SDL_GPUDevice*                          device  = nullptr;
-		SDL_GPUSampler*                         sampler = nullptr;
-		SDL_GPUShader*                          vertex  = nullptr;
+		SDL_GPUDevice*                          device        = nullptr;
+		bool                                    full_analysis = false;
+		SDL_GPUSampler*                         sampler       = nullptr;
+		SDL_GPUShader*                          vertex        = nullptr;
 		std::array<SDL_GPUShader*, 5>           shaders{};
 		std::array<SDL_GPUGraphicsPipeline*, 5> pipelines{};
 		std::array<SDL_GPUTexture*, 5>          targets{};
@@ -142,6 +143,10 @@ namespace ScaleFX {
 			if (!device || !(SDL_GetGPUShaderFormats(device) & Shaders::native_format)) {
 				return false;
 			}
+			// D3D12 dirty analysis passes produce incorrect edge values even
+			// with verified source/LUT uploads. Rebuild the low-resolution
+			// intermediates there; source uploads and output damage stay partial.
+			full_analysis = SDL_strcmp(SDL_GetGPUDeviceDriver(device), "direct3d12") == 0;
 			SDL_GPUSamplerCreateInfo si{};
 			si.min_filter = si.mag_filter = SDL_GPU_FILTER_NEAREST;
 			si.mipmap_mode                = SDL_GPU_SAMPLERMIPMAPMODE_NEAREST;
@@ -484,6 +489,9 @@ namespace ScaleFX {
 							SDL_GPUViewport viewport{0, 0, float(width * multiplier), float(height * multiplier), 0, 1};
 							SDL_SetGPUViewport(pass, &viewport);
 							SDL_Rect clip{dirty.x * multiplier, dirty.y * multiplier, dirty.w * multiplier, dirty.h * multiplier};
+							if (full_analysis && stage == 0) {
+								clip = {0, 0, width, height};
+							}
 							SDL_SetGPUScissor(pass, &clip);
 							SDL_DrawGPUPrimitives(pass, 3, 1, 0, 0);
 							SDL_EndGPURenderPass(pass);
@@ -500,6 +508,9 @@ namespace ScaleFX {
 						SDL_Rect  clip{std::max(0, dirty.x - halo), std::max(0, dirty.y - halo), 0, 0};
 						clip.w = std::min(width, dirty.x + dirty.w + halo) - clip.x;
 						clip.h = std::min(height, dirty.y + dirty.h + halo) - clip.y;
+						if (full_analysis && i < 4) {
+							clip = {0, 0, width, height};
+						}
 						if (i == 4) {
 							clip.x *= f;
 							clip.y *= f;
