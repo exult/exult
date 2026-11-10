@@ -51,6 +51,7 @@ USECODE_OBJECTS :=	\
 	src/misc/list_field.uc	\
 	src/misc/location_ids.uc	\
 	src/misc/luther_return_shield.uc	\
+	src/misc/nearby_bodies.uc	\
 	src/misc/resurrect.uc	\
 	src/npcs/baiyanda.uc	\
 	src/npcs/batlin.uc	\

@@ -117,6 +117,8 @@ version: 0.15.15
 	  won't bring Iolo, Dupre and Shamino back as they are the Banes now. Even
 	  if you have their bodies right there -- or elsewhere.
 	- Dupre can no longer be resurrected after he sacrifices himself.
+	- Wilfred can now be resurrected: Thoxa and the Hourglass of Fate find his
+	  body too.
 	- Iolo, Shamino and Dupre will all refuse to leave the party while you are
 	  on the Spinebreaker Mountains. They will also refuse any blue potions you
 	  offer them while there...
@@ -180,6 +182,9 @@ version: 0.15.15
 	    
 6	Version history
 -------------------
+version 0.15.18 - 2026-11-10
+	- Wilfred can now be resurrected. The body search (0x8FB) only looked for
+	  body shapes 400 and 414, but Wilfred's body is shape 402.
 version 0.15.17 - 2025-02-26
 	- Upped the intelligence to 6 of shapes 299 (Cantra), 652 (Frigidazzi, Lydia),
 	  660 (skinless Yelinda), 744 (Goblin woman) so they can act on npc->is_sentient.
