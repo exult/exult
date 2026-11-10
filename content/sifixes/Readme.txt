@@ -117,6 +117,8 @@ version: 0.15.15
 	  won't bring Iolo, Dupre and Shamino back as they are the Banes now. Even
 	  if you have their bodies right there -- or elsewhere.
 	- Dupre can no longer be resurrected after he sacrifices himself.
+	- The skeleton in Vasculio's magic cell no longer comes back, begging to be
+	  freed, after you have freed (and killed) him.
 	- Iolo, Shamino and Dupre will all refuse to leave the party while you are
 	  on the Spinebreaker Mountains. They will also refuse any blue potions you
 	  offer them while there...
@@ -180,6 +182,10 @@ version: 0.15.15
 	    
 6	Version history
 -------------------
+version 0.15.18 - 2026-11-10
+	- The prisoner in Vasculio's cell no longer respawns after being freed. New
+	  flag VASCULIO_PRISONER_FREED (812), set by the Unlock Magic handler (0x91D)
+	  and checked by the cell's egg (0x8BB).
 version 0.15.17 - 2025-02-26
 	- Upped the intelligence to 6 of shapes 299 (Cantra), 652 (Frigidazzi, Lydia),
 	  660 (skinless Yelinda), 744 (Goblin woman) so they can act on npc->is_sentient.
