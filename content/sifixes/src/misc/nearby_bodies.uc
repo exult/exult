@@ -24,15 +24,19 @@
  *
  *	The original only looked for body shapes 400 and 414, but Wilfred's body
  *	is shape 402, so he could never be resurrected (issue #961). This version
- *	also looks for shape 402. Only bodies of joinable NPCs (and Cantra) are
- *	returned, as before, so other bodies of that shape are still ignored.
+ *	looks for every body shape SI uses (data/si/bodies.txt, "bodyshapes"), so
+ *	any companion's body is found whatever shape it is. Eligibility is decided
+ *	as before: get_body_npc() must name an NPC in the joinable list (or
+ *	Cantra), and the original's Dupre and Shamino rules are kept.
  *
- *	The original also returned the party member carrying a body along with
- *	the body itself; that entry was always filtered out below, so this version
- *	only collects the bodies.
+ *	The original searched party inventories with a helper that returned only
+ *	the first matching body (and the party member carrying it, which was
+ *	always filtered out). This version collects every matching body from every
+ *	party member, so several carried bodies of one shape are all found.
  */
 var getNearbyBodies 0x8FB () {
-	var body_shapes = [SHAPE_BODY_400, SHAPE_BODY_402, SHAPE_BODY_414];
+	var body_shapes = [SHAPE_BODY_400, SHAPE_BODY_402, SHAPE_BODY_414, SHAPE_BODY_762,
+		SHAPE_BODY_778, SHAPE_BODY_892];
 	var bodies = [];
 	var shape;
 	var member;
@@ -52,8 +56,9 @@ var getNearbyBodies 0x8FB () {
 		var npc = body->get_body_npc();
 		if (getIndexForElement(npc, resurrectables)) {
 			if (npc == DUPRE) {
-				// As in the original: only Dupre's own body (shape 414,
-				// frame 20) counts for him.
+				// As in the original: get_body_npc() returns -1 (Dupre) also
+				// for a body it can't identify, so -1 only counts for Dupre's
+				// own body (shape 414, frame 20).
 				if ((body->get_item_shape() == SHAPE_BODY_414) && (body->get_item_frame() == 20)) {
 					found = [found, body];
 				}

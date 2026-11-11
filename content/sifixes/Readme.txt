@@ -184,7 +184,8 @@ version: 0.15.15
 -------------------
 version 0.15.18 - 2026-11-10
 	- Wilfred can now be resurrected. The body search (0x8FB) only looked for
-	  body shapes 400 and 414, but Wilfred's body is shape 402.
+	  body shapes 400 and 414, but Wilfred's body is shape 402. It now looks for
+	  every SI body shape, and finds every body the party carries.
 version 0.15.17 - 2025-02-26
 	- Upped the intelligence to 6 of shapes 299 (Cantra), 652 (Frigidazzi, Lydia),
 	  660 (skinless Yelinda), 744 (Goblin woman) so they can act on npc->is_sentient.
