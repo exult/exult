@@ -1,5 +1,5 @@
 Exult Documentation
-last changed: 30 January 2026 (GMT)
+last changed: 11 November 2026 (GMT)
 
 The latest version of this document can be found at https://exult.info/docs.html
 
@@ -115,16 +115,17 @@ The latest version of this document can be found at https://exult.info/docs.html
 13.2. Contacting us
 
 14. Changes to the Documentation
-14.1. - 30 January 2026
-14.2. - 13 January 2026
-14.3. - 16 April 2025
-14.4. - 20 March 2025
-14.5. - 19 January 2025
-14.6. - 06 January 2025
-14.7. - 03 July 2024
-14.8. - 25 April 2024
-14.9. - 23 April 2024
-14.10. older changes
+14.1. - 11 November 2026
+14.2. - 30 January 2026
+14.3. - 13 January 2026
+14.4. - 16 April 2025
+14.5. - 20 March 2025
+14.6. - 19 January 2025
+14.7. - 06 January 2025
+14.8. - 03 July 2024
+14.9. - 25 April 2024
+14.10. - 23 April 2024
+14.11. older changes
 
 
 --------------------------------------------------------------------------------
@@ -459,6 +460,8 @@ When you have enabled digital music and and another midi driver you can set both
  Built in fonts provide the original (fraktur like) fonts as well as a serif one that some people prefer over the harder to read original.
  Additionally both fonts provide special characters needed for French, Spanish and German for the above localization option.
  However the built in fonts clash with old unofficial translations of the games and possibly other mods and patches. In this case disable the built-in fonts
+* Containers
+Picture shows the contents of bags, chests, barrels, corpses and other containers scattered on a picture of the container, as the original games do. List shows them on a scroll instead, one item per row with its quantity, and the chosen item enlarged with its weight. Click a row to choose an item, double-click it to use it, and drag it out to take it. Paperdolls and other special gumps are not affected. The setting applies to containers opened after it is changed.
 
 
 
@@ -1480,6 +1483,10 @@ Note: the settings in exult.cfg are the same on all operating systems (except wh
     original
 				**original/serif/disabled. Choose the built-in fonts or disable it for unofficial translations.
     </fonts>
+    <container_view>
+    picture
+				**picture/list. How container gumps show their contents.
+    </container_view>
   </gameplay>
   <audio>
     <enabled>
@@ -2260,14 +2267,21 @@ You can contact the Exult team through our Github Discussions page.
 --------------------------------------------------------------------------------
 
 14. Changes to the Documentation
-14.1. - 30 January 2026
+14.1. - 11 November 2026
+
+* 3.8. Game Display Containers option added.
+* 11.1. Settings in exult.cfg container_view added.
+
+
+
+14.2. - 30 January 2026
 
 * 3.8. Game Display built-in fonts added.
 * 11.1. Settings in exult.cfg built-in fonts added.
 
 
 
-14.2. - 13 January 2026
+14.3. - 13 January 2026
 
 * 3.7. Game Engine Enhancements and feeding added.
 * 3.8. Game Display Language option added.
@@ -2277,7 +2291,7 @@ You can contact the Exult team through our Github Discussions page.
 
 
 
-14.3. - 16 April 2025
+14.4. - 16 April 2025
 
 * 3.5. Advanced Audio Settings added.
 * 4.2. MIDI Music FluidLite can be used.
@@ -2285,7 +2299,7 @@ You can contact the Exult team through our Github Discussions page.
 
 
 
-14.4. - 20 March 2025
+14.5. - 20 March 2025
 
 * 2.2. Location of exult.cfg Flatpak cfg path.
 * 2.4. Default game folders on Linux Flatpak default paths.
@@ -2294,20 +2308,20 @@ You can contact the Exult team through our Github Discussions page.
 
 
 
-14.5. - 19 January 2025
+14.6. - 19 January 2025
 
 * 4. Audio added more information on MIDI drivers.
 * 10.3. The Exult Launcher on Android added to explain ways to toggle autolaunch.
 
 
 
-14.6. - 06 January 2025
+14.7. - 06 January 2025
 
 * 10. Android Guide added.
 
 
 
-14.7. - 03 July 2024
+14.8. - 03 July 2024
 
 * 3.4. Audio Options settings changed and Volume Mixer was added.
 * 3.6. Volume Mixer macOS no longer uses the Console.app to show stdout.
@@ -2317,7 +2331,7 @@ You can contact the Exult team through our Github Discussions page.
 
 
 
-14.8. - 25 April 2024
+14.9. - 25 April 2024
 
 * Replaced *nix with Linux as people are mostly looking for Linux and might get confused.
 * Removed documentation for unsupported Windows versions.
@@ -2327,7 +2341,7 @@ You can contact the Exult team through our Github Discussions page.
 
 
 
-14.9. - 23 April 2024
+14.10. - 23 April 2024
 
 * 2.5. Command line options Added the shortcut to starting the Serpent Isle beta.
 * 4.13. Linux and Audio Alsa port magic by Dragon Baroque.
@@ -2339,7 +2353,7 @@ You can contact the Exult team through our Github Discussions page.
 
 
 
-14.10. older changes
+14.11. older changes
 
 For older changes of the documentation, please see its git history.
 

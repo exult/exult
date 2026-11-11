@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE readme SYSTEM "docs.dtd">
-<readme title="Exult" changed="30 January 2026 (GMT)">
+<readme title="Exult" changed="11 November 2026 (GMT)">
 	<section title="Introduction">
 		<sub name="exult_version">
 			<header>Exult Version</header>
@@ -607,6 +607,13 @@
 						German for the above localization option.<br/>
 						However the built in fonts clash with old unofficial translations of the games and
 						possibly other mods and patches. In this case disable the built-in fonts</li>
+					<li><strong>Containers</strong><br/>
+						<strong>Picture</strong> shows the contents of bags, chests, barrels, corpses and
+						other containers scattered on a picture of the container, as the original games do.
+						<strong>List</strong> shows them on a scroll instead, one item per row with its
+						quantity, and the chosen item enlarged with its weight. Click a row to choose an item,
+						double-click it to use it, and drag it out to take it. Paperdolls and other special
+						gumps are not affected. The setting applies to containers opened after it is changed.</li>
 				</ul>
 			</body>
 		</sub>
@@ -2259,6 +2266,10 @@
 							original
 							<comment>**original/serif/disabled. Choose the built-in fonts or disable it for unofficial translations.</comment>
 							</configtag>
+							<configtag name="container_view">
+							picture
+							<comment>**picture/list. How container gumps show their contents.</comment>
+							</configtag>
 						</configtag>
 						<configtag name="audio">
 							<configtag name="enabled">
@@ -3321,6 +3332,15 @@
 		</sub>
 	</section>
 	<section title="Changes to the Documentation">
+		<sub name="11112026">
+			<header>- 11 November 2026</header>
+			<body>
+				<ul>
+					<li><ref1 target="game_display_gump"/> Containers option added.</li>
+					<li><ref1 target="exult_config"/> container_view added.</li>
+				</ul>
+			</body>
+		</sub>
 		<sub name="30012026">
 			<header>- 30 January 2026</header>
 			<body>
