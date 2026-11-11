@@ -79,6 +79,10 @@
 // to the Avatar while insane
 #include "misc/resurrect.uc"
 
+// Thoxa and the Hourglass of Fate now find Wilfred's body, so he can be
+// resurrected
+#include "misc/nearby_bodies.uc"
+
 // Fixes a few wrongly identified locations
 #include "misc/location_ids.uc"
 
