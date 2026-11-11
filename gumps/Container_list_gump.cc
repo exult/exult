@@ -981,11 +981,9 @@ std::string Container_list_gump::display_name(const Game_object* obj) {
 	return name;
 }
 
-// Trim a string to fit a width.
+// Shorten a string to fit a width, at a word boundary where it can.
 std::string Container_list_gump::fit_text(int fontnum, const std::string& s, int w) {
-	std::string out = s;
-	while (!out.empty() && sman->get_text_width(fontnum, out.c_str()) > w) {
-		out.pop_back();
-	}
-	return out;
+	return fit_words(s, w, [fontnum](const std::string& t) {
+		return sman->get_text_width(fontnum, t.c_str());
+	});
 }
