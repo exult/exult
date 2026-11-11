@@ -30,16 +30,23 @@ class Shape_frame;
 /*
  *  The list view of a container: the scroll gump, widened at run time,
  *  with one row per item on the left and the selected item enlarged on
- *  the right.
+ *  the right, and the container's own picture hanging off the scroll's
+ *  bottom-left.  One gump draws both, so they move, raise and close as
+ *  one.
  *
  *  The gump keeps the container's own gump shape as its ShapeID, so
  *  Gump_manager and usecode still find it by that shape, and paints the
- *  scroll from a separate ShapeID.  Objects' tx/ty are left alone, so the
- *  picture view keeps its arrangement.
+ *  scroll from a separate ShapeID.  x, y are the scroll's top-left; the
+ *  picture's hotspot is at (x + pic_x, y + pic_y).  object_area and the
+ *  checkmark are the container's own, shifted by that offset, so the
+ *  base class code places, paints, hit-tests and drops the picture's
+ *  objects as the picture view does.  Objects' tx/ty are the state both
+ *  views share.
  */
 class Container_list_gump : public Gump {
 public:
 	Container_list_gump(Container_game_object* cont, int initx, int inity, int shnum);
+	~Container_list_gump() override;
 
 	// Is the scroll art the frame this layout was made for?
 	static bool is_available();
@@ -90,7 +97,16 @@ private:
 	Xform_palette shade85{};
 	Xform_palette shade95{};
 	int           shade_pal = -1;    // Palette the shades were made for.
+	// The container's picture: its hotspot, rel. to x, y.
+	int               pic_x = 0;
+	int               pic_y = 0;
+	Checkmark_button* check = nullptr;    // On the picture.
+	// Object last found in the picture by find_object(), or null.
+	Game_object* picture_hit = nullptr;
 
+	void set_picture();
+	bool on_picture(int sx, int sy) const;
+	void row_location(const Shape_frame* frame, int index, int& ox, int& oy) const;
 	void collect_rows();
 	int  index_of(const Game_object* obj) const;
 	int  selected_index() const;

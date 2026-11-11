@@ -205,7 +205,13 @@ namespace {
 
 Container_list_gump::Container_list_gump(Container_game_object* cont, int initx, int inity, int shnum)
 		: Gump(cont, initx, inity, shnum), scroll(game->get_shape("gumps/scroll"), 0, SF_GUMPS_VGA) {
-	add_elem(new Checkmark_button(this, check_x, check_y));
+	check = new Checkmark_button(this, 0, 0);
+	add_elem(check);
+	set_picture();
+	// The base constructor placed the container's own picture (at its
+	// saved spot, if any).  Keep it there and hang the scroll above it.
+	x -= pic_x;
+	y -= pic_y;
 	add_elem(new List_button(
 			this, &Container_list_gump::line_up, EXULT_FLX_SAV_UP_SHP, button_x(EXULT_FLX_SAV_UP_SHP, ctrl_x),
 			button_y(EXULT_FLX_SAV_UP_SHP, up_y), SF_EXULT_FLX));
@@ -217,6 +223,46 @@ Container_list_gump::Container_list_gump(Container_game_object* cont, int initx,
 	if (!items.empty()) {
 		selected = items.front();
 	}
+}
+
+/*
+ *  Gump::~Gump saves the position of the container's picture from x, y,
+ *  so move x, y back to the picture first.
+ */
+
+Container_list_gump::~Container_list_gump() {
+	x += pic_x;
+	y += pic_y;
+}
+
+/*
+ *  Lay out the current container's picture: its hotspot, object area
+ *  and checkmark, as Container_gump would, shifted to hang off the
+ *  scroll's bottom-left.
+ */
+
+void Container_list_gump::set_picture() {
+	const int shnum  = get_shapenum();
+	TileRect  area{};
+	int       checkx = 0;
+	int       checky = 0;
+	Container_gump::get_layout(shnum, area, checkx, checky);
+	if (shnum >= 0 && get_shapefile() == SF_GUMPS_VGA) {
+		read_gump_info(shnum, area, checkx, checky);
+	}
+	const Shape_frame* frame = get_shape();
+	const int          w     = frame ? frame->get_width() : 0;
+	pic_x                    = picture_left(w) + (frame ? frame->get_xleft() : 0);
+	pic_y                    = pic_top + (frame ? frame->get_yabove() : 0);
+	area.shift(pic_x, pic_y);
+	object_area = area;
+	check->set_pos(pic_x + checkx, pic_y + checky);
+}
+
+// Is a screen point on the picture's art?
+bool Container_list_gump::on_picture(int sx, int sy) const {
+	const Shape_frame* frame = get_shape();
+	return frame && frame->has_point(sx - x - pic_x, sy - y - pic_y);
 }
 
 /*
@@ -240,12 +286,17 @@ Gump* Container_list_gump::clone(Container_game_object* cont, int initx, int ini
 }
 
 /*
- *  Screen area: the widened scroll.  (The base class measures the
- *  container's gump shape, which isn't drawn here.)
+ *  Screen area: the widened scroll and the container's picture.
  */
 
 TileRect Container_list_gump::get_rect() const {
-	return TileRect(x, y, scroll_w + extra_w, scroll_h);
+	TileRect           rect(x, y, scroll_w + extra_w, scroll_h);
+	const Shape_frame* frame = get_shape();
+	if (frame) {
+		rect = rect.add(TileRect(
+				x + pic_x - frame->get_xleft(), y + pic_y - frame->get_yabove(), frame->get_width(), frame->get_height()));
+	}
+	return rect;
 }
 
 bool Container_list_gump::has_point(int sx, int sy) const {
@@ -257,6 +308,9 @@ bool Container_list_gump::has_point(int sx, int sy) const {
 			return true;
 		}
 	}
+	if (on_picture(sx, sy)) {
+		return true;
+	}
 	for (const auto* w : elems) {
 		if (w && w->on_widget(sx, sy)) {
 			return true;
@@ -265,26 +319,47 @@ bool Container_list_gump::has_point(int sx, int sy) const {
 	return false;
 }
 
+/*
+ *  The gump and the picture's objects (which may stick out of it).
+ */
+
 TileRect Container_list_gump::get_dirty() {
-	return get_rect();
+	TileRect rect = get_rect();
+	if (!container) {
+		return rect;
+	}
+	Object_iterator next(container->get_objects());
+	Game_object*    obj;
+	while ((obj = next.get_next()) != nullptr) {
+		const TileRect orect = Gump::get_shape_rect(obj);
+		if (orect.w > 0 && orect.h > 0) {
+			rect = rect.add(orect);
+		}
+	}
+	return rect;
 }
 
 /*
- *  Where an object is drawn: centred in its row's icon cell, or the
- *  middle of the rows when it is scrolled out of view.
+ *  Where an object is drawn: in the picture if it was found there, or
+ *  if its row is scrolled out of view; else centred in its row's icon
+ *  cell.
  */
 
 void Container_list_gump::get_shape_location(const Game_object* obj, int& ox, int& oy) const {
 	const Shape_frame* frame = obj->get_shape();
 	const int          index = index_of(obj);
-	if (frame && index >= first && index < first + rows) {
-		const int ry = row_y0 + (index - first) * row_h;
-		ox           = x + text_x + 1 + (icon_w - frame->get_width()) / 2 + frame->get_xleft();
-		oy           = y + ry + 1 + (icon_h - frame->get_height()) / 2 + frame->get_yabove();
+	if (frame && obj != picture_hit && index >= first && index < first + rows) {
+		row_location(frame, index, ox, oy);
 	} else {
-		ox = x + text_x + row_w / 2;
-		oy = y + row_y0 + rows * row_h / 2;
+		Gump::get_shape_location(obj, ox, oy);
 	}
+}
+
+// Screen location of an object's hotspot in a visible row's icon cell.
+void Container_list_gump::row_location(const Shape_frame* frame, int index, int& ox, int& oy) const {
+	const int ry = row_y0 + (index - first) * row_h;
+	ox           = x + text_x + 1 + (icon_w - frame->get_width()) / 2 + frame->get_xleft();
+	oy           = y + ry + 1 + (icon_h - frame->get_height()) / 2 + frame->get_yabove();
 }
 
 TileRect Container_list_gump::get_shape_rect(const Game_object* obj) const {
@@ -299,14 +374,38 @@ TileRect Container_list_gump::get_shape_rect(const Game_object* obj) const {
 }
 
 /*
- *  The whole row is the hit target.
+ *  In the list, the whole row is the hit target.  In the picture, the
+ *  top-most object under the point, as in the picture view.
  */
 
 Game_object* Container_list_gump::find_object(int mx, int my) {
+	picture_hit = nullptr;
 	collect_rows();
 	const int count = static_cast<int>(items.size());
 	const int index = row_at(mx - x, my - y, clamp_first(first, count), count);
-	return index >= 0 ? items[index] : nullptr;
+	if (index >= 0) {
+		return items[index];
+	}
+	if (!container) {
+		return nullptr;
+	}
+	Game_object*    found = nullptr;
+	Object_iterator next(container->get_objects());
+	Game_object*    obj;
+	while ((obj = next.get_next()) != nullptr) {
+		const Shape_frame* frame = obj->get_shape();
+		if (!frame || !Gump::get_shape_rect(obj).has_point(mx, my)) {
+			continue;
+		}
+		int ox;
+		int oy;
+		Gump::get_shape_location(obj, ox, oy);
+		if (frame->has_point(mx - ox, my - oy)) {
+			found = obj;    // Keep the last: it's painted on top.
+		}
+	}
+	picture_hit = found;
+	return found;
 }
 
 void Container_list_gump::object_pressed(Game_object* obj) {
@@ -314,10 +413,12 @@ void Container_list_gump::object_pressed(Game_object* obj) {
 }
 
 /*
- *  Add an object.  A drop on a row goes to that row's object, as in the
- *  picture view (into a bag, or onto a matching stack).  Anything else
- *  goes into the container with tx/ty unset, so the picture view places
- *  it later.  If mx, my, sx, sy are all -2, tx/ty are already correct.
+ *  Add an object.  A drop on a row or on an object in the picture goes
+ *  to that object, as in the picture view (into a bag, or onto a
+ *  matching stack).  A drop elsewhere on the picture stays where it was
+ *  dropped.  Anything else goes into the container with tx/ty unset, so
+ *  the picture places it.  If mx, my, sx, sy are all -2, tx/ty are
+ *  already correct.
  *
  *  Output: false if cannot add it.
  */
@@ -335,8 +436,13 @@ bool Container_list_gump::add(Game_object* obj, int mx, int my, int sx, int sy, 
 	if (!container->add(obj, dont_check)) {    // DON'T combine here.
 		return false;
 	}
-	if (mx != -2 || my != -2 || sx != -2 || sy != -2) {
-		obj->set_shape_pos(255, 255);
+	const bool keep_pos = mx == -2 && my == -2 && sx == -2 && sy == -2;
+	if (!keep_pos) {
+		if (sx != -1 && sy != -1 && on_picture(mx, my)) {
+			place_object(obj, sx, sy);
+		} else {
+			obj->set_shape_pos(255, 255);
+		}
 	}
 	select(obj);
 	return true;
@@ -348,6 +454,9 @@ bool Container_list_gump::add(Game_object* obj, int mx, int my, int sx, int sy, 
  */
 
 void Container_list_gump::remove(Game_object* obj) {
+	if (obj == picture_hit) {
+		picture_hit = nullptr;
+	}
 	collect_rows();
 	if (obj == selected) {
 		const int index = selected_index();
@@ -367,6 +476,10 @@ void Container_list_gump::remove(Game_object* obj) {
 
 void Container_list_gump::paint() {
 	paint_scroll();
+	// The container's picture, over the bottom roller's left end.
+	if (get_shape()) {
+		paint_shape(x + pic_x, y + pic_y);
+	}
 	gwin->set_painted();
 
 	// Rebuild the rows and keep the selection valid.  When the selected
@@ -390,18 +503,25 @@ void Container_list_gump::paint() {
 	paint_list();
 	paint_panel();
 	paint_elems();
+	// The picture's objects, placed and drawn as in the picture view.
+	paint_objects();
 
-	// Outline selections in this gump.
+	// Outline selections in this gump, in the list and in the picture.
 	const Game_object_shared_vector& sel_objs = cheat.get_selected();
 	for (const auto& it : sel_objs) {
-		Game_object* obj   = it.get();
-		const int    index = index_of(obj);
-		if (container == obj->get_owner() && index >= first && index < first + rows) {
-			int ox;
-			int oy;
-			get_shape_location(obj, ox, oy);
+		Game_object* obj = it.get();
+		if (container != obj->get_owner()) {
+			continue;
+		}
+		int       ox;
+		int       oy;
+		const int index = index_of(obj);
+		if (index >= first && index < first + rows) {
+			row_location(obj->get_shape(), index, ox, oy);
 			obj->ShapeID::paint_outline(ox, oy, HIT_PIXEL);
 		}
+		Gump::get_shape_location(obj, ox, oy);
+		obj->ShapeID::paint_outline(ox, oy, HIT_PIXEL);
 	}
 }
 

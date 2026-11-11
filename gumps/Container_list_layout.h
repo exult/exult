@@ -20,6 +20,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define CONTAINER_LIST_LAYOUT_H
 
 #include <algorithm>
+#include <string>
 
 /*
  *  Layout of the container list view (Container_list_gump).  All values
@@ -64,12 +65,24 @@ namespace Container_list_layout {
 	// Right panel: the selected item.
 	constexpr int panel_x = text_x + list_w + 9;
 	constexpr int panel_w = text_w - list_w - 9;
-	// Checkmark hotspot (the 21x21 check shape's hotspot is its
-	// bottom-right).  The parchment (rows 27-147 from column 47) has no
-	// free 21x21 corner, so the check sits on the left end of the bottom
-	// roller (rows 148-166), covering 50-70 x 146-166.
-	constexpr int check_x = 70;
-	constexpr int check_y = 166;
+	// The container's own picture hangs off the bottom-left, its top-right
+	// corner at (pic_right, pic_top): over the left end of the bottom
+	// roller (rows 148-166), but below the text box, which ends at row
+	// 149, and left of it, which starts at column 51.
+	constexpr int pic_right = 46;
+	constexpr int pic_top   = 150;
+
+	// Left edge of a picture w pixels wide.
+	constexpr int picture_left(int w) {
+		return pic_right - w;
+	}
+
+	// Arrows for stepping through nested containers, on the title line
+	// at either end of the list column, and the title's width between them.
+	constexpr int nav_y       = text_y - 4;
+	constexpr int nav_left_x  = text_x;
+	constexpr int nav_right_x = ctrl_x;
+	constexpr int title_w     = list_w - 28;
 
 	// Map a column of the widened gump to a column of the scroll frame.
 	constexpr int source_column(int gx) {
@@ -122,6 +135,46 @@ namespace Container_list_layout {
 		}
 		const int index = first + (ly - row_y0) / row_h;
 		return index < count ? index : -1;
+	}
+
+	/*
+	 *  Shorten a string to fit w pixels, as measured by width(string):
+	 *  the whole string if it fits; else the longest run of whole words
+	 *  that fits with "..."; else (one long word) the longest prefix that
+	 *  fits with "..."; else the longest prefix that fits.
+	 */
+	template <typename Width>
+	std::string fit_words(const std::string& s, int w, Width width) {
+		if (s.empty() || width(s) <= w) {
+			return s;
+		}
+		const std::string dots = "...";
+		// Whole words: cut at each space, longest first.
+		for (size_t end = s.rfind(' '); end != std::string::npos && end > 0; end = s.rfind(' ', end - 1)) {
+			size_t len = end;
+			while (len > 0 && s[len - 1] == ' ') {
+				len--;
+			}
+			if (len > 0) {
+				const std::string out = s.substr(0, len) + dots;
+				if (width(out) <= w) {
+					return out;
+				}
+			}
+		}
+		// Part of the first word.
+		for (size_t len = s.size() - 1; len > 0; len--) {
+			const std::string out = s.substr(0, len) + dots;
+			if (width(out) <= w) {
+				return out;
+			}
+		}
+		// Not even one letter and the dots.
+		std::string out = s;
+		while (!out.empty() && width(out) > w) {
+			out.pop_back();
+		}
+		return out;
 	}
 
 	// Enlargement for the preview: the largest k <= 4 that fits, at least 1.
