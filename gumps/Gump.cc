@@ -186,22 +186,31 @@ void Gump::set_pos(int newx, int newy) {    // Set new spot on screen.
 	gwin->add_dirty(get_rect());
 }
 
+/*
+ *  Override a gump's container area and checkmark position with those
+ *  from gump_info.txt, if it has them.
+ */
+
+void Gump::read_gump_info(int shnum, TileRect& area, int& checkx, int& checky) {
+	const Gump_info* info = Gump_info::get_gump_info(shnum);
+	if (info) {
+		if (info->has_area) {
+			area.x = info->container_x;
+			area.y = info->container_y;
+			area.w = info->container_w;
+			area.h = info->container_h;
+		}
+		if (info->has_checkmark) {
+			checkx = info->checkmark_x;
+			checky = info->checkmark_y;
+		}
+	}
+}
+
 void Gump::set_object_area(TileRect area, int checkx, int checky, bool set_check) {
 	// Try to read container area and checkmark position from gump_info.txt
 	if (get_shapenum() >= 0 && get_shapefile() == SF_GUMPS_VGA) {
-		const Gump_info* info = Gump_info::get_gump_info(get_shapenum());
-		if (info) {
-			if (info->has_area) {
-				area.x = info->container_x;
-				area.y = info->container_y;
-				area.w = info->container_w;
-				area.h = info->container_h;
-			}
-			if (info->has_checkmark) {
-				checkx = info->checkmark_x;
-				checky = info->checkmark_y;
-			}
-		}
+		read_gump_info(get_shapenum(), area, checkx, checky);
 	}
 
 	object_area = area;
@@ -387,23 +396,32 @@ bool Gump::add(
 	// -2's mean tx, ty are already set.
 	else if (sx != -2 && sy != -2 && mx != -2 && my != -2) {
 		// Put it where desired.
-		sx -= x + object_area.x;    // Get point rel. to object_area.
-		sy -= y + object_area.y;
-		Shape_frame* shape = obj->get_shape();
-		// But shift within range.
-		if (sx - shape->get_xleft() < 0) {
-			sx = shape->get_xleft();
-		} else if (sx + shape->get_xright() > object_area.w) {
-			sx = object_area.w - shape->get_xright();
-		}
-		if (sy - shape->get_yabove() < 0) {
-			sy = shape->get_yabove();
-		} else if (sy + shape->get_ybelow() > object_area.h) {
-			sy = object_area.h - shape->get_ybelow();
-		}
-		obj->set_shape_pos(sx, sy);
+		place_object(obj, sx, sy);
 	}
 	return true;
+}
+
+/*
+ *  Set an object's tx, ty so its hotspot is at screen point (sx, sy),
+ *  shifted to keep it inside object_area.
+ */
+
+void Gump::place_object(Game_object* obj, int sx, int sy) {
+	sx -= x + object_area.x;    // Get point rel. to object_area.
+	sy -= y + object_area.y;
+	Shape_frame* shape = obj->get_shape();
+	// But shift within range.
+	if (sx - shape->get_xleft() < 0) {
+		sx = shape->get_xleft();
+	} else if (sx + shape->get_xright() > object_area.w) {
+		sx = object_area.w - shape->get_xright();
+	}
+	if (sy - shape->get_yabove() < 0) {
+		sy = shape->get_yabove();
+	} else if (sy + shape->get_ybelow() > object_area.h) {
+		sy = object_area.h - shape->get_ybelow();
+	}
+	obj->set_shape_pos(sx, sy);
 }
 
 /*
@@ -480,6 +498,29 @@ void Gump::paint() {
 	if (!container) {
 		return;    // Empty.
 	}
+	paint_objects();
+	// Outline selections in this gump.
+	const Game_object_shared_vector& sel = cheat.get_selected();
+	for (const auto& it : sel) {
+		Game_object* obj = it.get();
+		if (container == obj->get_owner()) {
+			int x;
+			int y;
+			get_shape_location(obj, x, y);
+			obj->ShapeID::paint_outline(x, y, HIT_PIXEL);
+		}
+	}
+}
+
+/*
+ *  Paint the container's objects in object_area, placing any that
+ *  haven't been placed yet.
+ */
+
+void Gump::paint_objects() {
+	if (!container) {
+		return;    // Empty.
+	}
 	Object_list& objects = container->get_objects();
 	if (objects.is_empty()) {
 		return;    // Empty.
@@ -525,17 +566,6 @@ void Gump::paint() {
 			}
 		}
 		obj->paint_shape(box.x + obj->get_tx(), box.y + obj->get_ty());
-	}
-	// Outline selections in this gump.
-	const Game_object_shared_vector& sel = cheat.get_selected();
-	for (const auto& it : sel) {
-		Game_object* obj = it.get();
-		if (container == obj->get_owner()) {
-			int x;
-			int y;
-			get_shape_location(obj, x, y);
-			obj->ShapeID::paint_outline(x, y, HIT_PIXEL);
-		}
 	}
 }
 
@@ -602,29 +632,47 @@ bool Gump::isOffscreen(bool partially) const {
  */
 
 void Container_gump::initialize(int shnum) {
+	TileRect area{};
+	int      checkx = 0;
+	int      checky = 0;
+	get_layout(shnum, area, checkx, checky);
+	set_object_area(area, checkx, checky);
+}
+
+/*
+ *  Built-in object area and checkmark position of a container gump
+ *  (before gump_info.txt overrides).
+ */
+
+void Container_gump::get_layout(int shnum, TileRect& area, int& checkx, int& checky) {
+	auto set = [&](const TileRect& a, int cx, int cy) {
+		area   = a;
+		checkx = cx;
+		checky = cy;
+	};
 	if (shnum == game->get_shape("gumps/box")) {
-		set_object_area(TileRect(46, 28, 74, 32), 24, 44);
+		set(TileRect(46, 28, 74, 32), 24, 44);
 	} else if (shnum == game->get_shape("gumps/crate")) {
-		set_object_area(TileRect(50, 20, 80, 24), 24, 52);
+		set(TileRect(50, 20, 80, 24), 24, 52);
 	} else if (shnum == game->get_shape("gumps/barrel")) {
-		set_object_area(TileRect(32, 32, 40, 40), 28, 112);
+		set(TileRect(32, 32, 40, 40), 28, 112);
 	} else if (shnum == game->get_shape("gumps/bag")) {
-		set_object_area(TileRect(48, 20, 66, 44), 24, 54);
+		set(TileRect(48, 20, 66, 44), 24, 54);
 	} else if (shnum == game->get_shape("gumps/backpack")) {
-		set_object_area(TileRect(36, 36, 85, 40), 24, 50);
+		set(TileRect(36, 36, 85, 40), 24, 50);
 	} else if (shnum == game->get_shape("gumps/basket")) {
-		set_object_area(TileRect(42, 32, 70, 26), 24, 44);
+		set(TileRect(42, 32, 70, 26), 24, 44);
 	} else if (shnum == game->get_shape("gumps/chest")) {
-		set_object_area(TileRect(40, 18, 60, 37), 24, 34);
+		set(TileRect(40, 18, 60, 37), 24, 34);
 	} else if (shnum == game->get_shape("gumps/shipshold")) {
-		set_object_area(TileRect(38, 10, 82, 80), 24, 80);
+		set(TileRect(38, 10, 82, 80), 24, 80);
 	} else if (shnum == game->get_shape("gumps/drawer")) {
-		set_object_area(TileRect(36, 12, 70, 26), 24, 34);
+		set(TileRect(36, 12, 70, 26), 24, 34);
 	} else if (shnum == game->get_shape("gumps/tree")) {
-		set_object_area(TileRect(62, 22, 36, 44), 25, 88);
+		set(TileRect(62, 22, 36, 44), 25, 88);
 	} else if (shnum == game->get_shape("gumps/body")) {
-		set_object_area(TileRect(36, 46, 84, 40), 24, 58);
+		set(TileRect(36, 46, 84, 40), 24, 58);
 	} else {
-		set_object_area(TileRect(52, 22, 60, 40), 24, 52);
+		set(TileRect(52, 22, 60, 40), 24, 52);
 	}
 }

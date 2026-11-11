@@ -152,6 +152,12 @@ protected:
 	}
 
 	void center_rect_on_screen(const TileRect& rect);
+	// Paint the objects in object_area, placing unplaced ones.
+	void paint_objects();
+	// Put obj's hotspot at a screen point, kept inside object_area.
+	void place_object(Game_object* obj, int sx, int sy);
+	// Apply gump_info.txt's container area and checkmark, if any.
+	static void read_gump_info(int shnum, TileRect& area, int& checkx, int& checky);
 
 public:
 	const Gump_elems& get_elems() const {
@@ -376,6 +382,9 @@ public:
 	Gump* clone(Container_game_object* cont, int initx, int inity) override {
 		return new Container_gump(cont, initx, inity, this);
 	}
+
+	// Built-in object area and checkmark position for a gump shape.
+	static void get_layout(int shnum, TileRect& area, int& checkx, int& checky);
 };
 
 #endif
