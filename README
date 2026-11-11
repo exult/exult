@@ -461,7 +461,7 @@ When you have enabled digital music and and another midi driver you can set both
  Additionally both fonts provide special characters needed for French, Spanish and German for the above localization option.
  However the built in fonts clash with old unofficial translations of the games and possibly other mods and patches. In this case disable the built-in fonts
 * Containers
-Picture shows the contents of bags, chests, barrels, corpses and other containers scattered on a picture of the container, as the original games do. List shows them on a scroll instead, one item per row with its quantity, and the chosen item enlarged with its weight. Click a row to choose an item, double-click it to use it, and drag it out to take it. Paperdolls and other special gumps are not affected. The setting applies to containers opened after it is changed.
+Picture shows the contents of bags, chests, barrels, corpses and other containers scattered on a picture of the container, as the original games do. List also shows them on a scroll, one item per row with its quantity, and the chosen item enlarged with its weight. Click a row to choose an item, double-click it to use it, and drag it out to take it. The container's own picture, with the items inside, hangs off the bottom-left of the scroll; items can be dragged in and out of it as usual. Its checkmark closes both, and dragging either moves both. The arrows at the ends of the scroll's title step through the containers inside the one opened, and back out. Paperdolls and other special gumps are not affected. The setting applies to containers opened after it is changed.
 
 
 
