@@ -78,6 +78,9 @@ Gump_manager::Gump_manager() {
 	config->value("config/gameplay/gumps_dont_pause_game", str, "no");
 	dont_pause_game = str == "yes";
 	config->set("config/gameplay/gumps_dont_pause_game", dont_pause_game ? "yes" : "no", true);
+	config->value("config/gameplay/container_view", str, "picture");
+	container_list_view = str == "list";
+	config->set("config/gameplay/container_view", container_list_view ? "list" : "picture", true);
 }
 
 // Per-gump overlay layers are composited above the conversation layer (z 0)

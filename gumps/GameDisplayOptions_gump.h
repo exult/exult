@@ -42,6 +42,7 @@ private:
 	int                      paperdolls;
 	int                      language;
 	int                      fonts;
+	int                      container_view;
 
 	enum button_ids {
 		id_first = 0,
@@ -62,6 +63,7 @@ private:
 		id_android_autolaunch,
 		id_language,
 		id_fonts,
+		id_container_view,
 
 		id_count
 	};
@@ -100,6 +102,10 @@ public:
 
 	void toggle_fonts(int state) {
 		fonts = state;
+	}
+
+	void toggle_container_view(int state) {
+		container_view = state;
 	}
 
 	void toggle_sb_hide_missing(int state) {
