@@ -29,6 +29,7 @@
 #include "Book_gump.h"
 #include "CombatStats_gump.h"
 #include "Configuration.h"
+#include "Container_list_gump.h"
 #include "Dynamic_container_gump.h"
 #include "Face_stats.h"
 #include "Gump.h"
@@ -651,6 +652,8 @@ void Gump_manager::add_gump(
 			// Check if this gump shape has container_area in gump_info.txt
 			if (Dynamic_container_gump::has_config(shapenum)) {
 				new_gump = new Dynamic_container_gump(obj->as_container(), x, y, shapenum);
+			} else if (container_list_view && !npc && Container_list_gump::is_available()) {
+				new_gump = new Container_list_gump(obj->as_container(), x, y, shapenum);
 			} else {
 				new_gump = new Container_gump(obj->as_container(), x, y, shapenum);
 			}
@@ -673,6 +676,11 @@ void Gump_manager::add_gump(
 	// Center dynamic gumps — the cascading position and saved-position
 	// restore can place these larger gumps offscreen.
 	if (dynamic_cast<Dynamic_container_gump*>(new_gump)) {
+		new_gump->set_pos();
+	}
+	// The list view is wider than most container gumps, so the position
+	// meant for the container's own gump may not fit.
+	if (dynamic_cast<Container_list_gump*>(new_gump) && new_gump->isOffscreen(true)) {
 		new_gump->set_pos();
 	}
 
