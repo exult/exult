@@ -12,6 +12,7 @@
 		28FD15000DC6FC520079059D /* OpenGLES.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 28FD14FF0DC6FC520079059D /* OpenGLES.framework */; };
 		8A057F9227A8362E00948459 /* CoreAudioMidiDriver.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8A057F8427A835AF00948459 /* CoreAudioMidiDriver.cpp */; };
 		8A123C352F41EA3600155333 /* Dynamic_container_gump.cc in Sources */ = {isa = PBXBuildFile; fileRef = 8A123C342F41EA3600155333 /* Dynamic_container_gump.cc */; };
+		D0726A2285883BAD1268EC1B /* Container_list_gump.cc in Sources */ = {isa = PBXBuildFile; fileRef = 4C68D9953BD63CF9958CC5DF /* Container_list_gump.cc */; };
 		8A123C382F41EA3600155333 /* Dynamic_button.cc in Sources */ = {isa = PBXBuildFile; fileRef = 8A123C372F41EA3600155333 /* Dynamic_button.cc */; };
 		8A123C3B2F41EA3600155333 /* Dynamic_text_widget.cc in Sources */ = {isa = PBXBuildFile; fileRef = 8A123C3A2F41EA3600155333 /* Dynamic_text_widget.cc */; };
 		8A123C3E2F41EA3600155333 /* Dynamic_shape_widget.cc in Sources */ = {isa = PBXBuildFile; fileRef = 8A123C3D2F41EA3600155333 /* Dynamic_shape_widget.cc */; };
@@ -357,6 +358,9 @@
 		8A0C19E11D6D9F1800B9105A /* sibetaintrinsics.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = sibetaintrinsics.h; sourceTree = "<group>"; };
 		8A123C332F41EA3600155333 /* Dynamic_container_gump.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = Dynamic_container_gump.h; path = ../gumps/Dynamic_container_gump.h; sourceTree = SOURCE_ROOT; };
 		8A123C342F41EA3600155333 /* Dynamic_container_gump.cc */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = Dynamic_container_gump.cc; path = ../gumps/Dynamic_container_gump.cc; sourceTree = SOURCE_ROOT; };
+		311FA2BEF11CF8F32F6390BA /* Container_list_gump.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = Container_list_gump.h; path = ../gumps/Container_list_gump.h; sourceTree = SOURCE_ROOT; };
+		4C68D9953BD63CF9958CC5DF /* Container_list_gump.cc */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = Container_list_gump.cc; path = ../gumps/Container_list_gump.cc; sourceTree = SOURCE_ROOT; };
+		06815F5E9F071649EE2F1FAE /* Container_list_layout.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = Container_list_layout.h; path = ../gumps/Container_list_layout.h; sourceTree = SOURCE_ROOT; };
 		8A123C362F41EA3600155333 /* Dynamic_button.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = Dynamic_button.h; path = ../gumps/Dynamic_button.h; sourceTree = SOURCE_ROOT; };
 		8A123C372F41EA3600155333 /* Dynamic_button.cc */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = Dynamic_button.cc; path = ../gumps/Dynamic_button.cc; sourceTree = SOURCE_ROOT; };
 		8A123C392F41EA3600155333 /* Dynamic_text_widget.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = Dynamic_text_widget.h; path = ../gumps/Dynamic_text_widget.h; sourceTree = SOURCE_ROOT; };
@@ -1438,6 +1442,9 @@
 				8A33B5E42C2051B800075AF4 /* IterableGump_widget.h */,
 				8A123C332F41EA3600155333 /* Dynamic_container_gump.h */,
 				8A123C342F41EA3600155333 /* Dynamic_container_gump.cc */,
+				311FA2BEF11CF8F32F6390BA /* Container_list_gump.h */,
+				4C68D9953BD63CF9958CC5DF /* Container_list_gump.cc */,
+				06815F5E9F071649EE2F1FAE /* Container_list_layout.h */,
 				8A123C362F41EA3600155333 /* Dynamic_button.h */,
 				8A123C372F41EA3600155333 /* Dynamic_button.cc */,
 				8A123C392F41EA3600155333 /* Dynamic_text_widget.h */,
@@ -1990,6 +1997,7 @@
 				8A33B5E22C2051B800075AF4 /* StringList_widget.cc in Sources */,
 				8A33B5E02C2051B800075AF4 /* Slider_widget.cc in Sources */,
 				8A123C352F41EA3600155333 /* Dynamic_container_gump.cc in Sources */,
+				D0726A2285883BAD1268EC1B /* Container_list_gump.cc in Sources */,
 				8A123C382F41EA3600155333 /* Dynamic_button.cc in Sources */,
 				8A123C3B2F41EA3600155333 /* Dynamic_text_widget.cc in Sources */,
 				8A123C3E2F41EA3600155333 /* Dynamic_shape_widget.cc in Sources */,

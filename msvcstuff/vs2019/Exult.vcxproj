@@ -440,6 +440,7 @@ for /f "tokens=* delims=" %%u in ('git ls-remote --get-url') do echo #define GIT
     <ClCompile Include="..\..\gumps\AudioOptions_gump.cc" />
     <ClCompile Include="..\..\gumps\Book_gump.cc" />
     <ClCompile Include="..\..\gumps\CombatStats_gump.cc" />
+    <ClCompile Include="..\..\gumps\Container_list_gump.cc" />
     <ClCompile Include="..\..\gumps\Dynamic_container_gump.cc" />
     <ClCompile Include="..\..\gumps\Dynamic_button.cc" />
     <ClCompile Include="..\..\gumps\Dynamic_text_widget.cc" />
@@ -673,6 +674,8 @@ for /f "tokens=* delims=" %%u in ('git ls-remote --get-url') do echo #define GIT
     <ClInclude Include="..\..\gumps\AudioOptions_gump.h" />
     <ClInclude Include="..\..\gumps\Book_gump.h" />
     <ClInclude Include="..\..\gumps\CombatStats_gump.h" />
+    <ClInclude Include="..\..\gumps\Container_list_gump.h" />
+    <ClInclude Include="..\..\gumps\Container_list_layout.h" />
     <ClInclude Include="..\..\gumps\Dynamic_container_gump.h" />
     <ClInclude Include="..\..\gumps\Dynamic_button.h" />
     <ClInclude Include="..\..\gumps\Dynamic_text_widget.h" />

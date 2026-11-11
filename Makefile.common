@@ -150,6 +150,7 @@ GUMPS_OBJS:= \
 	gumps/Book_gump.o \
 	gumps/GameEngineOptions_gump.o \
 	gumps/CombatStats_gump.o \
+	gumps/Container_list_gump.o \
 	gumps/Dynamic_container_gump.o \
 	gumps/Dynamic_button.o \
 	gumps/Dynamic_text_widget.o \
