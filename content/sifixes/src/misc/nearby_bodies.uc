@@ -29,6 +29,11 @@
  *	as before: get_body_npc() must name an NPC in the joinable list (or
  *	Cantra), and the original's Dupre and Shamino rules are kept.
  *
+ *	Boydon is excluded on purpose: when he dies, his own usecode (0x422)
+ *	blows him back into body parts ("My beautiful body!!"), and he is not
+ *	meant to be raised. The kill still leaves an ordinary shape 402 body,
+ *	which the original search happened to miss; this keeps it that way.
+ *
  *	The original searched party inventories with a helper that returned only
  *	the first matching body (and the party member carrying it, which was
  *	always filtered out). This version collects every matching body from every
@@ -54,7 +59,7 @@ var getNearbyBodies 0x8FB () {
 	var found = [];
 	for (body in bodies) {
 		var npc = body->get_body_npc();
-		if (getIndexForElement(npc, resurrectables)) {
+		if ((npc != BOYDON) && getIndexForElement(npc, resurrectables)) {
 			if (npc == DUPRE) {
 				// As in the original: get_body_npc() returns -1 (Dupre) also
 				// for a body it can't identify, so -1 only counts for Dupre's
