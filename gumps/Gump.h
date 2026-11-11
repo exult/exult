@@ -208,12 +208,21 @@ public:
 		return get_container();
 	}
 
+	// Subclasses that don't draw objects at their stored tx/ty (the list
+	// view) report where they actually draw them.
 	// Get screen rect. of obj. in here.
-	TileRect get_shape_rect(const Game_object* obj) const;
+	virtual TileRect get_shape_rect(const Game_object* obj) const;
 	// Get screen loc. of object.
-	void get_shape_location(const Game_object* obj, int& ox, int& oy) const;
+	virtual void get_shape_location(const Game_object* obj, int& ox, int& oy) const;
 	// Find obj. containing mouse point.
 	virtual Game_object* find_object(int mx, int my);
+
+	// Mouse pressed on one of this gump's objects (before any drag).
+	// List-style gumps select a row here.
+	virtual void object_pressed(Game_object* obj) {
+		ignore_unused_variable_warning(obj);
+	}
+
 	virtual TileRect     get_dirty();    // Get dirty rect. for gump+contents.
 	virtual Game_object* get_owner();    // Get object this belongs to.
 	// Is a given point on a button?
