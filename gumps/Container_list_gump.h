@@ -22,6 +22,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "Gump.h"
 #include "imagebuf.h"
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -75,6 +76,9 @@ public:
 	void line_down();
 	void page_up();
 	void page_down();
+	// Step through the containers inside the one the gump was opened for.
+	void prev_container();
+	void next_container();
 
 	// For the scroll track.
 	int get_first() const {
@@ -103,7 +107,15 @@ private:
 	Checkmark_button* check = nullptr;    // On the picture.
 	// Object last found in the picture by find_object(), or null.
 	Game_object* picture_hit = nullptr;
+	// The container the gump was opened for; the arrows step through the
+	// containers inside it.
+	std::weak_ptr<Game_object> root;
 
+	static bool can_step_into(Game_object* obj);
+	static void collect_nested(Container_game_object* cont, std::vector<Container_game_object*>& out);
+
+	void step(int delta);
+	void show_container(Container_game_object* cont);
 	void set_picture();
 	bool on_picture(int sx, int sy) const;
 	void row_location(const Shape_frame* frame, int index, int& ox, int& oy) const;

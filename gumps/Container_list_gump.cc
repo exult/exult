@@ -23,11 +23,13 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "Container_list_gump.h"
 
 #include "Container_list_layout.h"
+#include "Dynamic_container_gump.h"
 #include "Gump_button.h"
 #include "Gump_widget.h"
 #include "cheat.h"
 #include "contain.h"
 #include "exult_flx.h"
+#include "frflags.h"
 #include "game.h"
 #include "gamewin.h"
 #include "ibuf8.h"
@@ -35,6 +37,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "misc_buttons.h"
 #include "objiter.h"
 #include "palette.h"
+#include "shapeinf.h"
 
 #ifdef __GNUC__
 #	pragma GCC diagnostic push
@@ -219,6 +222,15 @@ Container_list_gump::Container_list_gump(Container_game_object* cont, int initx,
 			this, &Container_list_gump::line_down, EXULT_FLX_SAV_DOWN_SHP, button_x(EXULT_FLX_SAV_DOWN_SHP, ctrl_x),
 			button_y(EXULT_FLX_SAV_DOWN_SHP, down_y), SF_EXULT_FLX));
 	add_elem(new List_track(this));
+	add_elem(new List_button(
+			this, &Container_list_gump::prev_container, EXULT_FLX_SCROLL_LEFT_SHP,
+			button_x(EXULT_FLX_SCROLL_LEFT_SHP, nav_left_x), button_y(EXULT_FLX_SCROLL_LEFT_SHP, nav_y), SF_EXULT_FLX));
+	add_elem(new List_button(
+			this, &Container_list_gump::next_container, EXULT_FLX_SCROLL_RIGHT_SHP,
+			button_x(EXULT_FLX_SCROLL_RIGHT_SHP, nav_right_x), button_y(EXULT_FLX_SCROLL_RIGHT_SHP, nav_y), SF_EXULT_FLX));
+	if (cont) {
+		root = cont->weak_from_this();
+	}
 	collect_rows();
 	if (!items.empty()) {
 		selected = items.front();
@@ -561,7 +573,8 @@ void Container_list_gump::paint_list() {
 	const int      count = static_cast<int>(items.size());
 	const int      sel   = selected_index();
 
-	const std::string title = fit_text(big_font, container ? display_name(container) : std::string(), list_w - 4);
+	// Centred between the arrows.
+	const std::string title = fit_text(big_font, container ? display_name(container) : std::string(), title_w);
 	sman->paint_text(big_font, title.c_str(), lx + (list_w - sman->get_text_width(big_font, title.c_str())) / 2, ty - 2);
 	ib->fill_hline8(ink, list_w - 8, lx + 4, ty + 8);
 
@@ -859,6 +872,93 @@ void Container_list_gump::select(Game_object* obj) {
 		first    = first_showing(first, sel, static_cast<int>(items.size()));
 	}
 	gwin->add_dirty(get_rect());
+}
+
+/*
+ *  Could the arrows step into this object?  Only if double-clicking it
+ *  would open a plain container gump (the checks of
+ *  Container_game_object::show_gump and Gump_manager::add_gump).
+ */
+
+bool Container_list_gump::can_step_into(Game_object* obj) {
+	if (!obj->as_container() || obj->as_actor()) {
+		return false;
+	}
+	const Shape_info& inf = obj->get_info();
+	if (inf.has_object_flag(obj->get_framenum(), inf.has_quality() ? obj->get_quality() : -1, Frame_flags::fp_force_usecode)) {
+		return false;    // Locked, or usecode decides.
+	}
+	const int gump = inf.get_gump_shape();
+	if (gump < 0 || Dynamic_container_gump::has_config(gump)) {
+		return false;
+	}
+	for (const char* special : {"gumps/spellbook", "gumps/jawbone", "gumps/statsdisplay", "gumps/spell_scroll"}) {
+		if (gump == game->get_shape(special)) {
+			return false;
+		}
+	}
+	return true;
+}
+
+// The containers inside cont, depth-first, in object order.
+void Container_list_gump::collect_nested(Container_game_object* cont, std::vector<Container_game_object*>& out) {
+	Object_iterator next(cont->get_objects());
+	Game_object*    obj;
+	while ((obj = next.get_next()) != nullptr) {
+		if (can_step_into(obj)) {
+			Container_game_object* inner = obj->as_container();
+			out.push_back(inner);
+			collect_nested(inner, out);
+		}
+	}
+}
+
+void Container_list_gump::prev_container() {
+	step(-1);
+}
+
+void Container_list_gump::next_container() {
+	step(1);
+}
+
+/*
+ *  Step through the gump's own container followed by the containers
+ *  inside it.  The ends stop.  If the shown container is no longer
+ *  among them, go back to the gump's own.
+ */
+
+void Container_list_gump::step(int delta) {
+	const auto             locked = root.lock();
+	Container_game_object* top    = locked ? locked->as_container() : nullptr;
+	if (!top) {
+		return;
+	}
+	std::vector<Container_game_object*> list{top};
+	collect_nested(top, list);
+	const auto it     = std::find(list.begin(), list.end(), container);
+	const int  last   = static_cast<int>(list.size()) - 1;
+	const int  target = it == list.end() ? 0 : std::clamp(static_cast<int>(it - list.begin()) + delta, 0, last);
+	if (list[target] != container) {
+		show_container(list[target]);
+	}
+}
+
+/*
+ *  Show another container: its contents, title and picture.  The scroll
+ *  stays where it is.
+ */
+
+void Container_list_gump::show_container(Container_game_object* cont) {
+	gwin->add_dirty(get_dirty());
+	container = cont;
+	set_shape(cont->get_info().get_gump_shape(), 0);
+	set_picture();
+	first       = 0;
+	sel_hint    = 0;
+	picture_hit = nullptr;
+	collect_rows();
+	selected = items.empty() ? nullptr : items.front();
+	gwin->set_all_dirty();
 }
 
 /*
