@@ -410,6 +410,10 @@ void Gump::place_object(Game_object* obj, int sx, int sy) {
 	sx -= x + object_area.x;    // Get point rel. to object_area.
 	sy -= y + object_area.y;
 	Shape_frame* shape = obj->get_shape();
+	if (!shape) {    // No frame to keep in range.
+		obj->set_shape_pos(sx, sy);
+		return;
+	}
 	// But shift within range.
 	if (sx - shape->get_xleft() < 0) {
 		sx = shape->get_xleft();
