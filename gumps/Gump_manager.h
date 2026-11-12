@@ -68,6 +68,7 @@ class Gump_manager : public Game_singletons {
 	bool dont_pause_game      = false;    // NEVER SET THIS MANUALLY! YOU MUST
 										  // CALL set_gumps_dont_pause_game.
 	bool container_list_view  = false;    // Open containers as a list.
+
 public:
 	void add_gump(Gump* gump);    // Add a single gump to screen
 	// Show gump for obj
