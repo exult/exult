@@ -119,12 +119,14 @@ bool Text_msg_file_reader::parse_contents() {
 		} else {
 			data.remove_prefix(data.size());
 		}
-		// Ignore leading whitespace.
-		auto nonWs = line.find_first_not_of(" \t\b");
-		line.remove_prefix(nonWs);
-		if (line.empty()) {
+		// Ignore leading whitespace.  An empty or blank line (the text may
+		// start with a newline) has none to keep: remove_prefix(npos) would
+		// point line one byte before it.
+		const auto nonWs = line.find_first_not_of(" \t\b");
+		if (nonWs == std::string_view::npos) {
 			continue;    // Empty line.
 		}
+		line.remove_prefix(nonWs);
 
 		if (line.compare(0, sectionStart.length(), sectionStart) == 0) {
 			if (state == State::InSection) {
