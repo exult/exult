@@ -426,7 +426,12 @@ enum SI_Fixes_flags {
 	// Set once Isstanar has paid the reward Surok promised for Aram-Dol:
 	ISSTANAR_REWARDED_ARAM_DOL = 814,
 	// Set once Surok has taken Commander Ardiniss's body:
-	ARDINISS_BROUGHT_HOME = 815
+	ARDINISS_BROUGHT_HOME = 815,
+	// Set once Tsandar has spoken of Isstanar's commendation:
+	TSANDAR_PRAISED_AVATAR = 816,
+	// 817-824: the last orb stage each of Isstanar, Surok, Tsandar and
+	// Elissa has spoken of, two flags each (see npcs/serpents_fang.uc):
+	SERPENTS_FANG_NEWS = 817
 };
 
 enum Batlin_visions {

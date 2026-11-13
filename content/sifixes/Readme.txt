@@ -117,6 +117,8 @@ version: 0.15.15
 	  commendation.
 	- Surok now takes Commander Ardiniss's body if you bring it back to
 	  Serpent's Fang, as he asks you to.
+	- The people of Serpent's Fang notice as you restore the orbs, and
+	  Ardiniss gets the funeral Tsandar wanted for him.
 	- After the the Wall of Lights cutscene, you can no longer summon Thoxa to
 	  "resurrect" your possessed party. Or rather, you can summon her, but she
 	  won't bring Iolo, Dupre and Shamino back as they are the Banes now. Even
@@ -193,6 +195,12 @@ version 0.15.18 - 2026-11-13
 	- Surok (0x3B2) takes Commander Ardiniss's body and gives back what was in
 	  it, and turns away other bodies; new flag ARDINISS_BROUGHT_HOME (815).
 	- The commendation (scroll 0x31D, quality 184) has its own text.
+	- Ardiniss gets a funeral when Surok (0x3B2) takes his body, and Tsandar
+	  makes peace with Isstanar there. Tsandar (0x3B3) speaks once of the
+	  commendation; new flag TSANDAR_PRAISED_AVATAR (816).
+	- Isstanar, Surok, Tsandar and Elissa (0x3F7) say one line per stage of
+	  the orbs until the Silver Seed is taken; new flags SERPENTS_FANG_NEWS
+	  (817-824).
 version 0.15.17 - 2025-02-26
 	- Upped the intelligence to 6 of shapes 299 (Cantra), 652 (Frigidazzi, Lydia),
 	  660 (skinless Yelinda), 744 (Goblin woman) so they can act on npc->is_sentient.
