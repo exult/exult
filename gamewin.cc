@@ -1498,6 +1498,7 @@ void Game_window::write_gwin() {
 	gout.write1(ambient_light ? 1 : 0);
 	gout.write1(combat ? 1 : 0);
 	gout.write1(infravision_active ? 1 : 0);
+	effects->write_weather(gout);
 	if (!gout.good()) {
 		throw file_write_exception(GWINDAT);
 	}
@@ -1572,6 +1573,9 @@ void Game_window::read_gwin() {
 	if (!gin.good()) {
 		infravision_active = false;
 	}
+
+	// The weather, which setup_game() starts again.
+	effects->read_weather(gin);
 }
 
 /*
@@ -2935,6 +2939,9 @@ void Game_window::setup_game(bool map_editing) {
 	}
 	// Ensure time is stopped if map-editing.
 	time_stopped = map_editing ? -1 : 0;
+	// Weather from the savegame, before eggs can change it. The palette for
+	// it is set below.
+	effects->restore_weather();
 	//+++++The below wasn't prev. done by ::read(), so maybe it should be
 	//+++++controlled by a 'first-time' flag.
 	// Want to activate first egg.

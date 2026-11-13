@@ -32,6 +32,7 @@
 #include "actors.h"
 #include "ammoinf.h"
 #include "chunks.h"
+#include "databuf.h"
 #include "dir.h"
 #include "egg.h"
 #include "game.h"
@@ -235,6 +236,117 @@ int Effects_manager::get_weather() {
 		return ef->is_weather() && (static_cast<Weather_effect*>(ef.get())->get_num() >= 0);
 	});
 	return found != effects.cend() ? static_cast<Weather_effect*>(found->get())->get_num() : 0;
+}
+
+/**
+ *  Write the active weather to a savegame: a count byte, then for each
+ *  weather (oldest first) its number (1 byte), game minutes left (2 bytes)
+ *  and the tile of the egg that started it (3 x 2 bytes, -1 if none).
+ *  The rain, clouds and lightning a weather adds aren't written; they are
+ *  created again with it.
+ */
+
+void Effects_manager::write_weather(ODataSource& out) const {
+	std::vector<const Weather_effect*> weather;
+	for (const auto& ef : effects) {
+		if (!ef->is_weather()) {
+			continue;
+		}
+		const auto* w = static_cast<const Weather_effect*>(ef.get());
+		if (w->is_saved_weather() && w->get_minutes_left() > 0 && weather.size() < 255) {
+			weather.push_back(w);
+		}
+	}
+	out.write1(weather.size());
+	// add_effect() puts new effects first, so write oldest first.
+	for (auto it = weather.crbegin(); it != weather.crend(); ++it) {
+		const Weather_effect* w      = *it;
+		const Tile_coord&     eggloc = w->get_eggloc();
+		out.write1(w->get_num());
+		out.write2(std::min(w->get_minutes_left(), 0xffff));
+		out.write2(static_cast<uint16>(eggloc.tx));
+		out.write2(static_cast<uint16>(eggloc.ty));
+		out.write2(static_cast<uint16>(eggloc.tz));
+	}
+}
+
+/**
+ *  Read the weather written by write_weather(). Savegames from before it
+ *  was added end before it, which reads as no weather.
+ */
+
+void Effects_manager::read_weather(IDataSource& in) {
+	saved_weather.clear();
+	const int count = in.read1();
+	if (!in.good()) {
+		return;
+	}
+	for (int i = 0; i < count; i++) {
+		Saved_weather w;
+		w.type        = in.read1();
+		w.minutes     = in.read2();
+		const auto tx = static_cast<sint16>(in.read2());
+		const auto ty = static_cast<sint16>(in.read2());
+		const auto tz = static_cast<sint16>(in.read2());
+		w.eggloc      = Tile_coord(tx, ty, tz);
+		if (!in.good()) {
+			return;
+		}
+		if (w.type >= 1 && w.type <= 6 && w.minutes > 0) {
+			saved_weather.push_back(w);
+		}
+	}
+}
+
+/**
+ *  Start the weather read by read_weather(), with the time it had left.
+ */
+
+void Effects_manager::restore_weather() {
+	const std::vector<Saved_weather> weather = std::move(saved_weather);
+	saved_weather.clear();
+	for (const auto& w : weather) {
+		// The rain, clouds and lightning go in front of what's there now.
+		Special_effect* const           old_front = effects.empty() ? nullptr : effects.front().get();
+		std::unique_ptr<Weather_effect> ef;
+		switch (w.type) {
+		case 1:
+			ef = std::make_unique<Snowstorm_effect>(w.minutes);
+			break;
+		case 2:
+			ef = std::make_unique<Storm_effect>(w.minutes);
+			break;
+		case 3:
+			ef = std::make_unique<Sparkle_effect>(w.minutes);
+			break;
+		case 4:
+			ef = std::make_unique<Fog_effect>(w.minutes);
+			break;
+		default:
+			ef = std::make_unique<Clouds_effect>(w.minutes, 0, nullptr, w.type);
+			break;
+		}
+		ef->set_eggloc(w.eggloc);
+		// Sparkle_effect gives its egg to its sparkles (the same number),
+		// so leaving the area ends both; the other parts never had one.
+		for (auto& part : effects) {
+			if (part.get() == old_front) {
+				break;
+			}
+			if (part->is_weather() && static_cast<Weather_effect*>(part.get())->get_num() == w.type) {
+				static_cast<Weather_effect*>(part.get())->set_eggloc(w.eggloc);
+			}
+		}
+		Weather_effect* const added = ef.get();
+		add_effect(std::move(ef));
+		if (w.type == 4) {
+			// Fog sets the clock's fog when it first runs. Do that now, so
+			// the palette is foggy when the game fades in instead of
+			// changing to fog just after.
+			gwin->get_tqueue()->remove(added);
+			added->handle_event(Game::get_ticks(), 0);
+		}
+	}
 }
 
 /**
@@ -1248,6 +1360,19 @@ bool Weather_effect::out_of_range(Tile_coord& avpos, int dist) {
 	return eggloc.distance(avpos) >= dist;
 }
 
+/**
+ *  Game minutes left before this stops, rounded up.
+ */
+
+int Weather_effect::get_minutes_left() const {
+	const uint32 now = Game::get_ticks();
+	if (stop_time <= now) {
+		return 0;
+	}
+	const uint32 minute_ms = gwin->get_std_delay() * ticks_per_minute;
+	return static_cast<int>((stop_time - now + minute_ms - 1) / minute_ms);
+}
+
 /*
  *  A generic raindrop/snowflake/magic sparkle particle:
  */
@@ -1406,6 +1531,11 @@ public:
 	Rain_effect(int duration, int delay = 0, int ndrops = MAXDROPS, int n = -1, Game_object* egg = nullptr)
 			: Weather_effect(duration, delay, n, egg), num_drops(ndrops), gradual(ndrops == 0) {
 		weatherType = n;
+	}
+
+	// Part of another weather (the sparkles keep its number).
+	bool is_saved_weather() const override {
+		return false;
 	}
 
 	// Execute when due.
