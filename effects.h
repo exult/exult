@@ -86,6 +86,10 @@ public:
 	void write_weather(ODataSource& out) const;
 	void read_weather(IDataSource& in);
 	void restore_weather();
+	// Is a weather restore_weather() started, from this egg, still on?
+	// end_weather_restore() is called once the eggs have run after loading.
+	bool has_restored_weather(int num, const Tile_coord& eggloc) const;
+	void end_weather_restore();
 	int  get_weather();                  // Get # of last weather added.
 	bool has_active_sprites() const;     // Any sprite anims playing?
 	void set_sprites_always(bool tf);    // Set/clear 'always' on sprites.
@@ -289,6 +293,8 @@ protected:
 	int        num;          // Weather ID (0-6), or -1.
 	Tile_coord eggloc;       // Location of egg that started this.
 
+	bool restored = false;    // Started from a savegame.
+
 public:
 	Weather_effect(int duration, int delay, int n, Game_object* egg = nullptr);
 	// Avatar out of range?
@@ -316,6 +322,14 @@ public:
 
 	void set_eggloc(const Tile_coord& t) {
 		eggloc = t;
+	}
+
+	bool is_restored() const {
+		return restored;
+	}
+
+	void set_restored(bool tf) {
+		restored = tf;
 	}
 };
 

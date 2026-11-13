@@ -337,6 +337,7 @@ void Effects_manager::restore_weather() {
 				static_cast<Weather_effect*>(part.get())->set_eggloc(w.eggloc);
 			}
 		}
+		ef->set_restored(true);
 		Weather_effect* const added = ef.get();
 		add_effect(std::move(ef));
 		if (w.type == 4) {
@@ -345,6 +346,35 @@ void Effects_manager::restore_weather() {
 			// changing to fog just after.
 			gwin->get_tqueue()->remove(added);
 			added->handle_event(Game::get_ticks(), 0);
+		}
+	}
+}
+
+/**
+ *  On load, the eggs run after restore_weather(), and an auto-reset egg
+ *  the Avatar stands in hatches again. Egg_object::set_weather() asks this
+ *  so it doesn't add a second copy of the weather that egg started.
+ */
+
+bool Effects_manager::has_restored_weather(int num, const Tile_coord& eggloc) const {
+	return std::any_of(effects.cbegin(), effects.cend(), [&](const auto& ef) {
+		if (!ef->is_weather()) {
+			return false;
+		}
+		const auto* w = static_cast<const Weather_effect*>(ef.get());
+		return w->is_restored() && w->get_num() == num && w->get_eggloc() == eggloc;
+	});
+}
+
+/**
+ *  The eggs have run after loading: the restored weather is now like any
+ *  other, so eggs that hatch later act on it as before.
+ */
+
+void Effects_manager::end_weather_restore() {
+	for (auto& ef : effects) {
+		if (ef->is_weather()) {
+			static_cast<Weather_effect*>(ef.get())->set_restored(false);
 		}
 	}
 }

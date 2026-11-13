@@ -2953,6 +2953,7 @@ void Game_window::setup_game(bool map_editing) {
 	if (!map_editing) {    // (Unless map-editing.)
 		olist->activate_eggs(main_actor, t.tx, t.ty, t.tz, -1, -1, true);
 	}
+	effects->end_weather_restore();
 	// Force entire repaint.
 	set_all_dirty();
 	painted = true;                     // Main loop uses this.
