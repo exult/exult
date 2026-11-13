@@ -419,7 +419,14 @@ enum Silver_Seed_flags {
 
 enum SI_Fixes_flags {
 	SHAMINO_SAW_HIS_CASTLE = 810,
-	HOUND_HINT_BATLIN = 811
+	HOUND_HINT_BATLIN = 811,
+	// 812 is VASCULIO_PRISONER_FREED (pending, #1068)
+	// Set when Aram-Dol dies, so Isstanar can reward the Avatar:
+	ARAM_DOL_SLAIN = 813,
+	// Set once Isstanar has paid the reward Surok promised for Aram-Dol:
+	ISSTANAR_REWARDED_ARAM_DOL = 814,
+	// Set once Surok has taken Commander Ardiniss's body:
+	ARDINISS_BROUGHT_HOME = 815
 };
 
 enum Batlin_visions {

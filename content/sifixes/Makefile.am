@@ -32,6 +32,7 @@ USECODE_OBJECTS :=	\
 	src/items/potion.uc	\
 	src/items/scroll.uc	\
 	src/items/time_tellers.uc	\
+	src/misc/aram_dol.uc	\
 	src/misc/draxinar_cloth_riddle.uc	\
 	src/misc/draxinar_earrings_riddle.uc	\
 	src/misc/egg_bane_holocaust.uc	\
@@ -69,6 +70,7 @@ USECODE_OBJECTS :=	\
 	src/npcs/mwaerno.uc	\
 	src/npcs/myauri.uc	\
 	src/npcs/neyobi.uc	\
+	src/npcs/serpents_fang.uc	\
 	src/npcs/shamino.uc	\
 	src/npcs/skullcrusher_automatons.uc	\
 	src/npcs/spinebreaker_automatons.uc	\
