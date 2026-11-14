@@ -56,6 +56,7 @@
 #include "font.h"
 #include "font_map.h"
 #include "game.h"
+#include "gamedoctor.h"
 #include "gamemap.h"
 #include "gamemgr/modmgr.h"
 #include "gamewin.h"
@@ -296,6 +297,7 @@ int main(int argc, char* argv[]) {
 	parameters.declare("--fov", &run_fov, true);
 	parameters.declare("--ss", &run_ss, true);
 	parameters.declare("--sib", &run_sib, true);
+	Game_doctor::declare_options(parameters);
 	parameters.declare("--nomenu", &arg_nomenu, true);
 	parameters.declare("-v", &showversion, true);
 	parameters.declare("--version", &showversion, true);
@@ -317,6 +319,9 @@ int main(int argc, char* argv[]) {
 #endif
 	// Process the args
 	parameters.process(argc, argv);
+	if (Game_doctor::load_save_requested()) {
+		arg_nomenu = true;
+	}
 	add_system_path("<alt_cfg>", arg_configfile);
 #if defined _WIN32
 	if (portable) {
@@ -658,6 +663,9 @@ int exult_main(const char* runpath) {
 #endif
 
 	cheat.init();
+	if (cheat() || Game_doctor::cli_active()) {
+		Game_doctor::get().install_log_capture();
+	}
 
 #ifdef SDL_PLATFORM_IOS
 	iOS_SetupQuickActions();
@@ -1137,6 +1145,9 @@ static void Init() {
 		midi->set_timbre_lib(MyMidiPlayer::TIMBRE_LIB_GAME);
 	}
 
+	if (!Game_doctor::get().apply_load_save()) {
+		exit(2);
+	}
 	gwin->init_files();
 	gwin->read_gwin();
 	gwin->setup_game(arg_edit_mode);    // This will start the scene.
@@ -1165,6 +1176,7 @@ static int Play() {
 		}
 	} while (quitting_time == QUIT_TIME_RESTART);
 
+	Game_doctor::get().cli_at_exit();
 	delete gwin;
 
 	Audio::Destroy();    // Deinit the sound system.
@@ -1173,7 +1185,7 @@ static int Play() {
 	Free_text();
 	fontManager.reset();
 	delete game;
-	return 0;
+	return Game_doctor::get().exit_status();
 }
 
 #ifdef USE_EXULTSTUDIO    // Shift-click means 'paint'.
@@ -1387,6 +1399,7 @@ static void Handle_events() {
 			Handle_event(event);
 		}
 		Mui_selftest::tick(ticks);
+		Game_doctor::get().cli_tick(ticks);
 
 		// Animate unless dormant.
 		if (gwin->have_focus() && !dragging) {

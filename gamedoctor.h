@@ -19,6 +19,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #ifndef GAMEDOCTOR_H
 #define GAMEDOCTOR_H
 
+#include "common_types.h"
 #include "exult_constants.h"
 #include "singles.h"
 #include "tiles.h"
@@ -34,6 +35,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <vector>
 
 class Actor;
+class Args;
 class Game_object;
 class Log_tee_buf;
 
@@ -240,6 +242,22 @@ public:
 	const std::string& backup_name() const;
 	int                backup_slot_number() const;
 
+	// Command line (exult.cc). --load-save <slot|file> starts from a save
+	// (implies --nomenu); --doctor-dump <path>, --doctor-checkup and
+	// --doctor-save <file> run after --doctor-delay ms of play, then Exult
+	// quits, or when the game loop ends with --doctor-at-exit. A watchdog
+	// ends the process (exit 124) after --doctor-timeout seconds.
+	static void declare_options(Args& parameters);
+	static bool load_save_requested();
+	// Any doctor command-line option given.
+	static bool cli_active();
+	// Restores the --load-save game into gamedat; false if it failed.
+	bool apply_load_save();
+	void cli_tick(uint32 ticks);
+	void cli_at_exit();
+	// 0 clean, 3 check-up found warnings or errors, 2 an action failed.
+	int exit_status() const;
+
 	// Called at the end of Game_window::read(). A restore not made by the
 	// doctor itself ends the session: the undo history and the backup are
 	// forgotten.
@@ -256,6 +274,9 @@ private:
 	void drop_undo_entry(const Undo_entry& entry);
 	void clear_undo();
 
+	static bool cli_has_actions();
+	void        run_cli_actions();
+
 	Action_result do_set_flag(unsigned num, bool on);
 	Action_result do_bring_npc(int num);
 	Action_result do_goto_npc(int num);
@@ -270,6 +291,20 @@ private:
 	std::string            backup_file;
 	unsigned               snapshot_counter = 0;
 	bool                   restoring_self   = false;
+
+	// Command-line options.
+	static std::string opt_load_save;
+	static std::string opt_dump;
+	static bool        opt_checkup;
+	static std::string opt_save;
+	static int         opt_delay;
+	static bool        opt_at_exit;
+	static int         opt_timeout;
+
+	bool   cli_started = false;
+	bool   cli_ran     = false;
+	uint32 cli_start   = 0;
+	int    cli_status  = 0;
 
 	std::vector<Flag_info> flag_table;
 	std::string            flag_table_key;    // Game and mod it was loaded for.

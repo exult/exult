@@ -24,6 +24,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "Configuration.h"
 #include "actors.h"
+#include "args.h"
 #include "chunks.h"
 #include "contain.h"
 #include "exult.h"
@@ -47,6 +48,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <array>
 #include <cctype>
 #include <charconv>
+#include <chrono>
+#include <cstdio>
+#include <cstdlib>
 #include <ctime>
 #include <exception>
 #include <iomanip>
@@ -56,6 +60,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <optional>
 #include <sstream>
 #include <streambuf>
+#include <thread>
 #include <unordered_set>
 
 #ifdef HAVE_ZIP_SUPPORT
@@ -1509,4 +1514,150 @@ std::string Game_doctor::export_bug_report(std::string* err) {
 #endif
 	std::cout << "DOCTOR: bug report written to " << path << std::endl;
 	return path;
+}
+
+//
+// Command line.
+//
+
+// In gamemgr/modmgr.cc.
+std::string get_game_identity(const char* savename, const std::string& title);
+
+std::string Game_doctor::opt_load_save;
+std::string Game_doctor::opt_dump;
+bool        Game_doctor::opt_checkup = false;
+std::string Game_doctor::opt_save;
+int         Game_doctor::opt_delay   = 1500;
+bool        Game_doctor::opt_at_exit = false;
+int         Game_doctor::opt_timeout = 120;
+
+void Game_doctor::declare_options(Args& parameters) {
+	parameters.declare("--load-save", &opt_load_save, "");
+	parameters.declare("--doctor-dump", &opt_dump, "");
+	parameters.declare("--doctor-checkup", &opt_checkup, true);
+	parameters.declare("--doctor-save", &opt_save, "");
+	parameters.declare("--doctor-delay", &opt_delay, 1500);
+	parameters.declare("--doctor-at-exit", &opt_at_exit, true);
+	parameters.declare("--doctor-timeout", &opt_timeout, 120);
+}
+
+bool Game_doctor::load_save_requested() {
+	return !opt_load_save.empty();
+}
+
+bool Game_doctor::cli_has_actions() {
+	return !opt_dump.empty() || opt_checkup || !opt_save.empty();
+}
+
+bool Game_doctor::cli_active() {
+	return load_save_requested() || cli_has_actions();
+}
+
+bool Game_doctor::apply_load_save() {
+	if (!load_save_requested()) {
+		return true;
+	}
+	std::string file = opt_load_save;
+	if (std::all_of(file.begin(), file.end(), [](unsigned char c) {
+			return std::isdigit(c) != 0;
+		})) {
+		char fname[std::size(SAVENAME) + 8];
+		snprintf(fname, sizeof(fname), SAVENAME, std::stoi(file), save_suffix());
+		file = fname;
+	}
+	if (!U7exists(file)) {
+		std::cout << "DOCTOR: no such save '" << file << "'" << std::endl;
+		cli_status = 2;
+		return false;
+	}
+	// As Game_window::restore_gamedat(), but a mismatch fails instead of
+	// asking. '*' means an old game.
+	const std::string id              = get_game_identity(file.c_str(), Game::get_gametitle());
+	const std::string static_identity = get_game_identity(INITGAME, Game::get_gametitle());
+	if (id.empty() || (id[0] != '*' && static_identity != id)) {
+		std::cout << "DOCTOR: identity mismatch: '" << file << "' is '" << id << "', the game is '" << static_identity << "'"
+				  << std::endl;
+		cli_status = 2;
+		return false;
+	}
+	try {
+		gwin->restore_gamedat(file.c_str());
+	} catch (const std::exception& e) {
+		std::cout << "DOCTOR: cannot load '" << file << "': " << e.what() << std::endl;
+		cli_status = 2;
+		return false;
+	}
+	std::cout << "DOCTOR: loaded save " << file << std::endl;
+	return true;
+}
+
+void Game_doctor::cli_tick(uint32 ticks) {
+	if (!cli_has_actions()) {
+		return;
+	}
+	if (!cli_started) {
+		cli_started = true;
+		cli_start   = ticks;
+		std::cout << "DOCTOR: actions " << (opt_at_exit ? "at exit" : "in " + std::to_string(opt_delay) + " ms") << ", watchdog "
+				  << opt_timeout << " s" << std::endl;
+		// A modal loop runs its own event loop and may never come back
+		// here, so end the process from a watchdog thread.
+		const int limit = opt_timeout;
+		std::thread([limit]() {
+			std::this_thread::sleep_for(std::chrono::seconds(limit));
+			std::cerr << "DOCTOR: still running after " << limit << " s, forcing exit" << std::endl;
+			std::_Exit(124);
+		}).detach();
+	}
+	if (opt_at_exit || cli_ran || ticks - cli_start < static_cast<uint32>(std::max(opt_delay, 0))) {
+		return;
+	}
+	run_cli_actions();
+	quitting_time = QUIT_TIME_YES;
+}
+
+void Game_doctor::cli_at_exit() {
+	if (opt_at_exit && cli_has_actions() && !cli_ran) {
+		run_cli_actions();
+	}
+}
+
+void Game_doctor::run_cli_actions() {
+	cli_ran = true;
+	if (!opt_save.empty()) {
+		std::string err;
+		if (write_save(opt_save, "Doctor fixture", &err)) {
+			std::cout << "DOCTOR: saved " << opt_save << std::endl;
+		} else {
+			std::cout << "DOCTOR: save failed: " << err << std::endl;
+			cli_status = 2;
+		}
+	}
+	if (!opt_dump.empty()) {
+		std::string err;
+		if (write_dump(opt_dump, &err, opt_checkup)) {
+			std::cout << "DOCTOR: dump written to " << opt_dump << std::endl;
+		} else {
+			std::cout << "DOCTOR: dump failed: " << err << std::endl;
+			cli_status = 2;
+		}
+	}
+	if (opt_checkup) {
+		const auto findings = run_checkup();
+		std::cout << "DOCTOR-CHECKUP: " << findings.size() << " findings" << std::endl;
+		bool serious = false;
+		for (const auto& finding : findings) {
+			std::cout << "DOCTOR-FINDING " << finding.severity << ' ' << finding.id << ": " << one_line(finding.message)
+					  << std::endl;
+			serious = serious || finding.severity == "error" || finding.severity == "warning";
+		}
+		if (serious && cli_status == 0) {
+			cli_status = 3;
+		}
+	}
+	std::cout << "DOCTOR: done, exit status " << cli_status << std::endl;
+}
+
+int Game_doctor::exit_status() const {
+	return cli_status;
 }
