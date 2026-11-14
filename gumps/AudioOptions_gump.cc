@@ -630,6 +630,8 @@ AudioOptions_gump::AudioOptions_gump() : Modal_gump(nullptr, -1) {
 }
 
 void AudioOptions_gump::save_settings() {
+	save_cancelled = false;
+
 	int           track_playing = -1;
 	bool          looping       = false;
 	MyMidiPlayer* midi          = Audio::get_ptr()->get_midi();
@@ -654,6 +656,7 @@ void AudioOptions_gump::save_settings() {
 													  + ((" \"" + Game::get_modtitle() + "\" ") + Strings::requiresDigitalMusic_())
 													  + "\n" + Strings::Disableanyway_();
 						if (!Yesno_gump::ask(warning_message.c_str(), nullptr, "TINY_BLACK_FONT")) {
+							save_cancelled = true;
 							return;
 						}
 					}

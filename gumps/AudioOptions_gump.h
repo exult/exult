@@ -86,6 +86,8 @@ private:
 #ifdef ENABLE_MIDISFX
 	int midi_state = -1;
 #endif
+	// The last save_settings() stopped at the "Disable anyway?" question.
+	bool        save_cancelled = false;
 	bool        have_config_pack, have_roland_pack, have_blaster_pack, have_midi_pack, have_custom_pack;
 	std::string sfx_custompack;
 	std::string configpack, rolandpack, blasterpack, midipack;
@@ -113,6 +115,12 @@ public:
 
 	void load_settings();
 	void save_settings();
+
+	// The last save_settings() wrote nothing (the user said No).
+	bool save_was_cancelled() const {
+		return save_cancelled;
+	}
+
 	void cancel();
 	void help();
 	void mixer();

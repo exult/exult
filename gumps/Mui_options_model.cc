@@ -572,9 +572,17 @@ void Mui_options_model::apply() {
 		gump.reset();
 		create();
 		break;
-	case Tab::audio:
-		static_cast<AudioOptions_gump*>(g)->save_settings();
+	case Tab::audio: {
+		auto* audio = static_cast<AudioOptions_gump*>(g);
+		audio->save_settings();
+		if (audio->save_was_cancelled()) {
+			// Nothing was written: keep the changes pending, as the
+			// classic gump keeps them for its next Apply.
+			refresh();
+			return;
+		}
 		break;
+	}
 	case Tab::engine:
 		static_cast<GameEngineOptions_gump*>(g)->save_settings();
 		break;
