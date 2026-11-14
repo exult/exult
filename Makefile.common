@@ -162,6 +162,14 @@ GUMPS_OBJS:= \
 	gumps/Gamemenu_gump.o \
 	gumps/GameDisplayOptions_gump.o \
 	gumps/Mixer_gump.o \
+	gumps/Mui_font.o \
+	gumps/Mui_game_menu.o \
+	gumps/Mui_painter.o \
+	gumps/Mui_router.o \
+	gumps/Mui_selftest.o \
+	gumps/Mui_theme.o \
+	gumps/Mui_widgets.o \
+	gumps/Mui_window.o \
 	gumps/Modal_gump.o \
 	gumps/Gump.o \
 	gumps/Gump_button.o \
@@ -588,6 +596,8 @@ gumps/Gump.o : gumps/Gump.cc $(EXULT_BG_FLX) $(EXULT_SI_FLX)
 gumps/GameDisplayOptions_gump.o : gumps/GameDisplayOptions_gump.cc $(EXULT_FLX)
 
 gumps/Mixer_gump.o : gumps/Mixer_gump.cc $(EXULT_FLX)
+gumps/Mui_font.o : gumps/Mui_font.cc $(EXULT_FLX)
+gumps/Mui_theme.o : gumps/Mui_theme.cc $(EXULT_FLX)
 gumps/ItemMenu_gump.o : gumps/ItemMenu_gump.cc $(EXULT_FLX)
 
 gumps/InputOptions_gump.o : gumps/InputOptions_gump.cc $(EXULT_FLX)

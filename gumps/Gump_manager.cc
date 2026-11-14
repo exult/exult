@@ -1125,6 +1125,9 @@ bool Gump_manager::do_modal_gump(
 		// own paint() calls (made while handling the event) otherwise land
 		// directly in the game window as an unscaled duplicate while the scaled
 		// overlay layer stays stale (looking like the click "did nothing").
+		if (modal_frame_hook) {
+			modal_frame_hook(gump);
+		}
 		const bool ran = gump->run();
 		if (ran || gwin->is_dirty() || got_event) {
 			gwin->paint();    // Paint each cycle.

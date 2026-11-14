@@ -34,6 +34,7 @@
 #include "Face_stats.h"
 #include "Gump_button.h"
 #include "Gump_manager.h"
+#include "Mui_selftest.h"
 #include "Scroll_gump.h"
 #include "ShortcutBar_gump.h"
 #include "U7file.h"
@@ -1385,6 +1386,7 @@ static void Handle_events() {
 		while (!quitting_time && SDL_PollEvent(&event)) {
 			Handle_event(event);
 		}
+		Mui_selftest::tick(ticks);
 
 		// Animate unless dormant.
 		if (gwin->have_focus() && !dragging) {

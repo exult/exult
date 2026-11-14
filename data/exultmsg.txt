@@ -1140,3 +1140,32 @@
 0xB18:Lightning
 0xB19:Single light
 0xB1A:Many lights
+# Themed menus (gumps/Mui_*.cc)
+0xC01:Ultima
+0xC02:Modern
+#MENU_STYLE key action
+0xC03:Cycle menu style
+0xC04:Menu style: 
+0xC05:Classic
+0xC06:Style
+0xC07:Close
+0xC08:Tab and the arrow keys move, Enter selects, Esc closes.
+0xC09:OK
+0xC0A:Cancel
+# Game menu
+0xC10:Game Menu
+0xC11:Return to Game
+0xC12:Journey Log
+0xC13:Options
+0xC14:Cheats
+0xC15:Quit
+0xC16:Close the menu and carry on with your journey.
+0xC17:Save your journey or load an earlier one.
+0xC18:Video, audio, gameplay and control settings.
+0xC19:Open the cheat tools (cheats are enabled).
+0xC1A:Leave Exult.
+0xC1B:Choose the look of Exult's menus: Ultima or Modern.
+0xC1C:Close this window.
+0xC1D:Back
+0xC1E:Return to the game menu.
+0xC1F:Opens the classic settings screen.

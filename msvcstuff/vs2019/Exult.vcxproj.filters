@@ -746,6 +746,30 @@
     <ClCompile Include="..\..\gumps\Mixer_gump.cc">
       <Filter>gumps</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\gumps\Mui_font.cc">
+      <Filter>gumps</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\gumps\Mui_game_menu.cc">
+      <Filter>gumps</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\gumps\Mui_painter.cc">
+      <Filter>gumps</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\gumps\Mui_router.cc">
+      <Filter>gumps</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\gumps\Mui_selftest.cc">
+      <Filter>gumps</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\gumps\Mui_theme.cc">
+      <Filter>gumps</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\gumps\Mui_widgets.cc">
+      <Filter>gumps</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\gumps\Mui_window.cc">
+      <Filter>gumps</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\gumps\Slider_widget.cc">
       <Filter>gumps</Filter>
     </ClCompile>
@@ -1508,6 +1532,30 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\gumps\Mixer_gump.h">
+      <Filter>gumps</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\gumps\Mui_font.h">
+      <Filter>gumps</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\gumps\Mui_game_menu.h">
+      <Filter>gumps</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\gumps\Mui_painter.h">
+      <Filter>gumps</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\gumps\Mui_router.h">
+      <Filter>gumps</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\gumps\Mui_selftest.h">
+      <Filter>gumps</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\gumps\Mui_theme.h">
+      <Filter>gumps</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\gumps\Mui_widgets.h">
+      <Filter>gumps</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\gumps\Mui_window.h">
       <Filter>gumps</Filter>
     </ClInclude>
     <ClInclude Include="..\..\gumps\Slider_widget.h">
