@@ -192,7 +192,7 @@ void Gump::set_pos(int newx, int newy) {    // Set new spot on screen.
  *  from gump_info.txt, if it has them.
  */
 
-void Gump::read_gump_info(int shnum, TileRect& area, int& checkx, int& checky) {
+void Gump::read_gump_info(int shnum, TileRect& area, int& checkx, int& checky, bool* check_tab) {
 	const Gump_info* info = Gump_info::get_gump_info(shnum);
 	if (info) {
 		if (info->has_area) {
@@ -204,21 +204,25 @@ void Gump::read_gump_info(int shnum, TileRect& area, int& checkx, int& checky) {
 		if (info->has_checkmark) {
 			checkx = info->checkmark_x;
 			checky = info->checkmark_y;
+			if (check_tab) {
+				*check_tab = info->checkmark_tab != 0;
+			}
 		}
 	}
 }
 
 void Gump::set_object_area(TileRect area, int checkx, int checky, bool set_check) {
 	// Try to read container area and checkmark position from gump_info.txt
+	bool check_tab = false;
 	if (get_shapenum() >= 0 && get_shapefile() == SF_GUMPS_VGA) {
-		read_gump_info(get_shapenum(), area, checkx, checky);
+		read_gump_info(get_shapenum(), area, checkx, checky, &check_tab);
 	}
 
 	object_area = area;
 	if (set_check && std::none_of(elems.begin(), elems.end(), [](auto elem) -> bool {
 			return dynamic_cast<Checkmark_button*>(elem) != nullptr;
 		})) {
-		elems.push_back(new Checkmark_button(this, checkx, checky));
+		elems.push_back(new Checkmark_button(this, checkx, checky, check_tab));
 	}
 
 	// Create dynamic elements from gump_info.txt configuration.
@@ -494,6 +498,13 @@ void check_elem_positions(Object_list& objects) {
  */
 
 void Gump::paint() {
+	// A checkmark's tab (gump_info.txt checkmark_pos) goes under the gump,
+	// so it looks like it hangs out from behind the frame.
+	for (auto* elem : elems) {
+		if (auto* check = dynamic_cast<Checkmark_button*>(elem)) {
+			check->paint_tab();
+		}
+	}
 	// Paint the gump itself.
 	if (get_shape()) {
 		paint_shape(x, y);
@@ -600,6 +611,11 @@ bool Gump::has_point(int sx, int sy) const {
 		if (w && w->on_widget(sx, sy)) {
 			return true;
 		}
+		// A checkmark's tab is part of the gump: clicking it drags the gump.
+		const auto* check = dynamic_cast<const Checkmark_button*>(w);
+		if (check && check->on_tab(sx, sy)) {
+			return true;
+		}
 	}
 	return false;
 }
@@ -614,8 +630,18 @@ TileRect Gump::get_rect() const {
 	if (!s) {
 		return TileRect(0, 0, 0, 0);
 	}
-
-	return TileRect(x - s->get_xleft(), y - s->get_yabove(), s->get_width(), s->get_height());
+	TileRect rect(x - s->get_xleft(), y - s->get_yabove(), s->get_width(), s->get_height());
+	// Include a checkmark's tab, should it stick out of the gump's art.
+	for (const auto* w : elems) {
+		const auto* check = dynamic_cast<const Checkmark_button*>(w);
+		if (check) {
+			const TileRect tab = check->get_tab_rect();
+			if (tab.w > 0) {
+				rect = rect.add(tab);
+			}
+		}
+	}
+	return rect;
 }
 
 bool Gump::isOffscreen(bool partially) const {

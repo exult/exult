@@ -367,6 +367,7 @@ public:
 	int  checkmark_x;
 	int  checkmark_y;
 	int  checkmark_shape;
+	int  checkmark_tab;    // 1: paint Exult's checkmark tab behind it (0: none)
 	bool has_area;
 	bool has_checkmark;
 	bool is_checkmark;

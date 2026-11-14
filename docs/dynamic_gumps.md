@@ -734,8 +734,9 @@ All configuration is stored in `gump_info.txt`, reusing the existing file and `R
 
 ### checkmark_pos
 ```
-:gump_shape/x/y/checkmark_shape
+:gump_shape/x/y/checkmark_shape[/tab]
 ```
+`tab` is optional (defaults to 0). In the original games the close checkmark sits on a coloured strip that is part of each container's art. For gump art with no strip of its own, `1` paints Exult's checkmark tab (`exult.flx` `checkmark_background`, the green tab on Exult's menus) centred behind the checkmark. It is painted before the gump's shape, so the gump's art covers any overlap and the tab seems to hang out from behind the frame. The tab counts as part of the gump: `Gump::has_point()` and `Gump::get_rect()` include it, so clicking it drags the gump, and only the checkmark itself closes it. Exult Studio keeps the field when it saves `gump_info.txt`. The tab is drawn by `Gump::paint()`, so gumps that override `paint()` without calling it get no tab.
 
 ### special
 ```

@@ -539,7 +539,12 @@ void Shapes_vga_file::Read_Gumpinf_text_data_file(bool editing, Exult_Game game_
 			ginfo.checkmark_x     = ReadInt(in);
 			ginfo.checkmark_y     = ReadInt(in);
 			ginfo.checkmark_shape = ReadInt(in);
-			ginfo.has_checkmark   = true;
+			// Optional tab field (default 0: no tab)
+			ginfo.checkmark_tab = 0;
+			if (in.peek() != '\n' && in.peek() != '\r' && !in.eof()) {
+				ginfo.checkmark_tab = ReadInt(in, 0);
+			}
+			ginfo.has_checkmark = true;
 			if (patch) {
 				ginfo.set_checkmark_from_patch(true);
 			}

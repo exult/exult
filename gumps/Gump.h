@@ -157,7 +157,7 @@ protected:
 	// Put obj's hotspot at a screen point, kept inside object_area.
 	void place_object(Game_object* obj, int sx, int sy);
 	// Apply gump_info.txt's container area and checkmark, if any.
-	static void read_gump_info(int shnum, TileRect& area, int& checkx, int& checky);
+	static void read_gump_info(int shnum, TileRect& area, int& checkx, int& checky, bool* check_tab = nullptr);
 
 public:
 	const Gump_elems& get_elems() const {

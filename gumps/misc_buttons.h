@@ -27,11 +27,17 @@ class Actor;
  *  A checkmark for closing its parent:
  */
 class Checkmark_button : public Gump_button {
+	// Optional tab behind the checkmark (Exult's checkmark background from
+	// exult.flx), for gump art with no tab of its own. See gump_info.txt
+	// checkmark_pos. Painted by Gump::paint() under the gump's shape.
+	bool    has_tab;
+	ShapeID tab;
+
 public:
-	Checkmark_button(Gump* par, int px, int py);
+	Checkmark_button(Gump* par, int px, int py, bool with_tab = false);
 
 	Gump_widget* clone(Gump* par) override {
-		return new Checkmark_button(par, x, y);
+		return new Checkmark_button(par, x, y, has_tab);
 	}
 
 	// What to do when 'clicked':
@@ -40,6 +46,13 @@ public:
 	bool is_checkmark() const override {
 		return true;
 	}
+
+	// The tab, centred on the checkmark; an empty rect without a tab.
+	TileRect get_tab_rect() const;
+	void     paint_tab();
+	// Is a screen point on the tab? Not a click on the button: the tab
+	// belongs to the gump, so clicking it drags the gump.
+	bool on_tab(int mx, int my) const;
 };
 
 /*

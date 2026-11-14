@@ -373,8 +373,11 @@ void Shapes_vga_file::Write_Gumpinf_text_data_file(Exult_Game game) {
 	if (!checkmark_data.empty()) {
 		out << "%%section checkmark_pos" << std::endl;
 		for (const auto& [shapenum, info] : checkmark_data) {
-			out << ":" << shapenum << "/" << info->checkmark_x << "/" << info->checkmark_y << "/" << info->checkmark_shape
-				<< std::endl;
+			out << ":" << shapenum << "/" << info->checkmark_x << "/" << info->checkmark_y << "/" << info->checkmark_shape;
+			if (info->checkmark_tab != 0) {
+				out << "/" << info->checkmark_tab;
+			}
+			out << std::endl;
 		}
 		out << "%%endsection" << std::endl;
 	}

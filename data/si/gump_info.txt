@@ -84,6 +84,9 @@
 # Gump::set_object_area uses this to override the default values defined in the c++ code
 # Format:
 # Shape in :Gumps.vga/position X/position Y/checkmark shape
+# [/tab]: optional; 1 paints Exult's checkmark tab (exult.flx, as on
+# Exult's menus) centred behind the checkmark and under the gump, for
+# art with no tab of its own. 0 or absent: no tab.
 
 # box
 :0/24/44/2
@@ -154,8 +157,9 @@
 # magic scroll
 :65/24/56/2
 
-# shop (book): Close, bottom-left of the left page
-:27/59/141/2
+# shop (book): Close, on a tab outside the book's bottom-left corner,
+# in the book art's empty left margin like the original windows
+:27/25/135/2/1
 
 %%endsection
 
