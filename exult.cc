@@ -2326,6 +2326,10 @@ static void Handle_event(SDL_Event& event) {
 	}
 }
 
+// Test driver hook (see exult.h); null unless the menu test driver runs.
+void (*Get_click_frame_hook)(Paintable* paint) = nullptr;
+// What the current Get_click paints over everything (passed to the hook).
+static Paintable* click_paint = nullptr;
 /*
  *  Wait for a click, or optionally, a kbd. chr.
  *
@@ -2347,6 +2351,9 @@ static bool Get_click(
 
 		const uint32 ticks = SDL_GetTicks();
 		Game::set_ticks(ticks);
+		if (Get_click_frame_hook) {
+			Get_click_frame_hook(click_paint);
+		}
 		Mouse::mouse()->hide();    // Turn off mouse.
 		Mouse::mouse_update = false;
 
@@ -2512,7 +2519,10 @@ bool Get_click(
 	Mouse::mouse()->show();
 	gwin->show(true);    // Want to see new mouse.
 	gwin->get_tqueue()->pause(Game::get_ticks());
-	const bool ret = Get_click(x, y, chr, drag_ok, rotate_colors);
+	Paintable* const save_paint = click_paint;
+	click_paint                 = paint;
+	const bool ret              = Get_click(x, y, chr, drag_ok, rotate_colors);
+	click_paint                 = save_paint;
 	gwin->get_tqueue()->resume(Game::get_ticks());
 	Mouse::mouse()->set_shape(saveshape);
 	return ret;

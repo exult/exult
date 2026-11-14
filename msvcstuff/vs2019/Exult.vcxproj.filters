@@ -755,6 +755,9 @@
     <ClCompile Include="..\..\gumps\Mui_config_meta.cc">
       <Filter>gumps</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\gumps\Mui_dialogue_test.cc">
+      <Filter>gumps</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\gumps\Mui_font.cc">
       <Filter>gumps</Filter>
     </ClCompile>
@@ -1559,6 +1562,9 @@
       <Filter>gumps</Filter>
     </ClInclude>
     <ClInclude Include="..\..\gumps\Mui_config_meta.h">
+      <Filter>gumps</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\gumps\Mui_dialogue_test.h">
       <Filter>gumps</Filter>
     </ClInclude>
     <ClInclude Include="..\..\gumps\Mui_font.h">

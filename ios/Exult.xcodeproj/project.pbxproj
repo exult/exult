@@ -41,6 +41,7 @@
 		53752C3E4B2573A7976788FF /* Mui_cheats.cc in Sources */ = {isa = PBXBuildFile; fileRef = FCF19B9D7E90760DDB9CCF02 /* Mui_cheats.cc */; };
 		EBA86E0A69734CB47CC4FB84 /* Mui_config_editor.cc in Sources */ = {isa = PBXBuildFile; fileRef = 414278C9663F119132D75AA7 /* Mui_config_editor.cc */; };
 		EF42F9A24833BD791AD80390 /* Mui_config_meta.cc in Sources */ = {isa = PBXBuildFile; fileRef = 2CC73053F74BD48351E8B2A5 /* Mui_config_meta.cc */; };
+		23E0095FE286B08E09225CB9 /* Mui_dialogue_test.cc in Sources */ = {isa = PBXBuildFile; fileRef = DD0453C33A2BB208ECF36C8C /* Mui_dialogue_test.cc */; };
 		5FD5D30D88C6600DFC1A53FD /* Mui_font.cc in Sources */ = {isa = PBXBuildFile; fileRef = 611E30B3B7684F69A7A42EB6 /* Mui_font.cc */; };
 		85BF55C2BB60BDDFA9C8D581 /* Mui_game_menu.cc in Sources */ = {isa = PBXBuildFile; fileRef = AF5DF8C5F2ABA80D03116866 /* Mui_game_menu.cc */; };
 		0F48ACC8A99804CB91D0CFBC /* Mui_journey_log.cc in Sources */ = {isa = PBXBuildFile; fileRef = 4723FFEBB5EB29FF620BEDA2 /* Mui_journey_log.cc */; };
@@ -403,6 +404,8 @@
 		5B3D0649B8544166297ECD7C /* Mui_config_editor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Mui_config_editor.h; path = ../gumps/Mui_config_editor.h; sourceTree = "<group>"; };
 		2CC73053F74BD48351E8B2A5 /* Mui_config_meta.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Mui_config_meta.cc; path = ../gumps/Mui_config_meta.cc; sourceTree = "<group>"; };
 		54550AC83F6603AC2906616E /* Mui_config_meta.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Mui_config_meta.h; path = ../gumps/Mui_config_meta.h; sourceTree = "<group>"; };
+		DD0453C33A2BB208ECF36C8C /* Mui_dialogue_test.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Mui_dialogue_test.cc; path = ../gumps/Mui_dialogue_test.cc; sourceTree = "<group>"; };
+		57BA681CC70430F140E53827 /* Mui_dialogue_test.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Mui_dialogue_test.h; path = ../gumps/Mui_dialogue_test.h; sourceTree = "<group>"; };
 		611E30B3B7684F69A7A42EB6 /* Mui_font.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Mui_font.cc; path = ../gumps/Mui_font.cc; sourceTree = "<group>"; };
 		2CD74A480DCED32A7A999BFA /* Mui_font.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Mui_font.h; path = ../gumps/Mui_font.h; sourceTree = "<group>"; };
 		AF5DF8C5F2ABA80D03116866 /* Mui_game_menu.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Mui_game_menu.cc; path = ../gumps/Mui_game_menu.cc; sourceTree = "<group>"; };
@@ -1502,6 +1505,8 @@
 				5B3D0649B8544166297ECD7C /* Mui_config_editor.h */,
 				2CC73053F74BD48351E8B2A5 /* Mui_config_meta.cc */,
 				54550AC83F6603AC2906616E /* Mui_config_meta.h */,
+				DD0453C33A2BB208ECF36C8C /* Mui_dialogue_test.cc */,
+				57BA681CC70430F140E53827 /* Mui_dialogue_test.h */,
 				611E30B3B7684F69A7A42EB6 /* Mui_font.cc */,
 				2CD74A480DCED32A7A999BFA /* Mui_font.h */,
 				AF5DF8C5F2ABA80D03116866 /* Mui_game_menu.cc */,
@@ -2057,6 +2062,7 @@
 				53752C3E4B2573A7976788FF /* Mui_cheats.cc in Sources */,
 				EBA86E0A69734CB47CC4FB84 /* Mui_config_editor.cc in Sources */,
 				EF42F9A24833BD791AD80390 /* Mui_config_meta.cc in Sources */,
+				23E0095FE286B08E09225CB9 /* Mui_dialogue_test.cc in Sources */,
 				5FD5D30D88C6600DFC1A53FD /* Mui_font.cc in Sources */,
 				85BF55C2BB60BDDFA9C8D581 /* Mui_game_menu.cc in Sources */,
 				0F48ACC8A99804CB91D0CFBC /* Mui_journey_log.cc in Sources */,

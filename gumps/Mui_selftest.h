@@ -21,8 +21,11 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "common_types.h"
 
+#include <string>
+
 class Modal_gump;
 class Mui_window;
+class Paintable;
 
 /*
  *  Headless test driver for the themed menus. Inert unless the environment
@@ -48,6 +51,21 @@ public:
 	// Logs it and, when the script asked for it, queues Escape so it
 	// returns straight away.
 	static void on_classic_screen(const char* what);
+	// From the Get_click loop (Get_click_frame_hook): steps the script only
+	// while a conversation waits for a click or key.
+	static void on_conversation_wait(Paintable* paint);
+	// From the themed conversation's wait loop.
+	static void on_dialogue_frame();
+	// Helpers for the command files (Mui_dialogue_test).
+	// Print "MUI-TEST PASS what" or "MUI-TEST FAIL what got got".
+	static void report(bool ok, const std::string& what, const std::string& got);
+	// Queue a key press (SDL_Keycode, SDL_Keymod).
+	static void press_key(int key, int mod);
+	// Queue a click / a wheel turn at SDL window coordinates.
+	static void click_window(float wx, float wy, int button);
+	static void wheel_window(float wx, float wy, int dy);
+	// Run the next command after ms milliseconds.
+	static void set_wait(uint32 ms);
 };
 
 #endif

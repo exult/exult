@@ -96,6 +96,35 @@ public:
 
 	static bool noface;
 
+	// Test support (menu test driver): the answer chosen last.
+	std::string last_choice;
+	void        note_choice(int index);
+
+	// What the test driver can check about the conversation.
+	struct Conv_debug {
+		std::string style;          // "classic" or the theme name.
+		int         active = -1;    // Slot of the face that spoke last.
+
+		struct Slot {
+			int  shape    = -1;
+			int  frame    = -1;
+			int  npc_num  = -1;
+			bool used     = false;
+			bool drawable = false;    // Has a face frame and is not hidden.
+		};
+
+		Slot                     slots[2];
+		std::string              page;    // Text shown for the active face.
+		std::string              wait;    // "choice", "continue" or "none".
+		std::vector<std::string> answers;
+		std::string              last_choice;
+	};
+
+	void describe(Conv_debug& out) const;
+	// Write the conv and convbg layer buffers: "EXCV", then per layer a
+	// uint32 width and height and the index bytes (0x0 if missing).
+	bool dump_layers(const char* path) const;
+
 private:
 	void     set_face_rect(Npc_face_info* info, Npc_face_info* prev);
 	TileRect get_conv_rect() const;

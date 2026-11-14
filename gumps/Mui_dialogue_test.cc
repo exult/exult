@@ -1,0 +1,231 @@
+/*
+Copyright (C) 2026 The Exult Team
+
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+*/
+
+#ifdef HAVE_CONFIG_H
+#	include <config.h>
+#endif
+
+#include "Mui_dialogue_test.h"
+
+#include "Mui_selftest.h"
+#include "actors.h"
+#include "conversation.h"
+#include "gamewin.h"
+#include "ucmachine.h"
+
+#include <cctype>
+#include <cstdlib>
+#include <iostream>
+#include <sstream>
+#include <string>
+
+namespace {
+	// The keys that choose answers 0, 1, 2 ... (Usecode_internal::get_user_choice_num).
+	constexpr const char option_keys[] = "123456789abcdefghijklmnopqrstuvwxyz";
+
+	Conversation* conversation() {
+		Usecode_machine* uc = Game_window::get_instance()->get_usecode();
+		return uc ? uc->get_conversation() : nullptr;
+	}
+
+	bool same_text(const std::string& a, const std::string& b) {
+		if (a.size() != b.size()) {
+			return false;
+		}
+		for (size_t i = 0; i < a.size(); i++) {
+			if (std::tolower(static_cast<unsigned char>(a[i])) != std::tolower(static_cast<unsigned char>(b[i]))) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+	bool all_digits(const std::string& s) {
+		if (s.empty()) {
+			return false;
+		}
+		for (const char c : s) {
+			if (!std::isdigit(static_cast<unsigned char>(c))) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+	// NPC by number, else the first NPC whose name matches (any case).
+	Actor* find_npc(const std::string& spec) {
+		Game_window* gwin = Game_window::get_instance();
+		if (all_digits(spec)) {
+			return gwin->get_npc(std::atol(spec.c_str()));
+		}
+		for (int i = 0; i < gwin->get_num_npcs(); i++) {
+			Actor* npc = gwin->get_npc(i);
+			if (npc && same_text(npc->get_npc_name(), spec)) {
+				return npc;
+			}
+		}
+		return nullptr;
+	}
+
+	std::string join(const std::vector<std::string>& items) {
+		if (items.empty()) {
+			return "-";
+		}
+		std::string out;
+		for (const auto& item : items) {
+			if (!out.empty()) {
+				out += '|';
+			}
+			out += item;
+		}
+		return out;
+	}
+
+	const char* face_state(const Conversation::Conv_debug::Slot& slot) {
+		if (!slot.used) {
+			return "none";
+		}
+		return slot.drawable ? "shown" : "faceless";
+	}
+
+	void log_conversation(const Conversation::Conv_debug& d) {
+		std::cout << "MUI-TEST info conv style " << d.style << " wait " << d.wait << " active " << d.active << std::endl;
+		for (int i = 0; i < 2; i++) {
+			const auto& s = d.slots[i];
+			std::cout << "MUI-TEST info conv face " << i << " " << face_state(s) << " shape " << s.shape << " frame " << s.frame
+					  << " npc " << s.npc_num << std::endl;
+		}
+		std::cout << "MUI-TEST info conv page \"" << d.page << "\"" << std::endl;
+		std::cout << "MUI-TEST info conv answers " << join(d.answers) << std::endl;
+		std::cout << "MUI-TEST info conv chosen \"" << d.last_choice << "\"" << std::endl;
+	}
+
+	void talk(const std::string& rest) {
+		Game_window*     gwin = Game_window::get_instance();
+		Usecode_machine* uc   = gwin->get_usecode();
+		Actor*           npc  = find_npc(rest);
+		if (!npc) {
+			Mui_selftest::report(false, "talk " + rest, "no such NPC");
+			return;
+		}
+		if (uc->get_num_faces_on_screen() > 0) {
+			Mui_selftest::report(false, "talk " + rest, "a conversation is open");
+			return;
+		}
+		std::cout << "MUI-TEST info talk " << rest << " (npc " << npc->get_npc_num() << ", usecode 0x" << std::hex
+				  << npc->get_usecode() << std::dec << ")" << std::endl;
+		const int ret = uc->call_usecode(npc->get_usecode(), npc, Usecode_machine::double_click);
+		std::cout << "MUI-TEST info talk " << rest << " returned " << ret << std::endl;
+	}
+
+	void call_usecode(const std::string& rest) {
+		Game_window*       gwin = Game_window::get_instance();
+		std::istringstream args(rest);
+		std::string        fn;
+		std::string        who;
+		args >> fn >> who;
+		char*      end = nullptr;
+		const long id  = std::strtol(fn.c_str(), &end, 0);
+		if (fn.empty() || !end || *end) {
+			Mui_selftest::report(false, "call-usecode " + rest, "bad function number");
+			return;
+		}
+		Game_object* item = gwin->get_main_actor();
+		if (!who.empty()) {
+			item = find_npc(who);
+			if (!item) {
+				Mui_selftest::report(false, "call-usecode " + rest, "no such NPC");
+				return;
+			}
+		}
+		const int ret = gwin->get_usecode()->call_usecode(int(id), item, Usecode_machine::double_click);
+		std::cout << "MUI-TEST info call-usecode " << rest << " returned " << ret << std::endl;
+	}
+
+	void choose_key(const std::string& text, const Conversation::Conv_debug& d) {
+		for (size_t i = 0; i < d.answers.size(); i++) {
+			if (d.answers[i] != text) {
+				continue;
+			}
+			if (i >= sizeof(option_keys) - 1) {
+				Mui_selftest::report(false, "conv-choose-key " + text, "no key for answer " + std::to_string(i));
+				return;
+			}
+			std::cout << "MUI-TEST info conv-choose-key " << text << " = " << option_keys[i] << std::endl;
+			Mui_selftest::press_key(option_keys[i], 0);
+			return;
+		}
+		Mui_selftest::report(false, "conv-choose-key " + text, join(d.answers));
+	}
+}    // namespace
+
+bool Mui_dialogue_test::run(const std::string& cmd, const std::string& rest) {
+	if (cmd == "talk") {
+		talk(rest);
+		return true;
+	}
+	if (cmd == "call-usecode") {
+		call_usecode(rest);
+		return true;
+	}
+	if (cmd.compare(0, 5, "conv-") != 0 && cmd.compare(0, 12, "expect-conv-") != 0) {
+		return false;
+	}
+	Conversation* conv = conversation();
+	if (!conv) {
+		Mui_selftest::report(false, cmd + " " + rest, "no conversation");
+		return true;
+	}
+	Conversation::Conv_debug d;
+	conv->describe(d);
+	if (cmd == "conv-dump") {
+		const bool ok = conv->dump_layers(rest.c_str());
+		std::cout << "MUI-TEST info conv-dump " << rest << std::endl;
+		if (!ok) {
+			Mui_selftest::report(false, "conv-dump " + rest, "write error");
+		}
+	} else if (cmd == "conv-log") {
+		log_conversation(d);
+	} else if (cmd == "conv-choose-key") {
+		choose_key(rest, d);
+	} else if (cmd == "expect-conv-style") {
+		Mui_selftest::report(d.style == rest, "conv style " + rest, d.style);
+	} else if (cmd == "expect-conv-wait") {
+		Mui_selftest::report(d.wait == rest, "conv wait " + rest, d.wait);
+	} else if (cmd == "expect-conv-faces") {
+		const int got = Game_window::get_instance()->get_usecode()->get_num_faces_on_screen();
+		Mui_selftest::report(got == std::atoi(rest.c_str()), "conv faces " + rest, std::to_string(got));
+	} else if (cmd == "expect-conv-face") {
+		std::istringstream args(rest);
+		int                slot = -1;
+		std::string        want;
+		args >> slot >> want;
+		const std::string got = slot >= 0 && slot < 2 ? face_state(d.slots[slot]) : "bad slot";
+		Mui_selftest::report(got == want, "conv face " + rest, got);
+	} else if (cmd == "expect-conv-page") {
+		Mui_selftest::report(d.page.find(rest) != std::string::npos, "conv page has " + rest, "\"" + d.page + "\"");
+	} else if (cmd == "expect-conv-answers") {
+		const std::string got = join(d.answers);
+		Mui_selftest::report(got == rest, "conv answers " + rest, got);
+	} else if (cmd == "expect-conv-chosen") {
+		Mui_selftest::report(d.last_choice == rest, "conv chosen " + rest, "\"" + d.last_choice + "\"");
+	} else {
+		Mui_selftest::report(false, "command " + cmd + " " + rest, "unknown conversation command");
+	}
+	return true;
+}

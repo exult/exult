@@ -165,6 +165,7 @@ GUMPS_OBJS:= \
 	gumps/Mui_cheats.o \
 	gumps/Mui_config_editor.o \
 	gumps/Mui_config_meta.o \
+	gumps/Mui_dialogue_test.o \
 	gumps/Mui_font.o \
 	gumps/Mui_game_menu.o \
 	gumps/Mui_journey_log.o \

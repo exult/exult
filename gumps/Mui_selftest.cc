@@ -26,12 +26,14 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "Gamemenu_gump.h"
 #include "Gump_button.h"
 #include "Gump_manager.h"
+#include "Mui_dialogue_test.h"
 #include "Mui_journey_log.h"
 #include "Mui_router.h"
 #include "Mui_window.h"
 #include "Newfile_gump.h"
 #include "Yesno_gump.h"
 #include "cheat.h"
+#include "conversation.h"
 #include "exult.h"
 #include "fnames.h"
 #include "game.h"
@@ -360,7 +362,8 @@ namespace {
 		std::istringstream args(rest);
 		std::cout << "MUI-TEST info > " << line << std::endl;
 		Game_window* gwin = Game_window::get_instance();
-		if (cmd == "wait") {
+		if (Mui_dialogue_test::run(cmd, rest)) {
+		} else if (cmd == "wait") {
 			int ms = 0;
 			args >> ms;
 			st.next_time = SDL_GetTicks() + uint32(std::max(0, ms));
@@ -731,6 +734,7 @@ void Mui_selftest::tick(uint32 ticks) {
 		return;
 	}
 	Gump_manager::modal_frame_hook = &Mui_selftest::on_modal_frame;
+	Get_click_frame_hook           = &Mui_selftest::on_conversation_wait;
 	step(nullptr, nullptr);
 	if (st.done && quitting_time == QUIT_TIME_NO) {
 		quitting_time = QUIT_TIME_YES;
@@ -771,4 +775,51 @@ void Mui_selftest::forget(Mui_window* win) {
 	if (state().window == win) {
 		state().window = nullptr;
 	}
+}
+
+void Mui_selftest::on_conversation_wait(Paintable* paint) {
+	// Other Get_click users (targeting, number prompts) are left alone.
+	if (!state().enabled || dynamic_cast<Conversation*>(paint) == nullptr) {
+		return;
+	}
+	step(nullptr, nullptr);
+}
+
+void Mui_selftest::on_dialogue_frame() {
+	if (!state().enabled) {
+		return;
+	}
+	step(nullptr, nullptr);
+}
+
+void Mui_selftest::report(bool ok, const std::string& what, const std::string& got) {
+	expect(ok, what, got);
+}
+
+void Mui_selftest::press_key(int key, int mod) {
+	push_key(SDL_Keycode(key), SDL_Keymod(mod));
+}
+
+void Mui_selftest::click_window(float wx, float wy, int button) {
+	push_click(wx, wy, Uint8(button));
+}
+
+void Mui_selftest::wheel_window(float wx, float wy, int dy) {
+	SDL_Event e{};
+	e.type            = SDL_EVENT_MOUSE_WHEEL;
+	e.wheel.windowID  = SDL_GetWindowID(screen_window());
+	e.wheel.x         = 0;
+	e.wheel.y         = float(dy);
+	e.wheel.direction = SDL_MOUSEWHEEL_NORMAL;
+	e.wheel.mouse_x   = wx;
+	e.wheel.mouse_y   = wy;
+	e.wheel.timestamp = SDL_GetTicksNS();
+#if SDL_VERSION_ATLEAST(3, 2, 12)
+	e.wheel.integer_y = dy;
+#endif
+	SDL_PushEvent(&e);
+}
+
+void Mui_selftest::set_wait(uint32 ms) {
+	state().next_time = SDL_GetTicks() + ms;
 }

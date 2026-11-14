@@ -1715,6 +1715,7 @@ int Usecode_internal::get_user_choice_num() {
 	// Wait for valid choice.
 	while (choice_num < 0 || choice_num >= conv->get_num_answers());
 
+	conv->note_choice(choice_num);
 	conv->clear_avatar_choices();
 	// Store ->answer string.
 	user_choice = newstrdup(conv->get_answer(choice_num));

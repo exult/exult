@@ -39,6 +39,8 @@
 #include "tqueue.h"
 #include "useval.h"
 
+#include <fstream>
+
 using std::size_t;
 using std::string;
 
@@ -956,4 +958,86 @@ void Conversation::pop_answers() {
 	answers = answer_stack.front();
 	answer_stack.pop_front();
 	gwin->paint();    // Really just need to figure tbox.
+}
+
+/*
+ *  Remember the answer the user chose (for the test driver).
+ */
+void Conversation::note_choice(int index) {
+	if (index >= 0 && static_cast<size_t>(index) < answers.size()) {
+		last_choice = answers[index];
+	} else {
+		last_choice.clear();
+	}
+}
+
+/*
+ *  Describe the conversation for the test driver.
+ */
+void Conversation::describe(Conv_debug& out) const {
+	out.style  = "classic";
+	out.active = last_face_shown;
+	for (size_t i = 0; i < face_info.size(); i++) {
+		Conv_debug::Slot&    slot  = out.slots[i];
+		const Npc_face_info* finfo = face_info[i];
+		slot                       = Conv_debug::Slot();
+		if (!finfo) {
+			continue;
+		}
+		slot.used               = true;
+		slot.shape              = finfo->face_num;
+		slot.frame              = finfo->shape.get_framenum();
+		const Shape_frame* face = finfo->face_num >= 0 ? finfo->shape.get_shape() : nullptr;
+		slot.drawable           = face != nullptr && !finfo->no_show_face;
+	}
+	out.page.clear();
+	if (last_face_shown >= 0 && static_cast<size_t>(last_face_shown) < face_info.size() && face_info[last_face_shown]) {
+		out.page = face_info[last_face_shown]->cur_text;
+	}
+	bool pending = false;
+	for (const Npc_face_info* finfo : face_info) {
+		if (finfo && finfo->text_pending) {
+			pending = true;
+		}
+	}
+	out.wait        = choices_active ? "choice" : pending ? "continue" : "none";
+	out.answers     = answers;
+	out.last_choice = last_choice;
+}
+
+/*
+ *  Write the conversation layer buffers to a file (for the test driver):
+ *  "EXCV", then for the conv and the convbg layer a little-endian uint32
+ *  width and height followed by the index bytes, row by row (0x0 and no
+ *  bytes for a layer that does not exist).
+ */
+bool Conversation::dump_layers(const char* path) const {
+	std::ofstream out(path, std::ios::binary);
+	if (!out) {
+		return false;
+	}
+	out.write("EXCV", 4);
+	auto put32 = [&out](uint32 v) {
+		const char b[4]
+				= {static_cast<char>(v & 0xff), static_cast<char>((v >> 8) & 0xff), static_cast<char>((v >> 16) & 0xff),
+				   static_cast<char>((v >> 24) & 0xff)};
+		out.write(b, 4);
+	};
+	for (const int layer : {conv_layer, conv_bg_layer}) {
+		Image_buffer8* buf = layer >= 0 ? gwin->get_layer_ibuf(layer) : nullptr;
+		if (!buf) {
+			put32(0);
+			put32(0);
+			continue;
+		}
+		const unsigned int w = buf->get_width();
+		const unsigned int h = buf->get_height();
+		put32(w);
+		put32(h);
+		const unsigned char* bits = buf->get_bits();
+		for (unsigned int y = 0; y < h; y++) {
+			out.write(reinterpret_cast<const char*>(bits + static_cast<size_t>(y) * buf->get_line_width()), w);
+		}
+	}
+	return static_cast<bool>(out);
 }
