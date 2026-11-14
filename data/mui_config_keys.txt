@@ -21,6 +21,9 @@
 #                          engine starts again); takes effect after a
 #                          restart.
 #   description  one line in Australian English.
+#                A description starting with "Old " marks a legacy key that
+#                Exult converts at startup; the editor lists it only when
+#                it is present.
 #
 # Kept in step with the code by tools/mui/scan_config_keys.py: --update adds
 # keys found in the code with a TODO description, --check fails while a key

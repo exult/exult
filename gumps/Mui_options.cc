@@ -64,10 +64,6 @@ namespace {
 			return get_text_msg(0xC2C - msg_file_start);
 		}
 
-		static auto AdvancedTitle() {
-			return get_text_msg(0xC2D - msg_file_start);
-		}
-
 		static auto NoMatches() {
 			return get_text_msg(0xC2E - msg_file_start);
 		}
@@ -104,10 +100,6 @@ namespace {
 			return get_text_msg(0xC38 - msg_file_start);
 		}
 
-		static auto AdvancedText() {
-			return get_text_msg(0xC39 - msg_file_start);
-		}
-
 		static auto JumpHelp() {
 			return get_text_msg(0xC3A - msg_file_start);
 		}
@@ -118,7 +110,7 @@ namespace {
 	};
 
 	constexpr int num_model_tabs = int(Mui_options_model::Tab::count);
-	constexpr int advanced_tab   = num_model_tabs;    // Placeholder until the cfg editor.
+	constexpr int advanced_tab   = num_model_tabs;    // The exult.cfg editor.
 
 	// Remembered for the session.
 	int last_tab = 0;
@@ -261,6 +253,9 @@ namespace {
 
 Mui_options_window::Mui_options_window(const char* tab) : Mui_window(Strings::Options()) {
 	create_models();
+	editor    = std::make_unique<Mui_config_editor>(*this, [this](const std::string& focus_id) {
+        rebuild(focus_id);
+    });
 	tab_index = last_tab;
 	if (tab && *tab) {
 		for (int i = 0; i <= advanced_tab; i++) {
@@ -341,6 +336,10 @@ void Mui_options_window::build_title(Mui_box& bar) {
 					}
 				}
 			}
+			const auto keys = editor->search(needle);
+			if (!keys.empty()) {
+				jump_to_key(keys.front()->path);
+			}
 		});
 	};
 	if (!search.empty()) {
@@ -367,7 +366,7 @@ void Mui_options_window::build_footer(Mui_box& footer) {
         });
     });
 	reset->help    = Strings::ResetHelp();
-	reset->enabled = search.empty() && tab_index < num_model_tabs && models[size_t(tab_index)]->changed();
+	reset->enabled = search.empty() && (tab_index < num_model_tabs ? models[size_t(tab_index)]->changed() : editor->changed());
 	auto* cancel   = footer.add<Mui_button>("options.cancel", Strings::Cancel(), Mui_button::Style::secondary, [this] {
         post([this] {
             on_cancel();
@@ -404,9 +403,7 @@ void Mui_options_window::build(Mui_box& body) {
 }
 
 void Mui_options_window::build_advanced(Mui_box& body) {
-	body.add<Mui_section_header>(Strings::AdvancedTitle());
-	body.add<Mui_label>(Strings::AdvancedText(), Mui_font_role::body, Mui_colour::text_dim, true)->id
-			= "options.advanced.placeholder";
+	editor->build(body);
 }
 
 void Mui_options_window::build_page(Mui_box& body, int tab) {
@@ -530,6 +527,8 @@ void Mui_options_window::build_results(Mui_box& body) {
 			count += matches(*models[size_t(t)], r, needle) ? 1 : 0;
 		}
 	}
+	const auto keys = editor->search(needle);
+	count += int(keys.size());
 	auto* found = body.add<Mui_label>(
 			count ? std::to_string(count) + " " + Strings::SettingsFound() : std::string(Strings::NoMatches()), Mui_font_role::body,
 			Mui_colour::text_dim);
@@ -561,6 +560,21 @@ void Mui_options_window::build_results(Mui_box& body) {
 			}
 		}
 	}
+	// exult.cfg keys of the Advanced tab.
+	if (!keys.empty()) {
+		body.add<Mui_section_header>(Strings::Tab(advanced_tab));
+	}
+	for (const auto* e : keys) {
+		const std::string path = e->path;
+		auto* b   = body.add<Mui_button>("options.result.advanced." + path, path, Mui_button::Style::secondary, [this, path] {
+            post([this, path] {
+                jump_to_key(path);
+            });
+        });
+		b->fill_w = true;
+		b->help   = Strings::JumpHelp();
+		body.add<Help_label>(editor->description(*e), 8);
+	}
 }
 
 void Mui_options_window::jump_to(int tab, const std::string& id) {
@@ -569,6 +583,15 @@ void Mui_options_window::jump_to(int tab, const std::string& id) {
 	last_tab  = tab;
 	highlight = std::string("opt.") + tab_key(tab) + "." + id;
 	rebuild(highlight);
+}
+
+void Mui_options_window::jump_to_key(const std::string& path) {
+	search.clear();
+	highlight.clear();
+	tab_index = advanced_tab;
+	last_tab  = advanced_tab;
+	editor->reveal(path);
+	rebuild(Mui_config_editor::control_id(path));
 }
 
 /*
@@ -585,9 +608,19 @@ void Mui_options_window::apply_all() {
 		m.apply();
 		display_applied |= m.get_tab() == Model::Tab::display;
 	}
-	if (display_applied) {
+	// The pages may have written keys the Advanced tab shows.
+	editor->reload();
+	bool editor_wrote = false;
+	if (editor->changed() && !editor->apply(editor_wrote)) {
+		// Show the values that need fixing; nothing of the tab was written.
+		search.clear();
+		tab_index = advanced_tab;
+		last_tab  = advanced_tab;
+	}
+	if (display_applied || editor_wrote) {
 		// The display page reloads the game text (language, fonts): every
 		// classic gump holds strings of the old text, so build them again.
+		// They also load their settings again after an Advanced edit.
 		create_models();
 		title = Strings::Options();
 	}
@@ -598,6 +631,8 @@ void Mui_options_window::apply_all() {
 void Mui_options_window::reset_page() {
 	if (tab_index < num_model_tabs) {
 		models[size_t(tab_index)]->revert();
+	} else {
+		editor->revert();
 	}
 	rebuild();
 }

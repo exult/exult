@@ -162,6 +162,8 @@ GUMPS_OBJS:= \
 	gumps/Gamemenu_gump.o \
 	gumps/GameDisplayOptions_gump.o \
 	gumps/Mixer_gump.o \
+	gumps/Mui_config_editor.o \
+	gumps/Mui_config_meta.o \
 	gumps/Mui_font.o \
 	gumps/Mui_game_menu.o \
 	gumps/Mui_options.o \
@@ -599,6 +601,7 @@ gumps/Gump.o : gumps/Gump.cc $(EXULT_BG_FLX) $(EXULT_SI_FLX)
 gumps/GameDisplayOptions_gump.o : gumps/GameDisplayOptions_gump.cc $(EXULT_FLX)
 
 gumps/Mixer_gump.o : gumps/Mixer_gump.cc $(EXULT_FLX)
+gumps/Mui_config_meta.o : gumps/Mui_config_meta.cc $(EXULT_FLX)
 gumps/Mui_font.o : gumps/Mui_font.cc $(EXULT_FLX)
 gumps/Mui_theme.o : gumps/Mui_theme.cc $(EXULT_FLX)
 gumps/ItemMenu_gump.o : gumps/ItemMenu_gump.cc $(EXULT_FLX)

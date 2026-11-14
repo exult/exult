@@ -19,6 +19,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #ifndef MUI_OPTIONS_H
 #define MUI_OPTIONS_H
 
+#include "Mui_config_editor.h"
 #include "Mui_options_model.h"
 #include "Mui_window.h"
 
@@ -32,7 +33,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *  driven by its classic gump through Mui_options_model, so the settings
  *  behave and are saved exactly as in the classic screens. A search field
  *  in the title bar finds settings on every page by name, help text or
- *  config key. Changes are held until Apply.
+ *  config key. Changes are held until Apply. The Advanced tab
+ *  (Mui_config_editor) edits any exult.cfg key directly.
  */
 class Mui_options_window : public Mui_window {
 public:
@@ -54,6 +56,7 @@ private:
 	using Row   = Mui_options_model::Row;
 
 	std::vector<std::unique_ptr<Model>> models;    // One per classic tab.
+	std::unique_ptr<Mui_config_editor>  editor;    // The Advanced tab.
 	std::string                         search;
 	std::string                         highlight;    // Control id of a found row.
 
@@ -67,6 +70,7 @@ private:
 	void apply_all();
 	void reset_page();
 	void jump_to(int tab, const std::string& id);
+	void jump_to_key(const std::string& path);
 };
 
 #endif

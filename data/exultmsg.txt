@@ -1183,7 +1183,7 @@
 0xC2A:Changed
 0xC2B:Reset page
 0xC2C:Apply
-0xC2D:Coming in the Advanced editor
+0xC2D:Every setting in exult.cfg
 0xC2E:No settings match your search.
 0xC2F:settings found
 0xC30:Open
@@ -1195,7 +1195,7 @@
 0xC36:Apply the changes on every page.
 0xC37:Find a setting on any page by its name, description or exult.cfg key.
 0xC38:Clear the search.
-0xC39:Every exult.cfg setting, with its full path, type and default, will be editable on this page.
+0xC39:Pick a section or filter by path. Changes are written when you press Apply, and only the keys you change are touched.
 0xC3A:Go to this setting.
 # Options help: Video
 0xC40:Run Exult full screen instead of in a window.
@@ -1264,3 +1264,25 @@
 0xC7A:Fixed palette of the layers at night, or follow the game's lighting.
 0xC7B:Use one set of settings for every layer, or set each layer on its own.
 0xC7C:Size, scaling and palette of this layer only.
+0xC80:Filter by path or description
+0xC81:Other
+0xC82:Not set
+0xC83:Reset to default
+0xC84:Changed from default
+0xC85:keys
+0xC86:No keys match the filter.
+0xC87:Must be yes or no.
+0xC88:Must be one of:
+0xC89:Must be a whole number.
+0xC8A:Must be a number.
+0xC8B:Must be from
+0xC8C:to
+0xC8D:Default:
+0xC8E:Not known to this version of Exult (perhaps from a mod, Exult Studio or an older version). Kept as it is.
+0xC8F:Pick a section of exult.cfg to list its keys. Choose an open section again to close it.
+0xC90:Show only keys whose path or description contains this text.
+0xC91:Put this key back to its default value (written when you press Apply).
+0xC92:Some values are not valid. Fix the ones marked in red, then press Apply again.
+0xC93:(none)
+0xC94:This section only holds sub-sections. Pick one on the left.
+0xC95:key
