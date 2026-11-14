@@ -95,6 +95,10 @@ namespace {
 			return Msg(0xCA1);
 		}
 
+		static auto PlayTime() {
+			return Msg(0xCA2);
+		}
+
 		static auto SavedAt() {
 			return Msg(0xCA3);
 		}
@@ -211,6 +215,14 @@ namespace {
 			return Msg(0xCBF);
 		}
 
+		static auto Hours() {
+			return Msg(0xCC0);
+		}
+
+		static auto Minutes() {
+			return Msg(0xCC1);
+		}
+
 		static auto NotSaved() {
 			return Msg(0xCC2);
 		}
@@ -221,6 +233,10 @@ namespace {
 
 		static auto Mod() {
 			return Msg(0xCC4);
+		}
+
+		static auto PlayTimeNote() {
+			return Msg(0xCC5);
 		}
 
 		// Classic month abbreviations (Newfile_gump).
@@ -305,6 +321,19 @@ namespace {
 		}
 		return std::string(Strings::Day()) + " " + std::to_string(d->game_day) + ", " + two(d->game_hour) + ":"
 			   + two(d->game_minute);
+	}
+
+	// Empty when not recorded (painted as a dash).
+	std::string play_time(const SaveGame_Details* d) {
+		if (!d || d->play_seconds == 0) {
+			return {};
+		}
+		const uint32 h = d->play_seconds / 3600;
+		const uint32 m = (d->play_seconds % 3600) / 60;
+		if (h > 0) {
+			return std::to_string(h) + " " + Strings::Hours() + " " + two(int(m)) + " " + Strings::Minutes();
+		}
+		return std::to_string(m) + " " + Strings::Minutes();
 	}
 
 	// d Mon yyyy HH:MM
@@ -528,6 +557,16 @@ namespace {
 			return p.col(Mui_colour::panel_alt);
 		}
 
+		// Play time of the selection, for the test driver.
+		std::string value_text() const override {
+			const Save* s = owner.selected_save();
+			if (!s) {
+				return "<none>";
+			}
+			const std::string t = play_time(s->details.get());
+			return t.empty() ? "none" : t;
+		}
+
 	private:
 		Mui_journey_window& owner;
 
@@ -585,6 +624,7 @@ namespace {
 				row(Strings::SavedAt(), saved_at(d));
 			}
 			row(Strings::InGameTime(), day_time(d));
+			row(Strings::PlayTime(), play_time(d));
 			if (d && s->kind != Save::Kind::current) {
 				row(Strings::TimesSaved(), std::to_string(d->save_count));
 			}
@@ -711,13 +751,14 @@ void Mui_journey_window::load_model() {
 	current->shot = gwin->create_mini_screenshot();
 	auto cd       = std::make_unique<SaveGame_Details>();
 	std::memset(cd.get(), 0, sizeof(SaveGame_Details));
-	cd->save_count  = quick ? quick->details->save_count : 0;
-	cd->party_size  = char(partyman->get_count() + 1);
-	cd->game_day    = static_cast<short>(gclock->get_total_hours() / 24);
-	cd->game_hour   = char(gclock->get_hour());
-	cd->game_minute = char(gclock->get_minute());
-	const time_t t  = time(nullptr);
-	const tm*    ti = localtime(&t);
+	cd->save_count   = quick ? quick->details->save_count : 0;
+	cd->party_size   = char(partyman->get_count() + 1);
+	cd->game_day     = static_cast<short>(gclock->get_total_hours() / 24);
+	cd->game_hour    = char(gclock->get_hour());
+	cd->game_minute  = char(gclock->get_minute());
+	cd->play_seconds = gwin->get_play_seconds();
+	const time_t t   = time(nullptr);
+	const tm*    ti  = localtime(&t);
 	if (ti) {
 		cd->real_day    = char(ti->tm_mday);
 		cd->real_hour   = char(ti->tm_hour);
@@ -1049,6 +1090,7 @@ void Mui_journey_window::build(Mui_box& body) {
             }
             const SaveGame_Details* d = s->details.get();
             p.text_in_idx(day_time(d), TileRect(x + c1, top, c2 - pad, bd), Mui_font_role::body, ink, bg, Mui_align::left);
+            paint_value(p, play_time(d), TileRect(x + c1, top + bd, c2 - pad, sm), Mui_font_role::small, dim, bg);
             if (s->kind != Save::Kind::current) {
                 p.text_in_idx(
                         saved_at(d), TileRect(x + c1 + c2, top, w - c1 - c2, bd), Mui_font_role::small, dim, bg, Mui_align::left);
@@ -1104,11 +1146,18 @@ void Mui_journey_window::build(Mui_box& body) {
             }
             const SaveGame_Details* d = s->details.get();
             p.text_in_idx(day_time(d), TileRect(r.x + pad, y, w, sm), Mui_font_role::small, dim, fill, Mui_align::left);
+            y += sm;
+            const std::string label = std::string(Strings::PlayTime()) + " ";
+            const int         lw    = p.text_width(label, Mui_font_role::small);
+            p.text_in_idx(label, TileRect(r.x + pad, y, lw, sm), Mui_font_role::small, dim, fill, Mui_align::left);
+            paint_value(p, play_time(d), TileRect(r.x + pad + lw, y, w - lw, sm), Mui_font_role::small, dim, fill);
 		};
 	}
 	if (visible_count() == 0 && !search.empty()) {
 		left->add<Mui_label>(Strings::NoMatches(), Mui_font_role::body, Mui_colour::text_dim)->id = "journey.nomatch";
 	}
+	auto* note = left->add<Mui_label>(Strings::PlayTimeNote(), Mui_font_role::small, Mui_colour::text_dim, true);
+	note->id   = "journey.note";
 	cols->add<Details>(*this);
 }
 

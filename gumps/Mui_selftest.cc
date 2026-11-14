@@ -612,6 +612,10 @@ namespace {
 			name          = nb == std::string::npos ? std::string() : name.substr(nb);
 			gwin->write();
 			gwin->save_gamedat(num, name.c_str());
+		} else if (cmd == "play-time") {
+			uint32 secs = 0;
+			args >> secs;
+			gwin->set_play_seconds(secs);
 		} else if (cmd == "save-compression") {
 			// 0 = Flex saves, 1-2 = zip (when built with zip support).
 			args >> save_compression;
@@ -668,6 +672,25 @@ namespace {
 			delete[] party;
 			expect(readable && details != nullptr && got == want, "save " + std::to_string(num) + " name = " + want,
 				   got + (readable ? "" : " (unreadable)"));
+		} else if (cmd == "expect-save-play-time") {
+			// Play time stored in a savegame: none (not recorded) or at least N s.
+			int         num = 0;
+			std::string want;
+			args >> num >> want;
+			char*                       name    = nullptr;
+			SaveGame_Details*           details = nullptr;
+			SaveGame_Party*             party   = nullptr;
+			std::unique_ptr<Shape_file> shot;
+			try {
+				gwin->get_saveinfo(num, name, shot, details, party);
+			} catch (const exult_exception&) {
+			}
+			const long got = details ? long(details->play_seconds) : -1;
+			delete[] name;
+			delete details;
+			delete[] party;
+			const bool ok = want == "none" ? got == 0 : got >= std::atol(want.c_str());
+			expect(ok, "save " + std::to_string(num) + " play time " + want, std::to_string(got));
 		} else if (cmd == "restore-game") {
 			// The calls of Newfile_gump::load().
 			int num = 0;

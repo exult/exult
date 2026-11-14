@@ -26,7 +26,7 @@ The themed conversation screen, which uses this toolkit, is described in [modern
 6. [Screens](#screens)
 7. [Configuration Keys](#configuration-keys)
 8. [Config Metadata Table](#config-metadata-table)
-9. [Save Format: Rename](#save-format-rename)
+9. [Save Format: Play Time and Rename](#save-format-play-time-and-rename)
 10. [Self-Test Driver](#self-test-driver)
 11. [Files](#files)
 12. [Known Limits](#known-limits)
@@ -172,7 +172,7 @@ Why not FreeType now: Exult itself links neither FreeType nor SDL_ttf (FreeType 
 | Game menu | `Mui_game_menu` | Return, Journey Log, Options, Cheats (when enabled), Quit (classic Yesno). |
 | Options | `Mui_options_window` | Tabs Video, Audio, Engine, Display, Input, UI, Advanced. Cross-tab search in the title bar; help line; badges; Reset page, Cancel, Apply. |
 | Advanced | `Mui_config_editor` (inside Options) | exult.cfg tree with counts, filter, full paths, typed controls, Applies now / Needs restart, Changed from default, Reset to default, Not set rows, "Other" for unknown keys. |
-| Journey Log | `Mui_journey_window` | Cards or list, thumbnails, search, sort, details panel (saved at, in-game time, party, game, mod, running build), New save, Save here, Load, Rename, Delete. |
+| Journey Log | `Mui_journey_window` | Cards or list, thumbnails, search, sort, details panel (saved at, in-game time, play time, party, game, mod, running build), New save, Save here, Load, Rename, Delete. |
 | Cheats | `Mui_cheat_window` | Red accent, standing warning, sidebar Player, World & time, NPCs, Teleport, Global flags, Usecode, Map editor; opens the text-mode menus for the deep tools and "Open classic cheat screen" for the whole RootMenu. |
 
 **Options models.** `Mui_options_model` builds each classic option gump (VideoOptions_gump … UIOptions_gump) without showing it (each header gains only `friend class Mui_options_model;`), reads its buttons (`Gump_ToggleTextButton::get_selections()`, `getselection()`), changes values with the gump's own `toggle_*` methods into a scratch render target, and applies with the gump's own `save_settings()`. Keys and side effects are therefore those of the classic gumps. No/Yes, Off/On and Disabled/Enabled become toggles, ordered numeric choices sliders, other two-choice sets segmented controls, the rest dropdowns. Game Area is always a dropdown and offers every size the classic gump knows on any platform (Auto, 320×200, 400×250, 480×300 and a custom size from exult.cfg), ordered by size. The UI page also has two rows with no classic button (`Row::native_key`): Menu style and Menu size, written to exult.cfg on Apply.
@@ -220,7 +220,8 @@ The scanner reads `config->value/set/key_exists/remove` calls in `*.cc`, `*.h`, 
 The editor keeps edits pending until Apply, validates them all, then calls `config->set` for each changed key and one `write_back`, so untouched keys are left as they were.
 
 ---
-## Save Format: Rename
+## Save Format: Play Time and Rename
+`SaveGame_Details` (gumps/Newfile_gump.h) now reads `char reserved0; uint32 play_seconds; char reserved1[44];` (still 64 bytes). `play_seconds` is written at file offset 16 of GSAVEINFO; old saves read 0 and show a dash, older Exults ignore the field. `Game_window::get_play_seconds()` counts from the value restored with the game, including time spent in menus.
 
 `Game_window::rename_savegame(num, name)` (gamedat.cc) rewrites the 80-byte save title (the Flex header title, or the title written before a zip archive) and, for zip saves, the archive's global comment at the end of the file. It writes `<file>.rename` and renames it over the original, so a failure leaves the save untouched.
 
@@ -241,7 +242,7 @@ The editor keeps edits pending until Apply, validates them all, then calls `conf
 | `expect-style NAME`, `expect-scale N` (UI scale × 100), `expect-frame [W H]` (window size; logs it), `expect-no-widget ID`, `expect-game-area W H` | Window and display checks. |
 | `ask TEXT`, `expect-answer yes\|no`, `prompt-number MIN MAX STEP DEFAULT`, `expect-number N [escaped]` | Ask a Yes/No or a number from the window on top (themed dialogs). |
 | `gclick X Y [right]`, `expect-gump CLASS\|none` | Click a point of the classic modal gump on top (relative to its origin, through its layer); check which classic gump is on top. |
-| `save-game NUM NAME`, `save-compression N`, `restore-game NUM`, `expect-saves N`, `expect-visible N`, `expect-card-name I NAME`, `select-card NAME`, `expect-save-name NUM NAME`, `expect-restored yes\|no` | Journey Log checks. |
+| `save-game NUM NAME`, `save-compression N`, `play-time SECS`, `restore-game NUM`, `expect-saves N`, `expect-visible N`, `expect-card-name I NAME`, `select-card NAME`, `expect-save-name NUM NAME`, `expect-save-play-time NUM none\|MIN`, `expect-restored yes\|no` | Journey Log checks. |
 
 Run it headless only: `SDL_VIDEO_DRIVER=dummy SDL_AUDIO_DRIVER=dummy EXULT_MUI_TEST=script.mui exult -c test.cfg --game ... --nomenu`. Use game area 320×200 with fill mode Fit in the test configuration; under the dummy driver an Auto game area renders a tiled world.
 
@@ -271,6 +272,7 @@ User-visible strings are in data/exultmsg.txt, block 0xC00–0xDFF.
 - Classic sub-screens opened from a themed screen (the mixer, MIDI settings, text-mode cheat menus) keep their classic look; their Yes/No questions are themed.
 - In the classic mixer a slider under the mouse takes every key, Escape too (classic behaviour): move the mouse off the sliders, or use Cancel.
 - Colours are the nearest day-palette entries, so Modern is an approximation of its hex values.
+- Play time includes time spent in menus and while paused.
 - Saves do not record the Exult build that wrote them; the details panel shows the running build, labelled as such.
 - Comments in exult.cfg follow `Configuration::write_back` behaviour.
 - The Exult launcher menu stays classic.

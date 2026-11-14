@@ -20,6 +20,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define NEWFILE_GUMP_H
 
 #include "Modal_gump.h"
+#include "common_types.h"
 
 #include <array>
 #include <memory>
@@ -51,9 +52,16 @@ struct SaveGame_Details {
 	char real_second;    // 15
 
 	// Incase we want to add more later
-	char reserved0;        // 16
-	char reserved1[48];    // 64
+	char reserved0;    // 16
+
+	// Total seconds played, 0 if not recorded (saves of older versions).
+	// Stored little-endian in the first 4 bytes after reserved0.
+	uint32 play_seconds;    // 20
+
+	char reserved1[44];    // 64
 };
+
+static_assert(sizeof(SaveGame_Details) == 64, "SaveGame_Details must stay 64 bytes");
 
 struct SaveGame_Party {
 	char         name[18];    // 18

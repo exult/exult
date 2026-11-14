@@ -41,6 +41,8 @@
 #include "utils.h"
 #include "version.h"
 
+#include <SDL3/SDL_timer.h>
+
 #include <algorithm>
 #include <array>
 #include <cstddef>
@@ -486,8 +488,11 @@ void Game_window::write_saveinfo(bool screenshot) {
 
 		out.write1(timeinfo->tm_sec);    // 15
 
+		out.write1(0);                     // reserved0
+		out.write4(get_play_seconds());    // 20
+
 		// Packing for the rest of the structure
-		for (size_t j = offsetof(SaveGame_Details, reserved0); j < sizeof(SaveGame_Details); j++) {
+		for (size_t j = offsetof(SaveGame_Details, reserved1); j < sizeof(SaveGame_Details); j++) {
 			out.write1(0);
 		}
 
@@ -580,8 +585,11 @@ void Game_window::read_saveinfo(IDataSource* in, SaveGame_Details*& details, Sav
 
 	details->real_second = in->read1();    // 15
 
+	details->reserved0    = in->read1();
+	details->play_seconds = in->read4();    // 20 (0 in older saves)
+
 	// Packing for the rest of the structure
-	in->skip(sizeof(SaveGame_Details) - offsetof(SaveGame_Details, reserved0));
+	in->skip(sizeof(SaveGame_Details) - offsetof(SaveGame_Details, reserved1));
 
 	party = new SaveGame_Party[details->party_size];
 	for (i = 0; i < 8 && i < details->party_size; i++) {
@@ -707,6 +715,36 @@ void Game_window::get_saveinfo(std::unique_ptr<Shape_file>& map, SaveGame_Detail
 			map.reset();
 		}
 	}
+}
+
+/*
+ *  Play time.
+ */
+
+// File offset of SaveGame_Details::play_seconds in GSAVEINFO.
+constexpr static const size_t play_seconds_offset = 16;
+
+uint32 Game_window::get_play_seconds() const {
+	const uint64 now = SDL_GetTicks();
+	const uint64 run = now > play_start_ticks ? (now - play_start_ticks) / 1000 : 0;
+	return play_seconds_base + static_cast<uint32>(run);
+}
+
+void Game_window::set_play_seconds(uint32 secs) {
+	play_seconds_base = secs;
+	play_start_ticks  = SDL_GetTicks();
+}
+
+void Game_window::read_play_time() {
+	play_seconds_base = 0;
+	{
+		IFileDataSource ds(GSAVEINFO);
+		if (ds.good() && ds.getSize() >= play_seconds_offset + 4) {
+			ds.seek(play_seconds_offset);
+			play_seconds_base = ds.read4();
+		}
+	}
+	play_start_ticks = SDL_GetTicks();
 }
 
 /*

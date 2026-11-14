@@ -1298,6 +1298,7 @@
 0xC9F:Quick save
 0xCA0:Unreadable
 0xCA1:Day
+0xCA2:Play time
 0xCA3:Saved at
 0xCA4:In-game time
 0xCA5:Times saved
@@ -1327,9 +1328,12 @@
 0xCBD:Find saves by name (/).
 0xCBE:Arrows pick a save, Enter loads it, F2 renames it, Delete removes it, / searches.
 0xCBF:File
+0xCC0:h
+0xCC1:min
 0xCC2:Not saved yet
 0xCC3:The game could not be saved.
 0xCC4:Mod
+0xCC5:Play time counts from this version of Exult on; older saves show a dash.
 # Themed conversations (gumps/Mui_dialogue.cc)
 0xDC0:Continue
 0xDC1:Click, Space or Enter: continue   PgUp: earlier lines
