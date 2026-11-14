@@ -23,10 +23,14 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "Mui_window.h"
 
 #include "Configuration.h"
+#include "Gump_manager.h"
 #include "Mui_font.h"
 #include "Mui_router.h"
 #include "Mui_selftest.h"
+#include "Yesno_gump.h"
 #include "exult.h"
+#include "exult_flx.h"
+#include "game.h"
 #include "gamewin.h"
 #include "ibuf8.h"
 #include "items.h"
@@ -60,7 +64,26 @@ namespace {
 		static auto CloseHelp() {
 			return get_text_msg(0xC1C - msg_file_start);
 		}
+
+		static auto Confirm() {
+			return get_text_msg(0xD2A - msg_file_start);
+		}
+
+		static auto HowMany() {
+			return get_text_msg(0xD2B - msg_file_start);
+		}
 	};
+
+	// Themed windows open: the classic questions use the themed dialog.
+	int open_windows = 0;
+
+	bool themed_ask(const std::string& text, int timeout) {
+		return Mui_dialog_window::ask(text, timeout);
+	}
+
+	bool themed_number(int minv, int maxv, int step, int defval, bool can_escape, int& value) {
+		return Mui_dialog_window::ask_number(minv, maxv, step, defval, can_escape, value);
+	}
 
 	Image_window* iwin() {
 		return Game_window::get_instance()->get_win();
@@ -73,9 +96,17 @@ Mui_window::Mui_window(std::string title_) : Modal_gump(nullptr, -1), title(std:
 	if (!theme_ptr) {
 		theme_ptr = Mui_theme::load("modern");
 	}
+	if (open_windows++ == 0) {
+		Yesno_gump::themed_ask           = &themed_ask;
+		Gump_manager::themed_number_hook = &themed_number;
+	}
 }
 
 Mui_window::~Mui_window() {
+	if (--open_windows == 0) {
+		Yesno_gump::themed_ask           = nullptr;
+		Gump_manager::themed_number_hook = nullptr;
+	}
 	Mui_selftest::forget(this);
 	if (text_input_on) {
 		SDL_StopTextInput(iwin()->get_screen_window());
@@ -332,7 +363,7 @@ void Mui_window::layout_all() {
 	const int  fb        = stone ? p.px(m.unit * 1.5f) : p.px(m.border);
 	const int  title_h   = p.px(m.title_h);
 	const int  foot_h    = p.px(m.footer_h);
-	const int  help_h    = p.line_height(Mui_font_role::small) + p.px(m.gap);
+	const int  help_h    = show_help_line() ? p.line_height(Mui_font_role::small) + p.px(m.gap) : 0;
 	const int  pad       = p.px(m.gap * 2);
 	const bool left_tabs = tabs && theme_ptr->tabs_left;
 	const int  tabs_h    = tabs && !left_tabs ? p.px(m.tab_h) : 0;
@@ -515,7 +546,9 @@ void Mui_window::paint() {
 	if (title_bar) {
 		title_bar->paint(p);
 	}
-	help_line->paint(p);
+	if (show_help_line()) {
+		help_line->paint(p);
+	}
 	footer->paint(p);
 	for (auto& o : overlays) {
 		paint_overlay(p, o);
@@ -1058,4 +1091,149 @@ bool Mui_window::key_down(SDL_Keycode chr, SDL_Keycode unicode) {
 		break;
 	}
 	return true;
+}
+
+/*
+ *  Themed questions.
+ */
+
+Mui_dialog_window::Mui_dialog_window(std::string text_, Kind kind_)
+		: Mui_window(kind_ == Kind::number ? Strings::HowMany() : Strings::Confirm()), text(std::move(text_)), kind(kind_) {}
+
+bool Mui_dialog_window::ask(const std::string& text, int timeout) {
+	Mui_dialog_window dlg(text, timeout >= 0 ? Kind::countdown : Kind::yes_no);
+	dlg.timeout    = std::max(0, timeout);
+	dlg.start_time = SDL_GetTicks();
+	if (!Game_window::get_instance()->get_gump_man()->do_modal_gump(&dlg, Mouse::hand)) {
+		return false;
+	}
+	return dlg.answer;
+}
+
+bool Mui_dialog_window::ask_number(int minv, int maxv, int step, int defval, bool can_escape, int& value) {
+	Mui_dialog_window dlg(std::string(), Kind::number);
+	dlg.minv       = minv;
+	dlg.maxv       = std::max(minv, maxv);
+	dlg.step       = std::max(1, step);
+	dlg.value      = std::clamp(defval, dlg.minv, dlg.maxv);
+	dlg.can_escape = can_escape;
+	const bool ok  = Game_window::get_instance()->get_gump_man()->do_modal_gump(&dlg, Mouse::hand) && dlg.answer;
+	value          = dlg.value;
+	return ok;
+}
+
+std::string Mui_dialog_window::countdown_text() const {
+	// As Countdown_gump: the question, then the whole seconds left.
+	const int left = std::max(0, timeout * 1000 - int(SDL_GetTicks() - start_time));
+	return text + " " + std::to_string(left / 1000) + "...";
+}
+
+void Mui_dialog_window::build(Mui_box& body) {
+	body.gap = 10;
+	if (kind == Kind::number) {
+		auto* field   = body.add<Mui_number_field>("dialog.number", minv, maxv, step, value, [this](int v) {
+            value = v;
+        });
+		field->fill_w = true;
+		return;
+	}
+	auto* label
+			= body.add<Mui_label>(kind == Kind::countdown ? countdown_text() : text, Mui_font_role::body, Mui_colour::text, true);
+	label->id = "dialog.text";
+}
+
+void Mui_dialog_window::build_footer(Mui_box& footer) {
+	if (kind == Kind::number) {
+		if (can_escape) {
+			footer.add<Mui_button>("dialog.cancel", Strings::Cancel(), Mui_button::Style::secondary, [this] {
+				post([this] {
+					answer_with(false);
+				});
+			});
+		}
+		footer.add<Mui_button>("dialog.ok", Strings::OK(), Mui_button::Style::primary, [this] {
+			post([this] {
+				answer_with(true);
+			});
+		});
+		return;
+	}
+	footer.add<Mui_button>("dialog.no", GumpStrings::No(), Mui_button::Style::secondary, [this] {
+		post([this] {
+			answer_with(false);
+		});
+	});
+	footer.add<Mui_button>("dialog.yes", GumpStrings::Yes(), Mui_button::Style::primary, [this] {
+		post([this] {
+			answer_with(true);
+		});
+	});
+}
+
+void Mui_dialog_window::answer_with(bool yes) {
+	if (kind == Kind::number) {
+		if (auto* f = dynamic_cast<Mui_number_field*>(find("dialog.number"))) {
+			value = f->value;
+		}
+	}
+	answer = yes;
+	finish();
+}
+
+void Mui_dialog_window::on_cancel() {
+	if (kind == Kind::number && !can_escape) {
+		return;
+	}
+	answer_with(false);
+}
+
+bool Mui_dialog_window::run() {
+	if (kind == Kind::countdown && !is_done()) {
+		const int left = timeout * 1000 - int(SDL_GetTicks() - start_time);
+		if (left <= 0) {
+			answer_with(false);
+		} else if (left / 1000 != shown_left) {
+			shown_left = left / 1000;
+			if (auto* label = dynamic_cast<Mui_label*>(find("dialog.text"))) {
+				label->text = countdown_text();
+				relayout();
+			}
+		}
+	}
+	return Mui_window::run();
+}
+
+bool Mui_dialog_window::key_down(SDL_Keycode chr, SDL_Keycode unicode) {
+	if (kind != Kind::number) {
+		if (chr == SDLK_Y) {
+			post([this] {
+				answer_with(true);
+			});
+			return true;
+		}
+		if (chr == SDLK_N) {
+			post([this] {
+				answer_with(false);
+			});
+			return true;
+		}
+		// Enter answers Yes, as in the classic box, unless No has the focus.
+		const Mui_widget* f = get_focus();
+		if ((chr == SDLK_RETURN || chr == SDLK_KP_ENTER) && !(f && f->id == "dialog.no")) {
+			post([this] {
+				answer_with(true);
+			});
+			return true;
+		}
+	} else if (chr == SDLK_RETURN || chr == SDLK_KP_ENTER) {
+		// Commit digits typed into the field, then answer OK.
+		if (Mui_widget* f = find("dialog.number")) {
+			f->on_key(chr, int(unicode));
+		}
+		post([this] {
+			answer_with(true);
+		});
+		return true;
+	}
+	return Mui_window::key_down(chr, unicode);
 }

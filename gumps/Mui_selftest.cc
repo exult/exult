@@ -30,6 +30,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "Mui_router.h"
 #include "Mui_window.h"
 #include "Newfile_gump.h"
+#include "Yesno_gump.h"
 #include "cheat.h"
 #include "exult.h"
 #include "fnames.h"
@@ -77,6 +78,8 @@ namespace {
 		bool                     mod_set        = false;
 		bool                     restored       = false;    // Last Journey Log loaded a game.
 		bool                     escape_classic = false;    // Escape the next text-mode cheat menu.
+		std::string              last_number;               // Result of prompt-number.
+		std::string              last_answer;               // Result of ask.
 	};
 
 	State& state() {
@@ -469,6 +472,14 @@ namespace {
 			want          = wb == std::string::npos ? std::string() : want.substr(wb);
 			Mui_widget* w = win ? win->find(id) : nullptr;
 			expect(w && w->value_text() == want, "widget " + id + " = " + want, w ? w->value_text() : "<missing>");
+		} else if (cmd == "expect-game-area") {
+			// Game area in effect: W H.
+			Image_window*     iw  = gwin->get_win();
+			const std::string got = std::to_string(iw->get_game_width()) + " " + std::to_string(iw->get_game_height());
+			expect(got == rest, "game area " + rest, got);
+		} else if (cmd == "expect-no-widget") {
+			Mui_widget* w = win ? win->find(rest) : nullptr;
+			expect(win && !w, "no widget " + rest, w ? "present" : "no themed window");
 		} else if (cmd == "expect-widget-atleast") {
 			// The widget's value starts with a number of at least N.
 			std::string id;
@@ -477,6 +488,43 @@ namespace {
 			Mui_widget*       w   = win ? win->find(id) : nullptr;
 			const std::string got = w ? w->value_text() : "<missing>";
 			expect(w && std::atoi(got.c_str()) >= want, "widget " + id + " >= " + std::to_string(want), got);
+		} else if (cmd == "expect-style") {
+			// Theme of the themed window on top.
+			const std::string got = win ? win->theme().name : "<no window>";
+			expect(got == rest, "style " + rest, got);
+		} else if (cmd == "expect-scale") {
+			// UI scale of the window on top, in hundredths.
+			int want = 0;
+			args >> want;
+			const int got = win ? int(win->get_scale() * 100 + 0.5f) : -1;
+			expect(got == want, "scale " + std::to_string(want), std::to_string(got));
+		} else if (cmd == "expect-frame") {
+			// Size of the window on top in layer pixels: W H.
+			const std::string got
+					= win ? std::to_string(win->get_frame_rect().w) + " " + std::to_string(win->get_frame_rect().h) : "<no window>";
+			std::cout << "MUI-TEST info frame " << got << std::endl;
+			if (!rest.empty()) {
+				expect(got == rest, "frame " + rest, got);
+			}
+		} else if (cmd == "prompt-number") {
+			// The number prompt of drag and usecode: MIN MAX STEP DEFAULT.
+			int minv = 0;
+			int maxv = 0;
+			int stp  = 1;
+			int def  = 0;
+			args >> minv >> maxv >> stp >> def;
+			bool      escaped = false;
+			const int got     = gwin->get_gump_man()->prompt_for_number(minv, maxv, stp, def, nullptr, &escaped);
+			st.last_number    = std::to_string(got) + (escaped ? " escaped" : "");
+			std::cout << "MUI-TEST info number " << st.last_number << std::endl;
+		} else if (cmd == "expect-number") {
+			expect(st.last_number == rest, "number " + rest, st.last_number);
+		} else if (cmd == "ask") {
+			// A classic Yes/No question (Yesno_gump::ask).
+			st.last_answer = Yesno_gump::ask(rest.c_str()) ? "yes" : "no";
+			std::cout << "MUI-TEST info answer " << st.last_answer << std::endl;
+		} else if (cmd == "expect-answer") {
+			expect(st.last_answer == rest, "answer " + rest, st.last_answer);
 		} else if (cmd == "expect-focus") {
 			Mui_widget* f = win ? win->get_focus() : nullptr;
 			expect(f && f->id == rest, "focus " + rest, f ? f->id : "<none>");

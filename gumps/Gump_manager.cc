@@ -1181,6 +1181,14 @@ int Gump_manager::prompt_for_number(
 		Paintable* paint,     // Should be the conversation.
 		bool*      escaped    // If non-null, allow user to escape and will be set indicating if user escaped
 ) {
+	if (themed_number_hook) {
+		int        value = defval;
+		const bool ok    = themed_number_hook(minval, maxval, step, defval, escaped != nullptr, value);
+		if (escaped) {
+			*escaped = !ok;
+		}
+		return value;
+	}
 	auto*      slider = new Slider_gump(minval, maxval, step, defval, escaped != nullptr);
 	const bool ok     = do_modal_gump(slider, Mouse::hand, paint);
 	if (escaped) {

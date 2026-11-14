@@ -127,6 +127,10 @@ public:
 
 	void force_paint();
 
+	const TileRect& get_frame_rect() const {
+		return frame_rect;
+	}
+
 	// Mouse capture for drags (scrollbars, sliders).
 	Mui_widget* get_pressed() const {
 		return pressed;
@@ -180,6 +184,16 @@ protected:
 
 	// Hint shown in the help line when nothing is hovered or focused.
 	virtual std::string default_help() const;
+
+	// Small dialogs have no help line.
+	virtual bool show_help_line() const {
+		return true;
+	}
+
+	// The checkmark tab of the gump look (not on small dialogs).
+	virtual bool show_tick_tab() const {
+		return true;
+	}
 
 	// Adjust a private copy of the loaded theme (e.g. the cheat window's red
 	// accent and sidebar tabs); called before each build after a theme load.
@@ -262,6 +276,68 @@ private:
 	void                     update_text_input();
 	std::string              focus_id_for_rebuild;
 	std::string              requested_focus;
+};
+
+/*
+ *  A question in the menu style, shown instead of the classic Yes/No box,
+ *  the "keep these settings?" countdown and the number slider while a
+ *  themed window is open (Yesno_gump::ask, Countdown_gump::ask and
+ *  Gump_manager::prompt_for_number call it through their themed hooks).
+ *  Same answers and timing as the classic gumps: Yes/Enter/Y, No/Esc/N,
+ *  and the countdown answers No when it runs out.
+ */
+class Mui_dialog_window : public Mui_window {
+public:
+	enum class Kind {
+		yes_no,
+		countdown,
+		number
+	};
+
+	Mui_dialog_window(std::string text_, Kind kind_);
+
+	// Yes/No; timeout in seconds counts down to No (< 0: no countdown).
+	static bool ask(const std::string& text, int timeout);
+	// A number in [minv, maxv]; false if escaped (when allowed).
+	static bool ask_number(int minv, int maxv, int step, int defval, bool can_escape, int& value);
+
+	bool get_answer() const {
+		return answer;
+	}
+
+	bool run() override;
+	bool key_down(SDL_Keycode chr, SDL_Keycode unicode) override;
+
+protected:
+	void build(Mui_box& body) override;
+	void build_footer(Mui_box& footer) override;
+	void on_cancel() override;
+
+	void preferred_size(float& w, float& h) const override {
+		w = 560;
+		h = 0;
+	}
+
+	bool show_help_line() const override {
+		return false;
+	}
+
+	bool show_tick_tab() const override {
+		return false;
+	}
+
+private:
+	std::string text;
+	Kind        kind;
+	bool        answer     = false;
+	int         timeout    = 0;    // Seconds.
+	uint32      start_time = 0;
+	int         shown_left = -1;    // Seconds shown in the countdown.
+	int         minv = 0, maxv = 0, step = 1, value = 0;
+	bool        can_escape = true;
+
+	void        answer_with(bool yes);
+	std::string countdown_text() const;
 };
 
 #endif

@@ -606,6 +606,7 @@ gumps/Mixer_gump.o : gumps/Mixer_gump.cc $(EXULT_FLX)
 gumps/Mui_config_meta.o : gumps/Mui_config_meta.cc $(EXULT_FLX)
 gumps/Mui_font.o : gumps/Mui_font.cc $(EXULT_FLX)
 gumps/Mui_theme.o : gumps/Mui_theme.cc $(EXULT_FLX)
+gumps/Mui_window.o : gumps/Mui_window.cc $(EXULT_FLX)
 gumps/ItemMenu_gump.o : gumps/ItemMenu_gump.cc $(EXULT_FLX)
 
 gumps/InputOptions_gump.o : gumps/InputOptions_gump.cc $(EXULT_FLX)
