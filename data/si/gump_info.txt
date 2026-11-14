@@ -73,6 +73,10 @@
 #body
 :48/36/46/84/40
 
+# shop (book): see docs/shop_kit.md. An empty area: a panel that
+# holds no objects, so nothing dropped on the shop is lost.
+:27/0/0/0/0
+
 %%endsection
 
 %%section checkmark_pos
@@ -149,6 +153,9 @@
 
 # magic scroll
 :65/24/56/2
+
+# shop (book): Close, bottom-left of the left page
+:27/59/141/2
 
 %%endsection
 
@@ -243,6 +250,10 @@
 # visibility_flag = Global flag controlling visibility (-1 = always visible)
 # usecode_param   = Legacy, read but unused (event is always double_click; use -1)
 #
+
+# Shop (book, see docs/shop_kit.md): Yes = Buy/Sell, calls 3843
+:27/52/296/140/0/1/-1/3843/0/-1/-1
+
 %%endsection
 
 %%section dynamic_texts
@@ -258,6 +269,29 @@
 #
 # Text is set at runtime via UI_set_gump_text(item, field_id, "text")
 #
+
+# Shop (book, see docs/shop_kit.md).
+# 1: shop title, centred on the left page
+:27/1/97/9/2/2
+# 2: the chosen ware's name, centred on the right page
+:27/2/235/9/2/2
+# 4: its description (one line)
+:27/4/178/61/4
+# 5: "Price: 15 guilders each"
+:27/5/178/70/4
+# 6: "In stock: 12" / "Plenty" / "You have: 4"
+:27/6/178/79/4
+# 7: "Quantity: 3"
+:27/7/178/88/2
+# 9: "Total: 45 guilders"
+:27/9/178/100/2
+# 10: "You have 120 guilders"
+:27/10/178/111/4
+# 11: status ("You cannot afford that." / "Thank you."), centred
+:27/11/235/120/4/2
+# 12: prompt ("Buy 3 for 45 guilders?"), right-aligned next to Yes
+:27/12/272/132/4/1
+
 %%endsection
 
 %%section dynamic_shapes
@@ -275,6 +309,11 @@
 #
 # Shape is set at runtime via UI_set_gump_shape(item, field_id, shape, frame)
 #
+
+# Shop (book, see docs/shop_kit.md).
+# 3: preview of the selected ware of list 1, boxed and enlarged
+:27/3/180/20/0/0/0/1/110/40
+
 %%endsection
 
 %%section dynamic_sliders
@@ -297,6 +336,12 @@
 #   UI_set_slider_value(item, field_id, value)
 #   UI_get_slider_value(item, field_id)
 #
+
+# Shop (book, see docs/shop_kit.md).
+# 8: quantity, a horizontal spinner (1-99, the kit clamps to the stock),
+#    calls 3842
+:27/8/262/96/17/16/-1/1/99/1/1/0/3842/1
+
 %%endsection
 
 %%section dynamic_lists
@@ -329,6 +374,12 @@
 # Example (not active): a contents list with Exult's scroll controls
 # :<gump>/1/20/30/123/8/12/2/0/-1/-1/-1/-1/-1/-1/3
 #
+
+# Shop (book, see docs/shop_kit.md).
+# 1: the wares (icon, "Name (stock)", price on the right, "N-M of T"),
+#    select calls 3840, double-click/Enter (buy) calls 3841
+:27/1/35/21/110/9/11/2/1/-1/-1/-1/3840/3841/-1/1
+
 %%endsection
 
 %%section shortcutbar_icon
