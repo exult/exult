@@ -51,6 +51,10 @@
 #include "warminf.h"
 #include "weaponinf.h"
 
+#include <cctype>
+#include <iostream>
+#include <string>
+
 using std::ifstream;
 using std::ios;
 using namespace std;
@@ -385,14 +389,126 @@ void Shapes_vga_file::Read_Paperdoll_text_data_file(bool editing, Exult_Game gam
 	Read_text_data_file("paperdol_info", readers, sections, editing, game_type, flxres);
 }
 
+// The 15 fields of a dynamic_lists entry after the gump shape (also the
+// list part of a list_layout entry).
+static void Read_dynamic_list_fields(std::istream& in, Dynamic_list_def& lst) {
+	lst.field_id    = ReadInt(in);
+	lst.pos_x       = ReadInt(in);
+	lst.pos_y       = ReadInt(in);
+	lst.width       = ReadInt(in);
+	lst.rows        = ReadInt(in);
+	lst.row_height  = ReadInt(in);
+	lst.font        = ReadInt(in);
+	lst.source      = ReadInt(in);
+	lst.up_shape    = ReadInt(in);
+	lst.down_shape  = ReadInt(in);
+	lst.thumb_shape = ReadInt(in);
+	lst.select_fn   = ReadInt(in);
+	lst.activate_fn = ReadInt(in);
+	lst.rows_fn     = ReadInt(in);
+	lst.flags       = ReadInt(in);
+}
+
+/*
+ *  Reader for the list_layout section.  Format: :gump_shape/part/fields,
+ *  one line per part.  It has its own reader because gump_shape may be
+ *  -1 (the default for every container gump), which
+ *  Functor_multidata_reader skips.
+ */
+class List_layout_reader : public Base_reader {
+protected:
+	void read_data(std::istream& in, size_t index, int version, bool patch, Exult_Game game, bool binary) override {
+		ignore_unused_variable_warning(index, version, game, binary);
+		const int key = ReadInt(in, -2);
+		if (key < -1) {
+			std::cerr << "list_layout: bad gump shape in entry " << index << std::endl;
+			return;
+		}
+		std::string part;
+		std::getline(in, part, '/');
+		while (!part.empty() && std::isspace(static_cast<unsigned char>(part.back()))) {
+			part.pop_back();
+		}
+		List_layout layout;    // The part's fields, then copied over.
+		int         bit;
+		if (part == "off") {
+			bit        = LISTLAYOUT_OFF;
+			layout.off = true;
+		} else if (part == "background") {
+			bit              = LISTLAYOUT_BACKGROUND;
+			layout.bg_shape  = ReadInt(in, -1);
+			layout.bg_width  = ReadInt(in);
+			layout.bg_height = ReadInt(in);
+			layout.strip_x0  = ReadInt(in);
+			layout.strip_x1  = ReadInt(in);
+			layout.extra_w   = ReadInt(in);
+		} else if (part == "list") {
+			bit = LISTLAYOUT_LIST;
+			Read_dynamic_list_fields(in, layout.list);
+			if (layout.list.width <= 0 || layout.list.rows <= 0 || layout.list.row_height <= 0) {
+				std::cerr << "list_layout: unusable list for gump " << key << std::endl;
+				return;
+			}
+		} else if (part == "title") {
+			bit               = LISTLAYOUT_TITLE;
+			layout.title_x    = ReadInt(in);
+			layout.title_y    = ReadInt(in);
+			layout.title_w    = ReadInt(in);
+			layout.title_font = ReadInt(in);
+		} else if (part == "divider") {
+			bit               = LISTLAYOUT_DIVIDER;
+			layout.divider_x  = ReadInt(in);
+			layout.divider_y0 = ReadInt(in);
+			layout.divider_y1 = ReadInt(in);
+		} else if (part == "panel") {
+			bit                     = LISTLAYOUT_PANEL;
+			layout.panel_x          = ReadInt(in);
+			layout.panel_y          = ReadInt(in);
+			layout.panel_w          = ReadInt(in);
+			layout.panel_font       = ReadInt(in);
+			layout.panel_small_font = ReadInt(in);
+		} else if (part == "preview") {
+			bit              = LISTLAYOUT_PREVIEW;
+			layout.preview_x = ReadInt(in);
+			layout.preview_y = ReadInt(in);
+			layout.preview_w = ReadInt(in);
+			layout.preview_h = ReadInt(in);
+		} else if (part == "picture") {
+			bit              = LISTLAYOUT_PICTURE;
+			layout.pic_right = ReadInt(in);
+			layout.pic_top   = ReadInt(in);
+		} else if (part == "nav") {
+			bit                = LISTLAYOUT_NAV;
+			layout.nav_left_x  = ReadInt(in);
+			layout.nav_right_x = ReadInt(in);
+			layout.nav_y       = ReadInt(in);
+		} else if (part == "usecode") {
+			bit            = LISTLAYOUT_USECODE;
+			layout.open_fn = ReadInt(in, -1);
+		} else {
+			std::cerr << "list_layout: unknown part '" << part << "' for gump " << key << std::endl;
+			return;
+		}
+		layout.parts     = bit;
+		List_layout& dst = Gump_info::get_or_create_list_layout(key);
+		dst.overlay(layout);
+		if (patch) {
+			dst.patch_parts |= bit;
+		}
+	}
+
+public:
+	List_layout_reader() : Base_reader(false) {}
+};
+
 void Shapes_vga_file::Read_Gumpinf_text_data_file(bool editing, Exult_Game game_type) {
 	if (Gump_info::was_any_modified()) {
 		return;
 	}
 	Gump_info::clear();
-	std::array sections{"container_area"sv,  "checkmark_pos"sv, "special"sv,          "snap_zones"sv,
-						"dynamic_buttons"sv, "dynamic_texts"sv, "dynamic_shapes"sv,   "dynamic_sliders"sv,
-						"dynamic_lists"sv,   "gump_name"sv,     "shortcutbar_icon"sv, "shortcutbar_action"sv};
+	std::array sections{"container_area"sv,   "checkmark_pos"sv,      "special"sv,         "snap_zones"sv,    "dynamic_buttons"sv,
+						"dynamic_texts"sv,    "dynamic_shapes"sv,     "dynamic_sliders"sv, "dynamic_lists"sv, "gump_name"sv,
+						"shortcutbar_icon"sv, "shortcutbar_action"sv, "list_layout"sv};
 
 	// Functor for reading container area
 	// Format: :shape/x/y/w/h[/debug_flags]
@@ -604,21 +720,7 @@ void Shapes_vga_file::Read_Gumpinf_text_data_file(bool editing, Exult_Game game_
 		bool operator()(std::istream& in, int version, bool patch, Exult_Game game, Gump_info& ginfo) const {
 			ignore_unused_variable_warning(version, game);
 			Dynamic_list_def lst;
-			lst.field_id    = ReadInt(in);
-			lst.pos_x       = ReadInt(in);
-			lst.pos_y       = ReadInt(in);
-			lst.width       = ReadInt(in);
-			lst.rows        = ReadInt(in);
-			lst.row_height  = ReadInt(in);
-			lst.font        = ReadInt(in);
-			lst.source      = ReadInt(in);
-			lst.up_shape    = ReadInt(in);
-			lst.down_shape  = ReadInt(in);
-			lst.thumb_shape = ReadInt(in);
-			lst.select_fn   = ReadInt(in);
-			lst.activate_fn = ReadInt(in);
-			lst.rows_fn     = ReadInt(in);
-			lst.flags       = ReadInt(in);
+			Read_dynamic_list_fields(in, lst);
 			if (patch) {
 				ginfo.begin_patch_dynlists();
 			}
@@ -739,7 +841,7 @@ void Shapes_vga_file::Read_Gumpinf_text_data_file(bool editing, Exult_Game game_
 			std::make_unique<Dynamic_lists_reader>(Gump_info::gump_info_map),
 			std::make_unique<Gump_name_reader>(Gump_info::gump_info_map),
 			std::make_unique<Shortcutbar_icon_reader>(Gump_info::shortcutbar_icon_map),
-			std::make_unique<Shortcutbar_action_reader>(Gump_info::shortcutbar_action_map));
+			std::make_unique<Shortcutbar_action_reader>(Gump_info::shortcutbar_action_map), std::make_unique<List_layout_reader>());
 	static_assert(sections.size() == readers.size());
 
 	const int flxres = game_type == BLACK_GATE ? EXULT_BG_FLX_GUMP_INFO_TXT : EXULT_SI_FLX_GUMP_INFO_TXT;

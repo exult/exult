@@ -228,11 +228,111 @@ struct Dynamic_slider_def {
 			  default_val(0), extent(60), usecode_fn(-1), orientation(0) {}
 };
 
+// Parts of a list_layout entry (List_layout::parts), in file order.
+enum List_layout_parts {
+	LISTLAYOUT_OFF        = 0x001,
+	LISTLAYOUT_BACKGROUND = 0x002,
+	LISTLAYOUT_LIST       = 0x004,
+	LISTLAYOUT_TITLE      = 0x008,
+	LISTLAYOUT_DIVIDER    = 0x010,
+	LISTLAYOUT_PANEL      = 0x020,
+	LISTLAYOUT_PREVIEW    = 0x040,
+	LISTLAYOUT_PICTURE    = 0x080,
+	LISTLAYOUT_NAV        = 0x100,
+	LISTLAYOUT_USECODE    = 0x200
+};
+
+/*
+ *  Layout of the container list view (Container_list_gump), from the
+ *  list_layout section of gump_info.txt.  Keyed by the container's gump
+ *  shape; key -1 is the default for every container gump.  The member
+ *  defaults are the list view's built-in layout.  All positions are
+ *  relative to the top-left of the (widened) background.
+ */
+struct List_layout {
+	int  parts       = 0;        // List_layout_parts present in this entry
+	int  patch_parts = 0;        // Parts read from the patch file
+	bool off         = false;    // Use the picture view for this gump
+
+	// background: the art, its expected size, and the plain strip
+	// (columns strip_x0..strip_x1-1) repeated to widen it by extra_w.
+	int bg_shape  = -1;    // gumps.vga shape; -1 = the game's "gumps/scroll"
+	int bg_width  = 224;
+	int bg_height = 173;
+	int strip_x0  = 80;
+	int strip_x1  = 140;
+	int extra_w   = 96;
+
+	// list: the rows, as a dynamic_lists entry (always source 0).
+	Dynamic_list_def list = default_list();
+
+	// title: the container's name centred over width at y - 2, with a
+	// rule under it.
+	int title_x    = 51;
+	int title_y    = 31;
+	int title_w    = 138;
+	int title_font = 2;
+
+	// divider: a dotted line at x from y0 to y1 - 1.
+	int divider_x  = 193;
+	int divider_y0 = 33;
+	int divider_y1 = 145;
+
+	// panel: the selected item's name, quantity, weight and hints.
+	int panel_x          = 198;
+	int panel_y          = 31;
+	int panel_w          = 91;
+	int panel_font       = 2;
+	int panel_small_font = 4;
+
+	// preview: the selected item, enlarged in a box.
+	int preview_x = 198;
+	int preview_y = 43;
+	int preview_w = 91;
+	int preview_h = 50;
+
+	// picture: the container's own picture, its top-right corner here.
+	int pic_right = 46;
+	int pic_top   = 150;
+
+	// nav: top-left of the buttons stepping through nested containers;
+	// any value < 0 hides both.
+	int nav_left_x  = 51;
+	int nav_right_x = 177;
+	int nav_y       = 27;
+
+	// usecode: run when the list view opens (item = the container).
+	int open_fn = -1;
+
+	bool has_part(int part) const {
+		return (parts & part) != 0;
+	}
+
+	// Copy the parts present in 'src' over this layout.
+	void overlay(const List_layout& src);
+
+	static Dynamic_list_def default_list() {
+		Dynamic_list_def def;
+		def.field_id   = 0;
+		def.pos_x      = 51;
+		def.pos_y      = 42;
+		def.width      = 123;
+		def.rows       = 8;
+		def.row_height = 12;
+		def.font       = 2;
+		def.source     = 0;
+		def.flags      = DYNLIST_COUNT_LINE | DYNLIST_EMPTY_TEXT;
+		return def;
+	}
+};
+
 class Gump_info {
 	static std::map<int, Gump_info>                gump_info_map;
 	static std::map<int, Shortcutbar_icon_info>    shortcutbar_icon_map;
 	static std::map<int, Shortcutbar_action_entry> shortcutbar_action_map;
-	static bool                                    any_modified;
+	// list_layout entries: own map, as the key may be -1.
+	static std::map<int, List_layout> list_layout_map;
+	static bool                       any_modified;
 
 	friend class Shapes_vga_file;
 
@@ -517,6 +617,16 @@ public:
 	static const Gump_info* get_gump_info(int shapenum);
 	static Gump_info&       get_or_create_gump_info(int shapenum);
 	static void             clear();
+
+	// Effective list view layout for a container gump shape: the built-in
+	// layout, overlaid with the -1 entry's parts, then the shape's own.
+	// off if either entry has it.
+	static List_layout  get_list_layout(int gump_shape);
+	static List_layout& get_or_create_list_layout(int key);
+
+	static const std::map<int, List_layout>& get_list_layouts() {
+		return list_layout_map;
+	}
 
 	static const Shortcutbar_icon_info*                get_shortcutbar_icon(int slot);
 	static const std::map<int, Shortcutbar_icon_info>& get_shortcutbar_icons();

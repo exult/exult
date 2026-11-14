@@ -28,7 +28,62 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 std::map<int, Gump_info>                Gump_info::gump_info_map;
 std::map<int, Shortcutbar_icon_info>    Gump_info::shortcutbar_icon_map;
 std::map<int, Shortcutbar_action_entry> Gump_info::shortcutbar_action_map;
+std::map<int, List_layout>              Gump_info::list_layout_map;
 bool                                    Gump_info::any_modified = false;
+
+void List_layout::overlay(const List_layout& src) {
+	if (src.has_part(LISTLAYOUT_OFF)) {
+		off = off || src.off;
+	}
+	if (src.has_part(LISTLAYOUT_BACKGROUND)) {
+		bg_shape  = src.bg_shape;
+		bg_width  = src.bg_width;
+		bg_height = src.bg_height;
+		strip_x0  = src.strip_x0;
+		strip_x1  = src.strip_x1;
+		extra_w   = src.extra_w;
+	}
+	if (src.has_part(LISTLAYOUT_LIST)) {
+		list = src.list;
+	}
+	if (src.has_part(LISTLAYOUT_TITLE)) {
+		title_x    = src.title_x;
+		title_y    = src.title_y;
+		title_w    = src.title_w;
+		title_font = src.title_font;
+	}
+	if (src.has_part(LISTLAYOUT_DIVIDER)) {
+		divider_x  = src.divider_x;
+		divider_y0 = src.divider_y0;
+		divider_y1 = src.divider_y1;
+	}
+	if (src.has_part(LISTLAYOUT_PANEL)) {
+		panel_x          = src.panel_x;
+		panel_y          = src.panel_y;
+		panel_w          = src.panel_w;
+		panel_font       = src.panel_font;
+		panel_small_font = src.panel_small_font;
+	}
+	if (src.has_part(LISTLAYOUT_PREVIEW)) {
+		preview_x = src.preview_x;
+		preview_y = src.preview_y;
+		preview_w = src.preview_w;
+		preview_h = src.preview_h;
+	}
+	if (src.has_part(LISTLAYOUT_PICTURE)) {
+		pic_right = src.pic_right;
+		pic_top   = src.pic_top;
+	}
+	if (src.has_part(LISTLAYOUT_NAV)) {
+		nav_left_x  = src.nav_left_x;
+		nav_right_x = src.nav_right_x;
+		nav_y       = src.nav_y;
+	}
+	if (src.has_part(LISTLAYOUT_USECODE)) {
+		open_fn = src.open_fn;
+	}
+	parts |= src.parts;
+}
 
 Gump_info::Gump_info()
 		: container_from_patch(false), checkmark_from_patch(false), special_from_patch(false), snapzones_from_patch(false),
@@ -52,7 +107,28 @@ void Gump_info::clear() {
 	gump_info_map.clear();
 	shortcutbar_icon_map.clear();
 	shortcutbar_action_map.clear();
+	list_layout_map.clear();
 	any_modified = false;
+}
+
+List_layout Gump_info::get_list_layout(int gump_shape) {
+	List_layout layout;
+	auto        it = list_layout_map.find(-1);
+	if (it != list_layout_map.end()) {
+		layout.overlay(it->second);
+	}
+	if (gump_shape >= 0) {
+		it = list_layout_map.find(gump_shape);
+		if (it != list_layout_map.end()) {
+			layout.overlay(it->second);
+		}
+	}
+	layout.list.source = 0;    // The list view always lists the contents.
+	return layout;
+}
+
+List_layout& Gump_info::get_or_create_list_layout(int key) {
+	return list_layout_map[key];
 }
 
 const Shortcutbar_icon_info* Gump_info::get_shortcutbar_icon(int slot) {

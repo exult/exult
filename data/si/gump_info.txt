@@ -1,7 +1,7 @@
 #	Gumps information for Serpent Isle.
 #	Sections: container_area, checkmark_pos, special, snap_zones,
 #	          dynamic_buttons, dynamic_texts, dynamic_shapes, dynamic_sliders,
-#	          dynamic_lists
+#	          dynamic_lists, list_layout
 #
 #	container_area: Defines the object placement area within gumps
 #	checkmark_pos: Position of the close button for each gump
@@ -12,6 +12,7 @@
 #	dynamic_shapes: Data-driven shape displays, set by usecode
 #	dynamic_sliders: Data-driven slider controls, set/read by usecode
 #	dynamic_lists: Data-driven scrolling lists, from contents or usecode
+#	list_layout: Layout of the container list view (Containers: List)
 #
 
 %%section version
@@ -428,4 +429,57 @@
 # jawbone
 :9/activate_item/0
 
+%%endsection
+
+%%section list_layout
+# Layout of the container list view, used only when the player sets
+# Containers to List in Game Display Options.  See docs/dynamic_lists.md.
+#
+# Format: :gump_shape/part/fields...   (one line per part)
+#
+# gump_shape = the container's gump shape; -1 = the default for every
+#              container gump.  A shape's lines replace those parts of
+#              the default only.
+# Numbers are decimal.  Positions are relative to the top-left of the
+# widened background.
+#
+# Parts and their fields:
+#   off                                  this gump opens in the picture
+#                                        view (:-1/off: list view off)
+#   background/shape/width/height/strip_x0/strip_x1/extra_w
+#                                        gumps.vga art (-1 = gumps/scroll)
+#                                        and its size (else the picture
+#                                        view); columns strip_x0 to
+#                                        strip_x1-1 repeat to widen it by
+#                                        extra_w
+#   list/<the 15 dynamic_lists fields after gump_shape>
+#                                        the rows; source is always 0
+#   title/x/y/width/font                 container name and rule
+#   divider/x/y0/y1                      dotted line between the columns
+#   panel/x/y/width/font/small_font      selected item's name and details
+#   preview/x/y/box_w/box_h              selected item, enlarged in a box
+#   picture/right/top                    the container's own picture, its
+#                                        top-right corner
+#   nav/left_x/right_x/y                 arrows through nested containers
+#                                        (any value < 0 hides them)
+#   usecode/open_fn                      usecode when the view opens
+#                                        (item = the container; -1 = none)
+#
+# The list part's select_fn and rows_fn are the on-select and row-text
+# hooks, as in dynamic_lists.
+#
+# Examples (not active):
+# :<gump>/off
+# :-1/list/0/51/42/123/8/12/2/0/-1/-1/-1/-1/-1/1234/3
+#
+# The default: Exult's built-in layout.
+:-1/background/49/224/173/80/140/96
+:-1/list/0/51/42/123/8/12/2/0/-1/-1/-1/-1/-1/-1/3
+:-1/title/51/31/138/2
+:-1/divider/193/33/145
+:-1/panel/198/31/91/2/4
+:-1/preview/198/43/91/50
+:-1/picture/46/150
+:-1/nav/51/177/27
+:-1/usecode/-1
 %%endsection
