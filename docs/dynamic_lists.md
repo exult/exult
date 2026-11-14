@@ -18,7 +18,7 @@
 | `rows_fn`, and `select_fn` after drags | Yes | **No** — they run from `update_gump()` |
 | Intrinsics | Yes | Yes |
 
-The list view of containers (Game Display Options, Containers: List) is a second host for the widget; see its own documentation.
+The list view of containers (Game Display Options, Containers: List) is a second host for the widget, laid out by the `list_layout` section; see [Container List View](#container-list-view-list_layout).
 
 ---
 
@@ -33,8 +33,9 @@ The list view of containers (Game Display Options, Containers: List) is a second
 7. [Paint Behaviour](#paint-behaviour)
 8. [Intrinsics](#intrinsics)
 9. [Usecode Integration](#usecode-integration)
-10. [Design Notes](#design-notes)
-11. [Not Yet Supported](#not-yet-supported)
+10. [Container List View (`list_layout`)](#container-list-view-list_layout)
+11. [Design Notes](#design-notes)
+12. [Not Yet Supported](#not-yet-supported)
 
 ---
 
@@ -328,6 +329,74 @@ if (obj) {
 
 ---
 
+## Container List View (`list_layout`)
+
+The list view of containers (Game Display Options, **Containers: List**) is the second host for the widget. `Container_list_gump` shows a container as a scroll: a source-0 list of its contents on the left, the selected item enlarged with its details on the right, and the container's own picture (with its objects and close button) hanging off the bottom-left. Where all of that goes is data: the `list_layout` section of `gump_info.txt`.
+
+### When It Applies
+
+`list_layout` is consulted only in `Gump_manager::add_gump()`, only when the player has chosen Containers: List, and only after the existing checks: special gumps (spellbook, jawbone, stats, spell scroll), actors, and gumps with a `container_area` entry (dynamic gumps, including ritual containers with `snap_zones`) are created as before. So a `list_layout` entry never turns a container into a dynamic gump, and with Containers: Picture nothing here is read. A container opens in the list view when its effective layout is not `off` and the background frame is the one the layout describes (one frame of `width` x `height` with its hotspot at the top-left); otherwise it opens in the picture view.
+
+### Format
+
+```
+:gump_shape/part/fields...
+```
+
+One line per part, keyed by the container's gump shape. `gump_shape` `-1` is the default for every container gump. Numbers are decimal.
+
+| Part | Fields | Shipped default (SI; BG uses background shape 55) |
+|------|--------|---------------------------------------------------|
+| `off` | none | absent. On a shape: that gump opens in the picture view. `:-1/off`: the list view is off everywhere |
+| `background` | `shape/width/height/strip_x0/strip_x1/extra_w` | `49/224/173/80/140/96`. `shape` -1 = the game's `gumps/scroll`. Columns `strip_x0` to `strip_x1 - 1` are repeated to widen the art by `extra_w` (0 = drawn as it is) |
+| `list` | the 15 `dynamic_lists` fields after `gump_shape` | `0/51/42/123/8/12/2/0/-1/-1/-1/-1/-1/-1/3`. `source` is always treated as 0 |
+| `title` | `x/y/width/font` | `51/31/138/2`: the container's name centred over `width` at `y - 2` (shortened to `width - 28`), a rule at `y + 8` from `x + 4` to `x + width - 4` |
+| `divider` | `x/y0/y1` | `193/33/145`: a dotted line at `x`, rows `y0` to `y1 - 1` |
+| `panel` | `x/y/width/font/small_font` | `198/31/91/2/4`: the selected item's name and rule as the title, then quantity, weight and two hints from `y + 66`, one every 8 rows |
+| `preview` | `x/y/box_w/box_h` | `198/43/91/50`: the selected item, centred and enlarged in this box (a bound, boxed `Dynamic_shape_widget`) |
+| `picture` | `right/top` | `46/150`: the top-right corner of the container's own picture |
+| `nav` | `left_x/right_x/y` | `51/177/27`: top-left of the ◀ ▶ buttons that step through nested containers; any value < 0 hides both |
+| `usecode` | `open_fn` | `-1`: usecode run when the view opens (event `double_click`, item = the container), like a dynamic gump's on-open function; -1 = none |
+
+All positions are relative to the top-left of the widened background. The C++ defaults (`List_layout` in `gumpinf.h`) are the same numbers, with background shape -1; `data/bg/gump_info.txt` and `data/si/gump_info.txt` ship them spelled out.
+
+### Merging and `off`
+
+The layout for a gump is the built-in one, overlaid part by part with the `-1` entry's parts and then with that gump shape's own parts. A line replaces its part only, so a mod overrides just what it changes; a patch `gump_info.txt` line replaces the same part of the shipped file. The gump is `off` if either its own entry or the `-1` entry has `off`. The layout chosen when the view opens stays while ◀ ▶ step through nested containers; containers whose gump is `off` (or a dynamic gump, or a special gump) are skipped.
+
+### Hooks
+
+| Hook | Where | Called |
+|------|-------|--------|
+| On open | `usecode/open_fn` | once, after the view opened |
+| On select | `list/.../select_fn` | when the player's press, drop or a removal changes the selection |
+| Row text | `list/.../rows_fn` | once when the view opens and again whenever the contents change (or ◀ ▶ shows another container); never from paint |
+
+All three get the shown container as `item`, so the list intrinsics address the view with `UI_get_list_count(item, field_id)` and friends, `field_id` being the list part's (0 by default). In `rows_fn`, `UI_set_list_row(item, field_id, index, ["", text])` sets a row's right-aligned column (replacing the quantity) and `flags`/`font` as for any source-0 list; the values last until the rows are rebuilt, which is when `rows_fn` runs again.
+
+### Example: a Mod's Own Scroll and a Weight Column
+
+```
+%%section list_layout
+# Every container: rows a little narrower, weights in the right column.
+:-1/list/0/51/42/123/8/12/2/0/-1/-1/-1/-1/-1/1310/3
+# Gump 52: a mod's own art (gumps.vga 160, 280 x 180), not widened,
+# without the nested-container arrows.
+:52/background/160/280/180/0/0/0
+:52/nav/-1/-1/-1
+# Gump 57 keeps its picture view.
+:57/off
+%%endsection
+```
+
+`1310` would be a `fillWeights` function like the one in [A Weight Column](#a-weight-column-source-0), using field id 0.
+
+### What Stays in C++
+
+The panel's content (name, quantity, weight, the two hints), the stepping order (the opened container, then the containers inside it depth-first) and the input rules are fixed: a click selects, a double-click uses the item, items drag in and out of rows and the picture, the wheel scrolls anywhere on the gump. The list view takes no keyboard focus, so Up/Down and the other keys keep their game functions while a container is open.
+
+---
+
 ## Design Notes
 
 ### Why a Gump_button
@@ -344,7 +413,7 @@ Source-0 rows are rebuilt by `sync_rows()` (pure C++, at the start of paint and 
 
 ### Any Gump
 
-Like the other dynamic widgets, lists are created on any `gumps.vga` gump with entries. The drag-and-drop routing for source 0 needs the host to send object queries to the list; `Dynamic_container_gump` does (and the container list view). On other gumps a source-0 list shows and selects rows only.
+Like the other dynamic widgets, lists are created on any `gumps.vga` gump with entries. The drag-and-drop routing for source 0 needs the host to send object queries to the list; `Dynamic_container_gump` and `Container_list_gump` do. On other gumps a source-0 list shows and selects rows only.
 
 ### No Save Persistence
 

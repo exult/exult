@@ -658,10 +658,14 @@ Full documentation: [dynamic_lists.md](dynamic_lists.md).
 ```cpp
 if (Dynamic_container_gump::has_config(shapenum)) {
     new_gump = new Dynamic_container_gump(obj->as_container(), x, y, shapenum);
+} else if (container_list_view && !npc && Container_list_gump::is_available(shapenum)) {
+    new_gump = new Container_list_gump(obj->as_container(), x, y, shapenum);
 } else {
     new_gump = new Container_gump(obj->as_container(), x, y, shapenum);
 }
 ```
+
+The middle branch is the container list view: only when the player chose Containers: List, and only after the dynamic-gump check, so a `list_layout` entry never makes a container a dynamic gump. `is_available()` is false when the gump's effective `list_layout` is `off` or the background frame is not the size the layout gives. After opening, the layout's `usecode` part (`open_fn`) runs like a dynamic gump's on-open function. See [dynamic_lists.md](dynamic_lists.md#container-list-view-list_layout).
 
 This ensures backward compatibility — containers without `gump_info.txt` entries continue using the standard `Container_gump`.
 
@@ -701,7 +705,7 @@ Each widget type has a corresponding `_def` struct (in `gumpinf.h`) that holds t
 
 ### Configuration System Integration
 
-All configuration is stored in `gump_info.txt`, reusing the existing file and `ReadInt()`-based parser infrastructure. Ten gump sections are supported (plus the shortcut bar's own):
+All configuration is stored in `gump_info.txt`, reusing the existing file and `ReadInt()`-based parser infrastructure. Eleven gump sections are supported (plus the shortcut bar's own):
 
 | Section | Purpose |
 |---------|---------|
@@ -714,6 +718,7 @@ All configuration is stored in `gump_info.txt`, reusing the existing file and `R
 | `dynamic_shapes` | Shape displays set by usecode |
 | `dynamic_sliders` | Slider controls read/set by usecode |
 | `dynamic_lists` | Scrolling lists of the contents or of usecode rows |
+| `list_layout` | Layout of the container list view (Containers: List); key -1 = every container gump |
 | `gump_name` | Custom status bar name for gump clicks |
 
 ---
@@ -788,6 +793,13 @@ All configuration is stored in `gump_info.txt`, reusing the existing file and `R
 `select_fn`, `activate_fn`, `rows_fn`: usecode shape functions (-1 = none)
 `flags`: 0x01 = "N-M of T" count line, 0x02 = "Empty" text
 All 16 fields are required. See [dynamic_lists.md](dynamic_lists.md#field-reference).
+
+### list_layout
+```
+:gump_shape/part/fields...
+```
+One line per part: `off`, `background/shape/width/height/strip_x0/strip_x1/extra_w`, `list/<the 15 dynamic_lists fields>`, `title/x/y/width/font`, `divider/x/y0/y1`, `panel/x/y/width/font/small_font`, `preview/x/y/box_w/box_h`, `picture/right/top`, `nav/left_x/right_x/y`, `usecode/open_fn`.
+`gump_shape` -1 is the default for every container gump; a shape's parts replace those of the default; `off` on either gives the picture view. Read by its own reader (`List_layout_reader`), as `Functor_multidata_reader` skips ids below 0, into `Gump_info::list_layout_map`; Exult Studio writes the parts read from the patch file. See [dynamic_lists.md](dynamic_lists.md#container-list-view-list_layout).
 
 ### gump_name
 ```
@@ -901,6 +913,10 @@ Sets a custom name displayed in the status bar when the player clicks inside the
 | `shapes/shapeinf/gumpinf.h` / `.cc` | (Lists) `Dynamic_list_def`, `Dynamic_list_flags`, `dynamic_lists` with dirty tracking; `Dynamic_shape_def` and `Dynamic_slider_def` additions |
 | `usecode/intrinsics.cc`, `ucinternal.h`, `bgintrinsics.h`, `siintrinsics.h`, `sibetaintrinsics.h` | (Lists) seven intrinsics at provisional slots |
 | `data/exultmsg.txt` | (Lists) strings 0x6D2 "of" and 0x6D3 "Empty" |
+| `gumps/Container_list_gump.h` / `.cc`, `gumps/Container_list_layout.h` | (List view) laid out from `list_layout`; rows are a `Dynamic_list_widget`, the preview a bound `Dynamic_shape_widget` |
+| `gumps/Gump_manager.cc` | (List view) `Container_list_gump::is_available(shapenum)`; the layout's `open_fn` after opening |
+| `shapes/shapeinf/gumpinf.h` / `.cc`, `shapes/shapevga.cc`, `shapes/shapewrite.cc` | (List view) `List_layout`, `list_layout_map`, `get_list_layout()`; `list_layout` reader and writer |
+| `data/bg/gump_info.txt`, `data/si/gump_info.txt` | (List view) `list_layout` section with the default entry |
 
 ---
 
@@ -948,3 +964,4 @@ The frame management fix assumes that `default_frame` (frame 0) has the correct 
 | 2026-03-26 | theGreyWanderer-uc | Slider track hit area upper-bound fix (Bug 8) — prevents clicks outside track from registering, text alignment support (halign/valign) in Dynamic_text_widget |
 | 2026-04-04 | theGreyWanderer-uc | Keyboard input, mousewheel dispatch, and auto-repeat for `Dynamic_container_gump` — enables `handle_kbd_event()`, `mousewheel_up/down()`, `update_gump()` overrides; added `Gump_manager::handle_mouse_wheel()` and `exult.cc` event routing; mousewheel forwards to all child widgets without per-widget hit test |
 | 2026-11-13 | lucky-git-repo | Dynamic lists (`dynamic_lists` section, `Dynamic_list_widget` reusing `Dynamic_slider`), selection-bound and boxed `dynamic_shapes`, list intrinsics and `UI_open_gump` at provisional slots |
+| 2026-11-13 | lucky-git-repo | Container list view rebuilt on `Dynamic_list_widget`, laid out by the new `list_layout` section (per-gump overrides, `off`, on-open/select/row-text hooks) |
