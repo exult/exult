@@ -27,6 +27,7 @@
 #include <vector>
 
 class Container_game_object;
+class Dynamic_list_widget;
 class Game_object;
 struct Snap_zone;
 
@@ -44,6 +45,8 @@ private:
 	mutable int                   paint_log_count;    // Tracks paint calls to log
 	const std::vector<Snap_zone>* snap_zones_;        // Pointer to snap zones (owned by Gump_info)
 	std::string                   gump_name_;         // Custom click name from gump_info.txt
+	// Object last found in a contents list's row by find_object(), or null.
+	Game_object* list_hit = nullptr;
 
 	/**
 	 * Paint debug grid overlay showing container area.
@@ -62,6 +65,11 @@ private:
 	 * @return Pointer to best snap zone, or nullptr if none found
 	 */
 	const Snap_zone* find_snap_zone(int rel_x, int rel_y) const;
+
+	/**
+	 * The gump's dynamic lists that show the container's contents.
+	 */
+	std::vector<Dynamic_list_widget*> contents_lists() const;
 
 public:
 	/**
@@ -86,6 +94,27 @@ public:
 	 */
 	bool add(Game_object* obj, int mx = -1, int my = -1, int sx = -1, int sy = -1, bool dont_check = false, bool combine = false)
 			override;
+
+	/**
+	 * Remove an object, keeping contents lists' selections valid.
+	 */
+	void remove(Game_object* obj) override;
+
+	/**
+	 * Objects in a contents list's rows come first, then the picture's.
+	 */
+	Game_object* find_object(int mx, int my) override;
+
+	/**
+	 * An object found in a list row is drawn there: drags start from it.
+	 */
+	TileRect get_shape_rect(const Game_object* obj) const override;
+	void     get_shape_location(const Game_object* obj, int& ox, int& oy) const override;
+
+	/**
+	 * A pressed object is selected in contents lists.
+	 */
+	void object_pressed(Game_object* obj) override;
 
 	/**
 	 * Paint the gump, including background and debug grid if enabled.

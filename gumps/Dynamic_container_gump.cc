@@ -24,8 +24,10 @@
 
 #include "Dynamic_container_gump.h"
 
+#include "Dynamic_list_widget.h"
 #include "Gump_manager.h"
 #include "Gump_widget.h"
+#include "cheat.h"
 #include "contain.h"
 #include "game.h"
 #include "gamewin.h"
@@ -306,8 +308,99 @@ void Dynamic_container_gump::paint_snap_zones() const {
 	}
 }
 
+std::vector<Dynamic_list_widget*> Dynamic_container_gump::contents_lists() const {
+	std::vector<Dynamic_list_widget*> out;
+	for (auto* w : elems) {
+		auto* list = dynamic_cast<Dynamic_list_widget*>(w);
+		if (list && list->shows_contents()) {
+			out.push_back(list);
+		}
+	}
+	return out;
+}
+
+Game_object* Dynamic_container_gump::find_object(int mx, int my) {
+	list_hit = nullptr;
+	for (auto* list : contents_lists()) {
+		Game_object* obj = list->object_at(mx, my);
+		if (obj) {
+			list_hit = obj;
+			return obj;
+		}
+	}
+	return Container_gump::find_object(mx, my);
+}
+
+void Dynamic_container_gump::get_shape_location(const Game_object* obj, int& ox, int& oy) const {
+	if (obj && obj == list_hit) {
+		for (const auto* list : contents_lists()) {
+			if (list->row_location(obj, ox, oy)) {
+				return;
+			}
+		}
+	}
+	Container_gump::get_shape_location(obj, ox, oy);
+}
+
+TileRect Dynamic_container_gump::get_shape_rect(const Game_object* obj) const {
+	if (obj && obj == list_hit) {
+		const Shape_frame* frame = obj->get_shape();
+		int                ox;
+		int                oy;
+		if (frame) {
+			for (const auto* list : contents_lists()) {
+				if (list->row_location(obj, ox, oy)) {
+					return TileRect(ox - frame->get_xleft(), oy - frame->get_yabove(), frame->get_width(), frame->get_height());
+				}
+			}
+		}
+	}
+	return Container_gump::get_shape_rect(obj);
+}
+
+void Dynamic_container_gump::object_pressed(Game_object* obj) {
+	for (auto* list : contents_lists()) {
+		list->select_object(obj, true);
+	}
+}
+
+void Dynamic_container_gump::remove(Game_object* obj) {
+	if (obj == list_hit) {
+		list_hit = nullptr;
+	}
+	for (auto* list : contents_lists()) {
+		list->object_removed(obj);
+	}
+	Container_gump::remove(obj);
+}
+
 bool Dynamic_container_gump::add(Game_object* obj, int mx, int my, int sx, int sy, bool dont_check, bool combine) {
 	const bool log_enabled = (debug_flags_ & GUMP_DEBUG_CONSOLE) != 0;
+
+	// A drop on a contents list: onto the row's object if it takes it
+	// (into a bag, onto a stack), as in the picture; else into the
+	// container, with the position left for the picture to choose.
+	if (obj && mx >= 0 && my >= 0) {
+		for (auto* list : contents_lists()) {
+			if (!list->is_drop_target(mx, my)) {
+				continue;
+			}
+			if (!container || (!cheat.in_hack_mover() && !dont_check && !container->has_room(obj))) {
+				return false;    // Full.
+			}
+			Game_object* onobj = list->object_at(mx, my);
+			if (onobj && onobj != obj && onobj->drop(obj)) {
+				list->select_object(onobj, true);
+				return true;
+			}
+			if (!container->add(obj, dont_check)) {    // DON'T combine here.
+				return false;
+			}
+			obj->set_shape_pos(255, 255);
+			list->select_object(obj, true);
+			return true;
+		}
+	}
 
 	if (log_enabled) {
 		std::cerr << "[DynamicGump::add] ========== ADD CALLED ==========" << std::endl;
@@ -494,7 +587,7 @@ bool Dynamic_container_gump::has_config(int shapenum) {
 		return false;
 	}
 	return info->has_snap_zones() || info->has_dynamic_buttons() || info->has_dynamic_texts() || info->has_dynamic_shapes()
-		   || info->has_dynamic_sliders();
+		   || info->has_dynamic_sliders() || info->has_dynamic_lists();
 }
 
 bool Dynamic_container_gump::has_dynamic_elements() const {
@@ -502,7 +595,8 @@ bool Dynamic_container_gump::has_dynamic_elements() const {
 	if (!info) {
 		return false;
 	}
-	return info->has_dynamic_buttons() || info->has_dynamic_texts() || info->has_dynamic_shapes() || info->has_dynamic_sliders();
+	return info->has_dynamic_buttons() || info->has_dynamic_texts() || info->has_dynamic_shapes() || info->has_dynamic_sliders()
+		   || info->has_dynamic_lists();
 }
 
 /*
@@ -546,9 +640,17 @@ bool Dynamic_container_gump::handle_kbd_event(void* vev) {
 
 /*
  *  Forward mouse wheel up to child widgets.
+ *  A list under the pointer gets it first: sliders take the wheel
+ *  wherever it is, and they come before lists in elems.
  *  Returns true if a widget consumed the event.
  */
 bool Dynamic_container_gump::mousewheel_up(int mx, int my) {
+	for (auto* w : elems) {
+		auto* list = dynamic_cast<Dynamic_list_widget*>(w);
+		if (list && list->mousewheel_up(mx, my)) {
+			return true;
+		}
+	}
 	for (auto* w : elems) {
 		if (w && w->mousewheel_up(mx, my)) {
 			return true;
@@ -559,9 +661,17 @@ bool Dynamic_container_gump::mousewheel_up(int mx, int my) {
 
 /*
  *  Forward mouse wheel down to child widgets.
+ *  A list under the pointer gets it first: sliders take the wheel
+ *  wherever it is, and they come before lists in elems.
  *  Returns true if a widget consumed the event.
  */
 bool Dynamic_container_gump::mousewheel_down(int mx, int my) {
+	for (auto* w : elems) {
+		auto* list = dynamic_cast<Dynamic_list_widget*>(w);
+		if (list && list->mousewheel_down(mx, my)) {
+			return true;
+		}
+	}
 	for (auto* w : elems) {
 		if (w && w->mousewheel_down(mx, my)) {
 			return true;
@@ -575,11 +685,17 @@ bool Dynamic_container_gump::mousewheel_down(int mx, int my) {
  *  Called from Gump_manager::update_gumps().
  */
 void Dynamic_container_gump::update_gump() {
-	Game_window* gwin = Game_window::get_instance();
+	Game_window*   gwin    = Game_window::get_instance();
+	const unsigned changes = gumpman->get_chain_changes();
 	for (auto* w : elems) {
 		if (w && w->run()) {
 			if (gwin) {
 				gwin->set_all_dirty();
+			}
+			// Usecode run by the widget may have closed this gump (or
+			// opened another): touch nothing more of `this`.
+			if (gumpman->get_chain_changes() != changes) {
+				return;
 			}
 		}
 	}
