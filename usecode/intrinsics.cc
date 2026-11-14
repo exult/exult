@@ -22,6 +22,7 @@
 
 #include "Audio.h"
 #include "Book_gump.h"
+#include "Dynamic_list_widget.h"
 #include "Dynamic_shape_widget.h"
 #include "Dynamic_slider.h"
 #include "Dynamic_text_widget.h"
@@ -4484,4 +4485,178 @@ USECODE_INTRINSIC(set_gump_text_font) {
 		}
 	}
 	return Usecode_value(0);
+}
+
+/*
+ *  Dynamic lists (Dynamic_list_widget).  The slots are provisional.
+ *
+ *  The list is looked up on the gump whose container is the item, then
+ *  on the gump showing the item, then on its owner's.
+ */
+
+static Dynamic_list_widget* Find_list_widget(Game_object* item, int fid) {
+	if (!item) {
+		return nullptr;
+	}
+	Gump_manager* gman  = Game_window::get_instance()->get_gump_man();
+	Game_object*  owner = item->get_owner();
+	Gump* gumps[]       = {gman->find_gump(item, c_any_shapenum), gman->find_gump(item), owner ? gman->find_gump(owner) : nullptr};
+	for (Gump* gump : gumps) {
+		if (!gump) {
+			continue;
+		}
+		for (auto* elem : gump->get_elems()) {
+			auto* list = dynamic_cast<Dynamic_list_widget*>(elem);
+			if (list && list->get_field_id() == fid) {
+				return list;
+			}
+		}
+	}
+	return nullptr;
+}
+
+/*
+ *  A row from usecode: a string (the text), or an array
+ *  [text, right_text, shape, frame, flags, font] with trailing elements
+ *  optional.  Texts may also be numbers.  Output: how many fields were
+ *  given (0 = not a row).
+ */
+
+static int Get_list_row(const Usecode_value& val, Dynamic_list_widget::Row& row) {
+	// Text from a string, or from a number (a quantity or weight column).
+	auto text_of = [](const Usecode_value& v) {
+		if (v.is_int()) {
+			return std::to_string(v.get_int_value());
+		}
+		const char* str = v.get_str_value();
+		std::string out = str ? str : "";
+		translate_usecode_text(out);
+		return out;
+	};
+	if (!val.is_array()) {
+		if (!val.get_str_value() && !val.is_int()) {
+			return 0;
+		}
+		row.text = text_of(val);
+		return 1;
+	}
+	const int n = static_cast<int>(std::min<size_t>(val.get_array_size(), 6));
+	if (n >= 1) {
+		row.text = text_of(val.get_elem(0));
+	}
+	if (n >= 2) {
+		row.right = text_of(val.get_elem(1));
+	}
+	if (n >= 3) {
+		row.shape = val.get_elem(2).get_int_value();
+	}
+	if (n >= 4) {
+		row.frame = val.get_elem(3).get_int_value();
+	}
+	if (n >= 5) {
+		row.flags = val.get_elem(4).get_int_value();
+	}
+	if (n >= 6) {
+		row.font = val.get_elem(5).get_int_value();
+	}
+	return n;
+}
+
+USECODE_INTRINSIC(set_list_rows) {
+	// set_list_rows(item, field_id, rows) - Replaces the rows of a
+	// source-1 dynamic list.  rows is an array of strings (or of row
+	// arrays, as for set_list_row), or one string.  Clears the selection
+	// and scrolls to the top.  Returns the row count (0 for a source-0
+	// list or no list).
+	Dynamic_list_widget* list = Find_list_widget(get_item(parms[0]), parms[1].get_int_value());
+	if (!list || list->shows_contents()) {
+		return Usecode_value(0);
+	}
+	std::vector<Dynamic_list_widget::Row> rows;
+	const Usecode_value&                  val = parms[2];
+	if (val.is_array()) {
+		for (size_t i = 0; i < val.get_array_size(); i++) {
+			Dynamic_list_widget::Row row;
+			Get_list_row(val.get_elem(static_cast<int>(i)), row);
+			rows.push_back(std::move(row));
+		}
+	} else {
+		Dynamic_list_widget::Row row;
+		if (Get_list_row(val, row) > 0) {
+			rows.push_back(std::move(row));
+		}
+	}
+	const int count = list->set_rows(std::move(rows));
+	gwin->set_all_dirty();
+	return Usecode_value(count);
+}
+
+USECODE_INTRINSIC(set_list_row) {
+	// set_list_row(item, field_id, index, row) - Sets one row (1-based).
+	// row is a string or [text, right_text, shape, frame, flags, font]
+	// (flags 1 = disabled; font -1 = the list's).  Source 1: replaces row
+	// index, or appends at count + 1.  Source 0: sets the right column,
+	// flags and font of a row until the contents change.  Returns 1/0.
+	Dynamic_list_widget* list = Find_list_widget(get_item(parms[0]), parms[1].get_int_value());
+	if (!list) {
+		return Usecode_value(0);
+	}
+	Dynamic_list_widget::Row row;
+	const int                given = Get_list_row(parms[3], row);
+	if (given <= 0 || !list->set_row(parms[2].get_int_value(), row, given)) {
+		return Usecode_value(0);
+	}
+	gwin->set_all_dirty();
+	return Usecode_value(1);
+}
+
+USECODE_INTRINSIC(get_list_selection) {
+	// get_list_selection(item, field_id) - The selected row, 1-based;
+	// 0 = none or no list.
+	Dynamic_list_widget* list = Find_list_widget(get_item(parms[0]), parms[1].get_int_value());
+	return Usecode_value(list ? list->get_selection() : 0);
+}
+
+USECODE_INTRINSIC(set_list_selection) {
+	// set_list_selection(item, field_id, index) - Selects a row (1-based;
+	// 0 clears) and scrolls it into view.  Does not call select_fn.
+	// Returns 0 for a missing or disabled row.
+	Dynamic_list_widget* list = Find_list_widget(get_item(parms[0]), parms[1].get_int_value());
+	if (!list || !list->set_selection(parms[2].get_int_value())) {
+		return Usecode_value(0);
+	}
+	gwin->set_all_dirty();
+	return Usecode_value(1);
+}
+
+USECODE_INTRINSIC(get_list_count) {
+	// get_list_count(item, field_id) - The number of rows (0 if no list).
+	Dynamic_list_widget* list = Find_list_widget(get_item(parms[0]), parms[1].get_int_value());
+	return Usecode_value(list ? list->get_count() : 0);
+}
+
+USECODE_INTRINSIC(get_list_object) {
+	// get_list_object(item, field_id, index) - Source 0: the object in row
+	// index (1-based; 0 = the selected row).  Otherwise 0.
+	Dynamic_list_widget* list = Find_list_widget(get_item(parms[0]), parms[1].get_int_value());
+	Game_object*         obj  = list ? list->get_object(parms[2].get_int_value()) : nullptr;
+	return Usecode_value(obj);
+}
+
+USECODE_INTRINSIC(open_gump) {
+	// open_gump(item[, gump_shape]) - Opens a container's gump, as a
+	// double-click on it would (a dynamic gump if gump_info.txt makes it
+	// one), with its own gump shape by default.  NPCs are not opened.
+	// Returns 1 if the gump is open afterwards.
+	Game_object* item = get_item(parms[0]);
+	if (!item || !item->as_container() || item->as_actor()) {
+		return Usecode_value(0);
+	}
+	const int shape = parms.size() > 1 ? parms[1].get_int_value() : item->get_info().get_gump_shape();
+	if (shape < 0) {
+		return Usecode_value(0);
+	}
+	gumpman->add_gump(item, shape);
+	gwin->set_all_dirty();
+	return Usecode_value(gumpman->find_gump(item, c_any_shapenum) != nullptr);
 }
