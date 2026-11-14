@@ -93,3 +93,4 @@ jobs:
       build_result: ${{ needs.ci-macos.result }}
     secrets:
       DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+      
