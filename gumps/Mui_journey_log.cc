@@ -325,12 +325,23 @@ namespace {
 		return out;
 	}
 
+	// Menu strings can hold line breaks (Forge of Virtue's title has
+	// one); the details panel shows them on one line.
+	std::string one_line(std::string s) {
+		for (char& c : s) {
+			if (c == '\n' || c == '\r') {
+				c = ' ';
+			}
+		}
+		return s;
+	}
+
 	std::string game_name() {
 		std::string g = Game::get_menustring();
 		if (g.empty()) {
 			g = Game::get_gametitle();
 		}
-		return g;
+		return one_line(g);
 	}
 
 	// Classic Newfile_gump::SaveInfo::CompareThis: newest first, saves
@@ -614,7 +625,7 @@ namespace {
 			};
 			block(Strings::Game(), game_name());
 			if (!Game::get_modtitle().empty()) {
-				block(Strings::Mod(), Game::get_modtitle());
+				block(Strings::Mod(), one_line(Game::get_modtitle()));
 			}
 			block(Strings::RunningBuild(), running_build());
 			y += pad;

@@ -72,6 +72,10 @@ namespace {
 			return get_text_msg(0xC2F - msg_file_start);
 		}
 
+		static auto SettingFound() {
+			return get_text_msg(0xD21 - msg_file_start);
+		}
+
 		static auto Open() {
 			return get_text_msg(0xC30 - msg_file_start);
 		}
@@ -530,8 +534,9 @@ void Mui_options_window::build_results(Mui_box& body) {
 	const auto keys = editor->search(needle);
 	count += int(keys.size());
 	auto* found = body.add<Mui_label>(
-			count ? std::to_string(count) + " " + Strings::SettingsFound() : std::string(Strings::NoMatches()), Mui_font_role::body,
-			Mui_colour::text_dim);
+			count ? std::to_string(count) + " " + (count == 1 ? Strings::SettingFound() : Strings::SettingsFound())
+				  : std::string(Strings::NoMatches()),
+			Mui_font_role::body, Mui_colour::text_dim);
 	found->id = "options.search.count";
 	for (int t = 0; t < num_model_tabs; t++) {
 		const Model& m     = *models[size_t(t)];
