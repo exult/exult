@@ -70,7 +70,43 @@ class CheatScreen : protected Game_singletons {
 	void                     load_global_flag_names();
 
 public:
+	CheatScreen();
+	~CheatScreen();
+	CheatScreen(const CheatScreen&)            = delete;
+	CheatScreen& operator=(const CheatScreen&) = delete;
+
 	void show_screen();
+
+	// Text-mode menus that can be opened on their own (themed cheat window).
+	enum class Which {
+		Root,
+		NPC,
+		Usecode,
+		Teleport,
+		GlobalFlag
+	};
+
+	// Show one menu of the cheat screen with show_screen()'s setup and
+	// teardown; returns when the user leaves that menu.
+	void run_menu_screen(Which which, Actor* actor = nullptr, unsigned flag = 0);
+
+	// The paperdoll toggle of the root menu (Black Gate and devel games).
+	static void toggle_paperdolls();
+
+	Actor* GetGrabbedActor() const {
+		return grabbed;
+	}
+
+	const std::vector<std::string>& get_global_flag_names() {
+		if (!global_flag_names_loaded) {
+			load_global_flag_names();
+		}
+		return global_flag_names;
+	}
+
+	int get_highest_map() {
+		return Get_highest_map();
+	}
 
 	void SetGrabbedActor(Actor* g) {
 		grabbed = g;
@@ -94,6 +130,13 @@ public:
 	};
 
 private:
+	// State that lives from begin_screen() to end_screen() (scene layer and
+	// UI layer mask).
+	struct Screen_session;
+	std::unique_ptr<Screen_session> session;
+	void                            begin_screen();
+	void                            end_screen();
+
 	// Get a 1 to 3 char name for a keycode
 	static const char* getKeyName(SDL_Keycode keycode);
 
