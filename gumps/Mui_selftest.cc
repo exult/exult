@@ -32,14 +32,17 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "Mui_window.h"
 #include "Newfile_gump.h"
 #include "Yesno_gump.h"
+#include "actors.h"
 #include "cheat.h"
 #include "conversation.h"
 #include "exult.h"
 #include "fnames.h"
 #include "game.h"
 #include "gameclk.h"
+#include "gamedoctor.h"
 #include "gamewin.h"
 #include "keyactions.h"
+#include "keys.h"
 #include "listfiles.h"
 #include "mouse.h"
 #include "ucmachine.h"
@@ -302,6 +305,16 @@ namespace {
 		return true;
 	}
 
+	// A file exists; a trailing '*' matches any name with that prefix.
+	bool file_exists(const std::string& path) {
+		if (path.empty() || path.back() != '*') {
+			return U7exists(path);
+		}
+		FileList files;
+		U7ListFiles(path, files, true);
+		return !files.empty();
+	}
+
 	void open_target(const std::string& what, const std::string& arg) {
 		State& st   = state();
 		st.log_open = true;
@@ -331,6 +344,12 @@ namespace {
 				std::cout << "MUI-TEST info opened CheatScreen" << std::endl;
 			}
 			cheat.cheat_screen();
+		} else if (what == "doctor") {
+			// The cheat window on a game doctor section, in any style.
+			if (!Mui::open_doctor(arg.empty() ? "doctor_checkup" : arg.c_str())) {
+				st.log_open = false;
+				expect(false, "open doctor " + arg, "not available (cheats off?)");
+			}
 		} else if (what == "classic-menu") {
 			Gamemenu_gump menu;
 			gman->do_modal_gump(&menu, Mouse::hand);
@@ -601,6 +620,60 @@ namespace {
 			args >> num >> onoff;
 			const bool value = gwin->get_usecode()->get_global_flag_bool(num);
 			expect(value == (onoff == "on"), "global flag " + rest, value ? "on" : "off");
+		} else if (cmd == "expect-npc") {
+			int         num = -1;
+			std::string want;
+			args >> num >> want;
+			const Actor*      npc = gwin->get_npc(num);
+			const std::string got = !npc ? "<missing>" : npc->is_dead() ? "dead" : "alive";
+			expect(got == want, "npc " + rest, got);
+		} else if (cmd == "expect-npc-near-avatar") {
+			// On the Avatar's map and at most TILES tiles away.
+			int num   = -1;
+			int tiles = 0;
+			args >> num >> tiles;
+			const Actor* npc = gwin->get_npc(num);
+			const Actor* av  = gwin->get_main_actor();
+			std::string  got = "<missing>";
+			bool         ok  = false;
+			if (npc && av && npc->get_chunk() && av->get_chunk()) {
+				const int dist = npc->distance(av);
+				ok             = npc->get_map_num() == av->get_map_num() && dist <= tiles;
+				got            = std::to_string(dist) + " tiles, map " + std::to_string(npc->get_map_num());
+			} else if (npc) {
+				got = "not on the map";
+			}
+			expect(ok, "npc near avatar " + rest, got);
+		} else if (cmd == "expect-gflag") {
+			// A named global flag (flag tables of the game and the mod).
+			std::string name;
+			std::string onoff;
+			args >> name >> onoff;
+			const int num = Game_doctor::get().flag_number(name);
+			if (num < 0) {
+				expect(false, "gflag " + rest, "unknown flag name");
+			} else {
+				const bool value = gwin->get_usecode()->get_global_flag_bool(num);
+				expect(value == (onoff == "on"), "gflag " + rest, value ? "on" : "off");
+			}
+		} else if (cmd == "expect-undo") {
+			size_t want = 0;
+			args >> want;
+			const size_t got = Game_doctor::get().undo_depth();
+			expect(got == want, "undo depth " + rest, std::to_string(got));
+		} else if (cmd == "expect-file") {
+			expect(file_exists(rest), "file " + rest, "missing");
+		} else if (cmd == "key-action") {
+			// Run a key action by name, also one no key is bound to.
+			ActionFunc fn = GetExultAction(rest);
+			if (!fn) {
+				expect(false, "key-action " + rest, "unknown action");
+			} else {
+				st.log_open             = true;
+				static const int none[] = {0, 0, 0, 0};
+				fn(none);
+				st.log_open = false;
+			}
 		} else if (cmd == "escape-classic") {
 			st.escape_classic = true;
 		} else if (cmd == "save-game") {

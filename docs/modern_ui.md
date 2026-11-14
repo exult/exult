@@ -93,6 +93,7 @@ While any themed window is open, `Yesno_gump::themed_ask` and `Gump_manager::the
 | `open_journey_log(bool* restored)` | `ActionFileGump`, the themed game menu. |
 | `open_options(tab)` | The themed game menu. |
 | `open_cheats()` | `Cheat::cheat_screen()` (cheat.cc), the themed game menu. |
+| `open_doctor(section)` | `ActionGameDoctor` (any style; see [game_doctor.md](game_doctor.md)). |
 | `cycle_menu_style()` | `ActionMenuStyle`. |
 
 Each returns false in classic style and the caller then runs its old code unchanged.
@@ -234,14 +235,17 @@ The editor keeps edits pending until Apply, validates them all, then calls `conf
 | `wait MS` | Let the game run. |
 | `style NAME\|none`, `display W H` | Change the style key or the display size. |
 | `open menu\|journey\|options [tab]\|cheats\|classic-menu\|classic-file\|classic-cheats` | Open a screen. |
+| `open doctor [SECTION]` | The cheat window on a game doctor section (default `doctor_checkup`), in any style. |
 | `click ID-or-part`, `rclick X Y`, `key [shift+\|ctrl+\|alt+]NAME`, `type TEXT`, `select ID INDEX`, `tab KEY` | Input. |
 | `shot PATH` | Full-display PNG. |
+| `key-action NAME` | Run a key action by name (e.g. `GAME_DOCTOR`), also one no key is bound to. |
 | `close`, `quit`, `escape-classic` | Close the window, quit, queue Escape for the next text-mode cheat menu. |
 | `expect-config KEY VALUE\|<absent>`, `expect-widget ID VALUE`, `expect-widget-atleast ID N`, `expect-focus ID`, `expect-open CLASS`, `expect-window none\|open` | Checks. |
 | `expect-cheat NAME on\|off`, `expect-time D H M`, `expect-flag N on\|off` | Cheat checks. |
 | `expect-style NAME`, `expect-scale N` (UI scale × 100), `expect-frame [W H]` (window size; logs it), `expect-no-widget ID`, `expect-game-area W H` | Window and display checks. |
 | `ask TEXT`, `expect-answer yes\|no`, `prompt-number MIN MAX STEP DEFAULT`, `expect-number N [escaped]` | Ask a Yes/No or a number from the window on top (themed dialogs). |
 | `gclick X Y [right]`, `expect-gump CLASS\|none` | Click a point of the classic modal gump on top (relative to its origin, through its layer); check which classic gump is on top. |
+| `expect-npc NUM alive\|dead`, `expect-npc-near-avatar NUM TILES`, `expect-gflag NAME on\|off`, `expect-undo N`, `expect-file PATH[*]` | Troubleshooting checks ([game_doctor.md](game_doctor.md)): NPC state, an NPC on the Avatar's map within TILES, a named global flag, the undo depth, a file (a trailing `*` matches a name prefix). |
 | `save-game NUM NAME`, `save-compression N`, `play-time SECS`, `restore-game NUM`, `expect-saves N`, `expect-visible N`, `expect-card-name I NAME`, `select-card NAME`, `expect-save-name NUM NAME`, `expect-save-play-time NUM none\|MIN`, `expect-restored yes\|no` | Journey Log checks. |
 
 Run it headless only: `SDL_VIDEO_DRIVER=dummy SDL_AUDIO_DRIVER=dummy EXULT_MUI_TEST=script.mui exult -c test.cfg --game ... --nomenu`. Use game area 320×200 with fill mode Fit in the test configuration; under the dummy driver an Auto game area renders a tiled world.
@@ -261,6 +265,7 @@ Run it headless only: `SDL_VIDEO_DRIVER=dummy SDL_AUDIO_DRIVER=dummy EXULT_MUI_T
 | gumps/Mui_config_meta.{h,cc}, gumps/Mui_config_editor.{h,cc} | Advanced tab. |
 | gumps/Mui_journey_log.{h,cc} | Journey Log. |
 | gumps/Mui_cheats.{h,cc} | Cheat window. |
+| gumps/Mui_cheats_doctor.cc | Game doctor sections of the cheat window. |
 | gumps/Mui_selftest.{h,cc} | Headless test driver. |
 | data/mui_fonts.vga, data/mui_ultima.thm, data/mui_modern.thm, data/mui_config_keys.txt, data/fonts/DejaVu-LICENSE.txt | Data. |
 | tools/mui/gen_mui_fonts.py, tools/mui/scan_config_keys.py, tools/mui/test_scan_config_keys.py | Maintainer tools. |
