@@ -55,6 +55,13 @@ public:
 		choice
 	};
 
+	// One line of the scroll-back history: a said text or a chosen answer.
+	struct Entry {
+		std::string speaker;    // Label, may be empty.
+		std::string text;
+		bool        choice = false;
+	};
+
 	// Resolve config/gameplay/dialogue_style (follow -> menu_style). Sets
 	// theme to the theme name, or "classic"; false for the classic view.
 	static bool resolve_style(std::string& theme);
@@ -75,6 +82,9 @@ public:
 	int  choose();
 	void hide();
 	void paint();
+	// History of the session: Conversation adds the chosen answers.
+	void add_choice(const std::string& speaker, const std::string& text);
+	void clear_history();
 
 	// Test support.
 	const std::string& theme_name() const {
@@ -93,9 +103,27 @@ public:
 		return wait;
 	}
 
+	const std::vector<Entry>& get_history() const {
+		return history;
+	}
+
+	bool history_open() const {
+		return hist_open;
+	}
+
+	// Scroll offset of the open history and its largest value.
+	int history_scroll() const {
+		return hist_scroll;
+	}
+
+	int history_scroll_max() const {
+		return hist_max_scroll();
+	}
+
 	// Label of the speaker of the shown text (may be empty).
 	std::string speaker() const;
-	// Layer rectangle of "answer.N", "continue", "text", "face.0", "face.1".
+	// Layer rectangle of "answer.N", "continue", "text", "face.0", "face.1",
+	// "panel", "history.close", "history.thumb", "history.track".
 	bool part_rect(const std::string& part, TileRect& r);
 
 	int get_layer() const {
@@ -124,6 +152,28 @@ private:
 		int      bar_w     = 0;
 	};
 
+	// History mode: the panel grown to 70 % of the display.
+	struct Hist_line {
+		std::string text;
+		int         y      = 0;    // Top, relative to the content.
+		bool        label  = false;
+		bool        choice = false;
+	};
+
+	struct Hist_layout {
+		TileRect               panel;
+		TileRect               header;
+		TileRect               close;
+		TileRect               view;     // Visible entries.
+		TileRect               track;    // Scrollbar.
+		TileRect               thumb;
+		TileRect               footer;
+		int                    line_h    = 1;
+		int                    label_h   = 1;
+		int                    content_h = 0;
+		std::vector<Hist_line> lines;
+	};
+
 	std::shared_ptr<Mui_theme> theme;
 	int                        layer      = -1;
 	int                        face_layer = -1;
@@ -149,6 +199,13 @@ private:
 	int                      text_shape = -1;
 	std::vector<std::string> log;    // Every page shown (test driver only).
 	Layout                   lay;
+	// Scroll-back history.
+	std::vector<Entry> history;
+	bool               hist_open   = false;
+	int                hist_scroll = 0;
+	bool               hist_drag   = false;
+	int                hist_grab   = 0;    // Pointer offset into the thumb.
+	Hist_layout        hl;
 
 	bool                                  ensure_layers();
 	void                                  destroy_layers();
@@ -160,12 +217,21 @@ private:
 	int                                   answer_at(int x, int y) const;
 	void                                  set_focus(int i);
 	void                                  scroll_by(int dy);
+	void                                  paint_frame(Mui_painter& p, const TileRect& panel);
 	void                                  paint_panel(Mui_painter& p);
 	void                                  paint_card(Mui_painter& p, int slot);
 	void                                  paint_answers(Mui_painter& p);
 	void                                  paint_faces(Mui_painter& p);
-	int                                   wait_input(Wait mode);
-	bool                                  to_layer(int sx, int sy, int& lx, int& ly) const;
+	void                                  layout_history(Mui_painter& p);
+	void                                  paint_history(Mui_painter& p);
+	void                                  open_history();
+	void                                  close_history();
+	void                                  hist_scroll_to(int y);
+	int                                   hist_max_scroll() const;
+	// Handle an input while the history is open; true if it was used.
+	bool hist_key(int key);
+	int  wait_input(Wait mode);
+	bool to_layer(int sx, int sy, int& lx, int& ly) const;
 };
 
 #endif

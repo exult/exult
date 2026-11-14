@@ -1024,6 +1024,10 @@ void Conversation::pop_answers() {
 void Conversation::note_choice(int index) {
 	if (index >= 0 && static_cast<size_t>(index) < answers.size()) {
 		last_choice = answers[index];
+		if (view) {    // Themed: the history labels it with the Avatar's name.
+			Actor* avatar = gwin->get_main_actor();
+			view->add_choice(avatar ? avatar->get_npc_name() : std::string(), last_choice);
+		}
 	} else {
 		last_choice.clear();
 	}
@@ -1141,6 +1145,7 @@ void Conversation::begin_session_if_needed() {
 
 void Conversation::end_session() {
 	if (view) {
+		view->clear_history();    // The history lasts one session.
 		view->hide();
 		view.reset();
 	}

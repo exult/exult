@@ -45,6 +45,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <cmath>
 #include <cstdlib>
 #include <cstring>
+#include <limits>
 
 namespace {
 	class Strings : public GumpStrings {
@@ -59,6 +60,14 @@ namespace {
 
 		static auto ChooseHint() {
 			return get_text_msg(0xDC2 - msg_file_start);
+		}
+
+		static auto HistoryTitle() {
+			return get_text_msg(0xDC3 - msg_file_start);
+		}
+
+		static auto HistoryHint() {
+			return get_text_msg(0xDC5 - msg_file_start);
 		}
 	};
 
@@ -89,6 +98,29 @@ namespace {
 			c = char(std::tolower(static_cast<unsigned char>(c)));
 		}
 		return t == "bye" || t == "goodbye" || t == "good-bye" || t == "farewell";
+	}
+
+	// Text for the history: '*' and '\r' dropped, '^x' upper-cases x, trimmed.
+	std::string history_text(const std::string& text) {
+		std::string out;
+		for (size_t i = 0; i < text.size(); i++) {
+			const char c = text[i];
+			if (c == '*' || c == '\r') {
+				continue;
+			}
+			if (c == '^') {
+				if (i + 1 < text.size()) {
+					out += char(std::toupper(static_cast<unsigned char>(text[++i])));
+				}
+				continue;
+			}
+			out += c;
+		}
+		const auto b = out.find_first_not_of(" \t\n");
+		if (b == std::string::npos) {
+			return std::string();
+		}
+		return out.substr(b, out.find_last_not_of(" \t\n") - b + 1);
 	}
 
 	std::string join_lines(const std::vector<std::string>& lines, const char* sep) {
@@ -393,9 +425,13 @@ void Mui_dialogue::show_page(const std::vector<std::string>& lines) {
 }
 
 void Mui_dialogue::say(const std::string& text, bool large) {
-	text_large = large;
-	text_slot  = active >= 0 && active <= 1 ? active : -1;
-	text_shape = text_slot >= 0 ? faces[size_t(text_slot)].shape : -1;
+	text_large       = large;
+	text_slot        = active >= 0 && active <= 1 ? active : -1;
+	text_shape       = text_slot >= 0 ? faces[size_t(text_slot)].shape : -1;
+	std::string said = history_text(text);
+	if (!said.empty()) {
+		history.push_back(Entry{speaker(), std::move(said), false});
+	}
 	std::vector<std::vector<std::string>> pages;
 	if (ensure_layers()) {
 		auto*       buf = static_cast<Image_buffer8*>(iwin()->get_layer_ibuf(layer));
@@ -412,6 +448,19 @@ void Mui_dialogue::say(const std::string& text, bool large) {
 			wait_input(Wait::page);
 		}
 	}
+}
+
+void Mui_dialogue::add_choice(const std::string& who, const std::string& text) {
+	history.push_back(Entry{who, text, true});
+	dirty = true;
+}
+
+void Mui_dialogue::clear_history() {
+	history.clear();
+	hist_open   = false;
+	hist_drag   = false;
+	hist_scroll = 0;
+	dirty       = true;
 }
 
 void Mui_dialogue::wait_continue() {
@@ -572,11 +621,14 @@ void Mui_dialogue::paint_answers(Mui_painter& p) {
 	}
 }
 
-void Mui_dialogue::paint_panel(Mui_painter& p) {
-	const auto&     th    = *theme;
-	const auto&     m     = th.metrics;
-	const bool      stone = th.frame_stone;
-	const TileRect& panel = lay.panel;
+/*
+ *  The panel background: stone frame and parchment page for stone themes,
+ *  a rounded flat panel otherwise (as Mui_window::paint_frame).
+ */
+void Mui_dialogue::paint_frame(Mui_painter& p, const TileRect& panel) {
+	const auto& th    = *theme;
+	const auto& m     = th.metrics;
+	const bool  stone = th.frame_stone;
 	if (stone) {
 		p.texture_stone(
 				panel, th.colour(Mui_colour::frame), th.colour(Mui_colour::frame_light), th.colour(Mui_colour::frame_dark),
@@ -594,7 +646,12 @@ void Mui_dialogue::paint_panel(Mui_painter& p) {
 		p.rounded_fill(panel, rad, th.colour(Mui_colour::window));
 		p.rounded_frame(panel, rad, std::max(1, p.px(m.border)), th.colour(Mui_colour::frame));
 	}
-	const uint8 surf = th.colour(stone ? Mui_colour::panel : Mui_colour::window);
+}
+
+void Mui_dialogue::paint_panel(Mui_painter& p) {
+	const auto& th = *theme;
+	paint_frame(p, lay.panel);
+	const uint8 surf = th.colour(th.frame_stone ? Mui_colour::panel : Mui_colour::window);
 	for (int i = 0; i < 2; i++) {
 		if (lay.card_shown[i]) {
 			paint_card(p, i);
@@ -628,6 +685,177 @@ void Mui_dialogue::paint_panel(Mui_painter& p) {
 		p.text_in_idx(Strings::Continue(), ct, Mui_font_role::small, th.colour(Mui_colour::text), surf, Mui_align::left);
 	}
 	p.text_in_idx(hint, hr, Mui_font_role::small, th.colour(Mui_colour::text_dim), surf, Mui_align::left);
+}
+
+/*
+ *  History mode: the panel grows to 70 % of the display, with a header and
+ *  close button, the entries (one speaker label per run of lines of the
+ *  same speaker; chosen answers start with "> ") and a scrollbar.
+ */
+void Mui_dialogue::layout_history(Mui_painter& p) {
+	const auto&          m    = theme->metrics;
+	const Mui_text_font* body = body_font();
+	Hist_layout          H;
+	H.line_h         = body ? std::max(1, body->height()) : p.px(20);
+	H.label_h        = p.line_height(Mui_font_role::heading);
+	const int margin = p.px(margin_ref);
+	const int fb     = theme->frame_stone ? p.px(m.unit * 1.5f) : std::max(1, p.px(m.border));
+	const int pad    = p.px(pad_ref);
+	const int gap    = p.px(m.gap);
+	const int w      = lay.panel.w;
+	const int h      = std::min(layer_h - margin, std::max(lay.panel.h, layer_h * 7 / 10));
+	H.panel          = TileRect((layer_w - w) / 2, std::max(0, layer_h - margin - h), w, h);
+	const TileRect inner(H.panel.x + fb + pad, H.panel.y + fb + pad, w - 2 * (fb + pad), h - 2 * (fb + pad));
+	const int      head_h   = std::max(H.label_h, p.px(m.control_h));
+	const int      footer_h = std::max(p.line_height(Mui_font_role::small), p.px(20));
+	const int      bar_w    = std::max(6, p.px(10));
+	H.header                = TileRect(inner.x, inner.y, inner.w - head_h - gap, head_h);
+	H.close                 = TileRect(inner.x + inner.w - head_h, inner.y, head_h, head_h);
+	H.footer                = TileRect(inner.x, inner.y + inner.h - footer_h, inner.w, footer_h);
+	const int vy            = inner.y + head_h + gap;
+	const int vh            = std::max(H.line_h, H.footer.y - gap - vy);
+	H.track                 = TileRect(inner.x + inner.w - bar_w, vy, bar_w, vh);
+	H.view                  = TileRect(inner.x, vy, inner.w - bar_w - gap, vh);
+	int         y           = 0;
+	bool        first       = true;
+	std::string prev;
+	for (const Entry& e : history) {
+		if (first || e.speaker != prev) {
+			if (!first) {
+				y += gap;
+			}
+			if (!e.speaker.empty()) {
+				H.lines.push_back(Hist_line{e.speaker, y, true, e.choice});
+				y += H.label_h;
+			}
+			prev = e.speaker;
+		} else {
+			y += gap / 2;
+		}
+		first                                = false;
+		const std::string              t     = e.choice ? "> " + e.text : e.text;
+		const std::vector<std::string> lines = body ? body->wrap(t, std::max(1, H.view.w)) : std::vector<std::string>{t};
+		for (const auto& l : lines) {
+			H.lines.push_back(Hist_line{l, y, false, e.choice});
+			y += H.line_h;
+		}
+	}
+	H.content_h       = y;
+	hl                = std::move(H);
+	const int max_s   = hist_max_scroll();
+	hist_scroll       = std::clamp(hist_scroll, 0, max_s);
+	const int thumb_h = max_s > 0 ? std::max(bar_w * 3, hl.track.h * hl.view.h / std::max(1, hl.content_h)) : hl.track.h;
+	const int th_h    = std::min(thumb_h, hl.track.h);
+	const int th_y    = hl.track.y + (max_s > 0 ? (hl.track.h - th_h) * hist_scroll / max_s : 0);
+	hl.thumb          = TileRect(hl.track.x, th_y, hl.track.w, th_h);
+}
+
+void Mui_dialogue::paint_history(Mui_painter& p) {
+	const auto& th   = *theme;
+	const uint8 surf = th.colour(th.frame_stone ? Mui_colour::panel : Mui_colour::window);
+	const int   rad  = p.px(th.metrics.radius);
+	paint_frame(p, hl.panel);
+	p.text_in_idx(Strings::HistoryTitle(), hl.header, Mui_font_role::heading, th.colour(Mui_colour::text), surf, Mui_align::left);
+	// Close button.
+	const uint8 cfill = th.colour(Mui_colour::panel_alt);
+	if (th.frame_stone) {
+		p.fill_rect(hl.close, cfill);
+		p.bevel(hl.close, std::max(1, p.px(2)), th.colour(Mui_colour::frame_light), th.colour(Mui_colour::frame_dark));
+	} else {
+		p.rounded_fill(hl.close, rad, cfill);
+		p.rounded_frame(hl.close, rad, std::max(1, p.px(th.metrics.border)), th.colour(Mui_colour::frame));
+	}
+	TileRect ci = hl.close;
+	ci.enlarge(-hl.close.h / 4);
+	p.icon(Mui_icon::close, ci, th.colour(Mui_colour::text));
+	// Entries.
+	const Mui_text_font* body = body_font();
+	p.push_clip(hl.view);
+	for (const Hist_line& l : hl.lines) {
+		const int y = hl.view.y + l.y - hist_scroll;
+		if (y + std::max(hl.line_h, hl.label_h) < hl.view.y || y > hl.view.y + hl.view.h) {
+			continue;
+		}
+		if (l.label) {
+			p.text_idx(l.text, hl.view.x, y, Mui_font_role::heading, th.colour(Mui_colour::accent), surf);
+		} else if (body) {
+			body->draw(p.get_buf(), l.text, hl.view.x, y, th.colour(l.choice ? Mui_colour::text_dim : Mui_colour::text), surf);
+		}
+	}
+	p.pop_clip();
+	// Scrollbar.
+	const int bw = hl.track.w;
+	p.rounded_fill(hl.track, bw / 2, th.colour(Mui_colour::panel_alt));
+	p.rounded_fill(hl.thumb, bw / 2, th.colour(hist_drag ? Mui_colour::accent : Mui_colour::frame_light));
+	p.text_in_idx(Strings::HistoryHint(), hl.footer, Mui_font_role::small, th.colour(Mui_colour::text_dim), surf, Mui_align::left);
+}
+
+int Mui_dialogue::hist_max_scroll() const {
+	return std::max(0, hl.content_h - hl.view.h);
+}
+
+void Mui_dialogue::hist_scroll_to(int y) {
+	hist_scroll = std::clamp(y, 0, hist_max_scroll());
+	dirty       = true;
+}
+
+// Opens scrolled to the bottom (the newest lines).
+void Mui_dialogue::open_history() {
+	if (hist_open) {
+		return;
+	}
+	hist_open   = true;
+	hist_drag   = false;
+	hist_scroll = std::numeric_limits<int>::max() / 2;
+	hover       = -1;
+	dirty       = true;
+	paint();    // Layout must be current for the next input.
+}
+
+void Mui_dialogue::close_history() {
+	hist_open = false;
+	hist_drag = false;
+	dirty     = true;
+}
+
+/*
+ *  Keys while the history is open: Escape and H close it, End goes to the
+ *  bottom and closes it when already there, Home/PgUp/PgDn/Up/Down
+ *  scroll. Every other key is ignored (it must not continue or choose).
+ */
+bool Mui_dialogue::hist_key(int key) {
+	const int page = std::max(hl.line_h, hl.view.h - hl.line_h);
+	switch (key) {
+	case SDLK_ESCAPE:
+	case SDLK_H:
+		close_history();
+		break;
+	case SDLK_END:
+		if (hist_scroll >= hist_max_scroll()) {
+			close_history();
+		} else {
+			hist_scroll_to(hist_max_scroll());
+		}
+		break;
+	case SDLK_HOME:
+		hist_scroll_to(0);
+		break;
+	case SDLK_PAGEUP:
+		hist_scroll_to(hist_scroll - page);
+		break;
+	case SDLK_PAGEDOWN:
+		hist_scroll_to(hist_scroll + page);
+		break;
+	case SDLK_UP:
+		hist_scroll_to(hist_scroll - hl.line_h);
+		break;
+	case SDLK_DOWN:
+		hist_scroll_to(hist_scroll + hl.line_h);
+		break;
+	default:
+		return false;
+	}
+	return true;
 }
 
 void Mui_dialogue::paint_faces(Mui_painter& p) {
@@ -675,7 +903,7 @@ void Mui_dialogue::paint() {
 	if (!ensure_layers()) {
 		return;
 	}
-	const bool visible = choosing || faces[0].used || faces[1].used;
+	const bool visible = choosing || hist_open || faces[0].used || faces[1].used;
 	if (!visible) {
 		if (shown) {
 			hide();
@@ -691,15 +919,22 @@ void Mui_dialogue::paint() {
 	fbuf->fill8(255);
 	Mui_painter p(buf, *theme, scale);
 	layout(p);
-	paint_panel(p);
+	if (hist_open) {
+		layout_history(p);
+		paint_history(p);
+	} else {
+		paint_panel(p);
+	}
 	buf->clear_clip();
 	Mui_painter fp(fbuf, *theme, scale);
-	paint_faces(fp);
+	if (!hist_open) {    // The portraits are hidden while the history is open.
+		paint_faces(fp);
+	}
 	fbuf->clear_clip();
 	w->layer_set_dirty(layer);
 	w->layer_set_dirty(face_layer);
 	w->layer_set_visible(layer, true);
-	w->layer_set_visible(face_layer, true);
+	w->layer_set_visible(face_layer, !hist_open);
 	shown = true;
 	dirty = false;
 	Game_window::get_instance()->set_painted();
@@ -715,6 +950,15 @@ bool Mui_dialogue::part_rect(const std::string& part, TileRect& r) {
 	if (part == "text") {
 		r = lay.text;
 		return true;
+	}
+	if (part == "panel") {
+		r = hist_open ? hl.panel : lay.panel;
+		return true;
+	}
+	if (part.compare(0, 8, "history.") == 0) {
+		const std::string what = part.substr(8);
+		r                      = what == "close" ? hl.close : what == "thumb" ? hl.thumb : hl.track;
+		return hist_open && (what == "close" || what == "thumb" || what == "track");
 	}
 	if (part == "continue") {
 		r = lay.cue;
@@ -749,7 +993,9 @@ bool Mui_dialogue::to_layer(int sx, int sy, int& lx, int& ly) const {
  *  palette rotation, paused timer queue, focus events and the Ctrl+Alt+S
  *  screenshot. Continue: left or right click, Space, Enter, Escape or any
  *  printable key. Choice: the keys 1-9, a-z, arrows/Tab and Enter/Space,
- *  a click on an answer; Escape or right click return -2.
+ *  a click on an answer; Escape or right click return -2. Wheel up over
+ *  the panel, PgUp, Home, H or Up (not choosing) open the history; while
+ *  it is open no input continues or chooses.
  */
 int Mui_dialogue::wait_input(Wait mode) {
 	Game_window*              gwin      = Game_window::get_instance();
@@ -772,12 +1018,13 @@ int Mui_dialogue::wait_input(Wait mode) {
 	float         last_mx     = -1;
 	float         last_my     = -1;
 	bool          rightclick  = false;
+	bool          bar_press   = false;    // Left button went down on the history scrollbar.
 	int           result      = -1;
 	bool          done        = false;
 	auto          hover_at    = [&](int sx, int sy) {
         int lx;
         int ly;
-        if (mode == Wait::choice && to_layer(sx, sy, lx, ly)) {
+        if (mode == Wait::choice && !hist_open && to_layer(sx, sy, lx, ly)) {
             const int h = answer_at(lx, ly);
             if (h != hover) {
                 hover = h;
@@ -824,12 +1071,41 @@ int Mui_dialogue::wait_input(Wait mode) {
 		while (!done && SDL_PollEvent(&event)) {
 			SDL_ConvertEventToRenderCoordinates(renderer, &event);
 			switch (event.type) {
-			case SDL_EVENT_MOUSE_BUTTON_DOWN:
+			case SDL_EVENT_MOUSE_BUTTON_DOWN: {
 				if (event.button.button == 3) {
 					rightclick = true;
 				}
+				int lx;
+				int ly;
+				if (hist_open && event.button.button == 1 && to_layer(int(event.button.x), int(event.button.y), lx, ly)) {
+					bar_press = hl.track.has_point(lx, ly);
+					if (hl.thumb.has_point(lx, ly)) {
+						hist_drag = true;
+						hist_grab = ly - hl.thumb.y;
+						dirty     = true;
+					} else if (bar_press) {    // Track: a page towards the click.
+						const int page = std::max(hl.line_h, hl.view.h - hl.line_h);
+						hist_scroll_to(hist_scroll + (ly < hl.thumb.y ? -page : page));
+					}
+				}
 				break;
+			}
 			case SDL_EVENT_MOUSE_BUTTON_UP: {
+				if (hist_open) {
+					// A click outside the scrollbar closes the history.
+					if (event.button.button == 3) {
+						rightclick = false;
+						close_history();
+					} else if (event.button.button == 1) {
+						if (!hist_drag && !bar_press) {
+							close_history();
+						}
+						hist_drag = false;
+						bar_press = false;
+						dirty     = true;
+					}
+					break;
+				}
 				if (event.button.button == 3) {
 					if (rightclick) {
 						rightclick = false;
@@ -863,14 +1139,31 @@ int Mui_dialogue::wait_input(Wait mode) {
 				Mouse::mouse()->move(mx, my);
 				Mouse::mouse_update = true;
 				hover_at(int(event.motion.x), int(event.motion.y));
+				int lx;
+				int ly;
+				if (hist_drag && to_layer(int(event.motion.x), int(event.motion.y), lx, ly)) {
+					const int range = hl.track.h - hl.thumb.h;
+					if (range > 0) {
+						hist_scroll_to((ly - hist_grab - hl.track.y) * hist_max_scroll() / range);
+					}
+				}
 				break;
 			}
 			case SDL_EVENT_MOUSE_WHEEL: {
 				int lx;
 				int ly;
-				if (mode == Wait::choice && to_layer(int(event.wheel.mouse_x), int(event.wheel.mouse_y), lx, ly)
-					&& lay.answers.has_point(lx, ly)) {
-					scroll_by(-int(event.wheel.y) * std::max(lay.btn_h, lay.answers.h / 4));
+				if (!to_layer(int(event.wheel.mouse_x), int(event.wheel.mouse_y), lx, ly)) {
+					break;
+				}
+				const float dy = event.wheel.y;
+				if (hist_open) {
+					const int lines = dy > 0 ? -3 : dy < 0 ? 3 : 0;
+					hist_scroll_to(hist_scroll + lines * hl.line_h);
+				} else if (mode == Wait::choice && lay.answers.has_point(lx, ly) && (lay.bar_w > 0 || dy < 0)) {    // Scrollable
+																													// answers.
+					scroll_by(-int(dy) * std::max(lay.btn_h, lay.answers.h / 4));
+				} else if (dy > 0 && lay.panel.has_point(lx, ly)) {
+					open_history();
 				}
 				break;
 			}
@@ -895,6 +1188,18 @@ int Mui_dialogue::wait_input(Wait mode) {
 				}
 				if (c == SDLK_S && (mod & SDL_KMOD_ALT) && (mod & SDL_KMOD_CTRL)) {
 					make_screenshot(true);
+					break;
+				}
+				if (hist_open) {
+					hist_key(int(c));
+					break;
+				}
+				// History keys: PgUp, Home, H (unless it picks an answer)
+				// and Up while not choosing.
+				const bool h_answers
+						= mode == Wait::choice && int(std::strchr(option_keys, 'h') - option_keys) < int(answers.size());
+				if (c == SDLK_PAGEUP || c == SDLK_HOME || (c == SDLK_UP && mode != Wait::choice) || (c == SDLK_H && !h_answers)) {
+					open_history();
 					break;
 				}
 				if (mode == Wait::choice) {
