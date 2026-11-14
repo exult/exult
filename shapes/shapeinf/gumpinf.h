@@ -215,6 +215,14 @@ struct Dynamic_slider_def {
 	int usecode_fn;     // Usecode function on change (-1 = none)
 	int orientation;    // 0 = vertical, 1 = horizontal
 
+	// Not read from or written to gump_info.txt: set in C++ when another
+	// widget (Dynamic_list_widget) builds a slider for its scroll controls.
+	ShapeFile shapefile       = SF_GUMPS_VGA;    // File of the three shapes
+	int       track_pad       = 0;               // Gap between each arrow and the track
+	int       thumb_inset     = 0;               // Thumb offset across the track
+	bool      top_left        = false;           // Place shapes by their top-left, not hotspot
+	bool      hide_idle_thumb = false;           // No thumb (and no track clicks) when min == max
+
 	Dynamic_slider_def()
 			: field_id(0), pos_x(0), pos_y(0), dec_shape(0), inc_shape(0), thumb_shape(0), min_val(0), max_val(0), step(1),
 			  default_val(0), extent(60), usecode_fn(-1), orientation(0) {}
