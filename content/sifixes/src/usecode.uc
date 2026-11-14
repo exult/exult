@@ -234,3 +234,9 @@
 
 // Fixes Batlin's face showing with the fellowship medallion in the spinebreaker vision.
 #include "npcs/batlin.uc"
+
+// Aram-Dol's death is noticed, so Isstanar can reward it
+#include "misc/aram_dol.uc"
+
+// Serpent's Fang: Isstanar keeps Surok's promise, and Surok takes Ardiniss's body home
+#include "npcs/serpents_fang.uc"
