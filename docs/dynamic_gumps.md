@@ -22,6 +22,7 @@ This document describes the dynamic gump system added in the `gumpUpdates` branc
    - `UI_set_gump_shape(item, field_id, shape, frame)` — BG: 0xe0, SI: 0xe1
    - `UI_set_slider_value(item, field_id, value)` — BG: 0xe1, SI: 0xe2
    - `UI_get_slider_value(item, field_id)` — BG: 0xe2, SI: 0xe3
+   - Dynamic list intrinsics and `UI_open_gump` — BG: 0xe5–0xeb, SI: 0xe6–0xec (provisional)
 3. [Dynamic Container Gump System](#dynamic-container-gump-system)
    - Overview & Class Hierarchy
    - Bounding-Box Hit Testing
@@ -32,6 +33,7 @@ This document describes the dynamic gump system added in the `gumpUpdates` branc
    - Dynamic Text Fields
    - Dynamic Shape Displays
    - Dynamic Sliders
+   - Dynamic Lists
 5. [Integration with Exult](#integration-with-exult)
    - Automatic Gump Selection
    - On-Open Usecode Invocation
@@ -279,6 +281,15 @@ Seven new usecode intrinsic functions were added to enable programmatic control 
 | `UI_set_slider_value` | 0xe1 | 0xe2 | Set value on a Dynamic_slider |
 | `UI_get_slider_value` | 0xe2 | 0xe3 | Read current value of a Dynamic_slider |
 | `UI_set_gump_text_font` | 0xe3 | 0xe4 | Change font of a Dynamic_text_widget |
+| `UI_set_list_rows` | 0xe5 | 0xe6 | Replace the rows of a source-1 Dynamic_list_widget (provisional) |
+| `UI_set_list_row` | 0xe6 | 0xe7 | Set or append one row (provisional) |
+| `UI_get_list_selection` | 0xe7 | 0xe8 | Selected row, 1-based (provisional) |
+| `UI_set_list_selection` | 0xe8 | 0xe9 | Select a row, no callback (provisional) |
+| `UI_get_list_count` | 0xe9 | 0xea | Number of rows (provisional) |
+| `UI_get_list_object` | 0xea | 0xeb | Object in a source-0 row (provisional) |
+| `UI_open_gump` | 0xeb | 0xec | Open a container's gump as a double-click would (provisional) |
+
+The list intrinsics' slots are **provisional**: they are the next free slots after `UI_get_shape_flag` (BG 0xe4, SI 0xe5) and may move before being merged upstream. SI beta uses the BG numbers. See [dynamic_lists.md](dynamic_lists.md#intrinsics) for their parameters and return values.
 
 ### `UI_get_item_gump_position(item)`
 
@@ -351,6 +362,7 @@ UI_set_gump_text_font(item, 31, 2);
 - **Black Gate:** `usecode/bgintrinsics.h` — slots 0xdd–0xe3
 - **Serpent Isle:** `usecode/siintrinsics.h` — slots 0xde–0xe4
 - **Serpent Isle Beta:** `usecode/sibetaintrinsics.h` — slot 0xe4 for `set_gump_text_font`
+- **Dynamic lists (provisional):** BG and SI beta 0xe5–0xeb, SI 0xe6–0xec
 - **Declarations:** `usecode/ucinternal.h`
 - **Implementations:** `usecode/intrinsics.cc`
 
@@ -364,7 +376,7 @@ UI_set_gump_text_font(item, 31, 2);
 1. **Bounding-box hit testing** for gumps with non-zero shape origins
 2. **Debug visualization** for container area boundaries and snap zones
 3. **Snap zone support** for guided item placement in ritual containers
-4. **Dynamic widget hosting** — buttons, text fields, shape displays, and sliders are created automatically from `gump_info.txt` configuration
+4. **Dynamic widget hosting** — buttons, text fields, shape displays, sliders and lists are created automatically from `gump_info.txt` configuration; object queries (`find_object`, `get_shape_location`, `add`, `remove`, `object_pressed`) are routed to source-0 lists, so their rows drag in and out
 5. **Custom click name** — `get_click_name()` returns the `gump_name` from config for status bar display
 6. **Screen centering** — gumps are positioned at the center of the game window using `get_rect()` bounding box
 7. **Keyboard input** — `handle_kbd_event()` translates SDL key events and forwards `key_down()` to child widgets (sliders respond to arrow keys)
@@ -380,7 +392,8 @@ Gump_Base
               └── Dynamic_container_gump
   └── Gump_widget
         ├── Gump_button
-        │     └── Dynamic_button
+        │     ├── Dynamic_button
+        │     └── Dynamic_list_widget  (owns a Dynamic_slider)
         ├── Dynamic_text_widget
         ├── Dynamic_shape_widget
         └── Dynamic_slider
@@ -392,6 +405,7 @@ Gump_Base
 - `gumps/Dynamic_text_widget.h` / `.cc`
 - `gumps/Dynamic_shape_widget.h` / `.cc`
 - `gumps/Dynamic_slider.h` / `.cc`
+- `gumps/Dynamic_list_widget.h` / `.cc`, `gumps/Dynamic_list_layout.h`
 
 ### Bounding-Box Hit Testing
 
@@ -532,7 +546,7 @@ Displays a shape/frame at a fixed position. The displayed shape can be changed a
 
 **`shapefile` config:** 0 = `SF_SHAPES_VGA` (world shapes), 1 = `SF_GUMPS_VGA` (gump shapes).
 
-**`paint()`:** Calls `displayed.paint_shape(sx, sy)`. Skips painting when `shape_num <= 0`.
+**`paint()`:** Calls `displayed.paint_shape(sx, sy)`. Skips painting when `shape_num <= 0`. With the optional `list_id` it shows the selection of that `Dynamic_list_widget` instead, and with `box_w`/`box_h` it draws centred and enlarged in a box (see [dynamic_lists.md](dynamic_lists.md#selection-bound-shape-display)).
 
 ---
 
@@ -614,6 +628,25 @@ For vertical sliders, this subtracts `thumb.get_height()`. For horizontal, it su
 ```
 (Same format — only the last field changes: 0=vertical, 1=horizontal)
 
+**Reuse by lists:** `Dynamic_list_widget` owns a `Dynamic_slider` as its scroll controls, configured through C++-only fields of `Dynamic_slider_def` and a C++ change hook (see [dynamic_sliders.md](dynamic_sliders.md#reuse-by-dynamic-lists)).
+
+---
+
+### Dynamic Lists (`Dynamic_list_widget`)
+
+- **Header:** `gumps/Dynamic_list_widget.h`
+- **Implementation:** `gumps/Dynamic_list_widget.cc`
+- **Inherits:** `Gump_button`
+
+A scrolling list of rows with a selection. Rows come from the gump's container (source 0: icon, name, quantity; the rows are the objects, so they drag in and out) or from usecode (source 1). Rows can have a right-aligned column, a font and a disabled state. Scrolling is a `Dynamic_slider` owned by the list (Exult's own scroll controls or gump shapes); keyboard (Up/Down, Page Up/Down, Home/End, Enter) and mouse wheel work on dynamic container gumps. Usecode is called on a selection change (`select_fn`), on activation (`activate_fn`) and after source-0 rows changed (`rows_fn`), never from paint.
+
+**gump_info.txt example (contents with Exult's controls, count line and "Empty"):**
+```
+:200/1/20/30/123/8/12/2/0/-1/-1/-1/-1/-1/-1/3
+```
+
+Full documentation: [dynamic_lists.md](dynamic_lists.md).
+
 ---
 
 ## Integration with Exult
@@ -657,17 +690,18 @@ void shopOpen shape#(119)() {
 
 ### Widget Creation
 
-When `Dynamic_container_gump` is constructed, it reads the `Gump_info` for its shape number. The `Gump_manager` creates dynamic widgets from the `dynamic_buttons`, `dynamic_texts`, `dynamic_shapes`, and `dynamic_sliders` vectors stored in `Gump_info`, adding them as child elements (`elems`) of the gump.
+When `Dynamic_container_gump` is constructed, it reads the `Gump_info` for its shape number. `Gump::set_object_area()` creates dynamic widgets from the `dynamic_buttons`, `dynamic_texts`, `dynamic_shapes`, `dynamic_sliders` and `dynamic_lists` vectors stored in `Gump_info`, adding them as child elements (`elems`) of the gump in that order.
 
 Each widget type has a corresponding `_def` struct (in `gumpinf.h`) that holds the parsed configuration values:
 - `Dynamic_button_def` → `Dynamic_button`
 - `Dynamic_text_def` → `Dynamic_text_widget`
 - `Dynamic_shape_def` → `Dynamic_shape_widget`
 - `Dynamic_slider_def` → `Dynamic_slider`
+- `Dynamic_list_def` → `Dynamic_list_widget`
 
 ### Configuration System Integration
 
-All configuration is stored in `gump_info.txt`, reusing the existing file and `ReadInt()`-based parser infrastructure. Nine sections are supported:
+All configuration is stored in `gump_info.txt`, reusing the existing file and `ReadInt()`-based parser infrastructure. Ten gump sections are supported (plus the shortcut bar's own):
 
 | Section | Purpose |
 |---------|---------|
@@ -679,6 +713,7 @@ All configuration is stored in `gump_info.txt`, reusing the existing file and `R
 | `dynamic_texts` | Text fields set by usecode |
 | `dynamic_shapes` | Shape displays set by usecode |
 | `dynamic_sliders` | Slider controls read/set by usecode |
+| `dynamic_lists` | Scrolling lists of the contents or of usecode rows |
 | `gump_name` | Custom status bar name for gump clicks |
 
 ---
@@ -732,15 +767,27 @@ All configuration is stored in `gump_info.txt`, reusing the existing file and `R
 
 ### dynamic_shapes
 ```
-:gump_shape/field_id/pos_x/pos_y/shape_num/frame_num/shapefile
+:gump_shape/field_id/pos_x/pos_y/shape_num/frame_num/shapefile[/list_id[/box_w/box_h]]
 ```
 `shapefile`: 0 = shapes.vga, 1 = gumps.vga
+`list_id` (optional): show the selection of the dynamic list with this `field_id` (-1 = none, default)
+`box_w`/`box_h` (optional): `pos_x/pos_y` is a box's top-left; the shape is centred and enlarged up to 4x (0 = off, default)
 
 ### dynamic_sliders
 ```
 :gump_shape/field_id/pos_x/pos_y/dec_shape/inc_shape/thumb_shape/min_val/max_val/step/default_val/extent/usecode_fn/orientation
 ```
 `orientation`: 0 = vertical, 1 = horizontal
+
+### dynamic_lists
+```
+:gump_shape/field_id/x/y/width/rows/row_height/font/source/up_shape/down_shape/thumb_shape/select_fn/activate_fn/rows_fn/flags
+```
+`source`: 0 = the container's contents, 1 = usecode rows
+`up_shape`: -1 = Exult's own scroll controls (then `down_shape`/`thumb_shape` are ignored); `thumb_shape` -1 = spinner
+`select_fn`, `activate_fn`, `rows_fn`: usecode shape functions (-1 = none)
+`flags`: 0x01 = "N-M of T" count line, 0x02 = "Empty" text
+All 16 fields are required. See [dynamic_lists.md](dynamic_lists.md#field-reference).
 
 ### gump_name
 ```
@@ -810,7 +857,11 @@ Sets a custom name displayed in the status bar when the player clicks inside the
 | `gumps/Dynamic_shape_widget.cc` | Data-driven shape display implementation |
 | `gumps/Dynamic_slider.h` | Data-driven slider header |
 | `gumps/Dynamic_slider.cc` | Data-driven slider implementation |
+| `gumps/Dynamic_list_widget.h` | Data-driven list header |
+| `gumps/Dynamic_list_widget.cc` | Data-driven list implementation |
+| `gumps/Dynamic_list_layout.h` | List row arithmetic (engine-free) |
 | `docs/dynamic_gumps.md` | This document |
+| `docs/dynamic_lists.md` | Dynamic lists |
 
 ### Modified Files
 
@@ -839,8 +890,17 @@ Sets a custom name displayed in the status bar when the player clicks inside the
 | `drag.h` | Added `mouse_widget`, `widget_gump` members to `Dragging_info` for widget-level mouse forwarding |
 | `drag.cc` | Widget mouse event routing in constructor, `moved()`, and `drop()`; debug logging for button click chain |
 | `gamewin.cc` | `show_items()` checks `gump->get_click_name()` for custom status bar text when clicking empty gump area |
-| `data/bg/gump_info.txt` | Documentation for all nine sections |
-| `data/si/gump_info.txt` | Documentation for all nine sections |
+| `data/bg/gump_info.txt` | Documentation for all sections, including `dynamic_lists` |
+| `data/si/gump_info.txt` | Documentation for all sections, including `dynamic_lists` |
+| `gumps/Gump.h`, `drag.cc` | (Lists) `get_shape_rect()`/`get_shape_location()` virtual; `object_pressed()` hook called on a press on a gump object |
+| `gumps/Gump.cc` | (Lists) creates `Dynamic_list_widget`s in `set_object_area()` |
+| `gumps/Dynamic_container_gump.h` / `.cc` | (Lists) `has_config()` counts `dynamic_lists`; object queries routed to source-0 lists |
+| `gumps/Dynamic_slider.h` / `.cc` | (Lists) C++-only def fields, change hook, `set_range()`, `hit_part()`, `Gump_Base` parent |
+| `gumps/Dynamic_shape_widget.h` / `.cc` | (Lists) optional list binding and boxed, enlarged paint |
+| `shapes/shapevga.cc`, `shapes/shapewrite.cc` | (Lists) `dynamic_lists` reader and writer; optional `dynamic_shapes` fields |
+| `shapes/shapeinf/gumpinf.h` / `.cc` | (Lists) `Dynamic_list_def`, `Dynamic_list_flags`, `dynamic_lists` with dirty tracking; `Dynamic_shape_def` and `Dynamic_slider_def` additions |
+| `usecode/intrinsics.cc`, `ucinternal.h`, `bgintrinsics.h`, `siintrinsics.h`, `sibetaintrinsics.h` | (Lists) seven intrinsics at provisional slots |
+| `data/exultmsg.txt` | (Lists) strings 0x6D2 "of" and 0x6D3 "Empty" |
 
 ---
 
@@ -865,7 +925,7 @@ The `[Drag::drop]` logging for button release HIT/MISS is always active (not gat
 
 #### 2. Intrinsic Indices
 
-New intrinsics occupy slots 0xdd–0xe2 (BG) and 0xde–0xe3 (SI). If upstream Exult adds intrinsics at these indices, a conflict would occur.
+New intrinsics occupy slots 0xdd–0xe2 (BG) and 0xde–0xe3 (SI). If upstream Exult adds intrinsics at these indices, a conflict would occur. The dynamic list intrinsics at BG 0xe5–0xeb and SI 0xe6–0xec are provisional for the same reason.
 
 #### 3. Gump_info Memory Lifetime
 
@@ -887,4 +947,4 @@ The frame management fix assumes that `default_frame` (frame 0) has the correct 
 | 2026-03-20 | theGreyWanderer-uc | Arrow click reworked (hit_arrow bypasses 3-level parent chain — Bug 6), thumb_travel orientation fix for horizontal sliders (Bug 7), orientation documentation corrected (0=vertical, 1=horizontal), horizontal slider fully documented |
 | 2026-03-26 | theGreyWanderer-uc | Slider track hit area upper-bound fix (Bug 8) — prevents clicks outside track from registering, text alignment support (halign/valign) in Dynamic_text_widget |
 | 2026-04-04 | theGreyWanderer-uc | Keyboard input, mousewheel dispatch, and auto-repeat for `Dynamic_container_gump` — enables `handle_kbd_event()`, `mousewheel_up/down()`, `update_gump()` overrides; added `Gump_manager::handle_mouse_wheel()` and `exult.cc` event routing; mousewheel forwards to all child widgets without per-widget hit test |
-
+| 2026-11-13 | lucky-git-repo | Dynamic lists (`dynamic_lists` section, `Dynamic_list_widget` reusing `Dynamic_slider`), selection-bound and boxed `dynamic_shapes`, list intrinsics and `UI_open_gump` at provisional slots |

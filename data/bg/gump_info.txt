@@ -1,6 +1,7 @@
 #	Gumps information for Black Gate.
 #	Sections: container_area, checkmark_pos, special, snap_zones,
-#	          dynamic_buttons, dynamic_texts, dynamic_shapes, dynamic_sliders
+#	          dynamic_buttons, dynamic_texts, dynamic_shapes, dynamic_sliders,
+#	          dynamic_lists
 #
 #	container_area: Defines the object placement area within gumps
 #	checkmark_pos: Position of the close button for each gump
@@ -10,6 +11,7 @@
 #	dynamic_texts: Data-driven text fields, set by usecode
 #	dynamic_shapes: Data-driven shape displays, set by usecode
 #	dynamic_sliders: Data-driven slider controls, set/read by usecode
+#	dynamic_lists: Data-driven scrolling lists, from contents or usecode
 #
 
 %%section version
@@ -252,13 +254,17 @@
 %%endsection
 
 %%section dynamic_shapes
-# Format: :gump_shape/field_id/pos_x/pos_y/shape_num/frame_num/shapefile
+# Format: :gump_shape/field_id/pos_x/pos_y/shape_num/frame_num/shapefile[/list_id[/box_w/box_h]]
 #
 # field_id      = Unique integer ID for usecode to address this field
 # pos_x/pos_y   = Position relative to gump origin
 # shape_num     = Initial shape number (0 = none until set by usecode)
 # frame_num     = Initial frame number
 # shapefile     = 0 = SF_SHAPES_VGA (shapes.vga), 1 = SF_GUMPS_VGA (gumps.vga)
+# list_id       = Optional: show the selected row of the dynamic list with
+#                 this field_id (-1 = none, the default)
+# box_w/box_h   = Optional: pos_x/pos_y is a box's top-left; the shape is
+#                 centred in it and enlarged up to 4x (0 = off, the default)
 #
 # Shape is set at runtime via UI_set_gump_shape(item, field_id, shape, frame)
 #
@@ -283,6 +289,38 @@
 # Value is set/read at runtime via:
 #   UI_set_slider_value(item, field_id, value)
 #   UI_get_slider_value(item, field_id)
+#
+%%endsection
+
+%%section dynamic_lists
+# Format: :gump_shape/field_id/x/y/width/rows/row_height/font/source/up_shape/down_shape/thumb_shape/select_fn/activate_fn/rows_fn/flags
+#
+# field_id      = Unique integer ID for usecode to address this list
+# x/y           = Top-left of the first row, relative to gump origin
+# width         = Row width in pixels; the scroll controls sit to the right
+# rows          = Visible rows
+# row_height    = Pixel height of each row
+# font          = Row font (fonts.vga)
+# source        = 0 = the gump container's contents (drag in and out),
+#                 1 = rows set by usecode
+# up_shape      = gumps.vga scroll-up arrow (-1 = Exult's own scroll controls)
+# down_shape    = gumps.vga scroll-down arrow
+# thumb_shape   = gumps.vga thumb (-1 = spinner: arrows only)
+# select_fn     = Usecode called when the player changes the selection (-1 = none)
+# activate_fn   = Usecode called on double-click or Enter on a source 1 row (-1 = none)
+# rows_fn       = Usecode called after source 0 rows changed (-1 = none)
+# flags         = 0x01 = "N-M of T" line under the rows, 0x02 = "Empty" text
+#
+# Rows and selection at runtime (slots provisional), see docs/dynamic_lists.md:
+#   UI_set_list_rows(item, field_id, rows)
+#   UI_set_list_row(item, field_id, index, row)
+#   UI_get_list_selection(item, field_id)
+#   UI_set_list_selection(item, field_id, index)
+#   UI_get_list_count(item, field_id)
+#   UI_get_list_object(item, field_id, index)
+#
+# Example (not active): a contents list with Exult's scroll controls
+# :<gump>/1/20/30/123/8/12/2/0/-1/-1/-1/-1/-1/-1/3
 #
 %%endsection
 
