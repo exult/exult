@@ -28,7 +28,9 @@
 #
 # gump_shape  = Shape number in gumps.vga
 # x/y         = Top-left corner of the container area (relative to gump origin)
-# width/height= Size of the container area (not bottom-right corner)
+# width/height= Size of the container area (not bottom-right corner);
+#               width/height 0 = a panel that holds no objects (drops are
+#               refused), for a dynamic gump that is only a UI panel
 # debug_flags = Optional bitmask for debug visualization (omit field or use 0 for disabled)
 #               0x01 (1)  = Border outline
 #               0x02 (2)  = Major grid lines

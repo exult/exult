@@ -382,6 +382,7 @@ UI_set_gump_text_font(item, 31, 2);
 7. **Keyboard input** — `handle_kbd_event()` translates SDL key events and forwards `key_down()` to child widgets (sliders respond to arrow keys)
 8. **Mouse wheel dispatch** — `mousewheel_up/down()` forward wheel events to child widgets; `Gump_manager::handle_mouse_wheel()` prevents game-world cheat-scroll from firing through open gumps
 9. **Auto-repeat** — `update_gump()` calls `run()` on child widgets each frame, enabling slider arrow button auto-repeat (500ms initial, 50ms repeat)
+10. **A panel with no object area** — a `container_area` with a width or height of 0 (e.g. `:27/0/0/0/0`) still makes a dynamic gump, but one that holds no objects: `add()` refuses every drop that no source-0 list takes, so a dragged item goes back where it came from. Use it for UI panels such as the shop kit, whose container is only a host for the widgets.
 
 ### Class Hierarchy
 

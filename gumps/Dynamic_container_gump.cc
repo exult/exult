@@ -402,6 +402,11 @@ bool Dynamic_container_gump::add(Game_object* obj, int mx, int my, int sx, int s
 		}
 	}
 
+	// An empty container_area makes a panel that holds no objects.
+	if (object_area.w <= 0 || object_area.h <= 0) {
+		return false;
+	}
+
 	if (log_enabled) {
 		std::cerr << "[DynamicGump::add] ========== ADD CALLED ==========" << std::endl;
 		std::cerr << "[DynamicGump::add] gump shape=" << get_shapenum() << std::endl;
