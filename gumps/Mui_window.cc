@@ -158,6 +158,19 @@ void Mui_window::hide_layers() {
 	gwin->set_all_dirty();
 }
 
+void Mui_window::run_hidden(const std::function<void()>& fn) {
+	if (text_input_on) {
+		SDL_StopTextInput(iwin()->get_screen_window());
+		text_input_on = false;
+	}
+	hide_layers();
+	gwin->paint();
+	fn();
+	dirty = true;
+	gwin->set_all_dirty();
+	update_text_input();
+}
+
 void Mui_window::set_layer_z_hint(int z) {
 	z_hint = z;
 	if (layer >= 0) {
@@ -231,6 +244,12 @@ void Mui_window::clear_pointers() {
 
 void Mui_window::rebuild_now() {
 	need_build = false;
+	if (!theme_adjusted) {
+		theme_adjusted = true;
+		auto t         = std::make_shared<Mui_theme>(*theme_ptr);
+		adjust_theme(*t);
+		theme_ptr = t;
+	}
 	clear_pointers();
 	if (!requested_focus.empty()) {
 		focus_id_for_rebuild = requested_focus;
@@ -593,7 +612,8 @@ void Mui_window::switch_theme(const std::string& name) {
 			return;
 		}
 		config->set("config/gameplay/menu_style", name, true);
-		theme_ptr = t;
+		theme_ptr      = t;
+		theme_adjusted = false;
 		if (scrim >= 0) {
 			iwin()->layer_set_alpha(scrim, static_cast<unsigned char>(theme_ptr->backdrop_alpha));
 			iwin()->get_layer_ibuf(scrim)->fill8(theme_ptr->colour(Mui_colour::backdrop));

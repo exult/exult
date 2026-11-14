@@ -44,6 +44,10 @@ public:
 	static void on_modal_frame(Modal_gump* gump);
 	// A themed window is going away.
 	static void forget(Mui_window* win);
+	// A text-mode cheat menu is about to run its own loop (what names it).
+	// Logs it and, when the script asked for it, queues Escape so it
+	// returns straight away.
+	static void on_classic_screen(const char* what);
 };
 
 #endif

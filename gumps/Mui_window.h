@@ -181,6 +181,12 @@ protected:
 	// Hint shown in the help line when nothing is hovered or focused.
 	virtual std::string default_help() const;
 
+	// Adjust a private copy of the loaded theme (e.g. the cheat window's red
+	// accent and sidebar tabs); called before each build after a theme load.
+	virtual void adjust_theme(Mui_theme& t) const {
+		ignore_unused_variable_warning(t);
+	}
+
 	int  tab_index = 0;
 	void rebuild();    // Rebuild all widgets later (keeps tab and focus id).
 
@@ -193,16 +199,21 @@ protected:
 	// Rebuild later and then focus the widget with this id.
 	void rebuild(const std::string& focus_id);
 
+	// Run a screen with its own loop (text-mode cheat menus, shape browser,
+	// map) with this window hidden; it shows again on the next paint.
+	void run_hidden(const std::function<void()>& fn);
+
 private:
 	std::shared_ptr<Mui_theme>       theme_ptr;
-	float                            scale      = 1;
-	int                              layer      = -1;
-	int                              scrim      = -1;
-	int                              layer_w    = 0;
-	int                              layer_h    = 0;
-	int                              z_hint     = 0;
-	bool                             dirty      = true;
-	bool                             need_build = true;
+	float                            scale          = 1;
+	int                              layer          = -1;
+	int                              scrim          = -1;
+	int                              layer_w        = 0;
+	int                              layer_h        = 0;
+	int                              z_hint         = 0;
+	bool                             dirty          = true;
+	bool                             need_build     = true;
+	bool                             theme_adjusted = false;
 	TileRect                         frame_rect{0, 0, 0, 0};    // Whole window.
 	TileRect                         title_rect{0, 0, 0, 0};
 	TileRect                         tabs_rect{0, 0, 0, 0};

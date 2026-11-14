@@ -34,10 +34,12 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "exult.h"
 #include "fnames.h"
 #include "game.h"
+#include "gameclk.h"
 #include "gamewin.h"
 #include "keyactions.h"
 #include "listfiles.h"
 #include "mouse.h"
+#include "ucmachine.h"
 #include "vgafile.h"
 
 #include <SDL3/SDL.h>
@@ -71,9 +73,10 @@ namespace {
 		int                      fail      = 0;
 		bool                     log_open  = false;    // Log the next gump seen.
 		std::string              last_opened;
-		Mui_window*              window   = nullptr;
-		bool                     mod_set  = false;
-		bool                     restored = false;    // Last Journey Log loaded a game.
+		Mui_window*              window         = nullptr;
+		bool                     mod_set        = false;
+		bool                     restored       = false;    // Last Journey Log loaded a game.
+		bool                     escape_classic = false;    // Escape the next text-mode cheat menu.
 	};
 
 	State& state() {
@@ -261,6 +264,14 @@ namespace {
 			value = cheat.in_hack_mover();
 		} else if (which == "eggs") {
 			value = Game_window::get_instance()->paint_eggs;
+		} else if (which == "pickpocket") {
+			value = cheat.in_pickpocket();
+		} else if (which == "grab") {
+			value = cheat.grabbing_actor();
+		} else if (which == "mapeditor") {
+			value = cheat.in_map_editor();
+		} else if (which == "tilegrid") {
+			value = cheat.show_tile_grid();
 		} else {
 			return false;
 		}
@@ -484,6 +495,23 @@ namespace {
 			} else {
 				expect(value == (onoff == "on"), "cheat " + rest, value ? "on" : "off");
 			}
+		} else if (cmd == "expect-time") {
+			int d = -1;
+			int h = -1;
+			int m = -1;
+			args >> d >> h >> m;
+			Game_clock*       clk = gwin->get_clock();
+			const std::string got = std::to_string(clk->get_day()) + " " + std::to_string(clk->get_hour()) + " "
+									+ std::to_string(clk->get_minute());
+			expect(clk->get_day() == d && clk->get_hour() == h && clk->get_minute() == m, "time " + rest, got);
+		} else if (cmd == "expect-flag") {
+			int         num = 0;
+			std::string onoff;
+			args >> num >> onoff;
+			const bool value = gwin->get_usecode()->get_global_flag_bool(num);
+			expect(value == (onoff == "on"), "global flag " + rest, value ? "on" : "off");
+		} else if (cmd == "escape-classic") {
+			st.escape_classic = true;
 		} else if (cmd == "save-game") {
 			int         num = 0;
 			std::string name;
@@ -635,6 +663,20 @@ void Mui_selftest::on_modal_frame(Modal_gump* gump) {
 		return;
 	}
 	step(nullptr, gump);
+}
+
+void Mui_selftest::on_classic_screen(const char* what) {
+	State& st = state();
+	if (!st.enabled) {
+		return;
+	}
+	st.log_open    = false;
+	st.last_opened = std::string("CheatScreen ") + what;
+	std::cout << "MUI-TEST info opened " << st.last_opened << std::endl;
+	if (st.escape_classic) {
+		st.escape_classic = false;
+		push_key(SDLK_ESCAPE, SDL_KMOD_NONE);
+	}
 }
 
 void Mui_selftest::forget(Mui_window* win) {

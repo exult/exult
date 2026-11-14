@@ -162,6 +162,7 @@ GUMPS_OBJS:= \
 	gumps/Gamemenu_gump.o \
 	gumps/GameDisplayOptions_gump.o \
 	gumps/Mixer_gump.o \
+	gumps/Mui_cheats.o \
 	gumps/Mui_config_editor.o \
 	gumps/Mui_config_meta.o \
 	gumps/Mui_font.o \

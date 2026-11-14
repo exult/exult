@@ -462,6 +462,7 @@ for /f "tokens=* delims=" %%u in ('git ls-remote --get-url') do echo #define GIT
     <ClCompile Include="..\..\gumps\GameEngineOptions_gump.cc" />
     <ClCompile Include="..\..\gumps\misc_buttons.cc" />
     <ClCompile Include="..\..\gumps\Mixer_gump.cc" />
+    <ClCompile Include="..\..\gumps\Mui_cheats.cc" />
     <ClCompile Include="..\..\gumps\Mui_config_editor.cc" />
     <ClCompile Include="..\..\gumps\Mui_config_meta.cc" />
     <ClCompile Include="..\..\gumps\Mui_font.cc" />
@@ -711,6 +712,7 @@ for /f "tokens=* delims=" %%u in ('git ls-remote --get-url') do echo #define GIT
     <ClInclude Include="..\..\gumps\GameEngineOptions_gump.h" />
     <ClInclude Include="..\..\gumps\misc_buttons.h" />
     <ClInclude Include="..\..\gumps\Mixer_gump.h" />
+    <ClInclude Include="..\..\gumps\Mui_cheats.h" />
     <ClInclude Include="..\..\gumps\Mui_config_editor.h" />
     <ClInclude Include="..\..\gumps\Mui_config_meta.h" />
     <ClInclude Include="..\..\gumps\Mui_font.h" />

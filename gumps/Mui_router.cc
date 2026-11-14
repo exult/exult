@@ -24,10 +24,12 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "Configuration.h"
 #include "Gump_manager.h"
+#include "Mui_cheats.h"
 #include "Mui_game_menu.h"
 #include "Mui_journey_log.h"
 #include "Mui_options.h"
 #include "Mui_theme.h"
+#include "cheat.h"
 #include "gamewin.h"
 #include "mouse.h"
 
@@ -89,8 +91,14 @@ namespace Mui {
 	}
 
 	bool open_cheats() {
-		// There is no themed cheat window yet.
-		return false;
+		if (!themed() || !cheat() || !cheat.get_cheat_screen()) {
+			return false;
+		}
+		Game_window*     gwin = Game_window::get_instance();
+		Mui_cheat_window window;
+		gwin->get_gump_man()->do_modal_gump(&window, Mouse::hand);
+		gwin->set_all_dirty();
+		return true;
 	}
 
 	std::string cycle_menu_style() {

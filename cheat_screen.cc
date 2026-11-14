@@ -124,12 +124,20 @@ void CheatScreen::run_menu_screen(Which which, Actor* actor, unsigned flag) {
 	case Which::Teleport:
 		RunMenu(TeleportMenu());
 		break;
-	case Which::GlobalFlag:
+	case Which::GlobalFlag: {
 		if (!global_flag_names_loaded) {
 			load_global_flag_names();
 		}
-		RunMenu(GlobalFlagMenu(flag));
+		// On its own the flag menu has no menu below to paint the display,
+		// so paint its title as on small screens.
+		auto menu                  = GlobalFlagMenu(flag);
+		menu->events.paint_display = [this](MenuCommand*) -> bool {
+			font->paint_text_fixedwidth(ibuf, Strings::AdvancedFlagsMenu::GlobalFlags, 0, 0, 8, fontcolor.colors);
+			return true;
+		};
+		RunMenu(menu);
 		break;
+	}
 	default:
 		RunMenu(RootMenu());
 		break;

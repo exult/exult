@@ -746,6 +746,9 @@
     <ClCompile Include="..\..\gumps\Mixer_gump.cc">
       <Filter>gumps</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\gumps\Mui_cheats.cc">
+      <Filter>gumps</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\gumps\Mui_config_editor.cc">
       <Filter>gumps</Filter>
     </ClCompile>
@@ -1547,6 +1550,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\gumps\Mixer_gump.h">
+      <Filter>gumps</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\gumps\Mui_cheats.h">
       <Filter>gumps</Filter>
     </ClInclude>
     <ClInclude Include="..\..\gumps\Mui_config_editor.h">

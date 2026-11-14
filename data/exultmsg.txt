@@ -1330,3 +1330,94 @@
 0xCC2:Not saved yet
 0xCC3:The game could not be saved.
 0xCC4:Mod
+# Themed cheat window
+0xCC6:Player
+0xCC7:World & time
+0xCC8:NPCs
+0xCC9:Teleport
+0xCCA:Global flags
+0xCCB:Usecode
+0xCCC:Map editor
+0xCCD:Cheats can break your save. Keep a separate save before experimenting.
+0xCCE:God mode
+0xCCF:The Avatar and the party cannot lose health or die.
+0xCD0:Archwizard mode
+0xCD1:Every spell is in the spellbook and casting costs no reagents or mana.
+0xCD2:Infravision
+0xCD3:See in the dark as if every place were lit.
+0xCD4:Hack mover
+0xCD5:Move any object anywhere, with no weight, reach or room checks.
+0xCD6:Eggs visible
+0xCD7:Show the hidden eggs that start events, monsters and music.
+0xCD8:Paperdolls
+0xCD9:Show characters as paperdolls in their inventory.
+0xCDA:Pickpocket
+0xCDB:Open the packs of other characters and take from them.
+0xCDC:Grab NPC for the NPC tool
+0xCDD:While on, clicking a character picks it for the NPC tool.
+0xCDE:Party
+0xCDF:Heal party
+0xCE0:Raises the fallen and restores health, mana and food; cures poison, curses and paralysis.
+0xCE1:Level up party
+0xCE2:Raises everyone in the party by one level, up to level 10.
+0xCE3:Cheat toggles
+0xCE4:Current time
+0xCE5:Day
+0xCE6:Hour
+0xCE7:Minute
+0xCE8:Set time
+0xCE9:Sets the game clock to this day, hour and minute.
+0xCEA:Time rate
+0xCEB:How fast game time passes; 1 is normal.
+0xCEC:Next time period
+0xCED:Moves the clock on to the next part of the day.
+0xCEE:Position
+0xCEF:Find NPCs by name or number
+0xCF0:Pick an NPC; Enter opens the NPC tools.
+0xCF1:No NPCs match the search.
+0xCF2:Teleport to NPC
+0xCF3:Open NPC tools...
+0xCF4:Edits this NPC in the text-mode NPC tool: stats, flags, shape, schedule, business and more.
+0xCF5:Not on the map
+0xCF6:Location
+0xCF7:Health
+0xCF8:shape
+0xCF9:Tile X
+0xCFA:Tile Y
+0xCFB:Lift (Z)
+0xCFC:Map
+0xCFD:Go to map
+0xCFE:Moves the party to these tile coordinates on the current map.
+0xCFF:Moves the party to the same spot on another map.
+0xD00:More teleport options...
+0xD01:Teleport by latitude and longitude or to an NPC in the text-mode menu.
+0xD02:Map teleport
+0xD03:Pick a place on the world map to teleport to.
+0xD04:Find flags by number or name
+0xD05:No flags match the search.
+0xD06:Set
+0xD07:Call usecode functions on objects in the text-mode usecode menu.
+0xD08:Advanced...
+0xD09:Opens this flag in the text-mode global flag editor.
+0xD0A:Sets or clears the selected global flag; Enter on a row does the same.
+0xD0B:flags
+0xD0C:The usecode menu calls any usecode function on an object, reloads the usecode and edits global flags. Calling usecode out of order is dangerous: use with care.
+0xD0D:Open usecode menu...
+0xD0E:Reload usecode
+0xD0F:Reads the usecode again, e.g. after compiling a change.
+0xD10:Map editor mode
+0xD11:Stops time for editing the map; Exult Studio connects when it runs.
+0xD12:Tile grid
+0xD13:Draws the tile grid over the map in map editor mode.
+0xD14:Shape browser
+0xD15:Browse every shape and frame of the game.
+0xD16:Sound tester
+0xD17:Play the music, sound effects and voices.
+0xD18:Create last shape
+0xD19:Places the shape last picked in the shape browser next to the Avatar.
+0xD1A:Open classic cheat screen
+0xD1B:The full text-mode cheat screen with every tool.
+0xD1C:Pick a section on the left. Changes apply at once. Esc closes.
+0xD1D:Done:
+0xD1F:Tools
+0xD20:Game
