@@ -190,6 +190,12 @@ public:
 	std::vector<int>         rule_shapes();    // Every shape a rule names.
 	std::vector<Finding>     run_checkup();
 
+	// State dump: plain text, one 'key: value' fact per line in a stable
+	// order (see docs/game_doctor.md). Keys starting with 'meta.' or
+	// 'clock' change between runs and are ignored by doctor_dump_diff.py.
+	std::string dump_text(bool with_checkup);
+	bool        write_dump(const std::string& path, std::string* err = nullptr, bool with_checkup = true);
+
 	static std::string              schedule_name(int type);
 	static std::string              alignment_name(int align);
 	static std::string              object_name(const Game_object* obj);

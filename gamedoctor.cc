@@ -34,16 +34,24 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "gameclk.h"
 #include "gamemap.h"
 #include "gamewin.h"
+#include "keyring.h"
 #include "objiter.h"
+#include "party.h"
 #include "schedule.h"
 #include "ucmachine.h"
+#include "version.h"
 
 #include <algorithm>
+#include <array>
 #include <cctype>
 #include <charconv>
+#include <exception>
+#include <iomanip>
 #include <iostream>
 #include <iterator>
+#include <map>
 #include <optional>
+#include <sstream>
 #include <streambuf>
 #include <unordered_set>
 
@@ -793,6 +801,230 @@ Game_doctor::Action_result Game_doctor::fetch_item(const Item_hit& hit) {
 	const Tile_coord pos = av->get_tile();
 	obj->move(pos.tx, pos.ty, pos.tz, av->get_map_num());
 	return done("Dropped " + name + " on the Avatar's tile.");
+}
+
+//
+// State dump.
+//
+
+namespace {
+	// Standard CRC-32 (as zlib's crc32()), so tools can check it.
+	uint32 standard_crc32(const unsigned char* data, size_t len) {
+		static const auto table = [] {
+			std::array<uint32, 256> t{};
+			for (uint32 i = 0; i < 256; i++) {
+				uint32 c = i;
+				for (int k = 0; k < 8; k++) {
+					c = (c & 1) != 0 ? 0xEDB88320U ^ (c >> 1) : c >> 1;
+				}
+				t[i] = c;
+			}
+			return t;
+		}();
+		uint32 crc = 0xFFFFFFFFU;
+		for (size_t i = 0; i < len; i++) {
+			crc = table[(crc ^ data[i]) & 0xFF] ^ (crc >> 8);
+		}
+		return crc ^ 0xFFFFFFFFU;
+	}
+
+	std::string hex(unsigned value, int width) {
+		std::ostringstream out;
+		out << std::hex << std::uppercase << std::setfill('0') << std::setw(width) << value;
+		return out.str();
+	}
+
+	std::string dec(int value, int width) {
+		std::ostringstream out;
+		out << std::setfill('0') << std::setw(width) << value;
+		return out.str();
+	}
+
+	std::string place_text(const Tile_coord& t, int map) {
+		return std::to_string(t.tx) + ',' + std::to_string(t.ty) + ',' + std::to_string(t.tz) + " map " + std::to_string(map);
+	}
+
+	// Where an object is: its outermost owner's tile, or the NPC holding it.
+	std::string object_place(const Game_object* obj) {
+		const Game_object* top = obj->get_outermost();
+		if (top->get_chunk() != nullptr) {
+			return place_text(top->get_tile(), top->get_map_num());
+		}
+		if (const Actor* npc = top->as_actor()) {
+			return "npc " + std::to_string(npc->get_npc_num()) + " not on map";
+		}
+		return "not on map";
+	}
+
+	// One-line text without line breaks (names come from game data).
+	std::string one_line(std::string text) {
+		std::replace(text.begin(), text.end(), '\n', ' ');
+		std::replace(text.begin(), text.end(), '\r', ' ');
+		return text;
+	}
+}    // namespace
+
+std::string Game_doctor::dump_text(bool with_checkup) {
+	std::ostringstream out;
+	out << "# exult-doctor-dump 1\n";
+	{
+		std::ostringstream version;
+		getVersionInfo(version);
+		std::string first;
+		std::getline(std::istringstream(version.str()), first);
+		out << "meta.exult: " << one_line(first) << '\n';
+		out << "meta.git: " << one_line(VersionGetGitInfo(true)) << '\n';
+	}
+	out << "meta.game: " << Game::get_gametitle() << '\n';
+	out << "meta.mod: " << Game::get_modtitle() << '\n';
+	if (is_system_path_defined("<PATCH>") && U7exists(PATCH_USECODE)) {
+		IFileDataSource in(PATCH_USECODE);
+		if (in.good()) {
+			std::string data;
+			in.read(data, in.getAvail());
+			out << "meta.usecode_crc32: 0x"
+				<< hex(standard_crc32(reinterpret_cast<const unsigned char*>(data.data()), data.size()), 8) << '\n';
+			out << "meta.usecode_size: " << data.size() << '\n';
+		}
+	}
+	if (gwin == nullptr || gwin->get_main_actor() == nullptr) {
+		out << "# no game loaded\n";
+		return out.str();
+	}
+	const Game_clock* clock = gwin->get_clock();
+	out << "clock: day " << clock->get_day() << ' ' << dec(clock->get_hour(), 2) << ':' << dec(clock->get_minute(), 2) << '\n';
+	const Actor* av = gwin->get_main_actor();
+	out << "avatar: " << (av->get_chunk() != nullptr ? place_text(av->get_tile(), av->get_map_num()) : "not on map") << '\n';
+	out << "party:";
+	for (int i = 0; i < partyman->get_count(); i++) {
+		const int    num = partyman->get_member(i);
+		const Actor* npc = gwin->get_npc(num);
+		out << (i == 0 ? " " : ", ") << num << ' ' << (npc != nullptr ? one_line(npc->get_npc_name()) : std::string("?"));
+	}
+	out << '\n';
+
+	// Set flags only.
+	Usecode_machine* usecode = gwin->get_usecode();
+	const size_t     nflags  = usecode->get_num_global_flags();
+	for (size_t i = 0; i < nflags; i++) {
+		if (usecode->get_global_flag_bool(static_cast<int>(i))) {
+			const Flag_info* info = find_flag(static_cast<unsigned>(i));
+			out << "flag.0x" << hex(static_cast<unsigned>(i), 4) << ": 1";
+			if (info != nullptr && !info->name.empty()) {
+				out << ' ' << info->name;
+			}
+			out << '\n';
+		}
+	}
+	if (GAME_SI) {
+		out << "keyring:";
+		if (const Keyring* ring = usecode->getKeyring()) {
+			for (const int q : ring->get_keys()) {
+				out << ' ' << q;
+			}
+		}
+		out << '\n';
+	}
+
+	// NPCs.
+	const int count = gwin->get_num_npcs();
+	for (int i = 0; i < count; i++) {
+		if (gwin->get_npc(i) == nullptr) {
+			continue;
+		}
+		const Npc_info    info = npc_info(i);
+		const std::string key  = "npc." + dec(i, 4);
+		out << key << ": " << (info.alive ? "alive" : "dead") << " | " << one_line(info.name) << " | ";
+		if (info.on_map) {
+			out << place_text(info.tile, info.map);
+		} else if (info.has_body) {
+			out << "body " << place_text(info.body_tile, info.body_map);
+		} else {
+			out << "not on map";
+		}
+		out << " | " << info.schedule_name << " | " << info.alignment_name << " | ";
+		if (info.flags.empty()) {
+			out << '-';
+		}
+		for (size_t f = 0; f < info.flags.size(); f++) {
+			out << (f != 0 ? "," : "") << info.flags[f];
+		}
+		out << " | hp " << info.health << '/' << info.strength << " | items " << info.inventory.size() << '\n';
+		if (!info.inventory.empty()) {
+			std::vector<std::string> items;
+			for (const auto& row : info.inventory) {
+				items.push_back(
+						std::to_string(row.shape) + ':' + std::to_string(row.frame) + ':' + std::to_string(row.quality) + 'x'
+						+ std::to_string(row.quantity));
+			}
+			std::sort(items.begin(), items.end());
+			out << key << ".items:";
+			for (const auto& item : items) {
+				out << ' ' << item;
+			}
+			out << '\n';
+		}
+	}
+
+	// Shapes the check-up rules name.
+	const std::vector<int> shapes = rule_shapes();
+	if (!shapes.empty()) {
+		std::map<int, std::vector<std::string>> places;
+		for (const int shape : shapes) {
+			places[shape];
+		}
+		walk_world([&](Game_object* obj) {
+			auto it = places.find(obj->get_shapenum());
+			if (it != places.end() && obj->as_actor() == nullptr) {
+				it->second.push_back(object_place(obj));
+			}
+		});
+		for (auto& [shape, where] : places) {
+			std::sort(where.begin(), where.end());
+			out << "item." << dec(shape, 4) << ": " << where.size();
+			for (size_t i = 0; i < where.size() && i < 20; i++) {
+				out << (i == 0 ? " | " : "; ") << where[i];
+			}
+			out << '\n';
+		}
+	}
+
+	if (with_checkup) {
+		std::map<std::string, int> seen;
+		for (const auto& finding : run_checkup()) {
+			const int n = ++seen[finding.id];
+			out << "finding." << finding.id << (n > 1 ? "." + std::to_string(n) : std::string()) << ": " << finding.severity << ' '
+				<< one_line(finding.message) << '\n';
+		}
+	}
+	return out.str();
+}
+
+bool Game_doctor::write_dump(const std::string& path, std::string* err, bool with_checkup) {
+	const std::string text = dump_text(with_checkup);
+	try {
+		auto out = U7open_out(path.c_str(), true);
+		if (!out || !out->good()) {
+			if (err != nullptr) {
+				*err = "Cannot write " + path;
+			}
+			return false;
+		}
+		*out << text;
+		out->flush();
+		if (!out->good()) {
+			if (err != nullptr) {
+				*err = "Error writing " + path;
+			}
+			return false;
+		}
+	} catch (const std::exception& e) {
+		if (err != nullptr) {
+			*err = std::string("Cannot write ") + path + ": " + e.what();
+		}
+		return false;
+	}
+	return true;
 }
 
 //
