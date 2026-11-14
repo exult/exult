@@ -23,6 +23,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "Dynamic_text_widget.h"
 
 #include "Gump.h"
+#include "Gump_skin.h"
 #include "font.h"
 #include "gamewin.h"
 #include "gumpinf.h"
@@ -93,4 +94,20 @@ void Dynamic_text_widget::paint() {
 		// Left-aligned (default): pos_x is left edge
 		sman->paint_text(font_num, text.c_str(), sx, sy);
 	}
+}
+
+/*
+ *  Themed: the text in the theme's font, anchored as paint() anchors it.
+ */
+
+void Dynamic_text_widget::paint_skin(Gump_skin& skin) {
+	if (text.empty()) {
+		return;
+	}
+	int sx = x;
+	int sy = y;
+	if (parent) {
+		parent->local_to_screen(sx, sy);
+	}
+	skin.text(text, sx, sy, halign, valign, font_num, Mui_colour::text, Mui_colour::panel);
 }

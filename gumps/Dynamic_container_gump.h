@@ -71,6 +71,12 @@ private:
 	 */
 	std::vector<Dynamic_list_widget*> contents_lists() const;
 
+	/**
+	 * Themed: paint only the art (objects, button and shape art, list
+	 * icons, debug overlays, selection outlines) for the skin pass.
+	 */
+	void paint_art();
+
 public:
 	/**
 	 * Construct a dynamic container gump.
@@ -120,6 +126,17 @@ public:
 	 * Paint the gump, including background and debug grid if enabled.
 	 */
 	void paint() override;
+
+	/**
+	 * Drawn with the menu theme? See Gump_theme::wants().
+	 */
+	bool themable() const override;
+
+	/**
+	 * Themed: the panel, the container well, texts, plates, lists,
+	 * sliders and the close control.
+	 */
+	void paint_skin(Gump_skin& skin) override;
 
 	/**
 	 * Check if a gump shape has container_area configured in gump_info.txt.

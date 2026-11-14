@@ -24,6 +24,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "Gump.h"
 #include "Gump_button.h"
+#include "Gump_skin.h"
 #include "contain.h"
 #include "game.h"
 #include "gamewin.h"
@@ -263,6 +264,71 @@ Dynamic_slider::Part Dynamic_slider::hit_part(int mx, int my) const {
 	return Part::thumb;
 }
 
+/*
+ *  Screen rectangle of a part, from the same layout as hit_part().
+ */
+TileRect Dynamic_slider::part_rect(Part p) const {
+	// A frame's rect with its hotspot at (hx, hy), slider-local.
+	auto frame_rect = [](const Shape_frame* sf, int hx, int hy) {
+		return sf ? TileRect(hx - sf->get_xleft(), hy - sf->get_yabove(), sf->get_width(), sf->get_height()) : TileRect(0, 0, 0, 0);
+	};
+	const Shape_frame* tf = thumb.get_shape();
+	const Shape_frame* df = dec_btn ? dec_btn->get_shape() : nullptr;
+	int                tx;
+	int                ty;
+	thumb_origin(tx, ty);
+	const TileRect thumb_r = frame_rect(tf, tx, ty);
+	TileRect       r(0, 0, 0, 0);
+	switch (p) {
+	case Part::dec:
+		r = frame_rect(df, dec_bx, dec_by);
+		break;
+	case Part::inc:
+		r = frame_rect(inc_btn ? inc_btn->get_shape() : nullptr, inc_bx, inc_by);
+		break;
+	case Part::thumb:
+		if (thumb_shown()) {
+			r = thumb_r;
+		}
+		break;
+	case Part::none:
+	case Part::before:
+	case Part::after: {
+		// Across the travel axis: the thumb's span, else the arrows'.
+		int a0 = 0;
+		int a1 = cross_extent();
+		if (tf) {
+			a0 = vertical ? thumb_r.x : thumb_r.y;
+			a1 = a0 + (vertical ? thumb_r.w : thumb_r.h);
+		} else if (df) {
+			const TileRect d = frame_rect(df, dec_bx, dec_by);
+			a0               = vertical ? d.x : d.y;
+			a1               = a0 + (vertical ? d.w : d.h);
+		}
+		int b0 = track_start;
+		int b1 = track_start + track_extent;
+		if (p != Part::none && thumb_shown()) {
+			const int t0 = vertical ? thumb_r.y : thumb_r.x;
+			const int t1 = t0 + (vertical ? thumb_r.h : thumb_r.w);
+			if (p == Part::before) {
+				b1 = std::max(b0, t0);
+			} else {
+				b0 = std::min(b1, t1);
+			}
+		} else if (p == Part::after) {
+			b1 = b0;
+		}
+		r = vertical ? TileRect(a0, b0, a1 - a0, b1 - b0) : TileRect(b0, a0, b1 - b0, a1 - a0);
+		break;
+	}
+	}
+	if (r.w <= 0 || r.h <= 0) {
+		return TileRect(0, 0, 0, 0);
+	}
+	local_to_screen(r.x, r.y);
+	return r;
+}
+
 void Dynamic_slider::set_range(int newmin, int newmax) {
 	min_val = newmin;
 	max_val = newmax < newmin ? newmin : newmax;
@@ -415,6 +481,19 @@ void Dynamic_slider::paint() {
 		thumb_origin(tx, ty);
 		local_to_screen(tx, ty);
 		thumb.paint_shape(tx, ty);
+	}
+}
+
+/*
+ *  Themed: the arrows as plates with arrow icons; the groove and the
+ *  knob while the thumb is shown.
+ */
+void Dynamic_slider::paint_skin(Gump_skin& skin) {
+	skin.arrow(part_rect(Part::dec), vertical ? Mui_icon::arrow_up : Mui_icon::arrow_left, arrow_clicked == -1);
+	skin.arrow(part_rect(Part::inc), vertical ? Mui_icon::arrow_down : Mui_icon::arrow_right, arrow_clicked == 1);
+	if (thumb_shown()) {
+		skin.groove(part_rect(Part::none), vertical);
+		skin.knob(part_rect(Part::thumb));
 	}
 }
 

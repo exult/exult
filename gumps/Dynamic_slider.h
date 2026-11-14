@@ -27,6 +27,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <utility>
 
 class Gump_button;
+class Gump_skin;
 struct Dynamic_slider_def;
 
 /*
@@ -95,6 +96,8 @@ public:
 	Gump_widget* clone(Gump* par) override;
 
 	void paint() override;
+	// Themed: arrow plates, and a groove and knob when the thumb shows.
+	void paint_skin(Gump_skin& skin);
 	bool run() override;
 
 	bool mouse_down(int mx, int my, MouseButton button) override;
@@ -138,6 +141,10 @@ public:
 	}
 
 	Part hit_part(int mx, int my) const;
+	// Screen rect of a part: dec, inc, thumb (empty when not shown), the
+	// track before or after the thumb (before = the whole track without
+	// a thumb), or none = the whole track.
+	TileRect part_rect(Part p) const;
 
 	bool is_dragging() const {
 		return prev_drag != INT32_MIN;

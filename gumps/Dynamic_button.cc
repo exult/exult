@@ -24,6 +24,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "Audio.h"
 #include "Gump.h"
+#include "Gump_skin.h"
 #include "contain.h"
 #include "gamewin.h"
 #include "gumpinf.h"
@@ -143,4 +144,18 @@ bool Dynamic_button::activate(MouseButton button) {
 	}
 
 	return true;
+}
+
+/*
+ *  Themed: a plate one pixel round the art, pushed while pushed or
+ *  toggled on.
+ */
+
+void Dynamic_button::paint_skin(Gump_skin& skin) {
+	if (!is_visible()) {
+		return;
+	}
+	TileRect r = get_rect();
+	r.enlarge(1);
+	skin.plate(r, is_pushed() || (action_type == 2 && toggled));
 }

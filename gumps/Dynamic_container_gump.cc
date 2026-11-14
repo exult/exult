@@ -24,14 +24,20 @@
 
 #include "Dynamic_container_gump.h"
 
+#include "Dynamic_button.h"
 #include "Dynamic_list_widget.h"
+#include "Dynamic_shape_widget.h"
+#include "Dynamic_slider.h"
+#include "Dynamic_text_widget.h"
 #include "Gump_manager.h"
+#include "Gump_skin.h"
 #include "Gump_widget.h"
 #include "cheat.h"
 #include "contain.h"
 #include "game.h"
 #include "gamewin.h"
 #include "gumpinf.h"
+#include "misc_buttons.h"
 #include "objiter.h"
 
 #include <SDL3/SDL.h>
@@ -512,6 +518,10 @@ bool Dynamic_container_gump::add(Game_object* obj, int mx, int my, int sx, int s
 }
 
 void Dynamic_container_gump::paint() {
+	if (skin_pass) {
+		paint_art();
+		return;
+	}
 	paint_log_count++;
 
 	// Only log the first few paint calls after an add to avoid spam
@@ -578,6 +588,86 @@ void Dynamic_container_gump::paint() {
 	// Paint debug overlay if enabled
 	paint_debug_grid();
 	paint_snap_zones();
+}
+
+/*
+ *  Themed paint (see Gump_skin.h).  The art pass leaves out what the skin
+ *  draws: the background, the checkmark and its tab, texts and sliders.
+ */
+
+void Dynamic_container_gump::paint_art() {
+	gwin->set_painted();
+	for (auto* elem : elems) {
+		if (!elem || dynamic_cast<Checkmark_button*>(elem) || dynamic_cast<Dynamic_text_widget*>(elem)
+			|| dynamic_cast<Dynamic_slider*>(elem)) {
+			continue;
+		}
+		if (auto* list = dynamic_cast<Dynamic_list_widget*>(elem)) {
+			list->paint_art();
+		} else {
+			// Buttons, shapes and any other widget: their own art.
+			elem->paint();
+		}
+	}
+	if (container) {
+		paint_objects();
+		// Outline selections in this gump.
+		const Game_object_shared_vector& sel = cheat.get_selected();
+		for (const auto& it : sel) {
+			Game_object* obj = it.get();
+			if (container == obj->get_owner()) {
+				int ox;
+				int oy;
+				get_shape_location(obj, ox, oy);
+				obj->ShapeID::paint_outline(ox, oy, HIT_PIXEL);
+			}
+		}
+	}
+	paint_debug_grid();
+	paint_snap_zones();
+}
+
+bool Dynamic_container_gump::themable() const {
+	return Gump_theme::wants(Gump_info::get_gump_info(get_shapenum()), false);
+}
+
+void Dynamic_container_gump::paint_skin(Gump_skin& skin) {
+	Checkmark_button* check = nullptr;
+	for (auto* elem : elems) {
+		check = dynamic_cast<Checkmark_button*>(elem);
+		if (check) {
+			break;
+		}
+	}
+	// The panel covers the art's opaque pixels.
+	TileRect art = Gump_skin::art_bounds(*this);
+	art.shift(x, y);
+	if (art.w <= 0 || art.h <= 0) {
+		art = get_rect();
+	}
+	const TileRect none(0, 0, 0, 0);
+	const TileRect tab  = check && skin.stone() ? skin.tab_rect(check->get_rect(), none) : none;
+	const TileRect well = object_area.w > 0 && object_area.h > 0
+								  ? TileRect(x + object_area.x, y + object_area.y, object_area.w, object_area.h)
+								  : none;
+	if (!skin.base_valid(art, tab, well)) {
+		skin.panel(art, tab);
+		skin.well(well);
+		skin.store_base();
+	}
+	for (auto* elem : elems) {
+		if (auto* text = dynamic_cast<Dynamic_text_widget*>(elem)) {
+			text->paint_skin(skin);
+		} else if (auto* button = dynamic_cast<Dynamic_button*>(elem)) {
+			button->paint_skin(skin);
+		} else if (auto* slider = dynamic_cast<Dynamic_slider*>(elem)) {
+			slider->paint_skin(skin);
+		} else if (auto* list = dynamic_cast<Dynamic_list_widget*>(elem)) {
+			list->paint_skin(skin);
+		} else if (elem == check) {
+			skin.close_control(check->get_rect(), check->is_pushed());
+		}
+	}
 }
 
 bool Dynamic_container_gump::has_config(int shapenum) {

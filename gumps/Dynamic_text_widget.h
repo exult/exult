@@ -23,6 +23,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include <string>
 
+class Gump_skin;
+
 struct Dynamic_text_def;
 
 /*
@@ -47,6 +49,8 @@ public:
 	Gump_widget* clone(Gump* par) override;
 
 	void paint() override;
+	// Themed: the text in the theme's font, same anchor (see Gump_skin).
+	void paint_skin(Gump_skin& skin);
 
 	int get_field_id() const {
 		return field_id;

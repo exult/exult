@@ -25,6 +25,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "Dynamic_list_layout.h"
 #include "Dynamic_slider.h"
 #include "Gump.h"
+#include "Gump_skin.h"
 #include "contain.h"
 #include "exult_flx.h"
 #include "gamewin.h"
@@ -853,9 +854,28 @@ void Dynamic_list_widget::paint() {
 
 // One row's icon and text; ry is the row's top on screen.
 void Dynamic_list_widget::paint_row(int index, int sx, int ry) {
-	const Row&     row = rows[index];
-	Image_buffer8* ib  = gwin->get_win()->get_ib8();
-	// The icon, centred in its cell and clipped to it.
+	const Row& row = rows[index];
+	paint_icon(index, sx, ry);
+	// Text, then the right column right-aligned.  The text sits two
+	// pixels down in a 12-pixel row, and is centred the same way in
+	// other heights.
+	const int font   = row.font >= 0 ? row.font : def.font;
+	const int ty     = ry + (def.row_height - 12) / 2 + 2;
+	const int name_x = text_x();
+	int       name_w = def.width - name_x - 2;
+	if (!row.right.empty()) {
+		const int rw = sman->get_text_width(font, row.right.c_str());
+		sman->paint_text(font, row.right.c_str(), sx + def.width - 2 - rw, ty);
+		name_w -= rw + 4;
+	}
+	const std::string text = fit_text(font, row.text, name_w);
+	sman->paint_text(font, text.c_str(), sx + name_x, ty);
+}
+
+// One row's icon, centred in its cell and clipped to it.
+void Dynamic_list_widget::paint_icon(int index, int sx, int ry) {
+	const Row&     row  = rows[index];
+	Image_buffer8* ib   = gwin->get_win()->get_ib8();
 	const ShapeID* icon = nullptr;
 	ShapeID        row_icon(row.shape, row.frame, SF_SHAPES_VGA);
 	if (def.source == 0) {
@@ -875,20 +895,76 @@ void Dynamic_list_widget::paint_row(int index, int sx, int ry) {
 					ry + 1 + (icon_h - frame->get_height()) / 2 + frame->get_yabove());
 		}
 	}
-	// Text, then the right column right-aligned.  The text sits two
-	// pixels down in a 12-pixel row, and is centred the same way in
-	// other heights.
-	const int font   = row.font >= 0 ? row.font : def.font;
-	const int ty     = ry + (def.row_height - 12) / 2 + 2;
-	const int name_x = text_x();
-	int       name_w = def.width - name_x - 2;
-	if (!row.right.empty()) {
-		const int rw = sman->get_text_width(font, row.right.c_str());
-		sman->paint_text(font, row.right.c_str(), sx + def.width - 2 - rw, ty);
-		name_w -= rw + 4;
+}
+
+/*
+ *  Themed paint: the art pass paints the visible rows' icons, the skin
+ *  the rows, their texts, the count line and the scroll controls, with
+ *  the classic layout.
+ */
+
+void Dynamic_list_widget::paint_art() {
+	sync_rows();
+	int sx = 0;
+	int sy = 0;
+	local_to_screen(sx, sy);
+	const int count = static_cast<int>(rows.size());
+	for (int i = 0; i < def.rows && first + i < count; i++) {
+		paint_icon(first + i, sx, sy + i * def.row_height);
 	}
-	const std::string text = fit_text(font, row.text, name_w);
-	sman->paint_text(font, text.c_str(), sx + name_x, ty);
+}
+
+void Dynamic_list_widget::paint_skin(Gump_skin& skin) {
+	sync_rows();
+	int sx = 0;
+	int sy = 0;
+	local_to_screen(sx, sy);
+	const int count = static_cast<int>(rows.size());
+	const int sel   = selected_row();
+	if (count == 0) {
+		if (def.flags & DYNLIST_EMPTY_TEXT) {
+			skin.text(
+					Strings::Empty(), sx + (def.width + 15) / 2, sy + def.rows * def.row_height / 2, 2, 2, def.font,
+					Mui_colour::text_dim, Mui_colour::panel);
+		}
+	} else {
+		for (int i = 0; i < def.rows && first + i < count; i++) {
+			const int        n   = first + i;
+			const int        ry  = sy + i * def.row_height;
+			const Row&       row = rows[n];
+			const TileRect   rr(sx, ry, def.width, def.row_height);
+			const Mui_colour bg = n == sel ? Mui_colour::accent : (n % 2 ? Mui_colour::panel_alt : Mui_colour::panel);
+			Mui_colour       fg = n == sel ? Mui_colour::text_on_accent : Mui_colour::text;
+			if (row_disabled(n)) {
+				fg = Mui_colour::text_dim;
+			}
+			skin.fill(rr, bg);
+			const int font   = row.font >= 0 ? row.font : def.font;
+			const int cy     = ry + def.row_height / 2;
+			const int name_x = text_x();
+			int       name_w = def.width - name_x - 2;
+			if (!row.right.empty()) {
+				const int rw = skin.text(row.right, sx + def.width - 2, cy, 1, 2, font, fg, bg, &rr);
+				name_w -= rw + 4;
+			}
+			const TileRect name_r(sx + name_x, ry, std::max(0, name_w), def.row_height);
+			skin.text(row.text, sx + name_x, cy, 0, 2, font, fg, bg, &name_r);
+		}
+		if (def.flags & DYNLIST_COUNT_LINE) {
+			char buf[64];
+			snprintf(buf, sizeof(buf), "%d-%d %s %d", first + 1, std::min(first + def.rows, count), Strings::of(), count);
+			skin.text(
+					buf, sx + def.width / 2, sy + def.rows * def.row_height + 2, 2, 0, count_font, Mui_colour::text_dim,
+					Mui_colour::panel);
+		}
+	}
+	// The built-in controls' groove, unless the slider shows its own.
+	if (builtin_controls && groove_h > 0 && slider && slider->part_rect(Dynamic_slider::Part::thumb).w <= 0) {
+		skin.groove(TileRect(sx + def.width + 3 + 3, sy + groove_y, 5, groove_h), true);
+	}
+	if (slider) {
+		slider->paint_skin(skin);
+	}
 }
 
 void Dynamic_list_widget::paint_shade(int w, int h, int sx, int sy, int pct) {

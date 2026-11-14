@@ -29,6 +29,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 class Dynamic_slider;
 class Game_object;
+class Gump_skin;
 
 /*
  *  A data-driven scrolling list on a gump, configured via the
@@ -63,6 +64,10 @@ public:
 	Gump_widget* clone(Gump* par) override;
 
 	void     paint() override;
+	// Themed: rows, texts, count line and scroll controls on the skin;
+	// paint_art() paints only the visible rows' icons, for the art pass.
+	void     paint_skin(Gump_skin& skin);
+	void     paint_art();
 	bool     run() override;
 	TileRect get_rect() const override;
 
@@ -197,6 +202,7 @@ private:
 	int  text_x() const;
 	bool has_icons() const;
 	void paint_row(int index, int sx, int sy);
+	void paint_icon(int index, int sx, int ry);
 };
 
 #endif
