@@ -42,6 +42,7 @@ This document describes the themed menu system. It adds a small widget toolkit, 
 
 Ways to change it:
 - Menu style on the UI page of Options, with a description of each style. Apply writes the key; every open themed window follows (the game menu when the nested window closes). Choosing Classic closes the themed windows and the game menu goes on as the classic Gamemenu_gump.
+- The classic game menu (Gamemenu_gump) has one extra line, "Menu style: Classic" (also Ultima, Modern), outside the Exult launcher menu. Each press cycles classic → ultima → modern → classic and writes the key, so Classic is never a dead end. It needs no restart: the next game menu, Options, Journey Log or cheat window that opens follows the setting. The rest of the classic menu code is unchanged.
 - The new key action `MENU_STYLE` ("Cycle menu style", unbound by default) cycles classic → ultima → modern → classic.
 - Options → Advanced → `config/gameplay/menu_style`.
 

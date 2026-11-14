@@ -185,6 +185,25 @@ namespace {
 		return r && SDL_RenderCoordinatesToWindow(r, float(sx), float(sy), &wx, &wy);
 	}
 
+	// Point in a classic gump (relative to its origin) -> SDL window
+	// coordinates, through its overlay layer when it has one.
+	bool gump_to_window(const Gump* g, int dx, int dy, float& wx, float& wy) {
+		Game_window* gwin = Game_window::get_instance();
+		const int    gx   = g->get_x() + dx;
+		const int    gy   = g->get_y() + dy;
+		int          sx;
+		int          sy;
+		if (g->render_layer >= 0 && gwin->layer_is_visible(g->render_layer)) {
+			if (!gwin->get_win()->layer_to_screen(g->render_layer, gx - g->layer_bounds.x, gy - g->layer_bounds.y, sx, sy)) {
+				return false;
+			}
+		} else {
+			gwin->get_win()->game_to_screen(gx, gy, false, sx, sy);
+		}
+		SDL_Renderer* r = SDL_GetRenderer(screen_window());
+		return r && SDL_RenderCoordinatesToWindow(r, float(sx), float(sy), &wx, &wy);
+	}
+
 	void push_click(float wx, float wy, Uint8 button) {
 		const SDL_WindowID id = SDL_GetWindowID(screen_window());
 		SDL_Event          e{};
@@ -393,6 +412,27 @@ namespace {
 			if (win && layer_to_window(win, x, y, wx, wy)) {
 				push_click(wx, wy, SDL_BUTTON_RIGHT);
 			}
+		} else if (cmd == "gclick") {
+			// Click in the classic modal gump on top: X Y from its origin,
+			// optionally "right".
+			int         x = 0;
+			int         y = 0;
+			std::string which;
+			args >> x >> y >> which;
+			float wx;
+			float wy;
+			if (win || !gump) {
+				expect(false, "gclick " + rest, win ? "a themed window is on top" : "no classic gump");
+			} else if (gump_to_window(gump, x, y, wx, wy)) {
+				push_click(wx, wy, which == "right" ? SDL_BUTTON_RIGHT : SDL_BUTTON_LEFT);
+			} else {
+				expect(false, "gclick " + rest, "unmappable");
+			}
+		} else if (cmd == "expect-gump") {
+			// Class of the classic modal gump on top, or "none".
+			const std::string got = win ? "<themed window>" : gump ? class_name(gump, typeid(*gump)) : "none";
+			const bool        ok  = rest == "none" ? got == "none" : got.find(rest) != std::string::npos;
+			expect(ok, "gump " + rest, got);
 		} else if (cmd == "key") {
 			SDL_Keycode key;
 			SDL_Keymod  mod;
