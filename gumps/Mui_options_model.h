@@ -26,6 +26,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 class Gump_button;
 class Modal_gump;
+class VideoOptions_gump;
 
 /*
  *  One page of the themed Options window, backed by the classic option gump
@@ -115,6 +116,7 @@ private:
 	bool                        touched = false;
 
 	void                    create();
+	static void             add_game_areas(VideoOptions_gump& g);
 	void                    refresh();
 	void                    mark_baseline();
 	Gump_button*            button(int id) const;

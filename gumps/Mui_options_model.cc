@@ -35,6 +35,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "ibuf8.h"
 #include "items.h"
 
+#include <algorithm>
 #include <cctype>
 
 namespace {
@@ -249,9 +250,12 @@ std::vector<Mui_options_model::Row> Mui_options_model::build_table(Tab t) {
 
 void Mui_options_model::create() {
 	switch (which) {
-	case Tab::video:
-		gump = std::make_unique<VideoOptions_gump>();
+	case Tab::video: {
+		auto g = std::make_unique<VideoOptions_gump>();
+		add_game_areas(*g);
+		gump = std::move(g);
 		break;
+	}
 	case Tab::audio:
 		gump = std::make_unique<AudioOptions_gump>();
 		break;
@@ -270,6 +274,32 @@ void Mui_options_model::create() {
 	default:
 		break;
 	}
+}
+
+/*
+ *  The classic Video gump offers Auto, 320x200 and a custom size from
+ *  exult.cfg on desktops, plus 400x250 and 480x300 on phones and tablets.
+ *  The themed page offers all of them on every platform, in a dropdown.
+ */
+
+void Mui_options_model::add_game_areas(VideoOptions_gump& g) {
+	auto res = [](uint32 w, uint32 h) {
+		return (w << 16) | h;
+	};
+	std::vector<uint32>& list = g.game_resolutions;
+	for (const uint32 r : {res(320, 200), res(400, 250), res(480, 300)}) {
+		if (std::find(list.cbegin(), list.cend(), r) == list.cend()) {
+			list.push_back(r);
+		}
+	}
+	// Auto first, then by size (a custom size falls into place).
+	std::sort(list.begin(), list.end(), [](uint32 a, uint32 b) {
+		if (a == 0 || b == 0) {
+			return a == 0 && b != 0;
+		}
+		return (a >> 16) * (a & 0xffffu) < (b >> 16) * (b & 0xffffu);
+	});
+	g.rebuild_buttons();
 }
 
 Gump_button* Mui_options_model::button(int id) const {

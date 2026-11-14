@@ -467,7 +467,10 @@ void Mui_options_window::build_row(Mui_box& body, int tab, const Row& r) {
             });
 		};
 		const auto& ch = r.choices;
-		if (ch.size() == 2 && is_off(ch[0]) && is_on(ch[1])) {
+		if (r.id == "game_area") {
+			// A list of sizes, like Window Size.
+			control = line->add<Option_dropdown>(cid, ch, r.value, on_change);
+		} else if (ch.size() == 2 && is_off(ch[0]) && is_on(ch[1])) {
 			control = line->add<Mui_toggle>(cid, r.value == 1, [on_change](bool v) {
 				on_change(v ? 1 : 0);
 			});
