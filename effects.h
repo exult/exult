@@ -86,6 +86,11 @@ public:
 	void write_weather(ODataSource& out) const;
 	void read_weather(IDataSource& in);
 	void restore_weather();
+
+	void clear_saved_weather() {
+		saved_weather.clear();
+	}
+
 	// Is a weather restore_weather() started, from this egg, still on?
 	// end_weather_restore() is called once the eggs have run after loading.
 	bool has_restored_weather(int num, const Tile_coord& eggloc) const;

@@ -90,6 +90,7 @@
 #include <cstring>
 #include <memory>
 #include <sstream>
+#include <utility>
 
 #ifdef USE_EXULTSTUDIO
 #	include "servemsg.h"
@@ -1498,7 +1499,12 @@ void Game_window::write_gwin() {
 	gout.write1(ambient_light ? 1 : 0);
 	gout.write1(combat ? 1 : 0);
 	gout.write1(infravision_active ? 1 : 0);
-	effects->write_weather(gout);
+	// A map save goes to initgame.dat, and new games would start with it.
+	if (std::exchange(saving_map, false)) {
+		gout.write1(0);    // No weather.
+	} else {
+		effects->write_weather(gout);
+	}
 	if (!gout.good()) {
 		throw file_write_exception(GWINDAT);
 	}
@@ -1604,6 +1610,7 @@ bool Game_window::was_map_modified() {
  */
 
 void Game_window::write_map() {
+	saving_map = true;    // No weather in initgame.dat (write_gwin).
 	for (auto* map : maps) {
 		if (map && map->was_map_modified()) {
 			map->write_static();    // Write ifix, map files.
@@ -2940,8 +2947,12 @@ void Game_window::setup_game(bool map_editing) {
 	// Ensure time is stopped if map-editing.
 	time_stopped = map_editing ? -1 : 0;
 	// Weather from the savegame, before eggs can change it. The palette for
-	// it is set below.
-	effects->restore_weather();
+	// it is set below. Not when map-editing, like the eggs.
+	if (map_editing) {
+		effects->clear_saved_weather();
+	} else {
+		effects->restore_weather();
+	}
 	//+++++The below wasn't prev. done by ::read(), so maybe it should be
 	//+++++controlled by a 'first-time' flag.
 	// Want to activate first egg.
