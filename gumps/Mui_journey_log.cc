@@ -49,6 +49,15 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <iostream>
 
 namespace {
+	// Thread-safe localtime. Returns false if the conversion fails.
+	bool local_time(const time_t& t, tm& out) {
+#ifdef _WIN32
+		return localtime_s(&out, &t) == 0;
+#else
+		return localtime_r(&t, &out) != nullptr;
+#endif
+	}
+
 	class Strings : public GumpStrings {
 	public:
 		static auto JourneyLog() {
@@ -758,14 +767,14 @@ void Mui_journey_window::load_model() {
 	cd->game_minute  = char(gclock->get_minute());
 	cd->play_seconds = gwin->get_play_seconds();
 	const time_t t   = time(nullptr);
-	const tm*    ti  = localtime(&t);
-	if (ti) {
-		cd->real_day    = char(ti->tm_mday);
-		cd->real_hour   = char(ti->tm_hour);
-		cd->real_minute = char(ti->tm_min);
-		cd->real_month  = char(ti->tm_mon + 1);
-		cd->real_year   = short(ti->tm_year + 1900);
-		cd->real_second = char(ti->tm_sec);
+	tm           ti{};
+	if (local_time(t, ti)) {
+		cd->real_day    = char(ti.tm_mday);
+		cd->real_hour   = char(ti.tm_hour);
+		cd->real_minute = char(ti.tm_min);
+		cd->real_month  = char(ti.tm_mon + 1);
+		cd->real_year   = short(ti.tm_year + 1900);
+		cd->real_second = char(ti.tm_sec);
 	}
 	const int n    = std::clamp(int(cd->party_size), 0, 8);
 	current->party = std::make_unique<SaveGame_Party[]>(size_t(std::max(1, n)));

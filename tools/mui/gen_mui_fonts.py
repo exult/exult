@@ -30,14 +30,16 @@ per frame, then per frame xright, xleft, yabove, ybelow (s16) and RLE spans
 (u16 len<<1, s16 x, s16 y, raw bytes), ending with a u16 0. Font::paint_text
 draws a frame with its origin at the pen and advances by xleft + xright + 1.
 
-Needs python3 with Pillow:
-  gen_mui_fonts.py [--ttf DIR] [--map font_map.txt] -o data/mui_fonts.vga
+Needs python3 with Pillow. The folder holding the DejaVu TTFs has no default:
+give it with --ttf-dir or the MUI_TTF_DIR environment variable.
+  gen_mui_fonts.py [--ttf-dir DIR] [--map font_map.txt] -o data/mui_fonts.vga
   gen_mui_fonts.py --verify data/mui_fonts.vga
 """
 from __future__ import annotations
 
 import argparse
 import math
+import os
 import struct
 import sys
 from pathlib import Path
@@ -55,7 +57,7 @@ LEVELS = 4
 MIN_ALPHA = 0.12  # Coverage below this is left transparent.
 
 ROOT = Path(__file__).resolve().parents[2]
-DEFAULT_TTF = Path("/tmp/dejavu-fonts-ttf-2.37/ttf")
+TTF_ENV = "MUI_TTF_DIR"
 DEFAULT_MAP = ROOT / "data" / "fonts" / "font_map.txt"
 
 
@@ -274,12 +276,16 @@ def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("-o", "--out", type=Path)
     ap.add_argument("--verify", type=Path, metavar="VGA")
-    ap.add_argument("--ttf", type=Path, default=DEFAULT_TTF, help="folder with the DejaVu TTFs")
+    ap.add_argument("--ttf-dir", "--ttf", dest="ttf", type=Path, help=f"folder with the DejaVu TTFs (or set {TTF_ENV})")
     ap.add_argument("--map", type=Path, default=DEFAULT_MAP, help="data/fonts/font_map.txt")
     a = ap.parse_args()
     try:
         if a.verify:
             return verify(a.verify, a.map)
+        if a.ttf is None and os.environ.get(TTF_ENV):
+            a.ttf = Path(os.environ[TTF_ENV])
+        if a.ttf is None:
+            ap.error(f"need the DejaVu TTF folder: pass --ttf-dir DIR or set {TTF_ENV}")
         if not a.out:
             ap.error("need -o OUT (or --verify VGA)")
         generate(a.ttf, a.map, a.out)

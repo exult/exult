@@ -162,7 +162,7 @@ The themed menus use anti-aliased bitmap fonts rendered offline, not a runtime T
 - The 28 fonts are one Flex, `data/mui_fonts.vga`, committed with the generator and `data/fonts/DejaVu-LICENSE.txt` (Bitstream Vera licence), and embedded in exult.flx as `EXULT_FLX_MUI_FONTS_VGA`.
 - Byte codes follow data/fonts/font_map.txt: ASCII, the builtin special-character frames, and ISO-8859-1 160–255, so translated exultmsg strings work.
 - `Mui_fonts::get().pick(face, px)` returns the size nearest to the theme size × UI scale; `Mui_text_font::draw` remaps levels 1–4 to a ramp from the background to the text colour.
-- Regenerate: `gen_mui_fonts.py --ttf DIR -o data/mui_fonts.vga`; check: `gen_mui_fonts.py --verify data/mui_fonts.vga`.
+- Regenerate: `gen_mui_fonts.py --ttf-dir DIR -o data/mui_fonts.vga` (or set `MUI_TTF_DIR`; there is no default folder); check: `gen_mui_fonts.py --verify data/mui_fonts.vga`.
 
 Why not FreeType now: Exult itself links neither FreeType nor SDL_ttf (FreeType is only an optional Exult Studio dependency), and a runtime dependency would add work for the iOS, Android and MSVC builds while the TrueType discussion (RFC #561) is open. The glyph source sits behind `Mui_font`, so a FreeType backend could fill the same cache later.
 
