@@ -115,6 +115,8 @@ class Game_window {
 	bool painted;               // true if we updated image buffer.
 	bool ambient_light;         // Permanent version of special_light.
 	bool infravision_active;    // Infravision flag.
+	// Set by write_map(); write_gwin() then leaves the weather out.
+	bool saving_map = false;
 	// Game state values:
 	int           skip_above_actor;      // Level above actor to skip rendering.
 	unsigned int  in_dungeon;            // true if inside a dungeon.

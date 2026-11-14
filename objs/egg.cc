@@ -1389,6 +1389,11 @@ void Egg_object::set_weather(
 	if (!len) {        // Means continuous.
 		len = 6000;    // Confirmed from originals.
 	}
+	// Loading a savegame restores the weather this egg started; when the
+	// egg hatches again on load, keep that instead of adding a second one.
+	if (egg && eman->has_restored_weather(weather, egg->get_tile())) {
+		return;
+	}
 	const int cur = eman->get_weather();
 	cout << "Current weather is " << cur << "; setting " << weather << endl;
 	// Experimenting.
