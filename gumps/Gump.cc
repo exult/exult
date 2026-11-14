@@ -23,6 +23,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "Gump.h"
 
 #include "Dynamic_button.h"
+#include "Dynamic_list_widget.h"
 #include "Dynamic_shape_widget.h"
 #include "Dynamic_slider.h"
 #include "Dynamic_text_widget.h"
@@ -228,6 +229,9 @@ void Gump::set_object_area(TileRect area, int checkx, int checky, bool set_check
 			}
 			for (const auto& def : info->dynamic_sliders) {
 				elems.push_back(new Dynamic_slider(this, def));
+			}
+			for (const auto& def : info->dynamic_lists) {
+				elems.push_back(new Dynamic_list_widget(this, def));
 			}
 		}
 	}

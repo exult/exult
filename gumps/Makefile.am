@@ -80,6 +80,8 @@ libgumps_la_SOURCES = \
 	Dynamic_slider.cc	\
 	Dynamic_slider.h	\
 	Dynamic_list_layout.h	\
+	Dynamic_list_widget.cc	\
+	Dynamic_list_widget.h	\
 	gump_types.h	\
 	Face_button.cc	\
 	Face_button.h	\

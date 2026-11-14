@@ -155,6 +155,7 @@ GUMPS_OBJS:= \
 	gumps/Dynamic_text_widget.o \
 	gumps/Dynamic_shape_widget.o \
 	gumps/Dynamic_slider.o \
+	gumps/Dynamic_list_widget.o \
 	gumps/Enabled_button.o \
 	gumps/Face_button.o \
 	gumps/Face_stats.o \
@@ -575,6 +576,8 @@ audio/Midi.o : audio/Midi.cc $(EXULT_FLX)
 gumps/AudioOptions_gump.o : gumps/AudioOptions_gump.cc $(EXULT_FLX)
 
 gumps/GameEngineOptions_gump.o : gumps/GameEngineOptions_gump.cc $(EXULT_FLX)
+
+gumps/Dynamic_list_widget.o : gumps/Dynamic_list_widget.cc $(EXULT_FLX)
 
 gumps/Face_stats.o : gumps/Face_stats.cc $(EXULT_FLX)
 

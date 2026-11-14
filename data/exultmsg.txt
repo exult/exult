@@ -434,6 +434,9 @@
 0X6C1:Press ESC to exit.
 0X6C2:Please add the games in File Sharing
 0X6C3:Touch screen for help!
+# Dynamic_list_widget.cc
+0x6D2:of
+0x6D3:Empty
 
 #Misc
 # SI copy protection failed

@@ -16,6 +16,7 @@
 		8A123C3B2F41EA3600155333 /* Dynamic_text_widget.cc in Sources */ = {isa = PBXBuildFile; fileRef = 8A123C3A2F41EA3600155333 /* Dynamic_text_widget.cc */; };
 		8A123C3E2F41EA3600155333 /* Dynamic_shape_widget.cc in Sources */ = {isa = PBXBuildFile; fileRef = 8A123C3D2F41EA3600155333 /* Dynamic_shape_widget.cc */; };
 		8A123C412F41EA3600155333 /* Dynamic_slider.cc in Sources */ = {isa = PBXBuildFile; fileRef = 8A123C402F41EA3600155333 /* Dynamic_slider.cc */; };
+		925364514E52038C66C735FE /* Dynamic_list_widget.cc in Sources */ = {isa = PBXBuildFile; fileRef = B1643572DB6A6AF41F1854DD /* Dynamic_list_widget.cc */; };
 		8A1C58211FE7D91B00738E40 /* libz.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 8A1C581B1FE7D91B00738E40 /* libz.tbd */; };
 		8A1FC4272571C747007B86DD /* CoreMotion.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8A8340BF1F8977FB000696C7 /* CoreMotion.framework */; };
 		8A2C52511DE6E1810016E16A /* CoreFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8A7F1F8E1DE5BDD40066F6FC /* CoreFoundation.framework */; };
@@ -365,6 +366,8 @@
 		8A123C3D2F41EA3600155333 /* Dynamic_shape_widget.cc */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = Dynamic_shape_widget.cc; path = ../gumps/Dynamic_shape_widget.cc; sourceTree = SOURCE_ROOT; };
 		8A123C3F2F41EA3600155333 /* Dynamic_slider.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = Dynamic_slider.h; path = ../gumps/Dynamic_slider.h; sourceTree = SOURCE_ROOT; };
 		8A123C402F41EA3600155333 /* Dynamic_slider.cc */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = Dynamic_slider.cc; path = ../gumps/Dynamic_slider.cc; sourceTree = SOURCE_ROOT; };
+		35A5E5AD61F80DB1F7B41122 /* Dynamic_list_widget.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = Dynamic_list_widget.h; path = ../gumps/Dynamic_list_widget.h; sourceTree = SOURCE_ROOT; };
+		B1643572DB6A6AF41F1854DD /* Dynamic_list_widget.cc */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = Dynamic_list_widget.cc; path = ../gumps/Dynamic_list_widget.cc; sourceTree = SOURCE_ROOT; };
 		C948FE84FE968864E8CEB5ED /* Dynamic_list_layout.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = Dynamic_list_layout.h; path = ../gumps/Dynamic_list_layout.h; sourceTree = SOURCE_ROOT; };
 		8A1C581B1FE7D91B00738E40 /* libz.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libz.tbd; path = usr/lib/libz.tbd; sourceTree = SDKROOT; };
 		8A2515082E3DA1D500CCE820 /* SDL.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = SDL.xcodeproj; path = SDL/Xcode/SDL/SDL.xcodeproj; sourceTree = "<group>"; };
@@ -1447,6 +1450,8 @@
 				8A123C3D2F41EA3600155333 /* Dynamic_shape_widget.cc */,
 				8A123C3F2F41EA3600155333 /* Dynamic_slider.h */,
 				8A123C402F41EA3600155333 /* Dynamic_slider.cc */,
+				35A5E5AD61F80DB1F7B41122 /* Dynamic_list_widget.h */,
+				B1643572DB6A6AF41F1854DD /* Dynamic_list_widget.cc */,
 				C948FE84FE968864E8CEB5ED /* Dynamic_list_layout.h */,
 				8A33B5E52C2051B800075AF4 /* Scrollable_widget.cc */,
 				8A33B5E72C2051B800075AF4 /* Scrollable_widget.h */,
@@ -1996,6 +2001,7 @@
 				8A123C3B2F41EA3600155333 /* Dynamic_text_widget.cc in Sources */,
 				8A123C3E2F41EA3600155333 /* Dynamic_shape_widget.cc in Sources */,
 				8A123C412F41EA3600155333 /* Dynamic_slider.cc in Sources */,
+				925364514E52038C66C735FE /* Dynamic_list_widget.cc in Sources */,
 				E700DE241A6E344D006C8BE4 /* ibuf8.cc in Sources */,
 				8A9A03B029F42948000AF341 /* FluidSynthMidiDriver.cpp in Sources */,
 				E700DD511A6E3121006C8BE4 /* bodyinf.cc in Sources */,
