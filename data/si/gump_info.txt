@@ -1,7 +1,7 @@
 #	Gumps information for Serpent Isle.
 #	Sections: container_area, checkmark_pos, special, snap_zones,
 #	          dynamic_buttons, dynamic_texts, dynamic_shapes, dynamic_sliders,
-#	          dynamic_lists, list_layout
+#	          dynamic_lists, list_layout, gump_theme
 #
 #	container_area: Defines the object placement area within gumps
 #	checkmark_pos: Position of the close button for each gump
@@ -13,6 +13,22 @@
 #	dynamic_sliders: Data-driven slider controls, set/read by usecode
 #	dynamic_lists: Data-driven scrolling lists, from contents or usecode
 #	list_layout: Layout of the container list view (Containers: List)
+#	gump_theme: Optional; whether a gump is drawn with the menu theme
+#
+#	gump_theme (no entries in this file; add them in a mod's or the
+#	game's patch gump_info.txt):
+#	Format: :gump_shape/mode
+#	mode = 0: always classic (the gump art as it is)
+#	       1: drawn with the menu theme when a themed menu style
+#	          (Ultima or Modern) is chosen
+#	No entry (the default): a dynamic container gump is themed when it
+#	has at least one dynamic button, text, shape, slider or list and no
+#	snap_zones; the container list view is themed unless the shown
+#	container's gump shape has mode 0. Classic style never themes.
+#	Example:
+#	%%section gump_theme
+#	:49/0
+#	%%endsection
 #
 
 %%section version

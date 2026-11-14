@@ -299,6 +299,7 @@ void Shapes_vga_file::Write_Gumpinf_text_data_file(Exult_Game game) {
 	std::map<int, const Gump_info*> dynsliders_data;
 	std::map<int, const Gump_info*> dynlists_data;
 	std::map<int, const Gump_info*> gumpname_data;
+	std::map<int, const Gump_info*> gumptheme_data;
 
 	for (const auto& [shapenum, gumpinf] : Gump_info::gump_info_map) {
 		if (gumpinf.has_area && gumpinf.is_container_dirty()) {
@@ -331,6 +332,9 @@ void Shapes_vga_file::Write_Gumpinf_text_data_file(Exult_Game game) {
 		if (gumpinf.has_gump_name() && gumpinf.is_gumpname_dirty()) {
 			gumpname_data[shapenum] = &gumpinf;
 		}
+		if (gumpinf.theme_mode >= 0 && gumpinf.is_gumptheme_dirty()) {
+			gumptheme_data[shapenum] = &gumpinf;
+		}
 	}
 
 	// list_layout entries read from the patch (key -1 first).
@@ -341,7 +345,7 @@ void Shapes_vga_file::Write_Gumpinf_text_data_file(Exult_Game game) {
 
 	if (container_data.empty() && checkmark_data.empty() && special_data.empty() && snapzones_data.empty()
 		&& dynbuttons_data.empty() && dyntexts_data.empty() && dynshapes_data.empty() && dynsliders_data.empty()
-		&& dynlists_data.empty() && gumpname_data.empty() && !has_layouts) {
+		&& dynlists_data.empty() && gumpname_data.empty() && gumptheme_data.empty() && !has_layouts) {
 		return;
 	}
 
@@ -477,6 +481,15 @@ void Shapes_vga_file::Write_Gumpinf_text_data_file(Exult_Game game) {
 		out << "%%section gump_name" << std::endl;
 		for (const auto& [shapenum, info] : gumpname_data) {
 			out << ":" << shapenum << "/" << info->gump_name << std::endl;
+		}
+		out << "%%endsection" << std::endl;
+	}
+
+	// gump_theme
+	if (!gumptheme_data.empty()) {
+		out << "%%section gump_theme" << std::endl;
+		for (const auto& [shapenum, info] : gumptheme_data) {
+			out << ":" << shapenum << "/" << info->theme_mode << std::endl;
 		}
 		out << "%%endsection" << std::endl;
 	}

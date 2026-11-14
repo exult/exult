@@ -346,6 +346,7 @@ class Gump_info {
 	bool dynsliders_from_patch;
 	bool dynlists_from_patch;
 	bool gumpname_from_patch;
+	bool gumptheme_from_patch;
 
 	bool container_modified;
 	bool checkmark_modified;
@@ -357,6 +358,7 @@ class Gump_info {
 	bool dynsliders_modified;
 	bool dynlists_modified;
 	bool gumpname_modified;
+	bool gumptheme_modified;
 
 public:
 	int  container_x;
@@ -379,6 +381,9 @@ public:
 	std::vector<Dynamic_slider_def> dynamic_sliders;    // Data-driven sliders
 	std::vector<Dynamic_list_def>   dynamic_lists;      // Data-driven scrolling lists
 	std::string                     gump_name;          // Custom click-name shown by show_items
+	// gump_theme section: -1 = default rule, 0 = always classic,
+	// 1 = drawn with the menu theme when a themed style is chosen.
+	int theme_mode;
 
 	Gump_info();
 
@@ -421,6 +426,10 @@ public:
 
 	bool is_gumpname_dirty() const {
 		return gumpname_from_patch || gumpname_modified;
+	}
+
+	bool is_gumptheme_dirty() const {
+		return gumptheme_from_patch || gumptheme_modified;
 	}
 
 	// Setters for patch flags
@@ -508,6 +517,10 @@ public:
 		gumpname_from_patch = tf;
 	}
 
+	void set_gumptheme_from_patch(bool tf) {
+		gumptheme_from_patch = tf;
+	}
+
 	// Setters for modified flags
 	void set_container_modified(bool v) {
 		container_modified = v;
@@ -574,6 +587,13 @@ public:
 
 	void set_gumpname_modified(bool v) {
 		gumpname_modified = v;
+		if (v) {
+			any_modified = true;
+		}
+	}
+
+	void set_gumptheme_modified(bool v) {
+		gumptheme_modified = v;
 		if (v) {
 			any_modified = true;
 		}

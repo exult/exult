@@ -506,9 +506,10 @@ void Shapes_vga_file::Read_Gumpinf_text_data_file(bool editing, Exult_Game game_
 		return;
 	}
 	Gump_info::clear();
-	std::array sections{"container_area"sv,   "checkmark_pos"sv,      "special"sv,         "snap_zones"sv,    "dynamic_buttons"sv,
-						"dynamic_texts"sv,    "dynamic_shapes"sv,     "dynamic_sliders"sv, "dynamic_lists"sv, "gump_name"sv,
-						"shortcutbar_icon"sv, "shortcutbar_action"sv, "list_layout"sv};
+	std::array sections{"container_area"sv,     "checkmark_pos"sv, "special"sv,        "snap_zones"sv,
+						"dynamic_buttons"sv,    "dynamic_texts"sv, "dynamic_shapes"sv, "dynamic_sliders"sv,
+						"dynamic_lists"sv,      "gump_name"sv,     "gump_theme"sv,     "shortcutbar_icon"sv,
+						"shortcutbar_action"sv, "list_layout"sv};
 
 	// Functor for reading container area
 	// Format: :shape/x/y/w/h[/debug_flags]
@@ -764,6 +765,28 @@ void Shapes_vga_file::Read_Gumpinf_text_data_file(bool editing, Exult_Game game_
 
 	using Gump_name_reader = Functor_multidata_reader<Gump_info, Gump_name_functor>;
 
+	// Functor for reading the gump theme mode
+	// Format: :gump_shape/mode (0 = always classic, 1 = themed when a
+	// themed menu style is chosen; anything else = the default rule)
+	struct Gump_theme_functor {
+		bool operator()(std::istream& in, int version, bool patch, Exult_Game game, Gump_info& ginfo) const {
+			ignore_unused_variable_warning(version, game);
+			const int mode = ReadInt(in, -1);
+			if (mode == 0 || mode == 1) {
+				ginfo.theme_mode = mode;
+			} else {
+				std::cerr << "gump_theme: invalid mode " << mode << ", using the default" << std::endl;
+				ginfo.theme_mode = -1;
+			}
+			if (patch) {
+				ginfo.set_gumptheme_from_patch(true);
+			}
+			return true;
+		}
+	};
+
+	using Gump_theme_reader = Functor_multidata_reader<Gump_info, Gump_theme_functor>;
+
 	// Functor for reading shortcutbar icon entries
 	// Format: :slot/transparent/vga/shape[/frame[/extra_frame
 	//         [/is_party_item[/fallback_vga[/fallback_shape
@@ -840,6 +863,7 @@ void Shapes_vga_file::Read_Gumpinf_text_data_file(bool editing, Exult_Game game_
 			std::make_unique<Dynamic_sliders_reader>(Gump_info::gump_info_map),
 			std::make_unique<Dynamic_lists_reader>(Gump_info::gump_info_map),
 			std::make_unique<Gump_name_reader>(Gump_info::gump_info_map),
+			std::make_unique<Gump_theme_reader>(Gump_info::gump_info_map),
 			std::make_unique<Shortcutbar_icon_reader>(Gump_info::shortcutbar_icon_map),
 			std::make_unique<Shortcutbar_action_reader>(Gump_info::shortcutbar_action_map), std::make_unique<List_layout_reader>());
 	static_assert(sections.size() == readers.size());
