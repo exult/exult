@@ -28,6 +28,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "Dynamic_shape_widget.h"
 #include "Gump_button.h"
 #include "Gump_manager.h"
+#include "Gump_skin.h"
 #include "cheat.h"
 #include "contain.h"
 #include "exult_flx.h"
@@ -386,6 +387,10 @@ void Container_list_gump::remove(Game_object* obj) {
  */
 
 void Container_list_gump::paint() {
+	if (skin_pass) {
+		paint_art();
+		return;
+	}
 	paint_background();
 	// The container's picture, over the bottom roller's left end.
 	if (get_shape()) {
@@ -533,6 +538,146 @@ void Container_list_gump::paint_panel() {
 			sman->paint_text(small, s.c_str(), px + (pw - sman->get_text_width(small, s.c_str())) / 2, ly);
 		}
 		ly += 8;
+	}
+}
+
+/*
+ *  The list view is themed unless the shown container's gump shape opts
+ *  out (gump_theme mode 0).
+ */
+
+bool Container_list_gump::themable() const {
+	return Gump_theme::wants(Gump_info::get_gump_info(get_shapenum()), true);
+}
+
+/*
+ *  Themed paint (see Gump_skin.h).  The art pass paints the container's
+ *  picture with its tick and objects, the enlarged item, the rows' icons
+ *  and the selection outlines; the skin gets everything else.
+ */
+
+void Container_list_gump::paint_art() {
+	if (get_shape()) {
+		paint_shape(x + pic_x, y + pic_y);
+	}
+	gwin->set_painted();
+	list->sync_rows();
+	check->paint();
+	for (auto* elem : elems) {
+		if (auto* preview = dynamic_cast<Dynamic_shape_widget*>(elem)) {
+			preview->paint();
+		}
+	}
+	list->paint_art();
+	paint_objects();
+
+	const Game_object_shared_vector& sel_objs = cheat.get_selected();
+	for (const auto& it : sel_objs) {
+		Game_object* obj = it.get();
+		if (container != obj->get_owner()) {
+			continue;
+		}
+		int ox;
+		int oy;
+		if (list->row_location(obj, ox, oy)) {
+			obj->ShapeID::paint_outline(ox, oy, HIT_PIXEL);
+		}
+		Gump::get_shape_location(obj, ox, oy);
+		obj->ShapeID::paint_outline(ox, oy, HIT_PIXEL);
+	}
+}
+
+namespace {
+	// A rule along a game-pixel row from x0, w wide, as thin as the
+	// panel's gold rule.
+	void skin_rule(Gump_skin& skin, int x0, int w, int gy, Mui_colour c) {
+		Mui_painter& p     = skin.painter();
+		TileRect     r     = skin.to_skin(TileRect(x0, gy, w, 1));
+		const int    thick = std::min(std::max(1, r.h), std::max(1, p.px(1.5f)));
+		r.y += (r.h - thick) / 2;
+		r.h = thick;
+		p.fill_rect(r, skin.theme().colour(c));
+	}
+}    // namespace
+
+/*
+ *  The skin: the panel over the widened background, then the texts at
+ *  the places paint_title() and paint_panel() put them, the rows and the
+ *  arrows as themed plates.
+ */
+
+void Container_list_gump::paint_skin(Gump_skin& skin) {
+	const TileRect panel(x, y, total_w(layout), layout.bg_height);
+	const TileRect none(0, 0, 0, 0);
+	if (!skin.base_valid(panel, none, none)) {
+		skin.panel(panel, none);
+		skin.store_base();
+	}
+
+	// Title centred between the arrows, with a rule under it.
+	const int         tx    = x + layout.title_x;
+	const int         ty    = y + layout.title_y;
+	const int         tw    = layout.title_w;
+	const std::string title = container ? Dynamic_list_widget::display_name(container) : std::string();
+	const TileRect    title_r(tx + 14, ty - 2, std::max(0, tw - 28), 12);
+	skin.text(
+			title, tx + tw / 2, ty - 2, 2, 0, layout.title_font, Mui_font_role::heading, Mui_colour::text, Mui_colour::panel,
+			&title_r);
+	if (tw > 8) {
+		skin_rule(skin, tx + 4, tw - 8, ty + 8, Mui_colour::accent);
+	}
+
+	// The dotted divider between the columns.
+	Mui_painter& p     = skin.painter();
+	const uint8  dark  = skin.theme().colour(Mui_colour::frame_dark);
+	const int    thick = std::max(1, p.px(1.5f));
+	for (int dy = layout.divider_y0; dy < layout.divider_y1; dy++) {
+		if (dy % 3) {
+			TileRect r = skin.to_skin(TileRect(x + layout.divider_x, y + dy, 1, 1));
+			r.x += (r.w - std::min(r.w, thick)) / 2;
+			r.w = std::min(r.w, thick);
+			p.fill_rect(r, dark);
+		}
+	}
+
+	// The selected item's name and details.
+	Game_object* obj = list->get_object(0);
+	if (obj) {
+		const int      px = x + layout.panel_x;
+		const int      py = y + layout.panel_y;
+		const int      pw = layout.panel_w;
+		const TileRect name_r(px + 1, py - 2, std::max(0, pw - 2), 12);
+		skin.text(
+				Dynamic_list_widget::display_name(obj), px + pw / 2, py - 2, 2, 0, layout.panel_font, Mui_colour::text,
+				Mui_colour::panel, &name_r);
+		if (pw > 16) {
+			skin_rule(skin, px + 8, pw - 16, py + 8, Mui_colour::accent);
+		}
+		char      quantity[48];
+		char      weight[48];
+		const int wt = obj->get_weight();    // In tenths of a stone.
+		snprintf(quantity, sizeof(quantity), "%s %d", Strings::Quantity_(), obj->get_quantity());
+		snprintf(weight, sizeof(weight), "%s %d.%d", Strings::Weight_(), wt / 10, wt % 10);
+		const char* lines[] = {quantity, weight, "", Strings::DoubleClickToUse(), Strings::DragToTake()};
+		int         ly      = py + 66;
+		for (const char* line : lines) {
+			if (*line) {
+				const TileRect line_r(px, ly, pw, 8);
+				skin.text(
+						line, px + pw / 2, ly, 2, 0, layout.panel_small_font, Mui_font_role::small, Mui_colour::text,
+						Mui_colour::panel, &line_r);
+			}
+			ly += 8;
+		}
+	}
+
+	// The rows and their scroll controls, and the arrows.
+	list->paint_skin(skin);
+	for (auto* elem : elems) {
+		if (auto* button = dynamic_cast<List_button*>(elem)) {
+			const bool left = button->get_shapenum() == EXULT_FLX_SCROLL_LEFT_SHP;
+			skin.arrow(button->get_rect(), left ? Mui_icon::arrow_left : Mui_icon::arrow_right, button->is_pushed());
+		}
 	}
 }
 

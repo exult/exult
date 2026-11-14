@@ -346,15 +346,17 @@ void Gump_skin::fill(const TileRect& r, Mui_colour c) {
  *  taller than the classic font on the display.
  */
 
-const Mui_text_font* Gump_skin::font_for(int classic_font) const {
-	const int     ch     = classic_height(classic_font);
-	const int     body_h = classic_height(2);
-	Mui_font_role role   = Mui_font_role::body;
+Mui_font_role Gump_skin::role_for(int classic_font) {
+	const int ch     = classic_height(classic_font);
+	const int body_h = classic_height(2);
 	if (ch > body_h) {
-		role = Mui_font_role::heading;
-	} else if (ch < body_h) {
-		role = Mui_font_role::small;
+		return Mui_font_role::heading;
 	}
+	return ch < body_h ? Mui_font_role::small : Mui_font_role::body;
+}
+
+const Mui_text_font* Gump_skin::font_for(int classic_font, Mui_font_role role) const {
+	const int            ch    = classic_height(classic_font);
 	const Mui_face       face  = theme_ptr->font(role).face;
 	const int            limit = static_cast<int>(static_cast<float>(ch) * sy);
 	const Mui_text_font* best  = nullptr;
@@ -377,7 +379,13 @@ const Mui_text_font* Gump_skin::font_for(int classic_font) const {
 int Gump_skin::text(
 		const std::string& s, int ax, int ay, int halign, int valign, int classic_font, Mui_colour fg, Mui_colour bg,
 		const TileRect* lim) {
-	const Mui_text_font* f = s.empty() ? nullptr : font_for(classic_font);
+	return text(s, ax, ay, halign, valign, classic_font, role_for(classic_font), fg, bg, lim);
+}
+
+int Gump_skin::text(
+		const std::string& s, int ax, int ay, int halign, int valign, int classic_font, Mui_font_role role, Mui_colour fg,
+		Mui_colour bg, const TileRect* lim) {
+	const Mui_text_font* f = s.empty() ? nullptr : font_for(classic_font, role);
 	if (!f) {
 		return 0;
 	}

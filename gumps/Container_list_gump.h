@@ -73,6 +73,11 @@ public:
 	void paint() override;
 	void update_gump() override;
 
+	// Drawn with the menu theme? See Gump_theme::wants().
+	bool themable() const override;
+	// Themed: the panel, title, divider, item details, rows and arrows.
+	void paint_skin(Gump_skin& skin) override;
+
 	bool mousewheel_up(int mx, int my) override;
 	bool mousewheel_down(int mx, int my) override;
 
@@ -109,6 +114,7 @@ private:
 	void        paint_background();
 	void        paint_title();
 	void        paint_panel();
+	void        paint_art();
 };
 
 #endif

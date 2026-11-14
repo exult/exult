@@ -119,6 +119,10 @@ public:
 	int text(
 			const std::string& s, int ax, int ay, int halign, int valign, int classic_font, Mui_colour fg, Mui_colour bg,
 			const TileRect* bounds = nullptr);
+	// The same in the given role's face (sized to the classic font).
+	int text(
+			const std::string& s, int ax, int ay, int halign, int valign, int classic_font, Mui_font_role role, Mui_colour fg,
+			Mui_colour bg, const TileRect* bounds = nullptr);
 	// Plate behind a button's art, an arrow control, a groove and a knob.
 	void plate(const TileRect& r, bool pushed);
 	void arrow(const TileRect& r, Mui_icon which, bool pushed);
@@ -165,7 +169,8 @@ private:
 
 	int                  gx(int x) const;    // Game to skin, one axis
 	int                  gy(int y) const;
-	const Mui_text_font* font_for(int classic_font) const;
+	const Mui_text_font* font_for(int classic_font, Mui_font_role role) const;
+	static Mui_font_role role_for(int classic_font);
 };
 
 #endif
