@@ -271,6 +271,14 @@ Exult doesn't start when the crc of the exult*.flx files in the data folder isn'
 * '--verify-files'
  Verifies that the files in static dir are not corrupt.
  Only valid if used together with '--bg', '--si', '--fov', '--ss', '--sib' or '--game gamename'; you cannot specify a mod with this flag.
+* '--autotest' function
+ Runs the usecode function (decimal or 0x hex) once after the game has started, then quits. Meant for automated tests of usecode and gumps.
+ Use it with '--nomenu' and SDL's dummy drivers to run without a window or sound, for example: SDL_VIDEO_DRIVER=dummy SDL_AUDIO_DRIVER=dummy exult --nomenu --autotest 0x1F90
+ The function reports through the console (UI_error_message, UI_printf). Exult prints 'AUTOTEST: returned' when the function has finished. If a modal loop (a conversation or a gump) blocks the quit, Exult exits with status 124 ten seconds after the timeout.
+* '--autotest-delay' ms
+ Milliseconds to wait before the '--autotest' function runs (default 3000).
+* '--autotest-timeout' seconds
+ Seconds after which Exult quits when used with '--autotest' (default 60).
 * '--edit'
  Start in map-edit mode. This will also load Exult Studio when the game is started.
 * '--write-xml'
