@@ -400,6 +400,7 @@ for /f "tokens=* delims=" %%u in ('git ls-remote --get-url') do echo #define GIT
     <ClCompile Include="..\..\cheat.cc" />
     <ClCompile Include="..\..\cheat_screen.cc" />
     <ClCompile Include="..\..\cheat_screen_actors.cc" />
+    <ClCompile Include="..\..\gamedoctor.cc" />
     <ClCompile Include="..\..\combat.cc" />
     <ClCompile Include="..\..\conf\Configuration.cc" />
     <ClCompile Include="..\..\conf\XMLEntity.cc" />
@@ -642,6 +643,7 @@ for /f "tokens=* delims=" %%u in ('git ls-remote --get-url') do echo #define GIT
     <ClInclude Include="..\..\cheat.h" />
     <ClInclude Include="..\..\cheat_screen.h" />
     <ClInclude Include="..\..\cheat_screen_strings.h" />
+    <ClInclude Include="..\..\gamedoctor.h" />
     <ClInclude Include="..\..\combat.h" />
     <ClInclude Include="..\..\combat_opts.h" />
     <ClInclude Include="..\..\conf\Configuration.h" />

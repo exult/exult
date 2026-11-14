@@ -8,6 +8,7 @@ MAIN_OBJS:=actions.o \
 	cheat.o \
 	cheat_screen.o \
 	cheat_screen_actors.o \
+	gamedoctor.o \
 	combat.o \
 	dir.o \
 	drag.o \

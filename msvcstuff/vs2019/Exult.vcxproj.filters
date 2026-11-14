@@ -824,6 +824,9 @@
     <ClCompile Include="..\..\cheat_screen_actors.cc">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\gamedoctor.cc">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\perf.cc">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -845,6 +848,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\cheat_screen.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\gamedoctor.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\combat.h">
