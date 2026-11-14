@@ -401,7 +401,8 @@ void Mui_badge::paint(Mui_painter& p) {
 		c = Mui_colour::badge_changed;
 	}
 	p.rounded_fill(rect, rect.h / 2, p.col(c));
-	p.text_in_idx(text, rect, Mui_font_role::small, p.col(Mui_colour::text_on_accent), p.col(c), Mui_align::centre);
+	// Badges are dark in both themes: light text, as on the danger colour.
+	p.text_in_idx(text, rect, Mui_font_role::small, p.col(Mui_colour::text_on_danger), p.col(c), Mui_align::centre);
 }
 
 /*

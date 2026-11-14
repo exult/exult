@@ -69,6 +69,10 @@ libgumps_la_SOURCES = \
 	Mui_font.h \
 	Mui_game_menu.cc \
 	Mui_game_menu.h \
+	Mui_options.cc \
+	Mui_options.h \
+	Mui_options_model.cc \
+	Mui_options_model.h \
 	Mui_painter.cc \
 	Mui_painter.h \
 	Mui_router.cc \

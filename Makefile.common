@@ -164,6 +164,8 @@ GUMPS_OBJS:= \
 	gumps/Mixer_gump.o \
 	gumps/Mui_font.o \
 	gumps/Mui_game_menu.o \
+	gumps/Mui_options.o \
+	gumps/Mui_options_model.o \
 	gumps/Mui_painter.o \
 	gumps/Mui_router.o \
 	gumps/Mui_selftest.o \

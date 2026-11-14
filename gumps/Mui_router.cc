@@ -25,6 +25,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "Configuration.h"
 #include "Gump_manager.h"
 #include "Mui_game_menu.h"
+#include "Mui_options.h"
 #include "Mui_theme.h"
 #include "gamewin.h"
 #include "mouse.h"
@@ -59,9 +60,14 @@ namespace Mui {
 	}
 
 	bool open_options(const char* tab) {
-		// There is no themed Options window yet.
-		static_cast<void>(tab);
-		return false;
+		if (!themed()) {
+			return false;
+		}
+		Game_window*       gwin = Game_window::get_instance();
+		Mui_options_window options(tab);
+		gwin->get_gump_man()->do_modal_gump(&options, Mouse::hand);
+		gwin->set_all_dirty();
+		return true;
 	}
 
 	bool open_journey_log() {

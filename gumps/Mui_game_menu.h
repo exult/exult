@@ -23,8 +23,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 /*
  *  The themed game menu: Return to game, Journey Log, Options, Cheats and
- *  Quit. Until the themed Options window exists, Options shows a page with
- *  the classic option screens.
+ *  Quit. Options opens the themed Options window; if it cannot be shown,
+ *  a page with the classic option screens.
  */
 class Mui_game_menu : public Mui_window {
 public:

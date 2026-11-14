@@ -215,6 +215,11 @@ void Mui_window::rebuild() {
 	dirty      = true;
 }
 
+void Mui_window::rebuild(const std::string& focus_id) {
+	requested_focus = focus_id;
+	rebuild();
+}
+
 void Mui_window::clear_pointers() {
 	hover   = nullptr;
 	pressed = nullptr;
@@ -227,6 +232,10 @@ void Mui_window::clear_pointers() {
 void Mui_window::rebuild_now() {
 	need_build = false;
 	clear_pointers();
+	if (!requested_focus.empty()) {
+		focus_id_for_rebuild = requested_focus;
+		requested_focus.clear();
+	}
 	overlays.clear();
 	// Body.
 	auto box = std::make_unique<Mui_box>(Mui_box::Dir::vertical, "mui.body.box");
@@ -257,6 +266,12 @@ void Mui_window::rebuild_now() {
 	close_button->has_icon = true;
 	close_button->icon     = Mui_icon::close;
 	close_button->help     = Strings::CloseHelp();
+	// Optional title bar widgets.
+	title_bar = std::make_unique<Mui_box>(Mui_box::Dir::horizontal, "mui.titlebar");
+	build_title(*title_bar);
+	if (title_bar->get_children().empty()) {
+		title_bar.reset();
+	}
 	// Footer: theme switch on the left, page buttons on the right.
 	help_line = std::make_unique<Mui_help_line>();
 	footer    = std::make_unique<Mui_box>(Mui_box::Dir::horizontal, "mui.footer");
@@ -364,8 +379,14 @@ void Mui_window::layout_all() {
 	body->surface_override         = page_bg;
 	const int cb                   = p.px(m.control_h);
 	close_button->rect = TileRect(title_rect.x + title_rect.w - cb - pad / 2, title_rect.y + (title_h - cb) / 2, cb, cb);
-	help_line->rect    = TileRect(help_rect.x + pad, help_rect.y, help_rect.w - 2 * pad, help_rect.h);
-	footer->rect       = TileRect(footer_rect.x + pad, footer_rect.y, footer_rect.w - 2 * pad, footer_rect.h);
+	if (title_bar) {
+		const int tw                = std::min(p.px(title_bar_width()), title_rect.w / 2);
+		title_bar->surface_override = chrome_bg;
+		title_bar->rect             = TileRect(close_button->rect.x - pad / 2 - tw, title_rect.y + (title_h - cb) / 2, tw, cb);
+		title_bar->layout(p);
+	}
+	help_line->rect = TileRect(help_rect.x + pad, help_rect.y, help_rect.w - 2 * pad, help_rect.h);
+	footer->rect    = TileRect(footer_rect.x + pad, footer_rect.y, footer_rect.w - 2 * pad, footer_rect.h);
 	footer->layout(p);
 	for (auto& o : overlays) {
 		if (o.dialog) {
@@ -421,7 +442,10 @@ void Mui_window::paint_frame(Mui_painter& p) {
 	}
 	// Title.
 	const uint8 title_bg = stone ? th.colour(Mui_colour::frame) : th.colour(Mui_colour::window);
-	TileRect tr(title_rect.x + p.px(m.gap * 2), title_rect.y, title_rect.w - p.px(m.gap * 4) - close_button->rect.w, title_rect.h);
+	TileRect    tr(
+            title_rect.x + p.px(m.gap * 2), title_rect.y,
+            title_rect.w - p.px(m.gap * 4) - close_button->rect.w - (title_bar ? title_bar->rect.w + p.px(m.gap * 2) : 0),
+            title_rect.h);
 	p.text_in_idx(title, tr, Mui_font_role::title, th.colour(Mui_colour::title_text), title_bg, Mui_align::left);
 }
 
@@ -481,6 +505,9 @@ void Mui_window::paint() {
 	}
 	body->paint(p);
 	close_button->paint(p);
+	if (title_bar) {
+		title_bar->paint(p);
+	}
 	help_line->paint(p);
 	footer->paint(p);
 	for (auto& o : overlays) {
@@ -591,6 +618,9 @@ std::vector<Mui_widget*> Mui_window::roots() const {
 	if (close_button) {
 		out.push_back(close_button.get());
 	}
+	if (title_bar) {
+		out.push_back(title_bar.get());
+	}
 	if (footer) {
 		out.push_back(footer.get());
 	}
@@ -655,6 +685,9 @@ std::vector<Mui_widget*> Mui_window::focus_chain() const {
 	if (!overlays.empty()) {
 		overlays.back().root->collect(all);
 	} else {
+		if (title_bar) {
+			title_bar->collect(all);
+		}
 		if (tabs) {
 			tabs->collect(all);
 		}

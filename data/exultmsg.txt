@@ -1169,3 +1169,98 @@
 0xC1D:Back
 0xC1E:Return to the game menu.
 0xC1F:Opens the classic settings screen.
+# Options window (gumps/Mui_options.cc)
+0xC20:Video
+0xC21:Audio
+0xC22:Engine
+0xC23:Display
+0xC24:Input
+0xC25:UI
+0xC26:Advanced
+0xC27:Search settings
+0xC28:Applies now
+0xC29:Needs restart
+0xC2A:Changed
+0xC2B:Reset page
+0xC2C:Apply
+0xC2D:Coming in the Advanced editor
+0xC2E:No settings match your search.
+0xC2F:settings found
+0xC30:Open
+0xC31:Volume mixer
+0xC32:MIDI driver settings
+0xC33:Changes are kept until you press Apply. Search finds settings on every page.
+0xC34:Put this page back the way it was before your unapplied changes.
+0xC35:Close the window and drop the changes you have not applied.
+0xC36:Apply the changes on every page.
+0xC37:Find a setting on any page by its name, description or exult.cfg key.
+0xC38:Clear the search.
+0xC39:Every exult.cfg setting, with its full path, type and default, will be editable on this page.
+0xC3A:Go to this setting.
+# Options help: Video
+0xC40:Run Exult full screen instead of in a window.
+0xC41:Size of the window, or the display mode when running full screen.
+0xC42:How the game picture is enlarged: sharp pixels or one of the smoothing filters.
+0xC43:How many times the scaler enlarges the game picture.
+0xC44:Size of the visible game world in original pixels. Auto fits it to the window.
+0xC45:Filter used to stretch the scaled picture to the window.
+0xC46:Fill stretches to the window, Fit keeps the shape, Centre keeps the size.
+0xC47:Correct for the taller pixels of the original 320x200 screens.
+0xC48:Use the same video settings for the window and for full screen.
+# Options help: Audio
+0xC49:Set the volume of the music, sound effects and speech.
+0xC4A:Turn all sound and music on or off.
+0xC4B:Audio output rate in Hz. Changing it restarts the audio system.
+0xC4C:Play the sound in mono or stereo.
+0xC4D:Play the game's music.
+0xC4E:How often a music track repeats.
+0xC4F:Use the digital (Ogg) music tracks instead of MIDI.
+0xC50:MIDI device or synthesiser that plays the music.
+0xC51:Extra settings of the selected MIDI driver.
+0xC52:Sound effects: off, digital samples or MIDI.
+0xC53:Which sound effects pack (or MIDI conversion) to use.
+0xC54:Hear voiced speech, read subtitles, or both.
+# Options help: Engine
+0xC55:Let the Avatar write notes in the notebook automatically.
+0xC56:Pause the game while gumps such as backpacks are open.
+0xC57:Drop a whole stack without asking how many; hold Ctrl to split it.
+0xC58:Game speed in animation frames per second (5 is the original speed).
+0xC59:Show the hits each blow does in combat.
+0xC5A:Space pauses combat so you can give orders.
+0xC5B:Charmed party members fight as hard as the enemy.
+0xC5C:How hard combat is, from easiest to hardest.
+0xC5D:Small additions to the original game, such as extra light sources.
+0xC5E:Enable the cheat keys and the cheat screen.
+0xC5F:How the party eats: by hand, automatically, or not at all.
+# Options help: Display
+0xC60:Where the party's status bars are shown.
+0xC61:Show the shortcut bar at the top of the screen.
+0xC62:Outline colour of the items on the shortcut bar.
+0xC63:Hide shortcut bar items the party does not carry.
+0xC64:Colour behind the text that floats over the game.
+0xC65:Scroll the game view smoothly instead of a tile at a time.
+0xC66:Skip the splash screens when Exult starts.
+0xC67:Skip the scripted first scene of a new game.
+0xC68:Play the longer Serpent Isle introduction of a new game.
+0xC69:Show the Serpent Isle paperdolls in Black Gate.
+0xC6A:Start Exult straight away instead of the Android launcher.
+0xC6B:Language of the game text.
+0xC6C:Fonts of the game text: the original ones, Serif, or none.
+# Options help: Input
+0xC6D:Double-click a gump to close it.
+0xC6E:Right-click a gump to close it.
+0xC6F:Right-click to walk to a spot, with a single or a double click.
+0xC70:Scroll the game view when the mouse touches the edge of the window.
+0xC71:Use the middle mouse button for its own actions.
+0xC72:Faster mouse movement when running full screen.
+0xC73:Show a menu of actions when you touch an item.
+0xC74:Where the on-screen direction pad is shown on touch screens.
+0xC75:Touch and hold to walk to a spot.
+# Options help: UI
+0xC76:Size of the layers that gumps, text and the mouse pointer are drawn on.
+0xC77:How those layers are enlarged to the window.
+0xC78:How the layers fit the window: Fill, Fit or Centre.
+0xC79:Filter used to stretch the layers to the window.
+0xC7A:Fixed palette of the layers at night, or follow the game's lighting.
+0xC7B:Use one set of settings for every layer, or set each layer on its own.
+0xC7C:Size, scaling and palette of this layer only.

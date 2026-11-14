@@ -441,6 +441,14 @@ namespace {
 			want          = wb == std::string::npos ? std::string() : want.substr(wb);
 			Mui_widget* w = win ? win->find(id) : nullptr;
 			expect(w && w->value_text() == want, "widget " + id + " = " + want, w ? w->value_text() : "<missing>");
+		} else if (cmd == "expect-widget-atleast") {
+			// The widget's value starts with a number of at least N.
+			std::string id;
+			int         want = 0;
+			args >> id >> want;
+			Mui_widget*       w   = win ? win->find(id) : nullptr;
+			const std::string got = w ? w->value_text() : "<missing>";
+			expect(w && std::atoi(got.c_str()) >= want, "widget " + id + " >= " + std::to_string(want), got);
 		} else if (cmd == "expect-focus") {
 			Mui_widget* f = win ? win->get_focus() : nullptr;
 			expect(f && f->id == rest, "focus " + rest, f ? f->id : "<none>");

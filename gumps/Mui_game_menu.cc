@@ -178,6 +178,8 @@ void Mui_game_menu::journey_log() {
 
 void Mui_game_menu::options() {
 	if (Mui::open_options()) {
+		// The theme or the language may have changed there.
+		switch_theme(Mui::menu_style());
 		return;
 	}
 	options_page = true;

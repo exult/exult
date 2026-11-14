@@ -156,6 +156,16 @@ protected:
 		ignore_unused_variable_warning(footer);
 	}
 
+	// Optional widgets in the title bar, right-aligned before the close
+	// button (e.g. a search field). Width in reference pixels.
+	virtual void build_title(Mui_box& bar) {
+		ignore_unused_variable_warning(bar);
+	}
+
+	virtual float title_bar_width() const {
+		return 320;
+	}
+
 	virtual void on_cancel() {
 		finish();
 	}
@@ -173,6 +183,8 @@ protected:
 
 	int  tab_index = 0;
 	void rebuild();    // Rebuild all widgets later (keeps tab and focus id).
+	// Rebuild later and then focus the widget with this id.
+	void rebuild(const std::string& focus_id);
 
 private:
 	std::shared_ptr<Mui_theme>       theme_ptr;
@@ -195,6 +207,7 @@ private:
 	std::unique_ptr<Mui_scroll_view> body;
 	std::unique_ptr<Mui_help_line>   help_line;
 	std::unique_ptr<Mui_box>         footer;
+	std::unique_ptr<Mui_box>         title_bar;
 	Mui_box*                         body_box = nullptr;
 
 	struct Overlay {
@@ -229,6 +242,7 @@ private:
 	void                     clear_pointers();
 	void                     update_text_input();
 	std::string              focus_id_for_rebuild;
+	std::string              requested_focus;
 };
 
 #endif
