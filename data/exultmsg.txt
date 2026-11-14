@@ -1330,6 +1330,13 @@
 0xCC2:Not saved yet
 0xCC3:The game could not be saved.
 0xCC4:Mod
+# Themed conversations (gumps/Mui_dialogue.cc)
+0xDC0:Continue
+0xDC1:Click, Space or Enter: continue   PgUp: earlier lines
+0xDC2:1-9 or click: answer   Up/Down and Enter: choose   Esc: bye   PgUp: earlier lines
+0xDC3:Conversation so far
+0xDC4:Back to the conversation
+0xDC5:Wheel, PgUp/PgDn: scroll   Esc or H: back to the conversation
 # Themed cheat window
 0xCC6:Player
 0xCC7:World & time

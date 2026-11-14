@@ -71,6 +71,8 @@ libgumps_la_SOURCES = \
 	Mui_config_editor.h \
 	Mui_config_meta.cc \
 	Mui_config_meta.h \
+	Mui_dialogue.cc \
+	Mui_dialogue.h \
 	Mui_dialogue_test.cc \
 	Mui_dialogue_test.h \
 	Mui_font.cc \

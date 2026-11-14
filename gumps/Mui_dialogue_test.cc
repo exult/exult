@@ -22,11 +22,14 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "Mui_dialogue_test.h"
 
+#include "Mui_dialogue.h"
 #include "Mui_selftest.h"
 #include "actors.h"
 #include "conversation.h"
 #include "gamewin.h"
 #include "ucmachine.h"
+
+#include <SDL3/SDL.h>
 
 #include <cctype>
 #include <cstdlib>
@@ -172,6 +175,67 @@ namespace {
 		}
 		Mui_selftest::report(false, "conv-choose-key " + text, join(d.answers));
 	}
+
+	// Click the middle of a part of the themed view (Mui_dialogue::part_rect).
+	void click_part(Mui_dialogue* view, const std::string& part) {
+		TileRect r;
+		if (!view->part_rect(part, r)) {
+			Mui_selftest::report(false, "conv-click " + part, "no such part");
+			return;
+		}
+		Game_window*  gwin = Game_window::get_instance();
+		int           sx;
+		int           sy;
+		float         wx;
+		float         wy;
+		SDL_Renderer* rend = SDL_GetRenderer(gwin->get_win()->get_screen_window());
+		if (!gwin->get_win()->layer_to_screen(view->get_layer(), r.x + r.w / 2, r.y + r.h / 2, sx, sy) || !rend
+			|| !SDL_RenderCoordinatesToWindow(rend, float(sx), float(sy), &wx, &wy)) {
+			Mui_selftest::report(false, "conv-click " + part, "unmappable");
+			return;
+		}
+		std::cout << "MUI-TEST info conv-click " << part << std::endl;
+		Mui_selftest::click_window(wx, wy, SDL_BUTTON_LEFT);
+	}
+
+	// Themed-only commands; false if cmd is not one of them.
+	bool run_themed(const std::string& cmd, const std::string& rest, Mui_dialogue* view) {
+		if (cmd != "expect-conv-speaker" && cmd != "expect-conv-page-log" && cmd != "expect-conv-pages-atleast"
+			&& cmd != "conv-click") {
+			return false;
+		}
+		if (!view) {
+			Mui_selftest::report(false, cmd + " " + rest, "classic conversation");
+			return true;
+		}
+		const auto& log = view->page_log();
+		if (cmd == "expect-conv-speaker") {
+			// "@avatar" stands for the Avatar's name, "@npc:N" for the
+			// label of NPC N (Actor::get_name), so scripts work in both games.
+			std::string want = rest;
+			if (want == "@avatar") {
+				want = Game_window::get_instance()->get_main_actor()->get_npc_name();
+			} else if (want.compare(0, 5, "@npc:") == 0) {
+				const Actor* npc = Game_window::get_instance()->get_npc(std::atol(want.c_str() + 5));
+				want             = npc ? npc->get_name() : std::string("(no such NPC)");
+			}
+			const std::string got = view->speaker();
+			Mui_selftest::report(got == want, "conv speaker " + rest, "\"" + got + "\"");
+		} else if (cmd == "expect-conv-page-log") {
+			const auto        bar  = rest.find('|');
+			const int         i    = std::atoi(rest.substr(0, bar).c_str());
+			const std::string want = bar == std::string::npos ? std::string() : rest.substr(bar + 1);
+			const std::string got  = i >= 0 && i < int(log.size()) ? log[size_t(i)] : std::string("(no page)");
+			Mui_selftest::report(
+					i >= 0 && i < int(log.size()) && got.find(want) != std::string::npos, "conv page-log " + rest,
+					"\"" + got + "\"");
+		} else if (cmd == "expect-conv-pages-atleast") {
+			Mui_selftest::report(int(log.size()) >= std::atoi(rest.c_str()), "conv pages >= " + rest, std::to_string(log.size()));
+		} else {
+			click_part(view, rest);
+		}
+		return true;
+	}
 }    // namespace
 
 bool Mui_dialogue_test::run(const std::string& cmd, const std::string& rest) {
@@ -191,6 +255,9 @@ bool Mui_dialogue_test::run(const std::string& cmd, const std::string& rest) {
 		Mui_selftest::report(false, cmd + " " + rest, "no conversation");
 		return true;
 	}
+	if (run_themed(cmd, rest, conv->get_view())) {
+		return true;
+	}
 	Conversation::Conv_debug d;
 	conv->describe(d);
 	if (cmd == "conv-dump") {
@@ -201,6 +268,12 @@ bool Mui_dialogue_test::run(const std::string& cmd, const std::string& rest) {
 		}
 	} else if (cmd == "conv-log") {
 		log_conversation(d);
+		if (const Mui_dialogue* view = conv->get_view()) {
+			std::cout << "MUI-TEST info conv speaker \"" << view->speaker() << "\" pages " << view->page_log().size() << std::endl;
+			for (size_t i = 0; i < view->page_log().size(); i++) {
+				std::cout << "MUI-TEST info conv page-log " << i << " \"" << view->page_log()[i] << "\"" << std::endl;
+			}
+		}
 	} else if (cmd == "conv-choose-key") {
 		choose_key(rest, d);
 	} else if (cmd == "expect-conv-style") {
