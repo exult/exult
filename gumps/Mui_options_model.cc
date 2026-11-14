@@ -195,6 +195,7 @@ std::vector<Mui_options_model::Row> Mui_options_model::build_table(Tab t) {
                 row("android_autolaunch", G::id_android_autolaunch, 0x5D2, 0xC6A, "", Apply::restart),
                 row("language", G::id_language, 0x5D3, 0xC6B, "config/gameplay/language"),
                 row("fonts", G::id_fonts, 0x5D8, 0xC6C, "config/gameplay/fonts"),
+                row("containers", G::id_container_view, 0x5DC, 0xD2C, "config/gameplay/container_view"),
         };
 		break;
 	}

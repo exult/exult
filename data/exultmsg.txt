@@ -1274,6 +1274,7 @@
 0xC7A:Fixed palette of the layers at night, or follow the game's lighting.
 0xC7B:Use one set of settings for every layer, or set each layer on its own.
 0xC7C:Size, scaling and palette of this layer only.
+0xD2C:Show what a container holds as a picture or as a list.
 0xC80:Filter by path or description
 0xC81:Other
 0xC82:Not set

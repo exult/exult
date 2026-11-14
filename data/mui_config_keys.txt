@@ -154,6 +154,7 @@ config/gameplay/cheat|bool|no||now|Allow cheats (cheat keys and the cheat screen
 config/gameplay/feeding|enum|manual|manual,automatic,disabled|now|How the party eats when cheats are on: manual, automatic, or not at all (disabled).
 config/gameplay/skip_splash|bool|no||restart|Skip the Origin and Exult splash screens and go straight to the menu.
 config/gameplay/skip_intro|bool|no||restart|Black Gate: skip the opening scene with Iolo and Petre in a new game.
+config/gameplay/container_view|enum|picture|picture,list|now|How a container's contents are shown: as the picture of the container (picture) or as a list of its items (list).
 config/gameplay/extended_intro|bool|yes||now|Serpent Isle: play the longer opening of the Exult version.
 config/gameplay/fonts|enum|original|original,serif,disabled|restart|Fonts for game text: the original fonts, Exult's serif fonts, or none (disabled; plain ASCII text).
 config/gameplay/language|enum||en,fr,de,es,|restart|Language of Exult's own messages and of translated game text. Empty uses the game's language.
