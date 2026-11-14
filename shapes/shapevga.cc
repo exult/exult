@@ -390,9 +390,9 @@ void Shapes_vga_file::Read_Gumpinf_text_data_file(bool editing, Exult_Game game_
 		return;
 	}
 	Gump_info::clear();
-	std::array sections{"container_area"sv,  "checkmark_pos"sv,    "special"sv,           "snap_zones"sv,
-						"dynamic_buttons"sv, "dynamic_texts"sv,    "dynamic_shapes"sv,    "dynamic_sliders"sv,
-						"gump_name"sv,       "shortcutbar_icon"sv, "shortcutbar_action"sv};
+	std::array sections{"container_area"sv,  "checkmark_pos"sv, "special"sv,          "snap_zones"sv,
+						"dynamic_buttons"sv, "dynamic_texts"sv, "dynamic_shapes"sv,   "dynamic_sliders"sv,
+						"dynamic_lists"sv,   "gump_name"sv,     "shortcutbar_icon"sv, "shortcutbar_action"sv};
 
 	// Functor for reading container area
 	// Format: :shape/x/y/w/h[/debug_flags]
@@ -540,7 +540,8 @@ void Shapes_vga_file::Read_Gumpinf_text_data_file(bool editing, Exult_Game game_
 	};
 
 	// Functor for reading dynamic shape displays
-	// Format: :gump_shape/field_id/pos_x/pos_y/shape_num/frame_num/shapefile
+	// Format: :gump_shape/field_id/pos_x/pos_y/shape_num/frame_num/shapefile[/list_id[/box_w/box_h]]
+	// list_id, box_w and box_h are optional (default -1, 0, 0)
 	struct Dynamic_shapes_functor {
 		bool operator()(std::istream& in, int version, bool patch, Exult_Game game, Gump_info& ginfo) const {
 			ignore_unused_variable_warning(version, game);
@@ -551,6 +552,15 @@ void Shapes_vga_file::Read_Gumpinf_text_data_file(bool editing, Exult_Game game_
 			shp.shape_num = ReadInt(in);
 			shp.frame_num = ReadInt(in);
 			shp.shapefile = ReadInt(in);
+			if (in.good() && in.peek() != std::char_traits<char>::eof()) {
+				shp.list_id = ReadInt(in, -1);
+				if (in.good() && in.peek() != std::char_traits<char>::eof()) {
+					shp.box_w = ReadInt(in);
+					if (in.good() && in.peek() != std::char_traits<char>::eof()) {
+						shp.box_h = ReadInt(in);
+					}
+				}
+			}
 			if (patch) {
 				ginfo.begin_patch_dynshapes();
 			}
@@ -587,6 +597,39 @@ void Shapes_vga_file::Read_Gumpinf_text_data_file(bool editing, Exult_Game game_
 		}
 	};
 
+	// Functor for reading dynamic lists
+	// Format:
+	// :gump_shape/field_id/x/y/width/rows/row_height/font/source/up_shape/down_shape/thumb_shape/select_fn/activate_fn/rows_fn/flags
+	struct Dynamic_lists_functor {
+		bool operator()(std::istream& in, int version, bool patch, Exult_Game game, Gump_info& ginfo) const {
+			ignore_unused_variable_warning(version, game);
+			Dynamic_list_def lst;
+			lst.field_id    = ReadInt(in);
+			lst.pos_x       = ReadInt(in);
+			lst.pos_y       = ReadInt(in);
+			lst.width       = ReadInt(in);
+			lst.rows        = ReadInt(in);
+			lst.row_height  = ReadInt(in);
+			lst.font        = ReadInt(in);
+			lst.source      = ReadInt(in);
+			lst.up_shape    = ReadInt(in);
+			lst.down_shape  = ReadInt(in);
+			lst.thumb_shape = ReadInt(in);
+			lst.select_fn   = ReadInt(in);
+			lst.activate_fn = ReadInt(in);
+			lst.rows_fn     = ReadInt(in);
+			lst.flags       = ReadInt(in);
+			if (patch) {
+				ginfo.begin_patch_dynlists();
+			}
+			// Rows and row height must be usable; reject the entry otherwise.
+			if (lst.width > 0 && lst.rows > 0 && lst.row_height > 0) {
+				ginfo.dynamic_lists.push_back(lst);
+			}
+			return true;
+		}
+	};
+
 	// The template parameters are: <Info, Functor>  (Info comes FIRST!)
 	// The constructor takes: std::map<int, Info>&
 	using Container_area_reader  = Functor_multidata_reader<Gump_info, Container_area_functor>;
@@ -597,6 +640,7 @@ void Shapes_vga_file::Read_Gumpinf_text_data_file(bool editing, Exult_Game game_
 	using Dynamic_texts_reader   = Functor_multidata_reader<Gump_info, Dynamic_texts_functor>;
 	using Dynamic_shapes_reader  = Functor_multidata_reader<Gump_info, Dynamic_shapes_functor>;
 	using Dynamic_sliders_reader = Functor_multidata_reader<Gump_info, Dynamic_sliders_functor>;
+	using Dynamic_lists_reader   = Functor_multidata_reader<Gump_info, Dynamic_lists_functor>;
 
 	// Functor for reading gump click-name
 	// Format: :gump_shape/name_string (rest of line, supports spaces)
@@ -692,6 +736,7 @@ void Shapes_vga_file::Read_Gumpinf_text_data_file(bool editing, Exult_Game game_
 			std::make_unique<Dynamic_texts_reader>(Gump_info::gump_info_map),
 			std::make_unique<Dynamic_shapes_reader>(Gump_info::gump_info_map),
 			std::make_unique<Dynamic_sliders_reader>(Gump_info::gump_info_map),
+			std::make_unique<Dynamic_lists_reader>(Gump_info::gump_info_map),
 			std::make_unique<Gump_name_reader>(Gump_info::gump_info_map),
 			std::make_unique<Shortcutbar_icon_reader>(Gump_info::shortcutbar_icon_map),
 			std::make_unique<Shortcutbar_action_reader>(Gump_info::shortcutbar_action_map));

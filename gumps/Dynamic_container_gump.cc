@@ -494,7 +494,7 @@ bool Dynamic_container_gump::has_config(int shapenum) {
 		return false;
 	}
 	return info->has_snap_zones() || info->has_dynamic_buttons() || info->has_dynamic_texts() || info->has_dynamic_shapes()
-		   || info->has_dynamic_sliders();
+		   || info->has_dynamic_sliders() || info->has_dynamic_lists();
 }
 
 bool Dynamic_container_gump::has_dynamic_elements() const {
@@ -502,7 +502,8 @@ bool Dynamic_container_gump::has_dynamic_elements() const {
 	if (!info) {
 		return false;
 	}
-	return info->has_dynamic_buttons() || info->has_dynamic_texts() || info->has_dynamic_shapes() || info->has_dynamic_sliders();
+	return info->has_dynamic_buttons() || info->has_dynamic_texts() || info->has_dynamic_shapes() || info->has_dynamic_sliders()
+		   || info->has_dynamic_lists();
 }
 
 /*

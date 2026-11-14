@@ -164,8 +164,40 @@ struct Dynamic_shape_def {
 	int shape_num;    // Initial shape number (0 = none until set)
 	int frame_num;    // Initial frame number
 	int shapefile;    // 0 = SF_SHAPES_VGA, 1 = SF_GUMPS_VGA
+	int list_id;      // Optional: show the selection of this list (-1 = none)
+	int box_w;        // Optional: box width; > 0 = centred and enlarged in it
+	int box_h;        // Optional: box height (used with box_w)
 
-	Dynamic_shape_def() : field_id(0), pos_x(0), pos_y(0), shape_num(0), frame_num(0), shapefile(0) {}
+	Dynamic_shape_def()
+			: field_id(0), pos_x(0), pos_y(0), shape_num(0), frame_num(0), shapefile(0), list_id(-1), box_w(0), box_h(0) {}
+};
+
+// Dynamic_list_def flags.
+enum Dynamic_list_flags {
+	DYNLIST_COUNT_LINE = 0x01,    // "N-M of T" line under the rows
+	DYNLIST_EMPTY_TEXT = 0x02     // "Empty" centred in the rows when there are none
+};
+
+struct Dynamic_list_def {
+	int field_id;    // Unique ID for usecode to address this list
+	int pos_x;       // Top-left of the first row, relative to gump origin
+	int pos_y;
+	int width;          // Row width in pixels (scroll controls to the right)
+	int rows;           // Visible rows
+	int row_height;     // Pixel height of each row
+	int font;           // Row font from fonts.vga
+	int source;         // 0 = container contents, 1 = rows from usecode
+	int up_shape;       // gumps.vga scroll-up arrow (-1 = Exult's own controls)
+	int down_shape;     // gumps.vga scroll-down arrow
+	int thumb_shape;    // gumps.vga thumb (-1 = spinner, arrows only)
+	int select_fn;      // Usecode on selection change (-1 = none)
+	int activate_fn;    // Usecode on activation (-1 = none)
+	int rows_fn;        // Usecode after source-0 rows were rebuilt (-1 = none)
+	int flags;          // Dynamic_list_flags
+
+	Dynamic_list_def()
+			: field_id(0), pos_x(0), pos_y(0), width(100), rows(8), row_height(12), font(2), source(0), up_shape(-1),
+			  down_shape(-1), thumb_shape(-1), select_fn(-1), activate_fn(-1), rows_fn(-1), flags(0) {}
 };
 
 struct Dynamic_slider_def {
@@ -204,6 +236,7 @@ class Gump_info {
 	bool dyntexts_from_patch;
 	bool dynshapes_from_patch;
 	bool dynsliders_from_patch;
+	bool dynlists_from_patch;
 	bool gumpname_from_patch;
 
 	bool container_modified;
@@ -214,6 +247,7 @@ class Gump_info {
 	bool dyntexts_modified;
 	bool dynshapes_modified;
 	bool dynsliders_modified;
+	bool dynlists_modified;
 	bool gumpname_modified;
 
 public:
@@ -235,6 +269,7 @@ public:
 	std::vector<Dynamic_text_def>   dynamic_texts;      // Data-driven text fields
 	std::vector<Dynamic_shape_def>  dynamic_shapes;     // Data-driven shape displays
 	std::vector<Dynamic_slider_def> dynamic_sliders;    // Data-driven sliders
+	std::vector<Dynamic_list_def>   dynamic_lists;      // Data-driven scrolling lists
 	std::string                     gump_name;          // Custom click-name shown by show_items
 
 	Gump_info();
@@ -270,6 +305,10 @@ public:
 
 	bool is_dynsliders_dirty() const {
 		return dynsliders_from_patch || dynsliders_modified;
+	}
+
+	bool is_dynlists_dirty() const {
+		return dynlists_from_patch || dynlists_modified;
 	}
 
 	bool is_gumpname_dirty() const {
@@ -309,6 +348,10 @@ public:
 		dynsliders_from_patch = tf;
 	}
 
+	void set_dynlists_from_patch(bool tf) {
+		dynlists_from_patch = tf;
+	}
+
 	// Clear vector on first patch entry to prevent duplication.
 	// Patch entries fully replace any base entries for the same gump.
 	void begin_patch_snapzones() {
@@ -343,6 +386,13 @@ public:
 		if (!dynsliders_from_patch) {
 			dynamic_sliders.clear();
 			dynsliders_from_patch = true;
+		}
+	}
+
+	void begin_patch_dynlists() {
+		if (!dynlists_from_patch) {
+			dynamic_lists.clear();
+			dynlists_from_patch = true;
 		}
 	}
 
@@ -407,6 +457,13 @@ public:
 		}
 	}
 
+	void set_dynlists_modified(bool v) {
+		dynlists_modified = v;
+		if (v) {
+			any_modified = true;
+		}
+	}
+
 	void set_gumpname_modified(bool v) {
 		gumpname_modified = v;
 		if (v) {
@@ -435,6 +492,10 @@ public:
 
 	bool has_dynamic_sliders() const {
 		return !dynamic_sliders.empty();
+	}
+
+	bool has_dynamic_lists() const {
+		return !dynamic_lists.empty();
 	}
 
 	bool has_gump_name() const {
