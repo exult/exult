@@ -164,8 +164,40 @@ struct Dynamic_shape_def {
 	int shape_num;    // Initial shape number (0 = none until set)
 	int frame_num;    // Initial frame number
 	int shapefile;    // 0 = SF_SHAPES_VGA, 1 = SF_GUMPS_VGA
+	int list_id;      // Optional: show the selection of this list (-1 = none)
+	int box_w;        // Optional: box width; > 0 = centred and enlarged in it
+	int box_h;        // Optional: box height (used with box_w)
 
-	Dynamic_shape_def() : field_id(0), pos_x(0), pos_y(0), shape_num(0), frame_num(0), shapefile(0) {}
+	Dynamic_shape_def()
+			: field_id(0), pos_x(0), pos_y(0), shape_num(0), frame_num(0), shapefile(0), list_id(-1), box_w(0), box_h(0) {}
+};
+
+// Dynamic_list_def flags.
+enum Dynamic_list_flags {
+	DYNLIST_COUNT_LINE = 0x01,    // "N-M of T" line under the rows
+	DYNLIST_EMPTY_TEXT = 0x02     // "Empty" centred in the rows when there are none
+};
+
+struct Dynamic_list_def {
+	int field_id;    // Unique ID for usecode to address this list
+	int pos_x;       // Top-left of the first row, relative to gump origin
+	int pos_y;
+	int width;          // Row width in pixels (scroll controls to the right)
+	int rows;           // Visible rows
+	int row_height;     // Pixel height of each row
+	int font;           // Row font from fonts.vga
+	int source;         // 0 = container contents, 1 = rows from usecode
+	int up_shape;       // gumps.vga scroll-up arrow (-1 = Exult's own controls)
+	int down_shape;     // gumps.vga scroll-down arrow
+	int thumb_shape;    // gumps.vga thumb (-1 = spinner, arrows only)
+	int select_fn;      // Usecode on selection change (-1 = none)
+	int activate_fn;    // Usecode on activation (-1 = none)
+	int rows_fn;        // Usecode after source-0 rows were rebuilt (-1 = none)
+	int flags;          // Dynamic_list_flags
+
+	Dynamic_list_def()
+			: field_id(0), pos_x(0), pos_y(0), width(100), rows(8), row_height(12), font(2), source(0), up_shape(-1),
+			  down_shape(-1), thumb_shape(-1), select_fn(-1), activate_fn(-1), rows_fn(-1), flags(0) {}
 };
 
 struct Dynamic_slider_def {
@@ -183,16 +215,124 @@ struct Dynamic_slider_def {
 	int usecode_fn;     // Usecode function on change (-1 = none)
 	int orientation;    // 0 = vertical, 1 = horizontal
 
+	// Not read from or written to gump_info.txt: set in C++ when another
+	// widget (Dynamic_list_widget) builds a slider for its scroll controls.
+	ShapeFile shapefile       = SF_GUMPS_VGA;    // File of the three shapes
+	int       track_pad       = 0;               // Gap between each arrow and the track
+	int       thumb_inset     = 0;               // Thumb offset across the track
+	bool      top_left        = false;           // Place shapes by their top-left, not hotspot
+	bool      hide_idle_thumb = false;           // No thumb (and no track clicks) when min == max
+
 	Dynamic_slider_def()
 			: field_id(0), pos_x(0), pos_y(0), dec_shape(0), inc_shape(0), thumb_shape(0), min_val(0), max_val(0), step(1),
 			  default_val(0), extent(60), usecode_fn(-1), orientation(0) {}
+};
+
+// Parts of a list_layout entry (List_layout::parts), in file order.
+enum List_layout_parts {
+	LISTLAYOUT_OFF        = 0x001,
+	LISTLAYOUT_BACKGROUND = 0x002,
+	LISTLAYOUT_LIST       = 0x004,
+	LISTLAYOUT_TITLE      = 0x008,
+	LISTLAYOUT_DIVIDER    = 0x010,
+	LISTLAYOUT_PANEL      = 0x020,
+	LISTLAYOUT_PREVIEW    = 0x040,
+	LISTLAYOUT_PICTURE    = 0x080,
+	LISTLAYOUT_NAV        = 0x100,
+	LISTLAYOUT_USECODE    = 0x200
+};
+
+/*
+ *  Layout of the container list view (Container_list_gump), from the
+ *  list_layout section of gump_info.txt.  Keyed by the container's gump
+ *  shape; key -1 is the default for every container gump.  The member
+ *  defaults are the list view's built-in layout.  All positions are
+ *  relative to the top-left of the (widened) background.
+ */
+struct List_layout {
+	int  parts       = 0;        // List_layout_parts present in this entry
+	int  patch_parts = 0;        // Parts read from the patch file
+	bool off         = false;    // Use the picture view for this gump
+
+	// background: the art, its expected size, and the plain strip
+	// (columns strip_x0..strip_x1-1) repeated to widen it by extra_w.
+	int bg_shape  = -1;    // gumps.vga shape; -1 = the game's "gumps/scroll"
+	int bg_width  = 224;
+	int bg_height = 173;
+	int strip_x0  = 80;
+	int strip_x1  = 140;
+	int extra_w   = 96;
+
+	// list: the rows, as a dynamic_lists entry (always source 0).
+	Dynamic_list_def list = default_list();
+
+	// title: the container's name centred over width at y - 2, with a
+	// rule under it.
+	int title_x    = 51;
+	int title_y    = 31;
+	int title_w    = 138;
+	int title_font = 2;
+
+	// divider: a dotted line at x from y0 to y1 - 1.
+	int divider_x  = 193;
+	int divider_y0 = 33;
+	int divider_y1 = 145;
+
+	// panel: the selected item's name, quantity, weight and hints.
+	int panel_x          = 198;
+	int panel_y          = 31;
+	int panel_w          = 91;
+	int panel_font       = 2;
+	int panel_small_font = 4;
+
+	// preview: the selected item, enlarged in a box.
+	int preview_x = 198;
+	int preview_y = 43;
+	int preview_w = 91;
+	int preview_h = 50;
+
+	// picture: the container's own picture, its top-right corner here.
+	int pic_right = 46;
+	int pic_top   = 150;
+
+	// nav: top-left of the buttons stepping through nested containers;
+	// any value < 0 hides both.
+	int nav_left_x  = 51;
+	int nav_right_x = 177;
+	int nav_y       = 27;
+
+	// usecode: run when the list view opens (item = the container).
+	int open_fn = -1;
+
+	bool has_part(int part) const {
+		return (parts & part) != 0;
+	}
+
+	// Copy the parts present in 'src' over this layout.
+	void overlay(const List_layout& src);
+
+	static Dynamic_list_def default_list() {
+		Dynamic_list_def def;
+		def.field_id   = 0;
+		def.pos_x      = 51;
+		def.pos_y      = 42;
+		def.width      = 123;
+		def.rows       = 8;
+		def.row_height = 12;
+		def.font       = 2;
+		def.source     = 0;
+		def.flags      = DYNLIST_COUNT_LINE | DYNLIST_EMPTY_TEXT;
+		return def;
+	}
 };
 
 class Gump_info {
 	static std::map<int, Gump_info>                gump_info_map;
 	static std::map<int, Shortcutbar_icon_info>    shortcutbar_icon_map;
 	static std::map<int, Shortcutbar_action_entry> shortcutbar_action_map;
-	static bool                                    any_modified;
+	// list_layout entries: own map, as the key may be -1.
+	static std::map<int, List_layout> list_layout_map;
+	static bool                       any_modified;
 
 	friend class Shapes_vga_file;
 
@@ -204,6 +344,7 @@ class Gump_info {
 	bool dyntexts_from_patch;
 	bool dynshapes_from_patch;
 	bool dynsliders_from_patch;
+	bool dynlists_from_patch;
 	bool gumpname_from_patch;
 
 	bool container_modified;
@@ -214,6 +355,7 @@ class Gump_info {
 	bool dyntexts_modified;
 	bool dynshapes_modified;
 	bool dynsliders_modified;
+	bool dynlists_modified;
 	bool gumpname_modified;
 
 public:
@@ -235,6 +377,7 @@ public:
 	std::vector<Dynamic_text_def>   dynamic_texts;      // Data-driven text fields
 	std::vector<Dynamic_shape_def>  dynamic_shapes;     // Data-driven shape displays
 	std::vector<Dynamic_slider_def> dynamic_sliders;    // Data-driven sliders
+	std::vector<Dynamic_list_def>   dynamic_lists;      // Data-driven scrolling lists
 	std::string                     gump_name;          // Custom click-name shown by show_items
 
 	Gump_info();
@@ -270,6 +413,10 @@ public:
 
 	bool is_dynsliders_dirty() const {
 		return dynsliders_from_patch || dynsliders_modified;
+	}
+
+	bool is_dynlists_dirty() const {
+		return dynlists_from_patch || dynlists_modified;
 	}
 
 	bool is_gumpname_dirty() const {
@@ -309,6 +456,10 @@ public:
 		dynsliders_from_patch = tf;
 	}
 
+	void set_dynlists_from_patch(bool tf) {
+		dynlists_from_patch = tf;
+	}
+
 	// Clear vector on first patch entry to prevent duplication.
 	// Patch entries fully replace any base entries for the same gump.
 	void begin_patch_snapzones() {
@@ -343,6 +494,13 @@ public:
 		if (!dynsliders_from_patch) {
 			dynamic_sliders.clear();
 			dynsliders_from_patch = true;
+		}
+	}
+
+	void begin_patch_dynlists() {
+		if (!dynlists_from_patch) {
+			dynamic_lists.clear();
+			dynlists_from_patch = true;
 		}
 	}
 
@@ -407,6 +565,13 @@ public:
 		}
 	}
 
+	void set_dynlists_modified(bool v) {
+		dynlists_modified = v;
+		if (v) {
+			any_modified = true;
+		}
+	}
+
 	void set_gumpname_modified(bool v) {
 		gumpname_modified = v;
 		if (v) {
@@ -437,6 +602,10 @@ public:
 		return !dynamic_sliders.empty();
 	}
 
+	bool has_dynamic_lists() const {
+		return !dynamic_lists.empty();
+	}
+
 	bool has_gump_name() const {
 		return !gump_name.empty();
 	}
@@ -448,6 +617,16 @@ public:
 	static const Gump_info* get_gump_info(int shapenum);
 	static Gump_info&       get_or_create_gump_info(int shapenum);
 	static void             clear();
+
+	// Effective list view layout for a container gump shape: the built-in
+	// layout, overlaid with the -1 entry's parts, then the shape's own.
+	// off if either entry has it.
+	static List_layout  get_list_layout(int gump_shape);
+	static List_layout& get_or_create_list_layout(int key);
+
+	static const std::map<int, List_layout>& get_list_layouts() {
+		return list_layout_map;
+	}
 
 	static const Shortcutbar_icon_info*                get_shortcutbar_icon(int slot);
 	static const std::map<int, Shortcutbar_icon_info>& get_shortcutbar_icons();

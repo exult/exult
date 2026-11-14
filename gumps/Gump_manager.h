@@ -67,6 +67,11 @@ class Gump_manager : public Game_singletons {
 	bool right_click_close    = true;
 	bool dont_pause_game      = false;    // NEVER SET THIS MANUALLY! YOU MUST
 										  // CALL set_gumps_dont_pause_game.
+	bool container_list_view = false;     // Open containers as a list.
+	// Bumped whenever the chain changes, so a walk that runs usecode
+	// (which may open or close gumps) can tell its nodes may be gone.
+	unsigned chain_changes = 0;
+
 public:
 	void add_gump(Gump* gump);    // Add a single gump to screen
 	// Show gump for obj
@@ -93,6 +98,11 @@ public:
 	Gump* find_gump(const Game_object* owner, int shapenum);
 
 	void update_gumps();
+
+	unsigned get_chain_changes() const {
+		return chain_changes;
+	}
+
 	void paint(bool modal);
 	// Map a game-coordinate point into a specific gump's (scaled) overlay
 	// layer, giving the gump-local coordinate used for hit-testing. Returns
@@ -123,6 +133,14 @@ public:
 	}
 
 	void set_gumps_dont_pause_game(bool p);
+
+	bool get_container_list_view() const {
+		return container_list_view;
+	}
+
+	void set_container_list_view(bool l) {
+		container_list_view = l;
+	}
 
 	bool okay_to_quit(Paintable* paint = nullptr);
 	int  prompt_for_number(int minval, int maxval, int step, int def, Paintable* paint = nullptr, bool* escaped = nullptr);

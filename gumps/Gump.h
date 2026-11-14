@@ -152,6 +152,12 @@ protected:
 	}
 
 	void center_rect_on_screen(const TileRect& rect);
+	// Paint the objects in object_area, placing unplaced ones.
+	void paint_objects();
+	// Put obj's hotspot at a screen point, kept inside object_area.
+	void place_object(Game_object* obj, int sx, int sy);
+	// Apply gump_info.txt's container area and checkmark, if any.
+	static void read_gump_info(int shnum, TileRect& area, int& checkx, int& checky);
 
 public:
 	const Gump_elems& get_elems() const {
@@ -208,12 +214,21 @@ public:
 		return get_container();
 	}
 
+	// Subclasses that don't draw objects at their stored tx/ty (the list
+	// view) report where they actually draw them.
 	// Get screen rect. of obj. in here.
-	TileRect get_shape_rect(const Game_object* obj) const;
+	virtual TileRect get_shape_rect(const Game_object* obj) const;
 	// Get screen loc. of object.
-	void get_shape_location(const Game_object* obj, int& ox, int& oy) const;
+	virtual void get_shape_location(const Game_object* obj, int& ox, int& oy) const;
 	// Find obj. containing mouse point.
 	virtual Game_object* find_object(int mx, int my);
+
+	// Mouse pressed on one of this gump's objects (before any drag).
+	// List-style gumps select a row here.
+	virtual void object_pressed(Game_object* obj) {
+		ignore_unused_variable_warning(obj);
+	}
+
 	virtual TileRect     get_dirty();    // Get dirty rect. for gump+contents.
 	virtual Game_object* get_owner();    // Get object this belongs to.
 	// Is a given point on a button?
@@ -367,6 +382,9 @@ public:
 	Gump* clone(Container_game_object* cont, int initx, int inity) override {
 		return new Container_gump(cont, initx, inity, this);
 	}
+
+	// Built-in object area and checkmark position for a gump shape.
+	static void get_layout(int shnum, TileRect& area, int& checkx, int& checky);
 };
 
 #endif

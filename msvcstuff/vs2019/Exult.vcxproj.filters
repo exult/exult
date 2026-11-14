@@ -686,6 +686,9 @@
     <ClCompile Include="..\..\gumps\AudioOptions_gump.cc">
       <Filter>gumps</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\gumps\Container_list_gump.cc">
+      <Filter>gumps</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\gumps\Dynamic_container_gump.cc">
       <Filter>gumps</Filter>
     </ClCompile>
@@ -699,6 +702,9 @@
       <Filter>gumps</Filter>
     </ClCompile>
     <ClCompile Include="..\..\gumps\Dynamic_slider.cc">
+      <Filter>gumps</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\gumps\Dynamic_list_widget.cc">
       <Filter>gumps</Filter>
     </ClCompile>
     <ClCompile Include="..\..\gamemgr\devgame.cc">
@@ -1384,6 +1390,12 @@
     <ClInclude Include="..\..\gumps\Actor_gump.h">
       <Filter>gumps</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\gumps\Container_list_gump.h">
+      <Filter>gumps</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\gumps\Container_list_layout.h">
+      <Filter>gumps</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\gumps\Dynamic_container_gump.h">
       <Filter>gumps</Filter>
     </ClInclude>
@@ -1397,6 +1409,12 @@
       <Filter>gumps</Filter>
     </ClInclude>
     <ClInclude Include="..\..\gumps\Dynamic_slider.h">
+      <Filter>gumps</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\gumps\Dynamic_list_widget.h">
+      <Filter>gumps</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\gumps\Dynamic_list_layout.h">
       <Filter>gumps</Filter>
     </ClInclude>
     <ClInclude Include="..\..\gamemgr\bggame.h">

@@ -22,15 +22,24 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "Gump_widget.h"
 #include "shapeid.h"
 
+class Dynamic_list_widget;
 struct Dynamic_shape_def;
 
 /*
  *  A data-driven shape display on a gump, configured via gump_info.txt.
  *  Shape/frame can be updated at runtime via usecode intrinsic UI_set_gump_shape.
+ *  Optionally bound to a Dynamic_list_widget on the same gump (shows its
+ *  selection) and boxed (centred and enlarged in a box).
  */
 class Dynamic_shape_widget : public Gump_widget {
 	int     field_id;     // Unique ID for usecode to address this field
 	ShapeID displayed;    // Current shape/frame to display (per-instance)
+	int     list_id;      // Show this list's selection (-1 = none)
+	int     box_w;        // > 0: (x, y) is a box's top-left; centred, enlarged
+	int     box_h;
+
+	Dynamic_list_widget* find_list() const;
+	static void          paint_enlarged(const ShapeID& sid, int bx, int by, int bw, int bh);
 
 public:
 	Dynamic_shape_widget(Gump* par, const Dynamic_shape_def& def);

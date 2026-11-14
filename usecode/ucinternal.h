@@ -414,6 +414,13 @@ class Usecode_internal : public Usecode_machine {
 	USECODE_INTRINSIC_DECL(set_slider_value, 3);
 	USECODE_INTRINSIC_DECL(get_slider_value, 2);
 	USECODE_INTRINSIC_DECL(set_gump_text_font, 3);
+	USECODE_INTRINSIC_DECL(set_list_rows, 3);
+	USECODE_INTRINSIC_DECL(set_list_row, 4);
+	USECODE_INTRINSIC_DECL(get_list_selection, 2);
+	USECODE_INTRINSIC_DECL(set_list_selection, 3);
+	USECODE_INTRINSIC_DECL(get_list_count, 2);
+	USECODE_INTRINSIC_DECL(get_list_object, 3);
+	USECODE_INTRINSIC_DECL(open_gump, 1);
 
 	/*
 	 *  Other private methods:
