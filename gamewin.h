@@ -697,7 +697,7 @@ public:
 	}
 
 	Dead_body* get_body(int npc_num) const {
-		return bodies[npc_num];
+		return npc_num >= 0 && static_cast<size_t>(npc_num) < bodies.size() ? bodies[npc_num] : nullptr;
 	}
 
 	int get_num_npcs() const {
