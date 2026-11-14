@@ -1606,6 +1606,12 @@ Game_object* Game_map::locate_shape(
 		cy   = c_num_chunks - 1;
 	}
 	Game_object* obj = nullptr;
+	// The start object (Exult Studio's selection) may no longer be on this
+	// map, e.g. after teleporting away: its chunk is gone, or belongs to
+	// another map. Search from the beginning instead.
+	if (start && start->get_outermost()->get_map() != this) {
+		start = nullptr;
+	}
 	if (start) {    // Start here.
 		Game_object* owner = start->get_outermost();
 		cx                 = owner->get_cx();
