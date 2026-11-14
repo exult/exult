@@ -22,9 +22,11 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "gamedoctor.h"
 
+#include "Configuration.h"
 #include "actors.h"
 #include "chunks.h"
 #include "contain.h"
+#include "exult.h"
 #include "files/U7file.h"    // IWYU pragma: keep
 #include "files/databuf.h"
 #include "files/msgfile.h"
@@ -45,6 +47,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <array>
 #include <cctype>
 #include <charconv>
+#include <ctime>
 #include <exception>
 #include <iomanip>
 #include <iostream>
@@ -54,6 +57,23 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <sstream>
 #include <streambuf>
 #include <unordered_set>
+
+#ifdef HAVE_ZIP_SUPPORT
+#	include "files/zip/zip.h"
+#endif
+
+#ifdef __GNUC__
+#	pragma GCC diagnostic push
+#	pragma GCC diagnostic ignored "-Wold-style-cast"
+#	pragma GCC diagnostic ignored "-Wzero-as-null-pointer-constant"
+#	if !defined(__llvm__) && !defined(__clang__)
+#		pragma GCC diagnostic ignored "-Wuseless-cast"
+#	endif
+#endif    // __GNUC__
+#include <SDL3/SDL_platform.h>
+#ifdef __GNUC__
+#	pragma GCC diagnostic pop
+#endif    // __GNUC__
 
 namespace {
 	std::string lower_case(std::string_view text) {
@@ -1295,4 +1315,198 @@ Game_doctor::Action_result Game_doctor::fetch_item(const Item_hit& hit) {
 	return apply_change("Fetch " + hit.name, Undo_entry::Kind::snapshot, [&] {
 		return do_fetch_item(hit);
 	});
+}
+
+//
+// Bug report.
+//
+
+namespace {
+	bool read_whole_file(const std::string& fname, std::string& data) {
+		if (!U7exists(fname)) {
+			return false;
+		}
+		IFileDataSource in(fname.c_str());
+		if (!in.good()) {
+			return false;
+		}
+		data.clear();
+		in.read(data, in.getAvail());
+		return true;
+	}
+
+#ifndef HAVE_ZIP_SUPPORT
+	bool write_whole_file(const std::string& fname, const std::string& data) {
+		try {
+			auto out = U7open_out(fname.c_str(), false);
+			if (!out || !out->good()) {
+				return false;
+			}
+			out->write(data.data(), static_cast<std::streamsize>(data.size()));
+			out->flush();
+			return out->good();
+		} catch (const std::exception&) {
+			return false;
+		}
+	}
+#endif
+
+	// Only characters that are safe in a file name.
+	std::string file_name_part(const std::string& text) {
+		std::string out;
+		for (const char c : text) {
+			const auto u = static_cast<unsigned char>(c);
+			out += std::isalnum(u) != 0 || c == '-' || c == '_' || c == '.' ? c : '_';
+		}
+		return out.empty() ? std::string("game") : out;
+	}
+
+	std::string local_time_text(const char* format) {
+		const std::time_t now = std::time(nullptr);
+		char              text[32];
+		const std::tm*    tm = std::localtime(&now);
+		if (tm == nullptr || std::strftime(text, sizeof(text), format, tm) == 0) {
+			return "unknown";
+		}
+		return text;
+	}
+}    // namespace
+
+std::string Game_doctor::export_bug_report(std::string* err) {
+	auto failed = [&](const std::string& message) {
+		if (err != nullptr) {
+			*err = message;
+		}
+		std::cout << "DOCTOR: bug report failed: " << message << std::endl;
+		return std::string();
+	};
+	if (gwin == nullptr || gwin->get_main_actor() == nullptr) {
+		return failed("No game is loaded.");
+	}
+
+	// The current game, written fresh.
+	U7mkdir("<SAVEGAME>/doctor", 0755);
+	const std::string tmp_save = "<SAVEGAME>/doctor/report-tmp.sav";
+	std::string       save_error;
+	std::string       save_data;
+	if (!write_save(tmp_save, "Bug report", &save_error)) {
+		U7remove(tmp_save.c_str());
+		return failed("Could not save the game: " + save_error);
+	}
+	const bool have_save = read_whole_file(tmp_save, save_data);
+	U7remove(tmp_save.c_str());
+	if (!have_save) {
+		return failed("Could not read back the saved game.");
+	}
+
+	// info.txt
+	std::ostringstream info;
+	getVersionInfo(info);
+	info << "Git: " << VersionGetGitInfo() << '\n';
+	info << "Game: " << Game::get_gametitle() << '\n';
+	info << "Mod: " << (Game::get_modtitle().empty() ? std::string("(none)") : Game::get_modtitle()) << '\n';
+	{
+		std::string usecode;
+		if (is_system_path_defined("<PATCH>") && read_whole_file(PATCH_USECODE, usecode)) {
+			info << "Mod usecode CRC32: 0x"
+				 << hex(standard_crc32(reinterpret_cast<const unsigned char*>(usecode.data()), usecode.size()), 8) << '\n';
+			info << "Mod usecode size: " << usecode.size() << '\n';
+		} else {
+			info << "Mod usecode: (none)\n";
+		}
+	}
+	const Actor* av = gwin->get_main_actor();
+	info << "Avatar: " << (av->get_chunk() != nullptr ? place_text(av->get_tile(), av->get_map_num()) : "not on map") << '\n';
+	const Game_clock* clock = gwin->get_clock();
+	info << "Time: day " << clock->get_day() << ' ' << dec(clock->get_hour(), 2) << ':' << dec(clock->get_minute(), 2) << '\n';
+	info << "Platform: " << SDL_GetPlatform() << '\n';
+	{
+		std::string style;
+		if (config != nullptr) {
+			config->value("config/gameplay/menu_style", style, "classic");
+		}
+		info << "Menu style: " << (style.empty() ? std::string("classic") : style) << '\n';
+	}
+	info << "Report time: " << local_time_text("%Y-%m-%d %H:%M:%S") << '\n';
+
+	// log.txt
+	std::string log;
+	for (const auto& line : recent_log(log_capacity)) {
+		log += line;
+		log += '\n';
+	}
+
+	// flags.txt
+	std::ostringstream flags_text;
+	Usecode_machine*   usecode = gwin->get_usecode();
+	const size_t       nflags  = usecode->get_num_global_flags();
+	for (size_t i = 0; i < nflags; i++) {
+		if (usecode->get_global_flag_bool(static_cast<int>(i))) {
+			const Flag_info* flag = find_flag(static_cast<unsigned>(i));
+			flags_text << "0x" << hex(static_cast<unsigned>(i), 4) << ' ' << i;
+			if (flag != nullptr && !flag->name.empty()) {
+				flags_text << ' ' << flag->name;
+			}
+			flags_text << '\n';
+		}
+	}
+
+	// checkup.txt
+	std::ostringstream checkup;
+	const auto         findings = run_checkup();
+	if (findings.empty()) {
+		checkup << "No findings\n";
+	}
+	for (const auto& finding : findings) {
+		checkup << finding.severity << ' ' << finding.id << ": " << one_line(finding.message) << '\n';
+	}
+
+	const std::vector<std::pair<std::string, std::string>> entries = {
+			{"save/game.sav",        save_data},
+            {     "info.txt",       info.str()},
+            {      "log.txt",              log},
+			{    "flags.txt", flags_text.str()},
+            {     "dump.txt",  dump_text(true)},
+            {  "checkup.txt",    checkup.str()}
+    };
+
+	U7mkdir("<SAVEGAME>/bug-reports", 0755);
+	const std::string base = "<SAVEGAME>/bug-reports/exult-report-" + file_name_part(Game::get_gametitle()) + '-'
+							 + local_time_text("%Y%m%d-%H%M%S");
+#ifdef HAVE_ZIP_SUPPORT
+	const std::string path    = get_system_path(base + ".zip");
+	zipFile           zipfile = zipOpen(path.c_str(), 0);
+	if (zipfile == nullptr) {
+		return failed("Cannot create " + path);
+	}
+	bool ok = true;
+	for (const auto& [name, data] : entries) {
+		if (zipOpenNewFileInZip(zipfile, name.c_str(), nullptr, nullptr, 0, nullptr, 0, nullptr, Z_DEFLATED, Z_BEST_COMPRESSION)
+			!= ZIP_OK) {
+			ok = false;
+			break;
+		}
+		ok = zipWriteInFileInZip(zipfile, data.data(), static_cast<unsigned>(data.size())) == ZIP_OK;
+		ok = zipCloseFileInZip(zipfile) == ZIP_OK && ok;
+		if (!ok) {
+			break;
+		}
+	}
+	ok = zipClose(zipfile, nullptr) == ZIP_OK && ok;
+	if (!ok) {
+		U7remove(path.c_str());
+		return failed("Error writing " + path);
+	}
+#else
+	const std::string path = get_system_path(base);
+	U7mkdir(base.c_str(), 0755);
+	U7mkdir((base + "/save").c_str(), 0755);
+	for (const auto& [name, data] : entries) {
+		if (!write_whole_file(base + '/' + name, data)) {
+			return failed("Error writing " + path + '/' + name);
+		}
+	}
+#endif
+	std::cout << "DOCTOR: bug report written to " << path << std::endl;
+	return path;
 }

@@ -214,6 +214,12 @@ public:
 	std::string dump_text(bool with_checkup);
 	bool        write_dump(const std::string& path, std::string* err = nullptr, bool with_checkup = true);
 
+	// Bug report: <SAVEGAME>/bug-reports/exult-report-<game>-<time>.zip
+	// (a folder of that name without zip support) holding save/game.sav,
+	// info.txt, log.txt, flags.txt, dump.txt and checkup.txt. Returns the
+	// path written, or an empty string (and *err) on failure.
+	std::string export_bug_report(std::string* err = nullptr);
+
 	static std::string              schedule_name(int type);
 	static std::string              alignment_name(int align);
 	static std::string              object_name(const Game_object* obj);
