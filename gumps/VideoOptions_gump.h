@@ -132,6 +132,11 @@ public:
 		}
 	}
 
+	void toggle_scalefx_scaling(int state) {
+		constexpr int factors[] = {3, 4, 6};
+		scaling                 = factors[state] - 1;
+	}
+
 	void toggle_scaling(int state) {
 		scaling = state;
 	}

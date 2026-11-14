@@ -83,6 +83,13 @@ jobs:
           export PATH="$(brew --prefix bison)/bin:$(brew --prefix flex)/bin:$(brew --prefix libxml2)/bin:$PATH"
           export PKG_CONFIG_PATH="$(brew --prefix zlib)/lib/pkgconfig:$(brew --prefix libxml2)/lib/pkgconfig:$(brew --prefix icu4c)/lib/pkgconfig"
           make -j3
+      - name: CPU and Metal scaler conformance
+        env:
+          SDL_GPU_DRIVER: metal
+          SDL_VIDEODRIVER: dummy
+        run: |
+          python3 imagewin/tests/validate_metal.py --sdk macosx
+          sh imagewin/tests/run_gpu_tests.sh --allow-no-gpu
   notify:
     if: ${{ always() }}
     needs:

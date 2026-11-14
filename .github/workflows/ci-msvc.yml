@@ -98,7 +98,6 @@ jobs:
   ci-msvc:
 
     runs-on: windows-2022
-    if: ${{ github.repository_owner == 'exult' || github.repository_owner == 'wench' || github.repository_owner == 'dominusexult'}}
  
 
     steps:
@@ -174,6 +173,15 @@ jobs:
     - name: Build Exult
       working-directory: ${{env.GITHUB_WORKSPACE}}
       run: msbuild /v:${{ runner.debug =='1' && 'detailed' || 'normal' }} /m /p:Configuration=${{env.BUILD_CONFIGURATION}} /p:Platform=${{env.BUILD_PLATFORM}} ${{env.SOLUTION_FILE_PATH}} /t:${{env.BUILD_PROJECTS}}
+
+    - name: MSVC CPU and Direct3D 12 scaler conformance
+      env:
+        SDL_GPU_DRIVER: direct3d12
+        SDL_VIDEODRIVER: dummy
+      run: |
+        $vs = & "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe" -latest -property installationPath
+        & "$vs\Common7\Tools\Launch-VsDevShell.ps1" -Arch amd64 -HostArch amd64 -SkipAutomaticLocation
+        ./imagewin/tests/run_gpu_tests.ps1 -SDLRoot "${{ env.VCPKGCACHE_PATH }}/x64-windows/x64-windows" -AllowNoGPU
 
   ci-msvc-exult_studio:
     runs-on: windows-2022

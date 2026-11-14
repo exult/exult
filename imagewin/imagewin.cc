@@ -42,6 +42,9 @@ Boston, MA  02111-1307, USA.
 #include "manip.h"
 #include "mouse.h"
 #include "perf.h"
+#include "scale_scalefx.h"
+#include "scalefx_gpu.h"
+#include "scalefx_gpu_ui.h"
 
 #include <algorithm>
 #include <cstdlib>
@@ -90,6 +93,7 @@ const Image_window::ScalerConst Image_window::Hq4x("Hq4x");
 const Image_window::ScalerConst Image_window::_2xBR("2xBR");
 const Image_window::ScalerConst Image_window::_3xBR("3xBR");
 const Image_window::ScalerConst Image_window::_4xBR("4xBR");
+const Image_window::ScalerConst Image_window::ScaleFX("ScaleFX");
 const Image_window::ScalerConst Image_window::SDLScaler("SDLScaler");
 const Image_window::ScalerConst Image_window::NumScalers(nullptr);
 
@@ -111,9 +115,21 @@ float Image_window::nativescale = 1.0f;
 SDL_PixelFormatDetails ManipBase::fmt;            // Format of dest. pixels (and src for rgb src).
 SDL_Color              ManipBase::colors[256];    // Palette for source window.
 
+// Keep the constructor out of line so the private ScaleFX workspace can
+// remain an incomplete type in the public header.
+Image_window::Image_window(
+		Image_buffer* ib, int w, int h, int gamew, int gameh, int scl, bool fs, int sclr, FillMode fmode, int fillsclr)
+		: ibuf(ib), scale(scl), scaler(sclr), uses_palette(true), fullscreen(fs), game_width(gamew), game_height(gameh),
+		  saved_game_width(gamew), saved_game_height(gameh), fill_mode(fmode), fill_scaler(fillsclr), screen_window(nullptr),
+		  screen_renderer(nullptr), screen_texture(nullptr), screen_texture_a(nullptr), paletted_surface(nullptr),
+		  inter_surface(nullptr), draw_surface(nullptr) {
+	static_init();
+	create_surface(w, h);
+}
+
 // Constructor for the ScalerVector, setup the list
 Image_window::ScalerVector::ScalerVector() {
-	reserve(14);
+	reserve(16);
 
 	// This is all the names of the scalers. It needs to match the ScalerType
 	// enum
@@ -277,6 +293,17 @@ Image_window::ScalerVector::ScalerVector() {
 			   nullptr};
 	push_back(_4xbr);
 #endif
+	const ScalerInfo scalefx
+			= {"ScaleFX",
+			   0,
+			   SCALE_BIT(3) | SCALE_BIT(4) | SCALE_BIT(6),
+			   nullptr,
+			   &Image_window::show_scaled8to16_ScaleFX,
+			   &Image_window::show_scaled8to16_ScaleFX,
+			   &Image_window::show_scaled8to16_ScaleFX,
+			   &Image_window::show_scaled8to32_ScaleFX,
+			   nullptr};
+	push_back(scalefx);
 	const ScalerInfo SDLScaler = {"SDLScaler", 0, 0xFFFFFFFF, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr};
 	push_back(SDLScaler);
 }
@@ -285,6 +312,10 @@ Image_window::ScalerVector::~ScalerVector() {
 	for (auto& it : *this) {
 		delete it.arb;
 	}
+}
+
+int Image_window::normalize_scalefx_factor(int factor) {
+	return ::ScaleFX::normalize_factor(factor);
 }
 
 Image_window::ScalerType Image_window::get_scaler_for_name(const char* scaler) {
@@ -622,8 +653,41 @@ bool Image_window::create_scale_surfaces(int w, int h, int bpp) {
 	if (screen_window == nullptr) {
 		cout << "Couldn't create window: " << SDL_GetError() << std::endl;
 	}
+	std::string gpu_mode;
+	config->value("config/video/scalefx_gpu", gpu_mode, "auto");
+	config->value("config/video/scaler_gpu", gpu_mode, gpu_mode);
+	scaler_gpu_enabled      = gpu_mode != "no" && gpu_mode != "off" && gpu_mode != "0";
+	scaler_gpu_world_failed = false;
 	if (screen_renderer == nullptr) {
-		screen_renderer = SDL_CreateRenderer(screen_window, nullptr);
+#if SDL_VERSION_ATLEAST(3, 4, 0)
+		const char* requested_driver = SDL_GetHint(SDL_HINT_RENDER_DRIVER);
+		// Keep the GPU renderer available when a scaler is selected later in
+		// UI Options; Point and the CPU scalers use the same SDL renderer API.
+		if (scaler_gpu_enabled && (!requested_driver || !*requested_driver || SDL_strcmp(requested_driver, "gpu") == 0)) {
+			screen_renderer = SDL_CreateGPURenderer(nullptr, screen_window);
+			if (screen_renderer && !::ScaleFX::GPU::available(screen_renderer)) {
+				SDL_DestroyRenderer(screen_renderer);
+				screen_renderer = nullptr;
+			}
+			if (screen_renderer) {
+				auto*      device     = SDL_GetGPURendererDevice(screen_renderer);
+				const auto properties = SDL_GetGPUDeviceProperties(device);
+				SDL_Log("Scalers: SDL GPU renderer enabled (%s)",
+						SDL_GetStringProperty(properties, SDL_PROP_GPU_DEVICE_NAME_STRING, "unknown device"));
+			} else {
+				SDL_Log("Scalers: GPU renderer unavailable, using CPU: %s", SDL_GetError());
+				SDL_ClearError();
+			}
+		}
+#endif
+#if !SDL_VERSION_ATLEAST(3, 4, 0)
+		if (gpu_scaler_method(scaler) >= 0 && scaler_gpu_enabled) {
+			SDL_Log("Scalers: GPU acceleration requires SDL 3.4+; using CPU");
+		}
+#endif
+		if (!screen_renderer) {
+			screen_renderer = SDL_CreateRenderer(screen_window, nullptr);
+		}
 	}
 	if (screen_renderer == nullptr) {
 		cout << "Couldn't create renderer: " << SDL_GetError() << std::endl;
@@ -809,6 +873,7 @@ bool Image_window::try_scaler(int w, int h) {
  */
 
 void Image_window::free_surface() {
+	scalefx_gpu.reset();
 	if (inter_surface != nullptr && inter_surface != draw_surface) {
 		SDL_DestroySurface(inter_surface);
 	}
@@ -914,8 +979,9 @@ void Image_window::show(int x, int y, int w, int h) {
 	//  can still be used if it is not a muliple of 4
 	int buffer_w = get_full_width() + gb;
 	int buffer_h = get_full_height() + gb;
-	// Increase the area by 4 pixels
-	increase_area(x, y, w, h, 4, 4, 4, 4, buffer_w, buffer_h);
+	// ScaleFX's multipass edge analysis has a larger dependency radius.
+	const int margin = scaler == ScaleFX ? ::ScaleFX::radius : 4;
+	increase_area(x, y, w, h, margin, margin, margin, margin, buffer_w, buffer_h);
 
 	// Make it 4 pixel aligned too, needed for more advanced scalers that work
 	// best with groups of 4 pixels, othwerwise we can get discontinuities
@@ -942,6 +1008,21 @@ void Image_window::show(int x, int y, int w, int h) {
 
 	if (h + y > buffer_h) {
 		h = buffer_h - y;
+	}
+	if (show_scaled_gpu(x, y, w, h)) {
+		return;
+	}
+	if (scalefx_gpu) {
+		// A GPU-to-CPU transition must initialize the complete CPU staging
+		// image before a fill scaler can copy it, not just the last damage.
+		scalefx_gpu.reset();
+		// Scene buffers can temporarily bypass world scaling. They must not
+		// disable acceleration for subsequent world frames or UI layers.
+		x                   = 0;
+		y                   = 0;
+		w                   = buffer_w;
+		h                   = buffer_h;
+		mark_all_layers_dirty();
 	}
 	// Create temporary display_surface from screen_texture;
 	SDL_Surface* display_surface;
@@ -1722,6 +1803,11 @@ int Image_window::layer_render_scale(const Layer& layer) const {
 	if (si.arb != nullptr || si.fun8to32 == nullptr) {
 		return 1;
 	}
+	if (uscaler == ScaleFX) {
+		// UI layers inherit the selected native factor; with another main
+		// scaler, unsupported factors retain the historical 3x default.
+		return normalize_scalefx_factor(scale);
+	}
 	const uint32 mask = si.size_mask;
 	for (int f = 2; f <= 4; ++f) {
 		if (mask == (1u << (f - 1))) {
@@ -2080,6 +2166,10 @@ bool Image_window::layer_to_screen(int handle, int lx, int ly, int& sx, int& sy)
 
 void Image_window::free_layer_textures() {
 	for (auto& lp : layers) {
+		if (lp) {
+			lp->scalefx_gpu.reset();
+			lp->scalefx_ui_gpu.reset();
+		}
 		if (lp && lp->texture) {
 			SDL_DestroyTexture(lp->texture);
 			lp->texture = nullptr;
@@ -2127,6 +2217,25 @@ void Image_window::composite_layers() {
 		const SDL_ScaleMode smode = smooth ? SDL_SCALEMODE_LINEAR : SDL_SCALEMODE_NEAREST;
 		// If a software (member) scaler is active, layers are pre-scaled by it
 		// to this factor; otherwise they are uploaded 1:1 and scaled on the GPU.
+		// Empty transparent layers need neither a scaling workspace nor a
+		// full-size texture. Keep them dirty so drawing content later refreshes
+		// their cache; an older nonempty cache must not be composited here.
+		if (layer.dirty && !layer.is_opaque()) {
+			const auto* pixels = static_cast<const Uint8*>(layer.surface->pixels);
+			bool empty = true;
+			for (int y = 0; y < layer.logh && empty; ++y) {
+				const auto* row = pixels + (y + guard_band) * layer.surface->pitch + guard_band;
+				for (int x = 0; x < layer.logw; ++x) {
+					if (row[x] != layer.transparent) {
+						empty = false;
+						break;
+					}
+				}
+			}
+			if (empty) {
+				continue;
+			}
+		}
 		const int render_scale = layer_render_scale(layer);
 		// Recreate the texture if the render scale changed (its size depends
 		// on it) or it was dropped.
@@ -2151,7 +2260,17 @@ void Image_window::composite_layers() {
 			refresh_layer(layer);
 			layer.dirty = false;
 		}
-		SDL_SetTextureAlphaMod(layer.texture, layer.alpha);
+		SDL_Texture* display_texture = layer.texture;
+		if (scaler_gpu_enabled && layer.is_opaque() && gpu_scaler_method(eff_ui_scaler(cfg)) >= 0 && layer.scalefx_gpu
+			&& layer.scalefx_gpu->output()) {
+			display_texture = layer.scalefx_gpu->output();
+		}
+		if (scaler_gpu_enabled && !layer.is_opaque() && gpu_scaler_method(eff_ui_scaler(cfg)) >= 0 && layer.scalefx_ui_gpu
+			&& layer.scalefx_ui_gpu->output()) {
+			display_texture = layer.scalefx_ui_gpu->output();
+		}
+		SDL_SetTextureScaleMode(display_texture, smode);
+		SDL_SetTextureAlphaMod(display_texture, layer.alpha);
 		SDL_FRect dst, src = {float(guard_band * render_scale), float(guard_band * render_scale), float(layer.logw * render_scale),
 							  float(layer.logh * render_scale)};
 
@@ -2161,13 +2280,13 @@ void Image_window::composite_layers() {
 			}
 			// Only draw if dest rect is valid
 			if (dst.w > 0 && dst.h > 0) {
-				SDL_RenderTexture(screen_renderer, layer.texture, &src, &dst);
+				SDL_RenderTexture(screen_renderer, display_texture, &src, &dst);
 			}
 		}
 	}
 }
 
-void Image_window::UpdateRect(SDL_FRect* dirtyRect, SDL_FRect* fullRect, bool for_screenshot) {
+void Image_window::UpdateRect(SDL_FRect* dirtyRect, SDL_FRect* fullRect, bool for_screenshot, bool already_updated) {
 	auto perfcounter = PerformanceTimer::GetScopedPerfTimer(__func__);
 
 	{
@@ -2180,7 +2299,7 @@ void Image_window::UpdateRect(SDL_FRect* dirtyRect, SDL_FRect* fullRect, bool fo
 				SDL_ClearError();
 			}
 
-			if (!SDL_RenderTexture(screen_renderer, screen_texture, dirtyRect, dirtyRect)) {
+			if (!already_updated && !SDL_RenderTexture(screen_renderer, screen_texture, dirtyRect, dirtyRect)) {
 				const char* err = SDL_GetError();
 				std::cerr << "SDL_RenderTexture(screen_renderer, screen_texture, srcRect, srcRect) failed: " << (err ? err : "")
 						  << std::endl;
@@ -2275,3 +2394,154 @@ Image_window::Layer::Layer(SDL_Surface* surface, int w, int h, unsigned char tra
 		  buf(std::make_unique<Image_buffer8>(
 				  surface->w, surface->h, surface->pitch, reinterpret_cast<unsigned char*>(surface->pixels), guard_band)),
 		  logw(w), logh(h), fixed_scale(fscale), transparent(transp), z(zorder), name(std::move(name)) {}
+
+namespace {
+	template <typename Pixel>
+	void show_scalefx(
+			SDL_Surface* source, SDL_Surface* destination, int x, int y, int w, int h, int factor, ScaleFX::Workspace& workspace) {
+		const auto*                   format  = SDL_GetPixelFormatDetails(destination->format);
+		const auto*                   palette = SDL_GetSurfacePalette(source);
+		std::array<ScaleFX::RGB, 256> rgb;
+		std::array<Pixel, 256>        colours;
+		for (size_t i = 0; i < rgb.size(); ++i) {
+			const auto& c = palette->colors[i];
+			rgb[i]        = {c.r, c.g, c.b};
+			colours[i]    = static_cast<Pixel>(SDL_MapRGB(format, nullptr, c.r, c.g, c.b));
+		}
+		ScaleFX::scale(
+				static_cast<const uint8_t*>(source->pixels), source->pitch, source->w, source->h, x, y, w, h, rgb,
+				static_cast<Pixel*>(destination->pixels), destination->pitch / static_cast<int>(sizeof(Pixel)), colours, factor,
+				workspace);
+	}
+}    // namespace
+
+void Image_window::show_scaled8to16_ScaleFX(int x, int y, int w, int h) {
+	if (!scalefx_workspace) {
+		scalefx_workspace = std::make_unique<::ScaleFX::Workspace>();
+	}
+	show_scalefx<uint16>(
+			draw_surface, inter_surface, x + guard_band, y + guard_band, w, h, normalize_scalefx_factor(scale), *scalefx_workspace);
+}
+
+void Image_window::show_scaled8to32_ScaleFX(int x, int y, int w, int h) {
+	if (!scalefx_workspace) {
+		scalefx_workspace = std::make_unique<::ScaleFX::Workspace>();
+	}
+	show_scalefx<uint32>(
+			draw_surface, inter_surface, x + guard_band, y + guard_band, w, h, normalize_scalefx_factor(scale), *scalefx_workspace);
+}
+
+// The GPU path writes the existing world-cache texture directly. Composition,
+// screenshots, overlay ordering and final presentation remain in UpdateRect.
+bool Image_window::show_scaled_gpu(int x, int y, int w, int h) {
+	if (!scaler_gpu_enabled || scaler_gpu_world_failed || gpu_scaler_method(scaler) < 0
+		|| !::ScaleFX::GPU::available(screen_renderer) || ibuf->width + 2 * guard_band != draw_surface->w
+		|| ibuf->height + 2 * guard_band != draw_surface->h) {
+		return false;
+	}
+	// Custom legacy fill scalers retain their CPU semantics. The video menu
+	// exposes Point, Bilinear and SDL fill modes, all supported here.
+	if (fill_scaler != point && fill_scaler != bilinear && fill_scaler != SDLScaler) {
+		return false;
+	}
+	if (!scalefx_gpu) {
+		scalefx_gpu
+				= std::make_unique<::ScaleFX::GPU>(screen_renderer, static_cast<::ScaleFX::Algorithm>(gpu_scaler_method(scaler)));
+	}
+	const bool first_frame = scalefx_gpu->output() == nullptr;
+	SDL_Rect   damage{x + guard_band, y + guard_band, w, h};
+	if (x == 0) {
+		damage.x = 0;
+		damage.w += guard_band;
+	}
+	if (y == 0) {
+		damage.y = 0;
+		damage.h += guard_band;
+	}
+	if (!scalefx_gpu->update(
+				draw_surface, damage, scale, {guard_band, guard_band, ibuf->width, ibuf->height},
+				{x + guard_band, y + guard_band})) {
+		scaler_gpu_world_failed = true;
+		return false;
+	}
+	if (first_frame) {
+		SDL_Log("%s: GPU shaders active at %dx", get_name_for_scaler(scaler), scale);
+	}
+	auto* frame = scalefx_gpu->output();
+	if (!frame) {
+		return false;
+	}
+	SDL_Texture* saved = SDL_GetRenderTarget(screen_renderer);
+	SDL_FRect    source{float(guard_band * scale), float(guard_band * scale), float(inter_width), float(inter_height)};
+	SDL_FRect    full;
+	if (fill_scaler == SDLScaler || !inter_surface) {
+		full = source;
+	} else {
+		full = {0, 0, float(screen_texture_a->w - 2 * guard_band * scale), float(screen_texture_a->h - 2 * guard_band * scale)};
+	}
+	SDL_SetTextureScaleMode(frame, fill_scaler == bilinear ? SDL_SCALEMODE_LINEAR : SDL_SCALEMODE_NEAREST);
+	const bool ok
+			= SDL_SetRenderTarget(screen_renderer, screen_texture_a) && SDL_RenderTexture(screen_renderer, frame, &source, &full);
+	SDL_SetRenderTarget(screen_renderer, saved);
+	if (!ok) {
+		scaler_gpu_world_failed = true;
+		SDL_Log("World GPU scaler copy failed; using CPU: %s", SDL_GetError());
+		SDL_ClearError();
+		return false;
+	}
+	UpdateRect(&full, &full, false, true);
+	return true;
+}
+
+int Image_window::gpu_scaler_method(int method) {
+	if (method < 0) {
+		return -1;
+	}
+	if (method == ScaleFX) {
+		return 0;
+	}
+	if (method == Hq2x) {
+		return 1;
+	}
+	if (method == Hq3x) {
+		return 2;
+	}
+	if (method == Hq4x) {
+		return 3;
+	}
+	if (method == SaI) {
+		return 4;
+	}
+	if (method == Super2xSaI) {
+		return 5;
+	}
+	if (method == SuperEagle) {
+		return 6;
+	}
+	if (method == _2xBR || method == _3xBR || method == _4xBR) {
+		return 7;
+	}
+	return -1;
+}
+
+bool Image_window::scale_layer_gpu(Layer& layer, SDL_Surface* source, int factor) {
+	if (!scaler_gpu_enabled || !layer.is_opaque() || gpu_scaler_method(eff_ui_scaler(get_ui_cfg(layer.ui_kind))) < 0
+		|| !::ScaleFX::GPU::available(screen_renderer)) {
+		return false;
+	}
+	const auto method = static_cast<::ScaleFX::Algorithm>(gpu_scaler_method(eff_ui_scaler(get_ui_cfg(layer.ui_kind))));
+	if (!layer.scalefx_gpu || layer.scalefx_gpu->method() != method) {
+		layer.scalefx_gpu = std::make_unique<::ScaleFX::GPU>(screen_renderer, method);
+	}
+	const bool first = layer.scalefx_gpu->output() == nullptr;
+	if (!layer.scalefx_gpu->update(
+			source, {0, 0, source->w, source->h}, factor, {guard_band, guard_band, layer.logw, layer.logh},
+			{guard_band, guard_band})) {
+		return false;
+	}
+	if (first) {
+		SDL_Log("%s: GPU scene shaders active at %dx (%s)", get_name_for_scaler(eff_ui_scaler(get_ui_cfg(layer.ui_kind))),
+			factor, layer.get_name().c_str());
+	}
+	return true;
+}

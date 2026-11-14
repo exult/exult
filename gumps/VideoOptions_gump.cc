@@ -251,6 +251,9 @@ void VideoOptions_gump::rebuild_buttons() {
 			   Image_window::get_displayname_for_scaler(Image_window::bilinear)};
 	{
 		const char* renderer_name = SDL_GetRendererName(SDL_GetRenderer(gwin->get_win()->get_screen_window()));
+		if (renderer_name && SDL_strcmp(renderer_name, "gpu") == 0) {
+			renderer_name = "GPU";
+		}
 		if (renderer_name) {
 			fill_scaler_text.emplace_back(renderer_name);
 		}
@@ -331,7 +334,13 @@ void VideoOptions_gump::rebuild_dynamic_buttons() {
 							|| scaler == Image_window::SDLScaler)
 								   ? max_scales
 								   : 1;
-	if (num_scales > 1) {
+	if (scaler == Image_window::ScaleFX) {
+		scaling             = Image_window::normalize_scalefx_factor(scaling + 1) - 1;
+		const int selection = scaling == 5 ? 2 : scaling == 3 ? 1 : 0;
+		buttons[id_scaling] = std::make_unique<VideoTextToggle>(
+				this, &VideoOptions_gump::toggle_scalefx_scaling, std::vector<std::string>{"x3", "x4", "x6"}, selection,
+				get_button_pos_for_label(Strings::Scaling_()), yForRow(4), 74);
+	} else if (num_scales > 1) {
 		// the text arrays is freed by the destructor of the button
 		std::vector<std::string> scalingtext;
 		for (int i = 0; i < num_scales; i++) {

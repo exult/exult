@@ -156,10 +156,12 @@ inline int hqx_init(
 		int* w, int* c, int* yuv, const unsigned char* from, int x, int sline_pixels, int prevline, int nextline,
 		Manip_pixels& manip) {
 	auto RGBtoYUV = [](unsigned int r, unsigned int g, unsigned int b) {
-		const int Y = (r + g + b) >> 2;
-		const int u = 128 + ((r - b) >> 2);
-		const int v = 128 + ((2 * g - r - b) >> 3);
-		return (Y << 16) + (u << 8) + v;
+		// Keep the original wrapped YUV representation without signed-shift
+		// overflow when a channel difference is negative.
+		const unsigned int Y = (r + g + b) >> 2;
+		const unsigned int u = 128 + ((r - b) >> 2);
+		const unsigned int v = 128 + ((2 * g - r - b) >> 3);
+		return static_cast<int>((Y << 16) + (u << 8) + v);
 	};
 
 	w[2] = *((from + prevline));
