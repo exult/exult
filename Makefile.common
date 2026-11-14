@@ -335,7 +335,8 @@ EXULT_FLX_OBJECTS := \
 	data/fonts/font_map.txt \
 	data/mui_fonts.vga \
 	data/mui_ultima.thm \
-	data/mui_modern.thm
+	data/mui_modern.thm \
+	data/mui_config_keys.txt
 
 EXULT_FONTS_ORIGINAL_VGA := data/fonts_original.vga data/fonts_original_vga.h
 EXULT_FONTS_ORIGINAL_VGA_OBJECTS := \

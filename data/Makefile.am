@@ -32,7 +32,8 @@ EXULT_FLX_OBJECTS = \
 	fonts/font_map.txt \
 	mui_fonts.vga \
 	mui_ultima.thm \
-	mui_modern.thm
+	mui_modern.thm \
+	mui_config_keys.txt
 
 EXULT_FONTS_ORIGINAL_VGA_OBJECTS = \
 	fonts/original.in \
