@@ -24,12 +24,19 @@ The themed conversation screen, which uses this toolkit, is described in [modern
    - Adding a Theme from a Mod
 5. [Fonts](#fonts)
 6. [Screens](#screens)
-7. [Configuration Keys](#configuration-keys)
-8. [Config Metadata Table](#config-metadata-table)
-9. [Save Format: Play Time and Rename](#save-format-play-time-and-rename)
-10. [Self-Test Driver](#self-test-driver)
-11. [Files](#files)
-12. [Known Limits](#known-limits)
+7. [Themed Dynamic Gumps](#themed-dynamic-gumps)
+   - What Is Themed
+   - The Skin Layer
+   - Fonts and Colours
+   - Controls
+   - Opting Out: `gump_theme`
+   - Limits
+8. [Configuration Keys](#configuration-keys)
+9. [Config Metadata Table](#config-metadata-table)
+10. [Save Format: Play Time and Rename](#save-format-play-time-and-rename)
+11. [Self-Test Driver](#self-test-driver)
+12. [Files](#files)
+13. [Known Limits](#known-limits)
 
 ---
 ## Selecting the Style
@@ -180,6 +187,64 @@ Why not FreeType now: Exult itself links neither FreeType nor SDL_ttf (FreeType 
 **Cheat screen bridge.** `CheatScreen::run_menu_screen(Which, Actor*, unsigned flag)` runs one text-mode submenu (Root, NPC, Usecode, Teleport, GlobalFlag) with `show_screen()`'s setup and teardown, now split into `begin_screen()`/`end_screen()`. `CheatScreen::toggle_paperdolls()` is shared by both screens.
 
 ---
+## Themed Dynamic Gumps
+When a themed menu style (Ultima, Modern or a theme file) is chosen, the data-driven gumps of the dynamic gump system ([dynamic_gumps.md](dynamic_gumps.md)) are drawn with the same theme as the menus, at display resolution. In classic style nothing changes: those gumps draw exactly as before, pixel for pixel.
+
+### What Is Themed
+- **Dynamic container gumps** (`Dynamic_container_gump`) with dynamic widgets: their panel, `Dynamic_text_widget`s, `Dynamic_button` plates, `Dynamic_slider`s (sliders and spinners), `Dynamic_list_widget`s and the close checkmark. The shop kit ([shop_kit.md](shop_kit.md)) is such a gump, so its buy and sell screens follow the theme.
+- **The container list view** (`Container_list_gump`, Containers: List; see [dynamic_lists.md](dynamic_lists.md#container-list-view-list_layout)): a themed panel the size of the widened background, title and panel texts in theme fonts, the list, and the ◀ ▶ buttons as themed arrow plates.
+- **Art stays art**: contained objects, `Dynamic_shape_widget`s (including the enlarged preview), list row icons, the art of dynamic buttons, the list view's container picture with its own checkmark, and the debug grid and snap-zone overlays are painted from the game's shapes as before and laid on top of the themed panel.
+
+Ordinary container gumps, paperdolls, books, scrolls, the HUD and every gump without dynamic widgets keep their classic look.
+
+### The Skin Layer
+A themed gump keeps its normal game-resolution layer and gets a second one, its *skin* (`Gump_skin`, gumps/Gump_skin.h):
+1. `Gump_manager::render_gump_part_to_layer` asks `Gump::themable()` and `Gump_theme::current()`. If both say yes (only for part 0 of a non-HUD gump), it sets `Gump::skin_pass` and calls `paint_shifted()` as usual; in a skin pass the gump paints only its art into the game buffer.
+2. After the game layer's destination is set, the gump's `Gump_skin` sizes a `UiLayerMenus` layer to the destination rectangle (`round(dw) × round(dh)` display pixels) at the same position and z, copies in its cached base (tab, frame, panel, well), calls the gump's `paint_skin(Gump_skin&)` for the texts, plates, lists, sliders and close control, then composites the art from the game buffer on top (index 255 is transparent).
+3. The game buffer is then cleared to 255. The game layer stays visible but transparent, so `map_game_to_gump`, hit-testing, dragging, drops and the checkmark tab work exactly as before. A gump being dragged goes through the same function, so it stays themed.
+4. In classic style, for a gump that opts out, for HUD gumps and for part 1 the skin, if there is one, is destroyed and the code path is the old one.
+
+**Geometry.** A skin pixel is (game-local point − layer origin) × `dw / layer width`, so every gump_info position, widget rectangle, list row and slider part is the gump_info layout scaled. The panel is the bounding box of the gump art's opaque pixels (`Gump_skin::art_bounds`, worked out once per shape and frame); the frame is drawn outside that box, inside the 4-px `gump_layer_margin`, so nothing near the edges is covered. The painter's scale is the vertical scale divided by 3.6, because theme metrics are given at a 720-px reference height (3.6 display pixels per game pixel at 200 game lines).
+
+**Repainting.** The skin is repainted whenever the gump is (every frame the gump layer is drawn). The frame, panel, tab and well are cached per theme, layer size and panel rectangle, so only the texts, controls and art are painted each time.
+
+### Fonts and Colours
+- The face comes from the theme's role for the classic font: taller than font 2 → `heading`, shorter → `small`, otherwise `body`. A widget can ask for a role (the list view's title uses `heading`).
+- The size is the largest of the seven Mui sizes (13–48 px) whose line height is no taller than the classic font's height × the vertical scale, or the smallest if none fits, so each line fits the space the layout was made for. Themed text is therefore usually a little smaller than the scaled bitmap text it replaces.
+- Text uses `text` on `panel` (the anti-alias background), `text_dim` for disabled rows, the count line and "Empty", and `text_on_accent` on the selected row. Text is elided to the panel (or the widget's bounds).
+- `Gump_theme::current()` caches the loaded theme per style name, as `Mui_theme::load()` parses the theme file on each call. It returns null in classic style, when there is no game window, in the Exult launcher menu, and when the theme does not load.
+
+### Controls
+| Element | Ultima (`frame/style` stone) | Modern (flat) |
+|---|---|---|
+| Panel | Stone ring with a bevel and a gold rule round a parchment page | Rounded `window` ring with a `frame` border, page in `panel` |
+| Container area (width and height > 0) | Inset well in `panel_alt` with a dark/light bevel | The same |
+| `Dynamic_text_widget` | Theme text at the same anchor (halign 0 left / 1 right / 2 centre at `pos_x`; valign 0 top / 1 bottom / 2 centre at `pos_y`) | The same |
+| `Dynamic_button` | Bevelled `frame`/`frame_light` plate 1 game px round the art; pushed or toggled: `accent_hover`. The button's art is drawn on it (buttons have no label data) | Rounded `panel_alt` plate with a `frame` border |
+| `Dynamic_slider` | Decrement/increment as small plates with arrow icons (left/right when horizontal, up/down when vertical); with a thumb, a rounded `panel_alt` groove with a `frame_dark` edge and an `accent` knob | The same in Modern's colours |
+| `Dynamic_list_widget` | Rows in `panel`/`panel_alt` alternately, selected row `accent` with `text_on_accent`, disabled rows `text_dim`; icons are art; scroll controls as the slider; count line and "Empty" in `small`/`text_dim` | The same |
+| Close checkmark | A stone tab (30×35 game px centred on the tick) under the panel, with a gold check in a bevelled square on the tick, as the original windows' tick on a tab | A round `panel_alt` button with a close icon on the tick, no tab |
+
+The checkmark's position and hit rectangle do not change, nor do any other hit rectangles.
+
+### Opting Out: `gump_theme`
+The `gump_theme` section of `gump_info.txt` decides per gump shape (see [dynamic_gumps.md](dynamic_gumps.md#gump_theme)):
+
+```
+%%section gump_theme
+:49/0
+%%endsection
+```
+
+Mode `0` keeps the gump classic in every style, mode `1` themes it whenever a themed style is chosen. With no entry (the default) a dynamic container gump is themed when it has at least one dynamic button, text, shape, slider or list and **no snap zones** (ritual containers keep their art, which is what the player works with), and the list view is themed unless the shown container's gump shape has mode 0. Exult's shipped `gump_info.txt` files have no entries, only the section's description in their header.
+
+### Limits
+- Art in a themed gump (objects, shapes, icons, button art) uses the day palette of the `UiLayerMenus` layer: no colour cycling or day/night palette change inside the gump.
+- Dynamic buttons have no label data, so a themed button shows its own art on a plate; a gump whose buttons are words painted into the gump background shows those words only in classic style.
+- The skin is repainted with the gump (every frame it is drawn); only the frame, panel, tab and well are cached.
+- The audio/sound test screen hides UI layers other than text gumps; the skin is a `UiLayerMenus` layer, so it would still show there (a debug screen only).
+
+---
 ## Configuration Keys
 | Key | Values | Default |
 |---|---|---|
@@ -262,6 +327,7 @@ Run it headless only: `SDL_VIDEO_DRIVER=dummy SDL_AUDIO_DRIVER=dummy EXULT_MUI_T
 | gumps/Mui_journey_log.{h,cc} | Journey Log. |
 | gumps/Mui_cheats.{h,cc} | Cheat window. |
 | gumps/Mui_selftest.{h,cc} | Headless test driver. |
+| gumps/Gump_skin.{h,cc} | Themed dynamic gumps: `Gump_theme::current()`/`wants()`, the skin layer and its drawing helpers. |
 | data/mui_fonts.vga, data/mui_ultima.thm, data/mui_modern.thm, data/mui_config_keys.txt, data/fonts/DejaVu-LICENSE.txt | Data. |
 | tools/mui/gen_mui_fonts.py, tools/mui/scan_config_keys.py, tools/mui/test_scan_config_keys.py | Maintainer tools. |
 
@@ -276,3 +342,6 @@ User-visible strings are in data/exultmsg.txt, block 0xC00–0xDFF.
 - Saves do not record the Exult build that wrote them; the details panel shows the running build, labelled as such.
 - Comments in exult.cfg follow `Configuration::write_back` behaviour.
 - The Exult launcher menu stays classic.
+- Themed dynamic gumps draw their art (objects, shapes, icons, button art) in the day palette, without colour cycling or day/night palette change.
+- Themed dynamic buttons show their art on a plate; there is no label text for buttons.
+- A themed gump's skin is repainted with the gump each time it is drawn; only its frame, panel, tab and well are cached.

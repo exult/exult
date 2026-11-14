@@ -28,6 +28,7 @@ This document describes the dynamic gump system added in the `gumpUpdates` branc
    - Bounding-Box Hit Testing
    - Snap Zones Feature
    - Debug Visualization
+   - Themes
 4. [Dynamic Widget System](#dynamic-widget-system)
    - Dynamic Buttons
    - Dynamic Text Fields
@@ -458,6 +459,17 @@ When `GUMP_DEBUG_CONSOLE` is active, detailed logging is emitted from:
 - `Gump_widget::on_widget()` (screen-to-local conversion, shape origins, hit/miss)
 - All dynamic widget `paint()` methods (screen positions, field IDs)
 
+### Themes
+
+When `config/gameplay/menu_style` is a themed style (Ultima, Modern or a theme file), a dynamic container gump with dynamic widgets is drawn with the menu theme at display resolution; in classic style it draws exactly as before. The full description is in [modern_ui.md](modern_ui.md#themed-dynamic-gumps); in short:
+
+- `Dynamic_container_gump::themable()` returns `Gump_theme::wants(info, false)`: the `gump_theme` entry of the gump's shape if there is one, else themed when the gump has a dynamic widget and no snap zones (see [gump_theme](#gump_theme)).
+- In a skin pass (`skin_pass` set by `Gump_manager::render_gump_part_to_layer`), `paint()` draws only the art into the game layer: contained objects, button art, `Dynamic_shape_widget`s, list row icons (`Dynamic_list_widget::paint_art()`), the debug grid and snap-zone overlays and the selection outlines. There is no background, tab, text, slider or checkmark in that pass.
+- `paint_skin(Gump_skin&)` then draws the themed panel over the art's opaque bounding box (with the Ultima close tab), a well for a container area with a size, and each widget's own `paint_skin()`; the `Checkmark_button` becomes the theme's close control. The art is composited on top.
+- Layout, hit-testing, dragging, drops and the usecode interface do not change: every position in `gump_info.txt` is scaled to the skin, and the game layer stays (transparent) for input.
+
+Snap-zone gumps stay classic by default, because their art is part of the ritual the player works with; set `gump_theme` mode 1 to theme one anyway.
+
 ---
 
 ## Dynamic Widget System
@@ -703,9 +715,11 @@ Each widget type has a corresponding `_def` struct (in `gumpinf.h`) that holds t
 - `Dynamic_slider_def` → `Dynamic_slider`
 - `Dynamic_list_def` → `Dynamic_list_widget`
 
+Each widget class also has a `paint_skin(Gump_skin&)` method for the themed look (see [Themes](#themes)); the classic `paint()` bodies are unchanged. `Dynamic_slider::part_rect(Part)` gives the gump-local rectangles of its parts (decrement, increment, thumb, the whole track, the track before and after the thumb) for it, and `Dynamic_list_widget::paint_art()` paints only the row icons. A new widget type that should look themed paints its art in `paint()` during a skin pass and its controls in `paint_skin()`; one without `paint_skin()` simply shows its art on the themed panel.
+
 ### Configuration System Integration
 
-All configuration is stored in `gump_info.txt`, reusing the existing file and `ReadInt()`-based parser infrastructure. Eleven gump sections are supported (plus the shortcut bar's own):
+All configuration is stored in `gump_info.txt`, reusing the existing file and `ReadInt()`-based parser infrastructure. Twelve gump sections are supported (plus the shortcut bar's own):
 
 | Section | Purpose |
 |---------|---------|
@@ -720,6 +734,7 @@ All configuration is stored in `gump_info.txt`, reusing the existing file and `R
 | `dynamic_lists` | Scrolling lists of the contents or of usecode rows |
 | `list_layout` | Layout of the container list view (Containers: List); key -1 = every container gump |
 | `gump_name` | Custom status bar name for gump clicks |
+| `gump_theme` | Whether a gump is drawn with the menu theme in a themed style (optional) |
 
 ---
 
@@ -811,6 +826,26 @@ Sets a custom name displayed in the status bar when the player clicks inside the
 
 **Writer support:** `shapewrite.cc` serializes `gump_name` back to `gump_info.txt` when dirty (for Exult Studio round-trip).
 
+### gump_theme
+```
+:gump_shape/mode
+```
+Whether the gump is drawn with the menu theme when a themed `menu_style` (Ultima, Modern or a theme file) is chosen. Optional; Exult's own `gump_info.txt` files have no entries.
+
+| `mode` | Effect |
+|--------|--------|
+| `0` | Always classic: the gump's art as it is, in every style |
+| `1` | Themed whenever a themed style is chosen |
+| no entry (default) | A dynamic container gump is themed when it has at least one dynamic button, text, shape, slider or list **and no `snap_zones`**; the container list view is themed unless the shown container's gump shape has mode 0 |
+
+Classic style never themes. Other values are reported on `stderr` (`gump_theme: invalid mode N, using the default`) and treated as no entry. Stored as `Gump_info::theme_mode` (-1 = no entry) with `gumptheme_from_patch`/`gumptheme_modified` flags like `gump_name`; read by `Gump_theme_functor` in `shapevga.cc` and written by `shapewrite.cc` after `gump_name` when dirty (Exult Studio round-trip).
+
+```
+%%section gump_theme
+:49/0
+%%endsection
+```
+
 ---
 
 ## Design Decisions
@@ -872,6 +907,7 @@ Sets a custom name displayed in the status bar when the player clicks inside the
 | `gumps/Dynamic_list_widget.h` | Data-driven list header |
 | `gumps/Dynamic_list_widget.cc` | Data-driven list implementation |
 | `gumps/Dynamic_list_layout.h` | List row arithmetic (engine-free) |
+| `gumps/Gump_skin.h` / `.cc` | (Themes) `Gump_theme::current()`/`wants()` and `Gump_skin`, the display-resolution skin layer of a themed gump with its drawing helpers |
 | `docs/dynamic_gumps.md` | This document |
 | `docs/dynamic_lists.md` | Dynamic lists |
 
@@ -917,6 +953,14 @@ Sets a custom name displayed in the status bar when the player clicks inside the
 | `gumps/Gump_manager.cc` | (List view) `Container_list_gump::is_available(shapenum)`; the layout's `open_fn` after opening |
 | `shapes/shapeinf/gumpinf.h` / `.cc`, `shapes/shapevga.cc`, `shapes/shapewrite.cc` | (List view) `List_layout`, `list_layout_map`, `get_list_layout()`; `list_layout` reader and writer |
 | `data/bg/gump_info.txt`, `data/si/gump_info.txt` | (List view) `list_layout` section with the default entry |
+| `gumps/Gump.h` / `.cc` | (Themes) `themable()` and `paint_skin()` virtuals, `skin_pass` and the owned `skin`, reset with the render layer |
+| `gumps/Gump_manager.cc` | (Themes) `render_gump_part_to_layer()`: art pass, skin layer, compositing, the game layer left transparent; the skin hidden with the layer |
+| `gumps/Dynamic_container_gump.h` / `.cc` | (Themes) `themable()`, the art-only skin pass in `paint()`, `paint_skin()` |
+| `gumps/Dynamic_text_widget.*`, `Dynamic_button.*`, `Dynamic_slider.*`, `Dynamic_list_widget.*` | (Themes) `paint_skin()`; `Dynamic_slider::part_rect()`; `Dynamic_list_widget::paint_art()` |
+| `gumps/Container_list_gump.h` / `.cc` | (Themes) themed list view: art pass and `paint_skin()` |
+| `shapes/shapeinf/gumpinf.h` / `.cc`, `shapes/shapevga.cc`, `shapes/shapewrite.cc` | (Themes) `theme_mode` with patch/modified flags; `gump_theme` reader and writer |
+| `data/bg/gump_info.txt`, `data/si/gump_info.txt` | (Themes) header comments describing `gump_theme` (no entries) |
+| `gumps/Makefile.am`, `Makefile.common`, `msvcstuff/vs2019/Exult.vcxproj(.filters)`, `ios/Exult.xcodeproj/project.pbxproj` | (Themes) `Gump_skin.cc`/`.h` |
 
 ---
 
@@ -965,3 +1009,4 @@ The frame management fix assumes that `default_frame` (frame 0) has the correct 
 | 2026-04-04 | theGreyWanderer-uc | Keyboard input, mousewheel dispatch, and auto-repeat for `Dynamic_container_gump` — enables `handle_kbd_event()`, `mousewheel_up/down()`, `update_gump()` overrides; added `Gump_manager::handle_mouse_wheel()` and `exult.cc` event routing; mousewheel forwards to all child widgets without per-widget hit test |
 | 2026-11-13 | lucky-git-repo | Dynamic lists (`dynamic_lists` section, `Dynamic_list_widget` reusing `Dynamic_slider`), selection-bound and boxed `dynamic_shapes`, list intrinsics and `UI_open_gump` at provisional slots |
 | 2026-11-13 | lucky-git-repo | Container list view rebuilt on `Dynamic_list_widget`, laid out by the new `list_layout` section (per-gump overrides, `off`, on-open/select/row-text hooks) |
+| 2026-11-14 | lucky-git-repo | Themed dynamic gumps and list view in the Ultima/Modern menu styles (skin layer, widget `paint_skin()`), `gump_theme` section |

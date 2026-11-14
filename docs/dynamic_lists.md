@@ -230,6 +230,15 @@ Paint order:
 
 The shades are tables made from the current palette, as the list view's, so they keep to the art's own tones in both games.
 
+### In a Themed Style
+
+With the Ultima or Modern menu style (see [modern_ui.md](modern_ui.md#themed-dynamic-gumps)), a list in a themed gump is drawn by `paint_skin()` on the gump's display-resolution skin instead, at the same rows and positions:
+1. **Rows** — filled with the theme's `panel` and `panel_alt` alternately; the selected row in `accent` with `text_on_accent`; disabled rows in `text_dim`. The left text and the right column are placed and shortened as in classic, measured in the theme's font (sized so a line fits `row_height`). The icons are art: `paint_art()` paints them in the gump's art pass and they are laid over the rows.
+2. **Count line** and **"Empty"** — in the theme's `small` face and `text_dim`.
+3. **Scroll controls** — Exult's own or the list's custom arrows are drawn as the themed slider: arrow plates, a groove and an `accent` thumb.
+
+Hit-testing, scrolling and the callbacks are the same in every style. A gump opts out with a `gump_theme` entry of mode 0 ([dynamic_gumps.md](dynamic_gumps.md#gump_theme)).
+
 ---
 
 ## Intrinsics
@@ -390,6 +399,18 @@ All three get the shown container as `item`, so the list intrinsics address the 
 ```
 
 `1310` would be a `fillWeights` function like the one in [A Weight Column](#a-weight-column-source-0), using field id 0.
+
+### Themed Look
+
+In the Ultima and Modern menu styles the list view is drawn with the theme (see [modern_ui.md](modern_ui.md#themed-dynamic-gumps)) and keeps the same layout:
+- a themed panel the size of the widened background (`width + extra_w` × `height`) in place of the scroll art;
+- the title and the panel texts (name, Quantity, Weight, the two hints) at the same positions in the theme's fonts, the title in the `heading` face, each name with an `accent` rule under it;
+- the divider as a dotted `frame_dark` line;
+- the rows and scroll controls as a themed list ([In a Themed Style](#in-a-themed-style));
+- ◀ ▶ as themed arrow plates;
+- the enlarged preview and the container's own picture bottom-left, with its objects and its own checkmark, unchanged: they are art, so the container still looks like itself.
+
+It is themed for every container unless the shown container's gump shape has a `gump_theme` entry of mode 0, which keeps the classic scroll. Hit areas, stepping and the hooks are the same as in classic style.
 
 ### What Stays in C++
 
