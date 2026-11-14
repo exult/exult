@@ -885,6 +885,13 @@ void ActionCheatScreen(const int* params) {
 	cheat.cheat_screen();
 }
 
+//  { ActionGameDoctor, 0, "Open Troubleshooting", cheat_keys, NONE },
+void ActionGameDoctor(const int* params) {
+	ignore_unused_variable_warning(params);
+	// The themed cheat window on Check-up, in every menu style.
+	Mui::open_doctor("doctor_checkup");
+}
+
 //  { ActionPickPocket, 1, "Toggle Pickpocket", cheat_keys, NONE },
 // params[0] = -1 for toggle, 0 for off, 1 for on
 void ActionPickPocket(const int* params) {

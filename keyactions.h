@@ -99,6 +99,7 @@ void ActionTime(const int* params);
 void ActionWizard(const int* params);
 void ActionHeal(const int* params);
 void ActionCheatScreen(const int* params);
+void ActionGameDoctor(const int* params);
 void ActionPickPocket(const int* params);
 void ActionNPCNumbers(const int* params);
 void ActionGrabActor(const int* params);
