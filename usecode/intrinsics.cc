@@ -4305,6 +4305,36 @@ USECODE_INTRINSIC(set_item_gump_position) {
 	return Usecode_value(1);
 }
 
+/*
+ *  A dynamic widget of type W with the given field id, for the text,
+ *  shape and slider intrinsics.  Looked up on the gump showing the item,
+ *  then on its owner's, then on the gump whose container is the item (a
+ *  dynamic gump on a bag inside another container); a gump without the
+ *  widget passes the search on to the next.
+ */
+
+template <typename W>
+static W* Find_gump_widget(Game_object* item, int fid) {
+	if (!item) {
+		return nullptr;
+	}
+	Gump_manager* gman  = Game_window::get_instance()->get_gump_man();
+	Game_object*  owner = item->get_owner();
+	Gump* gumps[]       = {gman->find_gump(item), owner ? gman->find_gump(owner) : nullptr, gman->find_gump(item, c_any_shapenum)};
+	for (Gump* gump : gumps) {
+		if (!gump) {
+			continue;
+		}
+		for (auto* elem : gump->get_elems()) {
+			auto* widget = dynamic_cast<W*>(elem);
+			if (widget && widget->get_field_id() == fid) {
+				return widget;
+			}
+		}
+	}
+	return nullptr;
+}
+
 USECODE_INTRINSIC(set_gump_text) {
 	// set_gump_text(item, field_id, text) - Sets the text of a dynamic text
 	// field on the gump displaying the given item's container.
@@ -4321,36 +4351,15 @@ USECODE_INTRINSIC(set_gump_text) {
 		return Usecode_value(0);
 	}
 
-	// Find the gump displaying this item (or its container).
-	Gump* gump = gumpman->find_gump(item);
-	if (!gump) {
-		Game_object* owner = item->get_owner();
-		if (owner) {
-			gump = gumpman->find_gump(owner);
-		}
-	}
-	if (!gump) {
+	auto* tw = Find_gump_widget<Dynamic_text_widget>(item, fid);
+	if (!tw) {
 		return Usecode_value(0);
 	}
-
-	// Search elems for matching Dynamic_text_widget
-	bool        found = false;
 	std::string translated(txt);
 	translate_usecode_text(translated);
-	for (auto* elem : gump->get_elems()) {
-		auto* tw = dynamic_cast<Dynamic_text_widget*>(elem);
-		if (tw && tw->get_field_id() == fid) {
-			tw->set_text(translated.c_str());
-			found = true;
-			break;
-		}
-	}
-
-	if (found) {
-		gwin->set_all_dirty();
-		return Usecode_value(1);
-	}
-	return Usecode_value(0);
+	tw->set_text(translated.c_str());
+	gwin->set_all_dirty();
+	return Usecode_value(1);
 }
 
 USECODE_INTRINSIC(set_gump_shape) {
@@ -4367,28 +4376,13 @@ USECODE_INTRINSIC(set_gump_shape) {
 	const int shnum = parms[2].get_int_value();
 	const int frnum = parms[3].get_int_value();
 
-	// Find the gump displaying this item (or its container).
-	Gump* gump = gumpman->find_gump(item);
-	if (!gump) {
-		Game_object* owner = item->get_owner();
-		if (owner) {
-			gump = gumpman->find_gump(owner);
-		}
-	}
-	if (!gump) {
+	auto* sw = Find_gump_widget<Dynamic_shape_widget>(item, fid);
+	if (!sw) {
 		return Usecode_value(0);
 	}
-
-	// Search elems for matching Dynamic_shape_widget
-	for (auto* elem : gump->get_elems()) {
-		auto* sw = dynamic_cast<Dynamic_shape_widget*>(elem);
-		if (sw && sw->get_field_id() == fid) {
-			sw->set_shape(shnum, frnum);
-			gwin->set_all_dirty();
-			return Usecode_value(1);
-		}
-	}
-	return Usecode_value(0);
+	sw->set_shape(shnum, frnum);
+	gwin->set_all_dirty();
+	return Usecode_value(1);
 }
 
 USECODE_INTRINSIC(set_slider_value) {
@@ -4402,26 +4396,13 @@ USECODE_INTRINSIC(set_slider_value) {
 	const int fid = parms[1].get_int_value();
 	const int val = parms[2].get_int_value();
 
-	Gump* gump = gumpman->find_gump(item);
-	if (!gump) {
-		Game_object* owner = item->get_owner();
-		if (owner) {
-			gump = gumpman->find_gump(owner);
-		}
-	}
-	if (!gump) {
+	auto* sl = Find_gump_widget<Dynamic_slider>(item, fid);
+	if (!sl) {
 		return Usecode_value(0);
 	}
-
-	for (auto* elem : gump->get_elems()) {
-		auto* sl = dynamic_cast<Dynamic_slider*>(elem);
-		if (sl && sl->get_field_id() == fid) {
-			sl->setselection(val);
-			gwin->set_all_dirty();
-			return Usecode_value(1);
-		}
-	}
-	return Usecode_value(0);
+	sl->setselection(val);
+	gwin->set_all_dirty();
+	return Usecode_value(1);
 }
 
 USECODE_INTRINSIC(get_slider_value) {
@@ -4433,24 +4414,8 @@ USECODE_INTRINSIC(get_slider_value) {
 	}
 	const int fid = parms[1].get_int_value();
 
-	Gump* gump = gumpman->find_gump(item);
-	if (!gump) {
-		Game_object* owner = item->get_owner();
-		if (owner) {
-			gump = gumpman->find_gump(owner);
-		}
-	}
-	if (!gump) {
-		return Usecode_value(0);
-	}
-
-	for (auto* elem : gump->get_elems()) {
-		auto* sl = dynamic_cast<Dynamic_slider*>(elem);
-		if (sl && sl->get_field_id() == fid) {
-			return Usecode_value(sl->getselection());
-		}
-	}
-	return Usecode_value(0);
+	auto* sl = Find_gump_widget<Dynamic_slider>(item, fid);
+	return Usecode_value(sl ? sl->getselection() : 0);
 }
 
 USECODE_INTRINSIC(set_gump_text_font) {
@@ -4465,26 +4430,13 @@ USECODE_INTRINSIC(set_gump_text_font) {
 	const int fid  = parms[1].get_int_value();
 	const int fnum = parms[2].get_int_value();
 
-	Gump* gump = gumpman->find_gump(item);
-	if (!gump) {
-		Game_object* owner = item->get_owner();
-		if (owner) {
-			gump = gumpman->find_gump(owner);
-		}
-	}
-	if (!gump) {
+	auto* tw = Find_gump_widget<Dynamic_text_widget>(item, fid);
+	if (!tw) {
 		return Usecode_value(0);
 	}
-
-	for (auto* elem : gump->get_elems()) {
-		auto* tw = dynamic_cast<Dynamic_text_widget*>(elem);
-		if (tw && tw->get_field_id() == fid) {
-			tw->set_font(fnum);
-			gwin->set_all_dirty();
-			return Usecode_value(1);
-		}
-	}
-	return Usecode_value(0);
+	tw->set_font(fnum);
+	gwin->set_all_dirty();
+	return Usecode_value(1);
 }
 
 /*
