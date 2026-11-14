@@ -169,6 +169,8 @@ EXTRA_DIST = \
 	mui/gen_mui_fonts.py \
 	mui/scan_config_keys.py \
 	mui/test_scan_config_keys.py \
+	doctor/uc_flags_to_table.py \
+	doctor/test_uc_flags_to_table.py \
 	README.format_usecode.md \
 	tests/test_format_usecode.py \
 	intrins1.txt \

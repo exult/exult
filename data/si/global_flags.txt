@@ -847,3 +847,16 @@
 #0x316	not-in-usecode
 #0x317	not-in-usecode
 0x318:BANE_MOONSHADE_DECORATION_CLEANUP
+# Added by tools/doctor/uc_flags_to_table.py from si_gflags.uc.
+0x266:SKULLCRUSHER_AUTOMATONS
+0x32A:SHAMINO_SAW_HIS_CASTLE
+0x32B:HOUND_HINT_BATLIN
+0x350:GAVE_FURCAP_BACK
+0x400:TIME_FORMAT_24_HOURS
+%%section descriptions
+0x47:Flag when Cantra is cured.
+0xD3:Haha! I am Dupre, bane of drunkenness!
+0xD4:Kneel before Shamino, bane of rapidly diminishing consequence...
+0xD5:I am Iolo! Bane of shooting-the-Avatar-through-the-heart-with-the-triple-crossbow!
+0x30D:He is a shape, not a real NPC.
+%%endsection descriptions
