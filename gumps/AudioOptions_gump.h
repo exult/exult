@@ -31,6 +31,7 @@ class Gump_button;
 
 class AudioOptions_gump : public Modal_gump {
 private:
+	friend class Mui_options_model;
 	enum button_ids {
 		id_first = 0,
 		id_apply = id_first,
