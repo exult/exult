@@ -81,7 +81,7 @@ enum class Mui_face : int {
  */
 struct Mui_theme {
 	struct Metrics {
-		// Pixels at a 720-px display height (see ui_scale()).
+		// Reference pixels, times ui_scale() on the display.
 		float unit      = 8;
 		float gap       = 8;
 		float control_h = 32;
@@ -125,9 +125,10 @@ struct Mui_theme {
 	static std::shared_ptr<Mui_theme> load(const std::string& name);
 	// Built-in themes plus any theme files found.
 	static std::vector<std::string> list();
-	// Display-height based scale for theme metrics, clamped to 1-4 and
-	// capped so a 1280x720 reference window always fits the display.
-	static float ui_scale(int display_w, int display_h);
+	// Scale for theme metrics: display-height based (1 at 960 px), limited
+	// by the width on narrow displays, clamped to 1-4, then times the
+	// user's menu size in percent (config/gameplay/menu_scale).
+	static float ui_scale(int display_w, int display_h, int percent = 100);
 
 	// Day palette helpers (palettes/0).
 	static uint8  nearest_index(uint32 rgb);

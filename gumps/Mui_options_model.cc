@@ -23,12 +23,15 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "Mui_options_model.h"
 
 #include "AudioOptions_gump.h"
+#include "Configuration.h"
 #include "Enabled_button.h"
 #include "GameDisplayOptions_gump.h"
 #include "GameEngineOptions_gump.h"
 #include "Gump_ToggleButton.h"
 #include "Gump_button.h"
 #include "InputOptions_gump.h"
+#include "Mui_router.h"
+#include "Mui_theme.h"
 #include "UIOptions_gump.h"
 #include "VideoOptions_gump.h"
 #include "gamewin.h"
@@ -213,6 +216,8 @@ std::vector<Mui_options_model::Row> Mui_options_model::build_table(Tab t) {
 	case Tab::ui: {
 		using G = UIOptions_gump;
 		rows    = {
+                row("menu_style", -1, 0xD22, 0xD23, "config/gameplay/menu_style"),
+                row("menu_scale", -1, 0xD28, 0xD29, "config/gameplay/menu_scale"),
                 row("size", G::id_size, 0xB00, 0xC76, "config/video/ui/width config/video/ui/height"),
                 row("scale_method", G::id_scale_method, 0xB01, 0xC77, "config/video/ui/scale_method"),
                 row("fill_mode", G::id_fill_mode, 0xB02, 0xC78, "config/video/ui/fill_mode"),
@@ -233,7 +238,9 @@ std::vector<Mui_options_model::Row> Mui_options_model::build_table(Tab t) {
                 row("layer_text_effects", G::id_layer_text_effect, 0xB0F, 0xC7C, "config/video/ui/text_effects", Apply::now,
 					   Kind::action, true),
         };
-		for (size_t i = 6; i < rows.size(); i++) {
+		rows[0].native_key = rows[0].keys;
+		rows[1].native_key = rows[1].keys;
+		for (size_t i = 8; i < rows.size(); i++) {
 			rows[i].indent = true;
 		}
 		break;
@@ -273,6 +280,68 @@ void Mui_options_model::create() {
 		break;
 	default:
 		break;
+	}
+	load_native();
+}
+
+/*
+ *  The settings of the themed menus (UI page): menu style and size.
+ */
+
+void Mui_options_model::load_native() {
+	native_value.clear();
+	for (auto& r : table) {
+		if (r.native_key.empty()) {
+			continue;
+		}
+		std::string cur;
+		r.choices.clear();
+		r.native_values.clear();
+		if (r.id == "menu_style") {
+			cur             = Mui::menu_style();
+			r.native_values = {"classic", "ultima", "modern"};
+			r.choices       = {msg(0xC05), msg(0xC01), msg(0xC02)};
+			// Theme files of the game or mod.
+			for (const auto& name : Mui_theme::list()) {
+				if (std::find(r.native_values.cbegin(), r.native_values.cend(), name) != r.native_values.cend()) {
+					continue;
+				}
+				const auto t = Mui_theme::load(name);
+				if (t) {
+					r.native_values.push_back(name);
+					r.choices.push_back(t->label.empty() ? name : t->label);
+				}
+			}
+		} else if (r.id == "menu_scale") {
+			cur                   = std::to_string(Mui::menu_scale());
+			std::vector<int> pcts = {75, 90, 100, 110, 125, 150};
+			if (std::find(pcts.cbegin(), pcts.cend(), Mui::menu_scale()) == pcts.cend()) {
+				pcts.push_back(Mui::menu_scale());
+				std::sort(pcts.begin(), pcts.end());
+			}
+			for (const int pct : pcts) {
+				r.native_values.push_back(std::to_string(pct));
+				r.choices.push_back(std::to_string(pct) + "%");
+			}
+		}
+		const auto it = std::find(r.native_values.cbegin(), r.native_values.cend(), cur);
+		if (it == r.native_values.cend()) {
+			// An unknown style: keep it as it is until another is chosen.
+			r.native_values.push_back(cur);
+			r.choices.push_back(cur);
+			native_value[r.id] = int(r.native_values.size()) - 1;
+		} else {
+			native_value[r.id] = int(it - r.native_values.cbegin());
+		}
+	}
+}
+
+void Mui_options_model::save_native() {
+	for (const auto& r : table) {
+		if (r.native_key.empty() || !row_changed(r) || r.value < 0 || r.value >= int(r.native_values.size())) {
+			continue;
+		}
+		config->set(r.native_key, r.native_values[size_t(r.value)], true);
 	}
 }
 
@@ -327,6 +396,11 @@ Gump_button* Mui_options_model::button(int id) const {
 
 void Mui_options_model::refresh() {
 	for (auto& r : table) {
+		if (!r.native_key.empty()) {
+			r.visible = true;
+			r.value   = native_value[r.id];
+			continue;
+		}
 		Gump_button* b = button(r.button);
 		r.visible      = b != nullptr;
 		r.choices.clear();
@@ -405,6 +479,12 @@ std::string Mui_options_model::label(const Row& r) const {
 }
 
 std::string Mui_options_model::help(const Row& r) const {
+	if (r.id == "menu_style" && r.value >= 0 && r.value < int(r.native_values.size())) {
+		// What the chosen style looks like.
+		const std::string& v    = r.native_values[size_t(r.value)];
+		const unsigned     desc = v == "classic" ? 0xD24 : v == "ultima" ? 0xD25 : v == "modern" ? 0xD26 : 0xD27;
+		return msg(r.help) + " " + msg(desc);
+	}
 	return msg(r.help);
 }
 
@@ -437,6 +517,11 @@ int Mui_options_model::baseline_value(const std::string& id) const {
 bool Mui_options_model::set_value(const std::string& id, int index) {
 	const Row* r = find(id);
 	if (!r || r->kind != Kind::choice || index < 0 || index >= int(r->choices.size()) || index == r->value) {
+		return false;
+	}
+	if (!r->native_key.empty()) {
+		native_value[id] = index;
+		refresh();
 		return false;
 	}
 	Gump_button* b = button(r->button);
@@ -500,6 +585,7 @@ void Mui_options_model::apply() {
 		static_cast<InputOptions_gump*>(g)->save_settings();
 		break;
 	case Tab::ui:
+		save_native();
 		static_cast<UIOptions_gump*>(g)->save_settings();
 		break;
 	default:

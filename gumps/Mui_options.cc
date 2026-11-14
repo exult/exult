@@ -22,6 +22,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "Mui_options.h"
 
+#include "Mui_router.h"
 #include "gamewin.h"
 #include "items.h"
 
@@ -607,7 +608,8 @@ void Mui_options_window::jump_to_key(const std::string& path) {
  */
 
 void Mui_options_window::apply_all() {
-	bool display_applied = false;
+	const std::string old_style       = Mui::menu_style();
+	bool              display_applied = false;
 	for (int t = 0; t < num_model_tabs; t++) {
 		Model& m = *models[size_t(t)];
 		if (!m.changed()) {
@@ -634,6 +636,16 @@ void Mui_options_window::apply_all() {
 	}
 	rebuild();
 	gwin->set_all_dirty();
+	// A new menu style (UI page) applies to every themed window; classic
+	// closes them and opens the classic screens instead.
+	const std::string style = Mui::menu_style();
+	if (style != old_style) {
+		if (Mui::themed()) {
+			switch_theme(style);
+		} else {
+			finish();
+		}
+	}
 }
 
 void Mui_options_window::reset_page() {

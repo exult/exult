@@ -23,6 +23,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "Mui_router.h"
 
 #include "Configuration.h"
+#include "Gamemenu_gump.h"
+#include "Gump_button.h"
 #include "Gump_manager.h"
 #include "Mui_cheats.h"
 #include "Mui_game_menu.h"
@@ -30,8 +32,11 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "Mui_options.h"
 #include "Mui_theme.h"
 #include "cheat.h"
+#include "exult.h"
 #include "gamewin.h"
 #include "mouse.h"
+
+#include <algorithm>
 
 namespace Mui {
 	std::string menu_style() {
@@ -39,6 +44,12 @@ namespace Mui {
 		// Reading does not create the key; classic is the default.
 		config->value("config/gameplay/menu_style", style, "classic");
 		return style.empty() ? std::string("classic") : style;
+	}
+
+	int menu_scale() {
+		int pct = 100;
+		config->value("config/gameplay/menu_scale", pct, 100);
+		return std::clamp(pct, 50, 200);
 	}
 
 	bool themed() {
@@ -57,8 +68,18 @@ namespace Mui {
 		if (!themed()) {
 			return false;
 		}
-		Mui_game_menu menu;
-		Game_window::get_instance()->get_gump_man()->do_modal_gump(&menu, Mouse::hand);
+		Gump_manager* gman = Game_window::get_instance()->get_gump_man();
+		bool          classic;
+		{
+			Mui_game_menu menu;
+			gman->do_modal_gump(&menu, Mouse::hand);
+			classic = menu.wants_classic();
+		}
+		if (classic && quitting_time == QUIT_TIME_NO) {
+			// The style was set to classic in Options: go on there.
+			Gamemenu_gump gmenu;
+			gman->do_modal_gump(&gmenu, Mouse::hand);
+		}
 		return true;
 	}
 

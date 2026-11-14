@@ -41,14 +41,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 namespace {
 	class Strings : public GumpStrings {
 	public:
-		static auto Ultima() {
-			return get_text_msg(0xC01 - msg_file_start);
-		}
-
-		static auto Modern() {
-			return get_text_msg(0xC02 - msg_file_start);
-		}
-
 		static auto Close() {
 			return get_text_msg(0xC07 - msg_file_start);
 		}
@@ -63,10 +55,6 @@ namespace {
 
 		static auto Cancel() {
 			return get_text_msg(0xC0A - msg_file_start);
-		}
-
-		static auto StyleHelp() {
-			return get_text_msg(0xC1B - msg_file_start);
 		}
 
 		static auto CloseHelp() {
@@ -107,7 +95,17 @@ bool Mui_window::ensure_layers() {
 	if (dw <= 0 || dh <= 0) {
 		return false;
 	}
+	const int pct = Mui::menu_scale();
 	if (layer >= 0 && dw == layer_w && dh == layer_h) {
+		if (pct != scale_percent) {
+			// The menu size was changed in Options.
+			scale_percent = pct;
+			scale         = Mui_theme::ui_scale(dw, dh, pct);
+			dirty         = true;
+			if (!need_build) {
+				rebuild();
+			}
+		}
 		return true;
 	}
 	destroy_layers();
@@ -126,8 +124,9 @@ bool Mui_window::ensure_layers() {
 	w->layer_set_alpha(scrim, static_cast<unsigned char>(theme_ptr->backdrop_alpha));
 	w->get_layer_ibuf(scrim)->fill8(theme_ptr->colour(Mui_colour::backdrop));
 	w->layer_set_dirty(scrim);
-	scale = Mui_theme::ui_scale(dw, dh);
-	dirty = true;
+	scale_percent = pct;
+	scale         = Mui_theme::ui_scale(dw, dh, pct);
+	dirty         = true;
 	// Size changed: relayout (the widget tree is kept).
 	if (!need_build) {
 		layout_all();
@@ -291,21 +290,10 @@ void Mui_window::rebuild_now() {
 	if (title_bar->get_children().empty()) {
 		title_bar.reset();
 	}
-	// Footer: theme switch on the left, page buttons on the right.
+	// Footer: page buttons on the right. The menu style is chosen on the UI
+	// page of Options.
 	help_line = std::make_unique<Mui_help_line>();
 	footer    = std::make_unique<Mui_box>(Mui_box::Dir::horizontal, "mui.footer");
-	int style = -1;
-	if (theme_ptr->name == "ultima") {
-		style = 0;
-	} else if (theme_ptr->name == "modern") {
-		style = 1;
-	}
-	auto* sw = footer->add<Mui_segmented>(
-			"mui.theme", std::vector<std::string>{Strings::Ultima(), Strings::Modern()}, style, [this](int i) {
-				switch_theme(i == 0 ? "ultima" : "modern");
-			});
-	sw->keys = {"ultima", "modern"};
-	sw->help = Strings::StyleHelp();
 	footer->add<Mui_spacer>(0, true);
 	build_footer(*footer);
 	for (Mui_widget* w : roots()) {

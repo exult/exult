@@ -30,9 +30,12 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 namespace Mui {
 	// config/gameplay/menu_style: classic|ultima|modern|<mod theme>.
 	std::string menu_style();
-	bool        themed();
-	bool        open_game_menu();
-	bool        open_options(const char* tab = nullptr);
+	// config/gameplay/menu_scale: size of the themed menus in percent of
+	// their normal size (50-200, default 100).
+	int  menu_scale();
+	bool themed();
+	bool open_game_menu();
+	bool open_options(const char* tab = nullptr);
 	// restored (if given) is set when a game was loaded there.
 	bool open_journey_log(bool* restored = nullptr);
 	bool open_cheats();

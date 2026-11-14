@@ -223,9 +223,14 @@ uint8 Mui_theme::blend_index(uint8 from, uint8 to, int num, int den) {
 	return idx;
 }
 
-float Mui_theme::ui_scale(int display_w, int display_h) {
-	const float s = std::min(display_h / 720.f, display_w / 1280.f);
-	return std::clamp(s, 1.f, 4.f);
+float Mui_theme::ui_scale(int display_w, int display_h, int percent) {
+	// Grow with the shorter side (a 1120x660 window takes about 70% of the
+	// height from 1440x960 up), never wider than the display allows, and
+	// never below the reference size on small displays. The width only
+	// limits narrow displays, so an ultrawide gets the same size as a 16:9
+	// display of the same height.
+	const float base = std::clamp(std::min(display_h / 960.f, display_w / 1440.f), 1.f, 4.f);
+	return std::clamp(base * float(std::clamp(percent, 50, 200)) / 100.f, 0.5f, 6.f);
 }
 
 void Mui_theme::apply(const Configuration& conf) {

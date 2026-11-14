@@ -1422,3 +1422,13 @@
 0xD1F:Tools
 0xD20:Game
 0xD21:setting found
+0xD22:Menu style
+0xD23:Look of the game menu, Options, Journey Log and cheat window.
+0xD24:Classic: Exult's original menu gumps; takes effect when the menu next opens.
+0xD25:Ultima: these menus in the brown gump look of Exult's original menus.
+0xD26:Modern: dark, flat panels with a blue accent and sans-serif type.
+0xD27:A menu style supplied by the game or mod.
+0xD28:Menu size
+0xD29:Size of these menus; 100% is a comfortable part of the screen, whatever its width.
+0xD2A:Confirm
+0xD2B:How many?

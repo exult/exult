@@ -167,6 +167,8 @@ void Mui_game_menu::journey_log() {
 	if (Mui::open_journey_log(&restored)) {
 		if (restored) {
 			finish();
+		} else {
+			follow_style();
 		}
 		return;
 	}
@@ -182,8 +184,8 @@ void Mui_game_menu::journey_log() {
 
 void Mui_game_menu::options() {
 	if (Mui::open_options()) {
-		// The theme or the language may have changed there.
-		switch_theme(Mui::menu_style());
+		// The menu style or the language may have changed there.
+		follow_style();
 		return;
 	}
 	options_page = true;
@@ -221,10 +223,21 @@ void Mui_game_menu::classic_options(int which) {
 
 void Mui_game_menu::cheats() {
 	if (Mui::open_cheats()) {
+		follow_style();
 		return;
 	}
 	cheat.cheat_screen();
 	set_dirty();
+}
+
+void Mui_game_menu::follow_style() {
+	if (!Mui::themed()) {
+		// Classic now: Mui::open_game_menu() opens the classic menu.
+		classic_now = true;
+		finish();
+		return;
+	}
+	switch_theme(Mui::menu_style());
 }
 
 void Mui_game_menu::quit() {

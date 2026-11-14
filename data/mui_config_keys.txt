@@ -143,7 +143,8 @@ config/audio/midi/win32_device|int|-1|-1..64|restart|Windows MIDI output device 
 config/audio/midi/*|string|||restart|A setting of one MIDI device (see the MIDI settings in Audio options).
 
 # --- Gameplay ----------------------------------------------------------------
-config/gameplay/menu_style|enum|classic|classic,ultima,modern|now|Look of the game menu, Options, Journey Log and cheat screens: classic gumps or a themed window. A mod theme name also works.
+config/gameplay/menu_style|enum|classic|classic,ultima,modern|now|Look of the game menu, Options, Journey Log and cheat screens: classic gumps or a themed window (Menu style on the UI page of Options). A mod theme name also works.
+config/gameplay/menu_scale|int|100|50..200|now|Size of the themed menus in percent. 100 grows with the shorter side of the screen, so a wide screen gets the same size as a 16:9 one of the same height.
 config/gameplay/menu_journey_view|enum|grid|grid,list|now|How the themed Journey Log shows the saves: as cards with screenshots (grid) or as a list.
 config/gameplay/menu_journey_sort|enum|newest|newest,oldest,name,day|now|Order of the saves in the themed Journey Log: newest first, oldest first, by name, or furthest in-game day first.
 config/gameplay/cheat|bool|no||now|Allow cheats (cheat keys and the cheat screen).

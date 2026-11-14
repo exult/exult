@@ -206,6 +206,7 @@ protected:
 private:
 	std::shared_ptr<Mui_theme>       theme_ptr;
 	float                            scale          = 1;
+	int                              scale_percent  = 100;
 	int                              layer          = -1;
 	int                              scrim          = -1;
 	int                              layer_w        = 0;

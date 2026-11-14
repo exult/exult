@@ -30,6 +30,11 @@ class Mui_game_menu : public Mui_window {
 public:
 	Mui_game_menu();
 
+	// The menu style was set to classic in a window opened from here.
+	bool wants_classic() const {
+		return classic_now;
+	}
+
 protected:
 	void build(Mui_box& body) override;
 
@@ -40,10 +45,12 @@ protected:
 
 private:
 	bool options_page = false;
+	bool classic_now  = false;
 	void journey_log();
 	void options();
 	void cheats();
 	void quit();
+	void follow_style();
 	void classic_options(int which);
 };
 

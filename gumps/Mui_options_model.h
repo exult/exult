@@ -67,6 +67,10 @@ public:
 		Apply       apply   = Apply::now;
 		Kind        kind    = Kind::choice;
 		bool        pending = false;    // Action edits state applied later.
+		// A setting of the themed menus themselves, with no classic button:
+		// its config key and the config value of each choice.
+		std::string              native_key;
+		std::vector<std::string> native_values;
 		// Live state, refreshed from the classic gump.
 		bool                     visible = false;
 		bool                     indent  = false;    // Sub-setting of the row above.
@@ -113,10 +117,13 @@ private:
 	std::unique_ptr<Modal_gump> gump;
 	std::vector<Row>            table;
 	std::map<std::string, int>  baseline;
+	std::map<std::string, int>  native_value;    // Choice of each native row.
 	bool                        touched = false;
 
 	void                    create();
 	static void             add_game_areas(VideoOptions_gump& g);
+	void                    load_native();
+	void                    save_native();
 	void                    refresh();
 	void                    mark_baseline();
 	Gump_button*            button(int id) const;
