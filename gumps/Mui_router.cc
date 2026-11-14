@@ -122,6 +122,18 @@ namespace Mui {
 		return true;
 	}
 
+	bool open_doctor(const char* section) {
+		Game_window* gwin = Game_window::get_instance();
+		if (!cheat() || !cheat.get_cheat_screen() || !gwin || gwin->is_in_exult_menu()) {
+			return false;
+		}
+		Mui_cheat_window window;
+		window.select_section(section ? section : "doctor_checkup");
+		gwin->get_gump_man()->do_modal_gump(&window, Mouse::hand);
+		gwin->set_all_dirty();
+		return true;
+	}
+
 	std::string cycle_menu_style() {
 		const std::string cur  = menu_style();
 		std::string       next = "classic";

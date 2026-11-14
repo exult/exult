@@ -1443,3 +1443,88 @@
 0xD29:Size of these menus; 100% is a comfortable part of the screen, whatever its width.
 0xD2A:Confirm
 0xD2B:How many?
+# Troubleshooting (themed cheat window sections, GAME_DOCTOR key)
+0xD40:Named flags
+0xD41:NPC browser
+0xD42:Item finder
+0xD43:Check-up
+0xD44:Safety & report
+0xD45:Open Troubleshooting
+0xD46:Find flags by number, name or description
+0xD47:on
+0xD48:off
+0xD49:No named flags match the search.
+0xD4A:Sets or clears the selected flag. You are asked first, and the change can be undone.
+0xD4B:Set the flag %s?
+0xD4C:Clear the flag %s?
+0xD4D:No description.
+0xD4E:Flag names come from the game's flag table and the mod's global_flags.txt. Changing a plot flag can break the story, so Troubleshooting saves a backup before the first change.
+0xD4F:Find NPCs by number or name
+0xD50:alive
+0xD51:dead
+0xD52:No NPC selected.
+0xD53:Schedule
+0xD54:Alignment
+0xD55:Flags
+0xD56:Health
+0xD57:Location
+0xD58:not on the map
+0xD59:Body
+0xD5A:Inventory
+0xD5B:carries nothing
+0xD5C:Bring here
+0xD5D:Go to
+0xD5E:Revive
+0xD5F:Restore schedule
+0xD60:Heal
+0xD61:Bring %s beside the Avatar?
+0xD62:Teleport the party to %s?
+0xD63:Revive %s?
+0xD64:Put %s back on their usual schedule?
+0xD65:Heal %s fully and cure poison and paralysis?
+0xD66:Pick an NPC to see where they are and what they carry. Every change asks first and can be undone.
+0xD67:none
+0xD68:Shape
+0xD69:Frame
+0xD6A:Quality
+0xD6B:Name contains
+0xD6C:Search
+0xD6D:-1 means any. Searches every loaded map, inside containers and NPC inventories.
+0xD6E:items found
+0xD6F:No items found.
+0xD70:Go to item
+0xD71:Fetch
+0xD72:Teleport the party to the %s?
+0xD73:Put the %s in the Avatar's pack?
+0xD74:map
+0xD75:in
+0xD76:Run check-up
+0xD77:Checks the game against the rules of the game and the mod: quest items, NPCs the story needs, locked doors and chests without a key, and lost objects.
+0xD78:findings
+0xD79:No problems found
+0xD7A:Not run yet.
+0xD7B:Go to finding
+0xD7C:Teleport the party to where "%s" points?
+0xD7D:finding
+0xD7E:Backup
+0xD7F:No backup yet
+0xD80:Slot %s: %s
+0xD81:Undo history
+0xD82:Nothing to undo.
+0xD83:Undo last change
+0xD84:Undo "%s"?
+0xD85:Export bug report
+0xD86:Writes a zip with the current save, the Exult, game and mod versions, the recent log, the set flags, a state dump and the check-up.
+0xD87:Report written to %s
+0xD88:No report written yet.
+0xD89:Before the first Troubleshooting change the game is saved to a free slot, which shows in the Journey Log. The last 5 changes can be undone.
+0xD8A:The report could not be written: %s
+0xD8B:Go to %s
+0xD8C:q
+0xD8D:Give a shape, frame, quality or name to search for.
+0xD8E:Searches the world; this can take a moment.
+0xD8F:Bug report
+0xD90:Go to item teleports the party to the item; Fetch puts it in the Avatar's pack.
+0xD91:Teleports the party to where the selected finding points.
+0xD92:Takes back the last Troubleshooting change.
+0xD93:item found

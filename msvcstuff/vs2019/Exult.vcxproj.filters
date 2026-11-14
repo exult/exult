@@ -749,6 +749,9 @@
     <ClCompile Include="..\..\gumps\Mui_cheats.cc">
       <Filter>gumps</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\gumps\Mui_cheats_doctor.cc">
+      <Filter>gumps</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\gumps\Mui_config_editor.cc">
       <Filter>gumps</Filter>
     </ClCompile>

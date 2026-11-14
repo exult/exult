@@ -39,6 +39,9 @@ namespace Mui {
 	// restored (if given) is set when a game was loaded there.
 	bool open_journey_log(bool* restored = nullptr);
 	bool open_cheats();
+	// The cheat window on a Troubleshooting section (e.g. "doctor_checkup") in
+	// any menu style; classic uses the Modern theme. Needs cheats on.
+	bool open_doctor(const char* section);
 	// Cycle classic -> ultima -> modern -> classic and save it.
 	std::string cycle_menu_style();
 }    // namespace Mui

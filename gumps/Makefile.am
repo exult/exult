@@ -67,6 +67,7 @@ libgumps_la_SOURCES = \
 	Mixer_gump.h \
 	Mui_cheats.cc \
 	Mui_cheats.h \
+	Mui_cheats_doctor.cc \
 	Mui_config_editor.cc \
 	Mui_config_editor.h \
 	Mui_config_meta.cc \

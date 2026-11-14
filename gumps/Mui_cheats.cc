@@ -57,7 +57,8 @@ namespace {
 		}
 
 		static auto Section(int i) {
-			return Msg(0xCC6 + unsigned(i));
+			// The Troubleshooting sections' labels follow at 0xD40.
+			return i < 7 ? Msg(0xCC6 + unsigned(i)) : Msg(0xD40 + unsigned(i - 7));
 		}
 
 		static auto Warning() {
@@ -153,8 +154,10 @@ namespace {
 		grab
 	};
 
-	const char* const section_keys[] = {"player", "world", "npcs", "teleport", "flags", "usecode", "mapedit"};
-	constexpr int     num_sections   = int(std::size(section_keys));
+	const char* const section_keys[]
+			= {"player",  "world",        "npcs",        "teleport",     "flags",          "usecode",
+			   "mapedit", "doctor_flags", "doctor_npcs", "doctor_items", "doctor_checkup", "doctor_safety"};
+	constexpr int num_sections = int(std::size(section_keys));
 
 	// Remembered for the session.
 	int last_section = 0;
@@ -203,6 +206,17 @@ Mui_cheat_window::Mui_cheat_window() : Mui_window(Strings::Cheats()), cscreen(ch
 
 Mui_cheat_window::~Mui_cheat_window() {
 	last_section = tab_index;
+}
+
+void Mui_cheat_window::select_section(const std::string& key) {
+	for (int i = 0; i < num_sections; i++) {
+		if (key == section_keys[i]) {
+			tab_index = i;
+			message.clear();
+			rebuild();
+			return;
+		}
+	}
 }
 
 void Mui_cheat_window::adjust_theme(Mui_theme& t) const {
@@ -279,6 +293,8 @@ void Mui_cheat_window::build(Mui_box& body) {
 	flag_name    = nullptr;
 	flag_toggle  = nullptr;
 	flag_count   = nullptr;
+	clear_doctor_widgets();
+	building     = true;
 	body.gap     = 8;
 	build_warning(body);
 	switch (tab_index) {
@@ -300,11 +316,27 @@ void Mui_cheat_window::build(Mui_box& body) {
 	case 6:
 		build_map_editor(body);
 		break;
+	case 7:
+		build_doctor_flags(body);
+		break;
+	case 8:
+		build_doctor_npcs(body);
+		break;
+	case 9:
+		build_doctor_items(body);
+		break;
+	case 10:
+		build_doctor_checkup(body);
+		break;
+	case 11:
+		build_doctor_safety(body);
+		break;
 	default:
 		build_player(body);
 		break;
 	}
 	build_message(body);
+	building = false;
 }
 
 void Mui_cheat_window::build_warning(Mui_box& body) {
@@ -1032,6 +1064,11 @@ void Mui_cheat_window::run_classic(CheatScreen::Which which, Actor* actor, unsig
 }
 
 void Mui_cheat_window::invalidate_all() {
+	// The window lays out after build(); on the first build its frame
+	// widgets do not exist yet.
+	if (building) {
+		return;
+	}
 	relayout();
 	set_dirty();
 }
