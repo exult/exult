@@ -646,7 +646,7 @@ A scrolling list of rows with a selection. Rows come from the gump's container (
 :200/1/20/30/123/8/12/2/0/-1/-1/-1/-1/-1/-1/3
 ```
 
-Full documentation: [dynamic_lists.md](dynamic_lists.md).
+Full documentation: [dynamic_lists.md](dynamic_lists.md). A ready-made shop built from these widgets ships for BG and SI mods: [shop_kit.md](shop_kit.md).
 
 ---
 

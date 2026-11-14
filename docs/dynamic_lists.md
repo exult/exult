@@ -20,6 +20,8 @@
 
 The list view of containers (Game Display Options, Containers: List) is a second host for the widget, laid out by the `list_layout` section; see [Container List View](#container-list-view-list_layout).
 
+See also: [Shop kit](shop_kit.md), a ready-made shop for BG and SI mods built on a source-1 list.
+
 ---
 
 ## Table of Contents
@@ -259,6 +261,8 @@ The shades are tables made from the current palette, as the list view's, so they
 ---
 
 ## Usecode Integration
+
+See also: [Shop kit](shop_kit.md) for a complete shop (wares list, preview, quantity spinner and a Yes button) that a mod includes instead of writing its own.
 
 ### A Quest Log (Source 1)
 
