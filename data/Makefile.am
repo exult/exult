@@ -29,7 +29,10 @@ EXULT_FLX_OBJECTS = \
 	checkmark_background.shp \
 	mixer.shp \
 	fs_badges.shp	\
-	fonts/font_map.txt
+	fonts/font_map.txt \
+	mui_fonts.vga \
+	mui_ultima.thm \
+	mui_modern.thm
 
 EXULT_FONTS_ORIGINAL_VGA_OBJECTS = \
 	fonts/original.in \
@@ -279,6 +282,7 @@ EXTRA_DIST = flx.in $(EXULT_FLX_OBJECTS) $(EXULT_BG_FLX_OBJECTS) \
 	$(EXULT_SI_FLX_OBJECTS) $(ESTUDIO_NEW_FILES) midisfx.flx \
 	$(EXULT_BG_INTROSFX_MT32_OBJECTS) $(EXULT_BG_INTROSFX_SB_OBJECTS) \
 	exultmsg.txt bginclude.uc marketpl.mid myusecode.uc \
+	fonts/DejaVu-LICENSE.txt \
 	$(EXULT_BG_PAPERDOL_VGA_OBJECTS) $(EXULT_BG_MR_FACES_VGA_OBJECTS) \
 	$(EXULT_FONTS_ORIGINAL_VGA_OBJECTS) $(EXULT_FONTS_SERIF_VGA_OBJECTS) \
 	$(EXULT_SHORTCUTBAR_VGA)

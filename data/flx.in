@@ -32,3 +32,6 @@ fonts_original.vga
 fonts_serif.vga
 shortcutbar.vga
 ./fonts/font_map.txt
+./mui_fonts.vga
+./mui_ultima.thm
+./mui_modern.thm
