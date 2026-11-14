@@ -1399,6 +1399,9 @@
     <ClInclude Include="..\..\gumps\Dynamic_slider.h">
       <Filter>gumps</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\gumps\Dynamic_list_layout.h">
+      <Filter>gumps</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\gamemgr\bggame.h">
       <Filter>gamemgr</Filter>
     </ClInclude>

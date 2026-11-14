@@ -365,6 +365,7 @@
 		8A123C3D2F41EA3600155333 /* Dynamic_shape_widget.cc */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = Dynamic_shape_widget.cc; path = ../gumps/Dynamic_shape_widget.cc; sourceTree = SOURCE_ROOT; };
 		8A123C3F2F41EA3600155333 /* Dynamic_slider.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = Dynamic_slider.h; path = ../gumps/Dynamic_slider.h; sourceTree = SOURCE_ROOT; };
 		8A123C402F41EA3600155333 /* Dynamic_slider.cc */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = Dynamic_slider.cc; path = ../gumps/Dynamic_slider.cc; sourceTree = SOURCE_ROOT; };
+		C948FE84FE968864E8CEB5ED /* Dynamic_list_layout.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = Dynamic_list_layout.h; path = ../gumps/Dynamic_list_layout.h; sourceTree = SOURCE_ROOT; };
 		8A1C581B1FE7D91B00738E40 /* libz.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libz.tbd; path = usr/lib/libz.tbd; sourceTree = SDKROOT; };
 		8A2515082E3DA1D500CCE820 /* SDL.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = SDL.xcodeproj; path = SDL/Xcode/SDL/SDL.xcodeproj; sourceTree = "<group>"; };
 		8A33B5C92C2051B800075AF4 /* Slider_widget.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Slider_widget.h; path = ../gumps/Slider_widget.h; sourceTree = "<group>"; };
@@ -1446,6 +1447,7 @@
 				8A123C3D2F41EA3600155333 /* Dynamic_shape_widget.cc */,
 				8A123C3F2F41EA3600155333 /* Dynamic_slider.h */,
 				8A123C402F41EA3600155333 /* Dynamic_slider.cc */,
+				C948FE84FE968864E8CEB5ED /* Dynamic_list_layout.h */,
 				8A33B5E52C2051B800075AF4 /* Scrollable_widget.cc */,
 				8A33B5E72C2051B800075AF4 /* Scrollable_widget.h */,
 				8A33B5E82C2051B800075AF4 /* DropDown_widget.cc */,
