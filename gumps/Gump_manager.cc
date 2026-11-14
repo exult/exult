@@ -33,6 +33,7 @@
 #include "Dynamic_container_gump.h"
 #include "Face_stats.h"
 #include "Gump.h"
+#include "Gump_skin.h"
 #include "Jawbone_gump.h"
 #include "Paperdoll_gump.h"
 #include "Scroll_gump.h"
@@ -158,6 +159,9 @@ void Gump_manager::render_gump_part_to_layer(Gump* g, int z, int part, bool is_h
 		if (layer >= 0) {
 			gwin->layer_set_visible(layer, false);
 		}
+		if (part == 0 && g->skin) {
+			g->skin->hide();
+		}
 		return;
 	}
 	TileRect b = content;
@@ -165,6 +169,9 @@ void Gump_manager::render_gump_part_to_layer(Gump* g, int z, int part, bool is_h
 	if (b.w <= 0 || b.h <= 0) {
 		if (layer >= 0) {
 			gwin->layer_set_visible(layer, false);
+		}
+		if (part == 0 && g->skin) {
+			g->skin->hide();
 		}
 		return;
 	}
@@ -200,9 +207,17 @@ void Gump_manager::render_gump_part_to_layer(Gump* g, int z, int part, bool is_h
 	// buffer, so the two mode-3 groups each land in their own layer.
 	lbuf->clear_clip();
 	lbuf->fill8(255);    // Fully transparent.
+	// A themed gump paints only its art here (skin_pass); its skin layer
+	// gets the panel, texts and controls below.
+	std::shared_ptr<const Mui_theme> theme;
+	if (!is_hud && part == 0 && g->themable()) {
+		theme = Gump_theme::current();
+	}
+	g->skin_pass        = theme != nullptr;
 	Image_buffer8* prev = gwin->push_render_target(lbuf);
 	g->paint_shifted(-b.x, -b.y);
 	gwin->pop_render_target(prev);
+	g->skin_pass = false;
 
 	Image_window* iwin = gwin->get_win();
 	const float   f    = iwin->get_ui_scale_factor(ui_kind_for(g, is_hud));
@@ -284,6 +299,23 @@ void Gump_manager::render_gump_part_to_layer(Gump* g, int z, int part, bool is_h
 		gwin->layer_set_index_argb(layer, Shape_manager::get_instance()->get_translucency_argb());
 	} else {
 		gwin->layer_set_index_argb(layer, nullptr);
+	}
+	// The skin: same destination, the art composited over it. The game
+	// layer is then left transparent, but visible, for input mapping.
+	if (theme) {
+		if (!g->skin) {
+			g->skin = std::make_unique<Gump_skin>();
+		}
+		if (g->skin->begin(*theme, b, static_cast<int>(dx), static_cast<int>(dy), static_cast<int>(dw), static_cast<int>(dh), z)) {
+			g->paint_skin(*g->skin);
+			g->skin->compose(lbuf);
+			g->skin->end();
+			lbuf->fill8(255);
+		} else {
+			g->skin->hide();
+		}
+	} else if (part == 0 && g->skin) {
+		g->skin.reset();
 	}
 	gwin->layer_set_dirty(layer);
 }

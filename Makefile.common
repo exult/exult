@@ -184,6 +184,7 @@ GUMPS_OBJS:= \
 	gumps/Gump.o \
 	gumps/Gump_button.o \
 	gumps/Gump_manager.o \
+	gumps/Gump_skin.o \
 	gumps/Gump_widget.o \
 	gumps/Gump_ToggleButton.o \
 	gumps/ShortcutBar_gump.o \

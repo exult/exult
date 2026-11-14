@@ -37,6 +37,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #	pragma GCC diagnostic pop
 #endif    // __GNUC__
 
+#include <memory>
 #include <vector>
 
 class Checkmark_button;
@@ -45,6 +46,7 @@ class Game_object;
 class Game_window;
 class Gump_button;
 class Gump_manager;
+class Gump_skin;
 class Gump_widget;
 
 // Base Class shared by Gumps and Widgetss
@@ -309,6 +311,23 @@ public:
 	// here; Gump_manager owns the create/render/destroy lifecycle.
 	int      render_layer = -1;
 	TileRect layer_bounds{0, 0, 0, 0};
+
+	// Themed gumps (see Gump_skin.h): while skin_pass is set, paint() draws
+	// only the gump's art into the layer; the skin is the display-resolution
+	// layer with the themed panel and controls, composited over it. Both
+	// are owned by Gump_manager's render code; no skin when classic.
+	bool                       skin_pass = false;
+	std::unique_ptr<Gump_skin> skin;
+
+	// Drawn with the menu theme when a themed menu style is chosen?
+	virtual bool themable() const {
+		return false;
+	}
+
+	// Paint the themed panel, texts and controls (game coordinates).
+	virtual void paint_skin(Gump_skin& sk) {
+		ignore_unused_variable_warning(sk);
+	}
 
 	// Optional SECOND overlay layer + bounds, for HUD gumps that render as two
 	// independently anchored parts (Face_stats mode 3: portraits split to the

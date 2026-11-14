@@ -124,6 +124,8 @@ libgumps_la_SOURCES = \
 	Jawbone_gump.h	\
 	Gump_manager.cc	\
 	Gump_manager.h	\
+	Gump_skin.cc	\
+	Gump_skin.h	\
 	Face_stats.cc	\
 	Face_stats.h	\
 	Text_button.cc \

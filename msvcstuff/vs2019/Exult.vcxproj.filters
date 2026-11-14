@@ -707,6 +707,9 @@
     <ClCompile Include="..\..\gumps\Dynamic_list_widget.cc">
       <Filter>gumps</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\gumps\Gump_skin.cc">
+      <Filter>gumps</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\gamemgr\devgame.cc">
       <Filter>gamemgr</Filter>
     </ClCompile>
@@ -1460,6 +1463,9 @@
       <Filter>gumps</Filter>
     </ClInclude>
     <ClInclude Include="..\..\gumps\Dynamic_list_widget.h">
+      <Filter>gumps</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\gumps\Gump_skin.h">
       <Filter>gumps</Filter>
     </ClInclude>
     <ClInclude Include="..\..\gumps\Dynamic_list_layout.h">

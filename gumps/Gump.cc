@@ -29,6 +29,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "Dynamic_text_widget.h"
 #include "Gump_button.h"
 #include "Gump_manager.h"
+#include "Gump_skin.h"
 #include "U7obj.h"
 #include "cheat.h"
 #include "contain.h"
@@ -151,6 +152,7 @@ void Gump::free_render_layer() {
 	}
 	render_layer2 = -1;
 	layer_bounds2 = TileRect(0, 0, 0, 0);
+	skin.reset();
 }
 
 /*
