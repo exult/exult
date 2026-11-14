@@ -26,6 +26,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "Gamemenu_gump.h"
 #include "Gump_button.h"
 #include "Gump_manager.h"
+#include "Mui_journey_log.h"
 #include "Mui_router.h"
 #include "Mui_window.h"
 #include "Newfile_gump.h"
@@ -37,6 +38,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "keyactions.h"
 #include "listfiles.h"
 #include "mouse.h"
+#include "vgafile.h"
 
 #include <SDL3/SDL.h>
 
@@ -54,6 +56,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #	include <cxxabi.h>
 #endif
 
+// Save game compression level (exult.cc).
+extern int save_compression;
+
 namespace {
 	struct State {
 		bool                     init    = false;
@@ -66,8 +71,9 @@ namespace {
 		int                      fail      = 0;
 		bool                     log_open  = false;    // Log the next gump seen.
 		std::string              last_opened;
-		Mui_window*              window  = nullptr;
-		bool                     mod_set = false;
+		Mui_window*              window   = nullptr;
+		bool                     mod_set  = false;
+		bool                     restored = false;    // Last Journey Log loaded a game.
 	};
 
 	State& state() {
@@ -268,7 +274,13 @@ namespace {
 		if (what == "menu") {
 			ActionMenuGump(nullptr);
 		} else if (what == "journey") {
-			ActionFileGump(nullptr);
+			bool restored = false;
+			if (Mui::open_journey_log(&restored)) {
+				st.restored = restored;
+				std::cout << "MUI-TEST info journey closed, restored " << (restored ? "yes" : "no") << std::endl;
+			} else {
+				ActionFileGump(nullptr);
+			}
 		} else if (what == "options") {
 			if (!Mui::open_options(arg.empty() ? nullptr : arg.c_str())) {
 				Gamemenu_gump menu;
@@ -380,8 +392,13 @@ namespace {
 				expect(false, "key " + rest, "unknown key");
 			}
 		} else if (cmd == "type") {
+			// "..." keeps leading and trailing spaces.
+			std::string text = rest;
+			if (text.size() >= 2 && text.front() == '"' && text.back() == '"') {
+				text = text.substr(1, text.size() - 2);
+			}
 			if (win) {
-				win->text_input(rest.c_str());
+				win->text_input(text.c_str());
 			}
 		} else if (cmd == "select") {
 			std::string id;
@@ -476,11 +493,72 @@ namespace {
 			name          = nb == std::string::npos ? std::string() : name.substr(nb);
 			gwin->write();
 			gwin->save_gamedat(num, name.c_str());
+		} else if (cmd == "save-compression") {
+			// 0 = Flex saves, 1-2 = zip (when built with zip support).
+			args >> save_compression;
 		} else if (cmd == "expect-saves") {
 			int want = 0;
 			args >> want;
 			const int got = count_saves();
 			expect(got == want, "saves " + std::to_string(want), std::to_string(got));
+			if (auto* log = dynamic_cast<Mui_journey_window*>(win)) {
+				expect(log->saves_count() == want, "journey saves " + std::to_string(want), std::to_string(log->saves_count()));
+			}
+		} else if (cmd == "expect-visible") {
+			int want = 0;
+			args >> want;
+			auto* log = dynamic_cast<Mui_journey_window*>(win);
+			expect(log && log->visible_count() == want, "journey visible " + std::to_string(want),
+				   log ? std::to_string(log->visible_count()) : "no Journey Log");
+		} else if (cmd == "expect-card-name") {
+			int         index = 0;
+			std::string want;
+			args >> index;
+			std::getline(args, want);
+			const auto wb         = want.find_first_not_of(' ');
+			want                  = wb == std::string::npos ? std::string() : want.substr(wb);
+			auto*             log = dynamic_cast<Mui_journey_window*>(win);
+			const std::string got = log ? log->visible_name(index) : "no Journey Log";
+			expect(got == want, "journey card " + std::to_string(index) + " = " + want, got);
+		} else if (cmd == "select-card") {
+			auto* log = dynamic_cast<Mui_journey_window*>(win);
+			if (!log || !log->select_by_name(rest)) {
+				expect(false, "select-card " + rest, log ? "no such card" : "no Journey Log");
+			}
+		} else if (cmd == "expect-save-name") {
+			// Name stored in a savegame file, read as Newfile_gump does.
+			int         num = 0;
+			std::string want;
+			args >> num;
+			std::getline(args, want);
+			const auto wb                       = want.find_first_not_of(' ');
+			want                                = wb == std::string::npos ? std::string() : want.substr(wb);
+			char*                       name    = nullptr;
+			SaveGame_Details*           details = nullptr;
+			SaveGame_Party*             party   = nullptr;
+			std::unique_ptr<Shape_file> shot;
+			bool                        readable = false;
+			try {
+				readable = gwin->get_saveinfo(num, name, shot, details, party);
+			} catch (const exult_exception&) {
+				readable = false;
+			}
+			const std::string got = name ? std::string(name) : "<none>";
+			delete[] name;
+			delete details;
+			delete[] party;
+			expect(readable && details != nullptr && got == want, "save " + std::to_string(num) + " name = " + want,
+				   got + (readable ? "" : " (unreadable)"));
+		} else if (cmd == "restore-game") {
+			// The calls of Newfile_gump::load().
+			int num = 0;
+			args >> num;
+			gwin->restore_gamedat(num);
+			gwin->read();
+			std::cout << "MUI-TEST info restored save " << num << std::endl;
+		} else if (cmd == "expect-restored") {
+			const bool want = rest == "yes";
+			expect(st.restored == want, "journey restored " + rest, st.restored ? "yes" : "no");
 		} else if (cmd == "close") {
 			if (win) {
 				win->finish();

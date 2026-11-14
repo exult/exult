@@ -1286,3 +1286,47 @@
 0xC93:(none)
 0xC94:This section only holds sub-sections. Pick one on the left.
 0xC95:key
+0xC96:Search saves
+0xC97:Newest first
+0xC98:Oldest first
+0xC99:Name A-Z
+0xC9A:Furthest in game
+0xC9B:Cards
+0xC9C:List
+0xC9D:New save
+0xC9E:Save the current game to a free slot
+0xC9F:Quick save
+0xCA0:Unreadable
+0xCA1:Day
+0xCA3:Saved at
+0xCA4:In-game time
+0xCA5:Times saved
+0xCA6:Party
+0xCA7:Lvl
+0xCA8:HP
+0xCA9:Game
+0xCAA:Running build
+0xCAB:Load
+0xCAC:Save here
+0xCAD:Rename
+0xCAE:Delete
+0xCAF:Name for the new save:
+0xCB0:New name for this save:
+0xCB1:Okay to write over existing saved game?
+0xCB2:Okay to delete saved game?
+0xCB3:The save could not be renamed.
+0xCB4:saves
+0xCB5:save
+0xCB6:No saves match the search.
+0xCB7:Order of the saves.
+0xCB8:Show the saves as cards or as a list.
+0xCB9:Load the selected save (Enter).
+0xCBA:Write the current game into the selected slot.
+0xCBB:Change the name of the selected save (F2).
+0xCBC:Delete the selected save file (Delete).
+0xCBD:Find saves by name (/).
+0xCBE:Arrows pick a save, Enter loads it, F2 renames it, Delete removes it, / searches.
+0xCBF:File
+0xCC2:Not saved yet
+0xCC3:The game could not be saved.
+0xCC4:Mod

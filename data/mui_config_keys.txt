@@ -144,6 +144,8 @@ config/audio/midi/*|string|||restart|A setting of one MIDI device (see the MIDI 
 
 # --- Gameplay ----------------------------------------------------------------
 config/gameplay/menu_style|enum|classic|classic,ultima,modern|now|Look of the game menu, Options, Journey Log and cheat screens: classic gumps or a themed window. A mod theme name also works.
+config/gameplay/menu_journey_view|enum|grid|grid,list|now|How the themed Journey Log shows the saves: as cards with screenshots (grid) or as a list.
+config/gameplay/menu_journey_sort|enum|newest|newest,oldest,name,day|now|Order of the saves in the themed Journey Log: newest first, oldest first, by name, or furthest in-game day first.
 config/gameplay/cheat|bool|no||now|Allow cheats (cheat keys and the cheat screen).
 config/gameplay/feeding|enum|manual|manual,automatic,disabled|now|How the party eats when cheats are on: manual, automatic, or not at all (disabled).
 config/gameplay/skip_splash|bool|no||restart|Skip the Origin and Exult splash screens and go straight to the menu.

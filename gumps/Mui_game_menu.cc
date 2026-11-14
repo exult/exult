@@ -163,13 +163,17 @@ void Mui_game_menu::build(Mui_box& body) {
 }
 
 void Mui_game_menu::journey_log() {
-	if (Mui::open_journey_log()) {
+	bool restored = false;
+	if (Mui::open_journey_log(&restored)) {
+		if (restored) {
+			finish();
+		}
 		return;
 	}
-	// Classic save/restore screen until the themed Journey Log exists.
+	// Classic save/restore screen (themed menus without a Journey Log).
 	auto* fileio = new Newfile_gump();
 	gumpman->do_modal_gump(fileio, Mouse::hand);
-	const bool restored = fileio->restored_game();
+	restored = fileio->restored_game();
 	delete fileio;
 	if (restored) {
 		finish();

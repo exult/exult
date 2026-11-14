@@ -25,6 +25,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "Configuration.h"
 #include "Gump_manager.h"
 #include "Mui_game_menu.h"
+#include "Mui_journey_log.h"
 #include "Mui_options.h"
 #include "Mui_theme.h"
 #include "gamewin.h"
@@ -70,9 +71,21 @@ namespace Mui {
 		return true;
 	}
 
-	bool open_journey_log() {
-		// There is no themed Journey Log yet.
-		return false;
+	bool open_journey_log(bool* restored) {
+		if (restored) {
+			*restored = false;
+		}
+		if (!themed()) {
+			return false;
+		}
+		Game_window*       gwin = Game_window::get_instance();
+		Mui_journey_window log;
+		gwin->get_gump_man()->do_modal_gump(&log, Mouse::hand);
+		gwin->set_all_dirty();
+		if (restored) {
+			*restored = log.restored_game();
+		}
+		return true;
 	}
 
 	bool open_cheats() {

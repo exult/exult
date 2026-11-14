@@ -183,6 +183,13 @@ protected:
 
 	int  tab_index = 0;
 	void rebuild();    // Rebuild all widgets later (keeps tab and focus id).
+
+	// Lay the widgets out again after a content size changed (keeps the
+	// widgets, focus and scroll position).
+	void relayout() {
+		layout_all();
+	}
+
 	// Rebuild later and then focus the widget with this id.
 	void rebuild(const std::string& focus_id);
 

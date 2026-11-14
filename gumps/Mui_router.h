@@ -33,8 +33,9 @@ namespace Mui {
 	bool        themed();
 	bool        open_game_menu();
 	bool        open_options(const char* tab = nullptr);
-	bool        open_journey_log();
-	bool        open_cheats();
+	// restored (if given) is set when a game was loaded there.
+	bool open_journey_log(bool* restored = nullptr);
+	bool open_cheats();
 	// Cycle classic -> ultima -> modern -> classic and save it.
 	std::string cycle_menu_style();
 }    // namespace Mui
