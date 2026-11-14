@@ -299,6 +299,18 @@
 						Verifies that the files in static dir are not corrupt.<br/>
 						Only valid if used together with <key>--bg</key>, <key>--si</key>, <key>--fov</key>,
 						<key>--ss</key>, <key>--sib</key> or <key>--game gamename</key>; you cannot specify a mod with this flag.</li>
+					<li><key>--autotest</key> <em>function</em><br/>
+						Runs the usecode function <em>function</em> (decimal or <kbd>0x</kbd> hex) once after
+						the game has started, then quits. Meant for automated tests of usecode and gumps.
+						Use it with <key>--nomenu</key> and SDL's dummy drivers to run without a window or
+						sound, for example <kbd>SDL_VIDEO_DRIVER=dummy SDL_AUDIO_DRIVER=dummy exult --nomenu --autotest 0x1F90</kbd>.
+						The function reports through the console (<kbd>UI_error_message</kbd>, <kbd>UI_printf</kbd>).
+						<Exult/> prints <kbd>AUTOTEST: returned</kbd> when the function has finished. If a modal loop
+						(a conversation or a gump) blocks the quit, <Exult/> exits with status 124 ten seconds after the timeout.</li>
+					<li><key>--autotest-delay</key> <em>ms</em><br/>
+						Milliseconds to wait before the <key>--autotest</key> function runs (default 3000).</li>
+					<li><key>--autotest-timeout</key> <em>seconds</em><br/>
+						Seconds after which <Exult/> quits when used with <key>--autotest</key> (default 60).</li>
 					<li><key>--edit</key><br/>
 						Start in map-edit mode. This will also load <Studio/> when the game is started.</li>
 					<li><key>--write-xml</key><br/>
