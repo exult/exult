@@ -220,6 +220,9 @@
 0x5D8:Built-in fonts:
 0x5D9:Original
 0x5DA:Serif
+0x5DC:Containers:
+0x5DD:Picture
+0x5DE:List
 
 # Gamemenu_gump.cc
 0x5E0:Load/Save Game
