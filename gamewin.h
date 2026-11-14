@@ -853,6 +853,8 @@ public:
 	// From Savegame
 	bool get_saveinfo(int num, char*& name, std::unique_ptr<Shape_file>& map, SaveGame_Details*& details, SaveGame_Party*& party);
 	void read_saveinfo(IDataSource* in, SaveGame_Details*& details, SaveGame_Party*& party);
+	// Change the stored name of savegame num. False (file untouched) on error.
+	bool rename_savegame(int num, const char* newname);
 
 private:
 #ifdef HAVE_ZIP_SUPPORT

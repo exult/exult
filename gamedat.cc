@@ -41,6 +41,7 @@
 #include "utils.h"
 #include "version.h"
 
+#include <algorithm>
 #include <array>
 #include <cstddef>
 #include <cstdio>
@@ -49,7 +50,9 @@
 #include <ctime>
 #include <filesystem>
 #include <fstream>
+#include <iterator>
 #include <sstream>
+#include <vector>
 
 #ifdef _WIN32
 #	include <io.h>
@@ -704,6 +707,108 @@ void Game_window::get_saveinfo(std::unique_ptr<Shape_file>& map, SaveGame_Detail
 			map.reset();
 		}
 	}
+}
+
+/*
+ *  Point the global comment of a zip archive held in data at comment.
+ *  The end of central directory record (signature, 16 bytes, comment
+ *  length, comment) is the last thing in the file, so nothing else moves.
+ */
+
+static bool Set_zip_comment(std::vector<char>& data, const std::string& comment) {
+	constexpr size_t eocd_size = 22;
+	if (data.size() < eocd_size || comment.size() > 0xFFFF) {
+		return false;
+	}
+	const size_t lowest = data.size() > eocd_size + 0xFFFF ? data.size() - eocd_size - 0xFFFF : 0;
+	for (size_t pos = data.size() - eocd_size;; pos--) {
+		const auto* p = reinterpret_cast<const unsigned char*>(data.data() + pos);
+		if (p[0] == 0x50 && p[1] == 0x4b && p[2] == 0x05 && p[3] == 0x06) {
+			const size_t len = p[20] | (p[21] << 8);
+			if (pos + eocd_size + len == data.size()) {
+				data.resize(pos + eocd_size);
+				data[pos + 20] = static_cast<char>(comment.size() & 0xff);
+				data[pos + 21] = static_cast<char>((comment.size() >> 8) & 0xff);
+				data.insert(data.end(), comment.begin(), comment.end());
+				return true;
+			}
+		}
+		if (pos == lowest) {
+			break;
+		}
+	}
+	return false;
+}
+
+/*
+ *  Change the name stored in savegame num. Flex saves keep it in the
+ *  80-byte header title; zip saves start with the same 80-byte title and
+ *  also keep it as the archive's global comment. The new file is written
+ *  next to the old one and then renamed over it, so on any error the save
+ *  is left as it was.
+ *
+ *  Output: false if the save could not be renamed.
+ */
+
+bool Game_window::rename_savegame(int num, const char* newname) {
+	char fname[50];    // Set up name.
+	snprintf(
+			fname, sizeof(fname), SAVENAME, num,
+			Game::get_game_type() == BLACK_GATE     ? "bg"
+			: Game::get_game_type() == SERPENT_ISLE ? "si"
+													: "dev");
+	if (!newname || !U7exists(fname)) {
+		return false;
+	}
+	std::string title(newname);
+	if (title.size() > MAX_SAVEGAME_NAME_LEN - 1) {
+		title.resize(MAX_SAVEGAME_NAME_LEN - 1);
+	}
+	const bool        flex = Flex::is_flex(fname);
+	const std::string path = get_system_path(fname);
+	std::vector<char> data;
+	{
+		std::ifstream in(path, std::ios::binary);
+		if (!in) {
+			return false;
+		}
+		data.assign(std::istreambuf_iterator<char>(in), std::istreambuf_iterator<char>());
+		if (in.bad()) {
+			return false;
+		}
+	}
+	if (data.size() < MAX_SAVEGAME_NAME_LEN) {
+		return false;
+	}
+	std::fill(data.begin(), data.begin() + MAX_SAVEGAME_NAME_LEN, '\0');
+	std::copy(title.begin(), title.end(), data.begin());
+	if (!flex && !Set_zip_comment(data, title)) {
+		std::cerr << "Couldn't find the zip directory of '" << fname << "'" << endl;
+		return false;
+	}
+	const std::string tmp = path + ".rename";
+	{
+		std::ofstream out(tmp, std::ios::binary | std::ios::trunc);
+		if (out) {
+			out.write(data.data(), static_cast<std::streamsize>(data.size()));
+		}
+		if (!out || !out.good()) {
+			out.close();
+			std::error_code ec;
+			std::filesystem::remove(tmp, ec);
+			return false;
+		}
+	}
+	std::error_code ec;
+	std::filesystem::rename(tmp, path, ec);
+	if (ec) {
+		std::filesystem::remove(tmp, ec);
+		return false;
+	}
+	if (num >= 0 && num < static_cast<int>(save_names.size())) {
+		save_names[num] = title;
+	}
+	return true;
 }
 
 // Zip file support
