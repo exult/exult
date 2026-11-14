@@ -141,6 +141,23 @@ public:
 		int         npc = -1;
 	};
 
+	// One change the doctor can undo.
+	struct Undo_entry {
+		enum class Kind {
+			flag,        // Set the flag back to old_value.
+			teleport,    // Teleport the party back to tile/map.
+			snapshot     // Restore the snapshot save.
+		};
+
+		std::string label;
+		Kind        kind      = Kind::snapshot;
+		unsigned    flag      = 0;
+		bool        old_value = false;
+		Tile_coord  tile{-1, -1, -1};
+		int         map = -1;
+		std::string snapshot;    // <SAVEGAME>/doctor/undo-N.sav
+	};
+
 	static Game_doctor& get();
 	~Game_doctor();
 	Game_doctor(const Game_doctor&)            = delete;
@@ -158,7 +175,8 @@ public:
 	// text matches every named flag.
 	std::vector<Flag_info> search_flags(std::string_view text);
 	bool                   flag_value(unsigned num) const;
-	bool                   set_flag(unsigned num, bool on);
+	// Through apply_change(), so it makes the backup and can be undone.
+	Action_result set_flag(unsigned num, bool on);
 
 	// Log capture: keeps the last lines written to std::cout and std::cerr.
 	void                     install_log_capture();
@@ -201,16 +219,51 @@ public:
 	static std::string              object_name(const Game_object* obj);
 	static std::vector<std::string> owner_chain(const Game_object* obj);
 
-	// Called when a game has been restored.
+	// Safety. Before the first change of a session the game is saved to
+	// the first free numbered slot ('Troubleshooting backup day D hh:mm'); every
+	// change goes through apply_change(), which keeps the last
+	// max_undo changes. Flag changes and teleports store their inverse;
+	// snapshot changes first write <SAVEGAME>/doctor/undo-N.sav.
+	bool          ensure_backup(std::string* err = nullptr);
+	Action_result apply_change(
+			const std::string& label, Undo_entry::Kind kind, const std::function<Action_result()>& fn, unsigned flag = 0);
+	Action_result            undo();
+	size_t                   undo_depth() const;
+	std::vector<std::string> undo_labels() const;    // Newest first.
+	// File name of this session's backup (empty if none yet).
+	const std::string& backup_name() const;
+	int                backup_slot_number() const;
+
+	// Called at the end of Game_window::read(). A restore not made by the
+	// doctor itself ends the session: the undo history and the backup are
+	// forgotten.
 	void on_game_restored();
 
 	constexpr static size_t log_capacity = 500;
+	constexpr static size_t max_undo     = 5;
 
 private:
 	Game_doctor() = default;
 	void load_flags();
 
 	void load_rules();
+	void drop_undo_entry(const Undo_entry& entry);
+	void clear_undo();
+
+	Action_result do_set_flag(unsigned num, bool on);
+	Action_result do_bring_npc(int num);
+	Action_result do_goto_npc(int num);
+	Action_result do_revive_npc(int num);
+	Action_result do_restore_schedule(int num);
+	Action_result do_heal_npc(int num);
+	Action_result do_goto_item(const Item_hit& hit);
+	Action_result do_fetch_item(const Item_hit& hit);
+
+	std::deque<Undo_entry> undo_stack;    // Oldest first.
+	int                    backup_slot = -1;
+	std::string            backup_file;
+	unsigned               snapshot_counter = 0;
+	bool                   restoring_self   = false;
 
 	std::vector<Flag_info> flag_table;
 	std::string            flag_table_key;    // Game and mod it was loaded for.

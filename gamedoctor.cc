@@ -285,11 +285,6 @@ bool Game_doctor::flag_value(unsigned num) const {
 	return usecode != nullptr && usecode->get_global_flag_bool(static_cast<int>(num));
 }
 
-bool Game_doctor::set_flag(unsigned num, bool on) {
-	auto* usecode = gwin != nullptr ? gwin->get_usecode() : nullptr;
-	return usecode != nullptr && usecode->set_global_flag(static_cast<int>(num), on);
-}
-
 //
 // Log capture.
 //
@@ -561,7 +556,7 @@ std::vector<int> Game_doctor::find_npcs(std::string_view text) const {
 	return out;
 }
 
-Game_doctor::Action_result Game_doctor::bring_npc(int num) {
+Game_doctor::Action_result Game_doctor::do_bring_npc(int num) {
 	Actor* npc = doctor_npc(num);
 	if (npc == nullptr || num == 0) {
 		return fail("No such NPC.");
@@ -577,7 +572,7 @@ Game_doctor::Action_result Game_doctor::bring_npc(int num) {
 	return done("Brought " + npc_label(npc) + " beside the Avatar.");
 }
 
-Game_doctor::Action_result Game_doctor::goto_npc(int num) {
+Game_doctor::Action_result Game_doctor::do_goto_npc(int num) {
 	Actor* npc = doctor_npc(num);
 	if (npc == nullptr || num == 0) {
 		return fail("No such NPC.");
@@ -596,7 +591,7 @@ Game_doctor::Action_result Game_doctor::goto_npc(int num) {
 	return done("Went to " + npc_label(npc) + ".");
 }
 
-Game_doctor::Action_result Game_doctor::revive_npc(int num) {
+Game_doctor::Action_result Game_doctor::do_revive_npc(int num) {
 	Actor* npc = doctor_npc(num);
 	if (npc == nullptr) {
 		return fail("No such NPC.");
@@ -635,7 +630,7 @@ Game_doctor::Action_result Game_doctor::revive_npc(int num) {
 	return done("Revived " + npc_label(npc) + ".");
 }
 
-Game_doctor::Action_result Game_doctor::restore_schedule(int num) {
+Game_doctor::Action_result Game_doctor::do_restore_schedule(int num) {
 	Actor* npc = doctor_npc(num);
 	if (npc == nullptr || num == 0) {
 		return fail("No such NPC.");
@@ -651,7 +646,7 @@ Game_doctor::Action_result Game_doctor::restore_schedule(int num) {
 	return done("Restored the schedule of " + npc_label(npc) + ": " + schedule_name(npc->get_schedule_type()) + ".");
 }
 
-Game_doctor::Action_result Game_doctor::heal_npc(int num) {
+Game_doctor::Action_result Game_doctor::do_heal_npc(int num) {
 	Actor* npc = doctor_npc(num);
 	if (npc == nullptr) {
 		return fail("No such NPC.");
@@ -761,7 +756,7 @@ std::vector<Game_doctor::Item_hit> Game_doctor::find_items(const Item_query& que
 	return hits;
 }
 
-Game_doctor::Action_result Game_doctor::goto_item(const Item_hit& hit) {
+Game_doctor::Action_result Game_doctor::do_goto_item(const Item_hit& hit) {
 	const Game_object_shared obj = hit.obj.lock();
 	if (!obj) {
 		return fail("That item no longer exists.");
@@ -774,7 +769,7 @@ Game_doctor::Action_result Game_doctor::goto_item(const Item_hit& hit) {
 	return done("Went to " + object_name(obj.get()) + ".");
 }
 
-Game_doctor::Action_result Game_doctor::fetch_item(const Item_hit& hit) {
+Game_doctor::Action_result Game_doctor::do_fetch_item(const Item_hit& hit) {
 	const Game_object_shared obj = hit.obj.lock();
 	Actor*                   av  = gwin != nullptr ? gwin->get_main_actor() : nullptr;
 	if (!obj || av == nullptr) {
@@ -1028,7 +1023,276 @@ bool Game_doctor::write_dump(const std::string& path, std::string* err, bool wit
 }
 
 //
-// Sessions.
+// Safety: backup and undo.
 //
 
-void Game_doctor::on_game_restored() {}
+namespace {
+	const char* save_suffix() {
+		return GAME_BG ? "bg" : GAME_SI ? "si" : "dev";
+	}
+
+	// Writes the current game to gamedat, then to a savegame file.
+	bool write_save(const std::string& fname, const char* title, std::string* err) {
+		Game_window* win = Game_window::get_instance();
+		try {
+			win->write(true);
+			win->save_gamedat(fname.c_str(), title);
+		} catch (const std::exception& e) {
+			if (err != nullptr) {
+				*err = e.what();
+			}
+			return false;
+		}
+		return true;
+	}
+}    // namespace
+
+bool Game_doctor::ensure_backup(std::string* err) {
+	if (backup_slot >= 0) {
+		return true;
+	}
+	if (gwin == nullptr || gwin->get_main_actor() == nullptr) {
+		if (err != nullptr) {
+			*err = "No game is loaded.";
+		}
+		return false;
+	}
+	// The first free numbered slot, as Game_window::MakeEmergencySave().
+	int  slot = -1;
+	char fname[std::size(SAVENAME) + 2];
+	for (int i = 0; i < 1000; i++) {
+		snprintf(fname, sizeof(fname), SAVENAME, i, save_suffix());
+		if (!U7exists(fname)) {
+			slot = i;
+			break;
+		}
+	}
+	if (slot < 0) {
+		if (err != nullptr) {
+			*err = "There is no free savegame slot for the backup.";
+		}
+		return false;
+	}
+	const Game_clock* clock = gwin->get_clock();
+	char              title[64];
+	snprintf(
+			title, sizeof(title), "Troubleshooting backup day %d %02d:%02d", clock->get_day(), clock->get_hour(),
+			clock->get_minute());
+	try {
+		gwin->write(true);
+		gwin->save_gamedat(slot, title);
+	} catch (const std::exception& e) {
+		if (err != nullptr) {
+			*err = std::string("The backup failed: ") + e.what();
+		}
+		std::cerr << "DOCTOR: backup failed: " << e.what() << std::endl;
+		return false;
+	}
+	backup_slot = slot;
+	backup_file = fname;
+	std::cout << "DOCTOR: backup saved to " << backup_file << " (" << title << ")" << std::endl;
+	return true;
+}
+
+Game_doctor::Action_result Game_doctor::apply_change(
+		const std::string& label, Undo_entry::Kind kind, const std::function<Action_result()>& fn, unsigned flag) {
+	std::string err;
+	if (!ensure_backup(&err)) {
+		return fail(err.empty() ? "The backup failed, so nothing was changed." : err + " Nothing was changed.");
+	}
+	Undo_entry entry;
+	entry.label = label;
+	entry.kind  = kind;
+	switch (kind) {
+	case Undo_entry::Kind::flag:
+		entry.flag      = flag;
+		entry.old_value = flag_value(flag);
+		break;
+	case Undo_entry::Kind::teleport: {
+		const Actor* av = gwin->get_main_actor();
+		if (av == nullptr || av->get_chunk() == nullptr) {
+			return fail("The Avatar is not on the map.");
+		}
+		entry.tile = av->get_tile();
+		entry.map  = av->get_map_num();
+		break;
+	}
+	case Undo_entry::Kind::snapshot: {
+		U7mkdir("<SAVEGAME>/doctor", 0755);
+		entry.snapshot = "<SAVEGAME>/doctor/undo-" + std::to_string(++snapshot_counter) + ".sav";
+		if (!write_save(entry.snapshot, ("Troubleshooting undo: " + label).c_str(), &err)) {
+			U7remove(entry.snapshot.c_str());
+			return fail("Could not save the undo snapshot (" + err + "), so nothing was changed.");
+		}
+		break;
+	}
+	}
+	Action_result result = fn();
+	if (!result.ok) {
+		drop_undo_entry(entry);
+		return result;
+	}
+	undo_stack.push_back(std::move(entry));
+	while (undo_stack.size() > max_undo) {
+		drop_undo_entry(undo_stack.front());
+		undo_stack.pop_front();
+	}
+	return result;
+}
+
+Game_doctor::Action_result Game_doctor::undo() {
+	if (undo_stack.empty()) {
+		return fail("There is nothing to undo.");
+	}
+	const Undo_entry entry = undo_stack.back();
+	undo_stack.pop_back();
+	switch (entry.kind) {
+	case Undo_entry::Kind::flag:
+		if (!do_set_flag(entry.flag, entry.old_value).ok) {
+			return fail("Could not undo: " + entry.label);
+		}
+		break;
+	case Undo_entry::Kind::teleport:
+		gwin->teleport_party(entry.tile, false, entry.map);
+		break;
+	case Undo_entry::Kind::snapshot:
+		restoring_self = true;
+		try {
+			gwin->restore_gamedat(entry.snapshot.c_str());
+			gwin->read();
+		} catch (const std::exception& e) {
+			restoring_self = false;
+			drop_undo_entry(entry);
+			return fail("Could not undo " + entry.label + ": " + e.what());
+		}
+		restoring_self = false;
+		drop_undo_entry(entry);
+		break;
+	}
+	return done("Undid: " + entry.label);
+}
+
+size_t Game_doctor::undo_depth() const {
+	return undo_stack.size();
+}
+
+std::vector<std::string> Game_doctor::undo_labels() const {
+	std::vector<std::string> out;
+	for (auto it = undo_stack.rbegin(); it != undo_stack.rend(); ++it) {
+		out.push_back(it->label);
+	}
+	return out;
+}
+
+const std::string& Game_doctor::backup_name() const {
+	return backup_file;
+}
+
+int Game_doctor::backup_slot_number() const {
+	return backup_slot;
+}
+
+void Game_doctor::drop_undo_entry(const Undo_entry& entry) {
+	if (!entry.snapshot.empty() && U7exists(entry.snapshot)) {
+		U7remove(entry.snapshot.c_str());
+	}
+}
+
+void Game_doctor::clear_undo() {
+	for (const auto& entry : undo_stack) {
+		drop_undo_entry(entry);
+	}
+	undo_stack.clear();
+}
+
+void Game_doctor::on_game_restored() {
+	if (restoring_self) {
+		return;
+	}
+	clear_undo();
+	backup_slot = -1;
+	backup_file.clear();
+	// Reload the tables on next use (a mod may have changed).
+	flag_table_key.clear();
+	rule_table_key.clear();
+}
+
+//
+// Doctor actions, each through apply_change().
+//
+
+Game_doctor::Action_result Game_doctor::do_set_flag(unsigned num, bool on) {
+	auto* usecode = gwin != nullptr ? gwin->get_usecode() : nullptr;
+	if (usecode == nullptr || !usecode->set_global_flag(static_cast<int>(num), on)) {
+		return fail("Could not set flag " + std::to_string(num) + ".");
+	}
+	const Flag_info*  info = find_flag(num);
+	const std::string name = info != nullptr && !info->name.empty() ? " " + info->name : std::string();
+	return done("Flag " + std::to_string(num) + name + (on ? " set." : " cleared."));
+}
+
+namespace {
+	std::string flag_label(unsigned num, const Game_doctor::Flag_info* info, bool on) {
+		std::string label = std::string(on ? "Set" : "Clear") + " flag " + std::to_string(num);
+		if (info != nullptr && !info->name.empty()) {
+			label += " " + info->name;
+		}
+		return label;
+	}
+
+	std::string npc_action_label(const char* verb, int num) {
+		const Actor* npc = doctor_npc(num);
+		return std::string(verb) + ' ' + (npc != nullptr ? npc_label(npc) : "NPC " + std::to_string(num));
+	}
+}    // namespace
+
+Game_doctor::Action_result Game_doctor::set_flag(unsigned num, bool on) {
+	return apply_change(
+			flag_label(num, find_flag(num), on), Undo_entry::Kind::flag,
+			[&] {
+				return do_set_flag(num, on);
+			},
+			num);
+}
+
+Game_doctor::Action_result Game_doctor::bring_npc(int num) {
+	return apply_change(npc_action_label("Bring", num), Undo_entry::Kind::snapshot, [&] {
+		return do_bring_npc(num);
+	});
+}
+
+Game_doctor::Action_result Game_doctor::goto_npc(int num) {
+	return apply_change(npc_action_label("Go to", num), Undo_entry::Kind::teleport, [&] {
+		return do_goto_npc(num);
+	});
+}
+
+Game_doctor::Action_result Game_doctor::revive_npc(int num) {
+	return apply_change(npc_action_label("Revive", num), Undo_entry::Kind::snapshot, [&] {
+		return do_revive_npc(num);
+	});
+}
+
+Game_doctor::Action_result Game_doctor::restore_schedule(int num) {
+	return apply_change(npc_action_label("Restore the schedule of", num), Undo_entry::Kind::snapshot, [&] {
+		return do_restore_schedule(num);
+	});
+}
+
+Game_doctor::Action_result Game_doctor::heal_npc(int num) {
+	return apply_change(npc_action_label("Heal", num), Undo_entry::Kind::snapshot, [&] {
+		return do_heal_npc(num);
+	});
+}
+
+Game_doctor::Action_result Game_doctor::goto_item(const Item_hit& hit) {
+	return apply_change("Go to " + hit.name, Undo_entry::Kind::teleport, [&] {
+		return do_goto_item(hit);
+	});
+}
+
+Game_doctor::Action_result Game_doctor::fetch_item(const Item_hit& hit) {
+	return apply_change("Fetch " + hit.name, Undo_entry::Kind::snapshot, [&] {
+		return do_fetch_item(hit);
+	});
+}
