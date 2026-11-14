@@ -104,11 +104,17 @@ struct Mui_theme {
 	float                                            sidebar_width   = 200;
 	int                                              backdrop_alpha  = 170;
 	bool                                             frame_stone     = false;    // Stone block frame, else flat.
+	bool                                             frame_gump      = false;    // Exult's own menu gump look.
 	bool                                             panel_parchment = false;    // Parchment texture, else plain.
 	Metrics                                          metrics;
 	std::array<uint8, int(Mui_colour::count)>        idx{};
 	std::array<uint32, int(Mui_colour::count)>       rgb{};    // 0xRRGGBB wanted.
 	std::array<Font_spec, int(Mui_font_role::count)> fonts{};
+
+	// Square, bevelled controls and chrome (stone and gump frames).
+	bool bevelled() const {
+		return frame_stone || frame_gump;
+	}
 
 	uint8 colour(Mui_colour c) const {
 		return idx[int(c)];

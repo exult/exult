@@ -28,6 +28,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <string>
 #include <vector>
 
+class Shape_frame;
+
 /*
  *  Shell of a themed menu screen: a modal gump that paints itself into its
  *  own display-resolution layer (UiLayerMenus) over a translucent scrim.
@@ -235,6 +237,8 @@ private:
 	TileRect                         body_rect{0, 0, 0, 0};
 	TileRect                         help_rect{0, 0, 0, 0};
 	TileRect                         footer_rect{0, 0, 0, 0};
+	TileRect                         tick_rect{0, 0, 0, 0};    // Checkmark tab (gump look).
+	int                              tick_scale = 0;
 	std::unique_ptr<Mui_button>      close_button;
 	std::unique_ptr<Mui_tabs>        tabs;
 	std::unique_ptr<Mui_scroll_view> body;
@@ -259,14 +263,17 @@ private:
 
 	std::vector<std::function<void()>> pending;
 
-	void process_pending();
-	void rebuild_now();
-	bool ensure_layers();
-	void destroy_layers();
-	void hide_layers();
-	void layout_all();
-	void paint_frame(Mui_painter& p);
-	void paint_overlay(Mui_painter& p, Overlay& o);
+	void                process_pending();
+	void                rebuild_now();
+	bool                ensure_layers();
+	void                destroy_layers();
+	void                hide_layers();
+	void                layout_all();
+	void                paint_frame(Mui_painter& p);
+	void                paint_gump_box(Mui_painter& p, const TileRect& r);
+	void                paint_tick_tab(Mui_painter& p);
+	static Shape_frame* tick_tab_shape();
+	void                paint_overlay(Mui_painter& p, Overlay& o);
 	// Widget roots in hit order (topmost first).
 	std::vector<Mui_widget*> roots() const;
 	std::vector<Mui_widget*> focus_chain() const;

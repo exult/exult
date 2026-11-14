@@ -302,6 +302,7 @@ void Mui_theme::apply(const Configuration& conf) {
 	}
 	if (get("frame/style", s)) {
 		frame_stone = s == "stone";
+		frame_gump  = s == "gump";
 	}
 	if (get("panel/texture", s)) {
 		panel_parchment = s == "parchment";

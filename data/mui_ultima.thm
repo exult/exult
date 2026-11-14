@@ -1,7 +1,9 @@
 <theme>
 	<!--
-	Exult themed menu style "ultima": parchment panels in a stone frame with
-	gold accents and serif type. Metrics are in pixels at a 720-px display
+	Exult themed menu style "ultima": the look of Exult's original menu gumps
+	(a black outline round a bevelled brown body, the green checkmark tab)
+	with the layout and controls of the themed menus, gold accents and serif
+	type. Metrics are in pixels at a 720-px display
 	height and scale with the display. Colours are #RRGGBB and resolve to the
 	nearest day-palette entry. A mod can override this file with
 	mui_themes/ultima.thm in its patch folder or add new themes there.
@@ -27,21 +29,21 @@
 	</metrics>
 	<colours>
 		<backdrop>#000000</backdrop>
-		<backdrop_alpha>150</backdrop_alpha>
-		<window>#4a443b</window>
-		<panel>#dacab2</panel>
-		<panel_alt>#cab291</panel_alt>
-		<frame>#6b6458</frame>
-		<frame_light>#9a9284</frame_light>
-		<frame_dark>#2e2a25</frame_dark>
-		<text>#2b1d0e</text>
-		<text_dim>#6e5a3c</text_dim>
-		<text_on_accent>#2b1d0e</text_on_accent>
-		<text_on_danger>#f0dc9c</text_on_danger>
-		<title_text>#f0dc9c</title_text>
-		<accent>#c9a227</accent>
-		<accent_hover>#e0bb40</accent_hover>
-		<focus>#8a2a0e</focus>
+		<backdrop_alpha>120</backdrop_alpha>
+		<window>#6d3c0c</window>
+		<panel>#997140</panel>
+		<panel_alt>#aa8559</panel_alt>
+		<frame>#6d3c0c</frame>
+		<frame_light>#895d2c</frame_light>
+		<frame_dark>#4c2c0c</frame_dark>
+		<text>#000000</text>
+		<text_dim>#2c1c08</text_dim>
+		<text_on_accent>#201408</text_on_accent>
+		<text_on_danger>#f6e6a5</text_on_danger>
+		<title_text>#f6e6a5</title_text>
+		<accent>#c69518</accent>
+		<accent_hover>#eeca28</accent_hover>
+		<focus>#f6e6a5</focus>
 		<danger>#9c2414</danger>
 		<warning>#b8740c</warning>
 		<success>#3f6e22</success>
@@ -73,9 +75,9 @@
 		</mono>
 	</fonts>
 	<frame>
-		<style>stone</style>
+		<style>gump</style>
 	</frame>
 	<panel>
-		<texture>parchment</texture>
+		<texture>plain</texture>
 	</panel>
 </theme>

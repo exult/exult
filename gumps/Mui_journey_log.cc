@@ -1064,7 +1064,7 @@ void Mui_journey_window::build(Mui_box& body) {
             if (!s) {
                 return;
             }
-            const bool  st   = p.get_theme().frame_stone;
+            const bool  st   = p.get_theme().bevelled();
             const uint8 fill = p.col(is_sel ? Mui_colour::panel : Mui_colour::panel_alt);
             if (st) {
                 p.fill_rect(r, fill);

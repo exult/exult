@@ -269,7 +269,7 @@ void Mui_painter::texture_stone(const TileRect& r, uint8 base, uint8 light, uint
 
 void Mui_painter::divider(int x, int y, int w) {
 	hline(x, y, w, col(Mui_colour::frame_dark));
-	if (theme.frame_stone) {
+	if (theme.bevelled()) {
 		hline(x, y + 1, w, col(Mui_colour::frame_light));
 	}
 }

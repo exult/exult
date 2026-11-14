@@ -41,12 +41,22 @@ namespace {
 		return p.px(metrics(p).radius);
 	}
 
+	// Square bevelled controls (stone and gump frames).
 	bool stone(const Mui_painter& p) {
-		return p.get_theme().frame_stone;
+		return p.get_theme().bevelled();
 	}
 
-	// Box with the theme's look: bevelled in the stone theme, rounded and
-	// outlined otherwise.
+	// The page surface: parchment or plain.
+	void page_fill(Mui_painter& p, const TileRect& r) {
+		if (p.get_theme().panel_parchment) {
+			p.texture_parchment(r, p.col(Mui_colour::panel), p.col(Mui_colour::panel), p.col(Mui_colour::panel_alt));
+		} else {
+			p.fill_rect(r, p.col(Mui_colour::panel));
+		}
+	}
+
+	// Box with the theme's look: bevelled in the stone and gump themes,
+	// rounded and outlined otherwise.
 	void control_box(Mui_painter& p, const TileRect& r, uint8 fill, uint8 outline, bool sunken = false) {
 		if (stone(p)) {
 			p.fill_rect(r, fill);
@@ -1677,10 +1687,10 @@ void Mui_tabs::paint(Mui_painter& p) {
 		} else {
 			if (sel) {
 				if (stone(p)) {
-					// Parchment tab joined to the body below.
+					// Page tab joined to the body below.
 					TileRect t = r;
 					t.h += 2;
-					p.texture_parchment(t, p.col(Mui_colour::panel), p.col(Mui_colour::panel), p.col(Mui_colour::panel_alt));
+					page_fill(p, t);
 					p.vline(t.x, t.y, t.h, p.col(Mui_colour::frame_light));
 					p.hline(t.x, t.y, t.w, p.col(Mui_colour::frame_light));
 					p.vline(t.x + t.w - 1, t.y, t.h, p.col(Mui_colour::frame_dark));

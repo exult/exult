@@ -35,6 +35,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "ibuf8.h"
 #include "items.h"
 #include "mouse.h"
+#include "shapeid.h"
 #include "touchui.h"
 
 #include <SDL3/SDL.h>
@@ -355,14 +356,15 @@ void Mui_window::layout_all() {
 	auto*       buf = static_cast<Image_buffer8*>(iwin()->get_layer_ibuf(layer));
 	Mui_painter p(buf, *theme_ptr, scale);
 	const auto& m      = theme_ptr->metrics;
-	const bool  stone  = theme_ptr->frame_stone;
+	const bool  stone  = theme_ptr->bevelled();
 	const int   margin = p.px(16);
 	float       wref;
 	float       href;
 	preferred_size(wref, href);
-	const int  fb        = stone ? p.px(m.unit * 1.5f) : p.px(m.border);
-	const int  title_h   = p.px(m.title_h);
-	const int  foot_h    = p.px(m.footer_h);
+	const int fb      = stone ? p.px(m.unit * 1.5f) : p.px(m.border);
+	const int title_h = p.px(m.title_h);
+	// No footer strip when a window has no page buttons (only the spacer).
+	const int  foot_h    = footer->get_children().size() > 1 ? p.px(m.footer_h) : 0;
 	const int  help_h    = show_help_line() ? p.line_height(Mui_font_role::small) + p.px(m.gap) : 0;
 	const int  pad       = p.px(m.gap * 2);
 	const bool left_tabs = tabs && theme_ptr->tabs_left;
@@ -380,6 +382,24 @@ void Mui_window::layout_all() {
 		h = std::min(2 * fb + title_h + tabs_h + ch + 2 * pad + help_h + foot_h, layer_h - 2 * margin);
 	}
 	frame_rect = TileRect((layer_w - w) / 2, (layer_h - h) / 2, w, h);
+	// The gump look has the checkmark tab of Exult's menus on the left, its
+	// right part under the frame as in the classic gumps. It gets smaller
+	// (whole multiples) to fit beside the window, or is left out.
+	tick_rect        = TileRect(0, 0, 0, 0);
+	tick_scale       = 0;
+	Shape_frame* tab = theme_ptr->frame_gump && show_tick_tab() ? tick_tab_shape() : nullptr;
+	if (tab && tab->get_width() > 0 && tab->get_height() > 0) {
+		int k = std::max(1, int(scale * 3 + 0.5f));
+		while (k > 0 && (k * tab->get_width() - fb > frame_rect.x || k * tab->get_height() + 2 * fb > h)) {
+			k--;
+		}
+		if (k > 0) {
+			tick_scale      = k;
+			const int tab_w = tab->get_width() * k;
+			const int tab_h = tab->get_height() * k;
+			tick_rect       = TileRect(frame_rect.x + fb - tab_w, frame_rect.y + frame_rect.h - fb - tab_h, tab_w, tab_h);
+		}
+	}
 	const TileRect in(frame_rect.x + fb, frame_rect.y + fb, frame_rect.w - 2 * fb, frame_rect.h - 2 * fb);
 	title_rect  = TileRect(in.x, in.y, in.w, title_h);
 	footer_rect = TileRect(in.x, in.y + in.h - foot_h, in.w, foot_h);
@@ -443,27 +463,72 @@ void Mui_window::layout_all() {
  *  Painting.
  */
 
+Shape_frame* Mui_window::tick_tab_shape() {
+	return ShapeID(EXULT_FLX_CHECKMARK_BACKGROUND_SHP, 0, SF_EXULT_FLX).get_shape();
+}
+
+void Mui_window::paint_gump_box(Mui_painter& p, const TileRect& r) {
+	// As Modal_gump's procedural background: a black outline round a brown
+	// body with a light top-left and dark bottom-right edge, at full
+	// resolution.
+	const auto& th = *theme_ptr;
+	const int   ol = std::max(1, p.px(1.5f));
+	p.fill_rect(r, 0);
+	TileRect body(r.x + ol, r.y + ol, r.w - 2 * ol, r.h - 2 * ol);
+	p.fill_rect(body, th.colour(Mui_colour::window));
+	const int bv = std::max(1, p.px(2));
+	p.bevel(body, bv, th.colour(Mui_colour::frame_light), th.colour(Mui_colour::frame_dark));
+}
+
+void Mui_window::paint_tick_tab(Mui_painter& p) {
+	if (tick_rect.w <= 0 || tick_scale <= 0) {
+		return;
+	}
+	// The game's own checkmark tab and tick, scaled by a whole number.
+	p.blit_shape(tick_tab_shape(), tick_rect, false);
+	Shape_frame* tick = ShapeID(game->get_shape("gumps/check"), 0, SF_GUMPS_VGA).get_shape();
+	if (tick) {
+		const int fb = p.px(theme_ptr->metrics.unit * 1.5f);
+		const int tw = tick->get_width() * tick_scale;
+		const int th = tick->get_height() * tick_scale;
+		// Centred on the part of the tab outside the frame.
+		const int vis = std::max(1, tick_rect.w - fb);
+		p.blit_shape(tick, TileRect(tick_rect.x + (vis - tw) / 2, tick_rect.y + (tick_rect.h - th) / 2, tw, th), false);
+	}
+}
+
 void Mui_window::paint_frame(Mui_painter& p) {
 	const auto& th    = *theme_ptr;
-	const bool  stone = th.frame_stone;
-	const auto& m     = th.metrics;
+	const bool  stone = th.bevelled();
+	paint_tick_tab(p);
+	const auto& m = th.metrics;
 	if (stone) {
-		p.texture_stone(
-				frame_rect, th.colour(Mui_colour::frame), th.colour(Mui_colour::frame_light), th.colour(Mui_colour::frame_dark),
-				th.colour(Mui_colour::window));
-		p.bevel(frame_rect, std::max(1, p.px(2)), th.colour(Mui_colour::frame_light), th.colour(Mui_colour::frame_dark));
-		// Gold rule around the inner edge.
 		const int fb = p.px(m.unit * 1.5f);
 		TileRect  in(frame_rect.x + fb, frame_rect.y + fb, frame_rect.w - 2 * fb, frame_rect.h - 2 * fb);
-		TileRect  rule = in;
-		rule.enlarge(std::max(1, p.px(2)));
-		p.frame_rect(rule, std::max(1, p.px(1.5f)), th.colour(Mui_colour::accent));
-		// Body page and footer strip on parchment.
+		if (th.frame_stone) {
+			p.texture_stone(
+					frame_rect, th.colour(Mui_colour::frame), th.colour(Mui_colour::frame_light), th.colour(Mui_colour::frame_dark),
+					th.colour(Mui_colour::window));
+			p.bevel(frame_rect, std::max(1, p.px(2)), th.colour(Mui_colour::frame_light), th.colour(Mui_colour::frame_dark));
+			// Gold rule around the inner edge.
+			TileRect rule = in;
+			rule.enlarge(std::max(1, p.px(2)));
+			p.frame_rect(rule, std::max(1, p.px(1.5f)), th.colour(Mui_colour::accent));
+		} else {
+			paint_gump_box(p, frame_rect);
+		}
+		// Body page and footer strip, sunk into the frame.
 		TileRect page(in.x, title_rect.y + title_rect.h + (tabs && !th.tabs_left ? tabs_rect.h : 0), in.w, 0);
 		page.h = in.y + in.h - page.y;
-		p.texture_parchment(page, th.colour(Mui_colour::panel), th.colour(Mui_colour::panel), th.colour(Mui_colour::panel_alt));
+		if (th.panel_parchment) {
+			p.texture_parchment(page, th.colour(Mui_colour::panel), th.colour(Mui_colour::panel), th.colour(Mui_colour::panel_alt));
+		} else {
+			p.fill_rect(page, th.colour(Mui_colour::panel));
+		}
 		p.bevel(page, std::max(1, p.px(2)), th.colour(Mui_colour::frame_dark), th.colour(Mui_colour::frame_light));
-		p.divider(help_rect.x + p.px(m.gap * 2), help_rect.y - p.px(m.gap) / 2, help_rect.w - p.px(m.gap * 4));
+		if (show_help_line()) {
+			p.divider(help_rect.x + p.px(m.gap * 2), help_rect.y - p.px(m.gap) / 2, help_rect.w - p.px(m.gap * 4));
+		}
 		if (tabs && th.tabs_left) {
 			p.vline(body_rect.x - p.px(m.gap), page.y + p.px(m.gap), body_rect.h, th.colour(Mui_colour::frame_dark));
 		}
@@ -476,7 +541,9 @@ void Mui_window::paint_frame(Mui_painter& p) {
 		TileRect page = body_rect;
 		page.enlarge(p.px(m.gap));
 		p.rounded_fill(page, p.px(m.radius), th.colour(Mui_colour::panel));
-		p.hline(frame_rect.x + rad, footer_rect.y, frame_rect.w - 2 * rad, th.colour(Mui_colour::frame));
+		if (footer_rect.h > 0) {
+			p.hline(frame_rect.x + rad, footer_rect.y, frame_rect.w - 2 * rad, th.colour(Mui_colour::frame));
+		}
 	}
 	// Title.
 	const uint8 title_bg = stone ? th.colour(Mui_colour::frame) : th.colour(Mui_colour::window);
@@ -508,11 +575,17 @@ void Mui_window::paint_overlay(Mui_painter& p, Overlay& o) {
 				s, th.colour(Mui_colour::frame), th.colour(Mui_colour::frame_light), th.colour(Mui_colour::frame_dark),
 				th.colour(Mui_colour::window));
 		p.texture_parchment(outer, th.colour(Mui_colour::panel), th.colour(Mui_colour::panel), th.colour(Mui_colour::panel_alt));
+	} else if (th.frame_gump) {
+		TileRect s = outer;
+		s.enlarge(p.px(th.metrics.unit));
+		paint_gump_box(p, s);
+		p.fill_rect(outer, th.colour(Mui_colour::panel));
+		p.bevel(outer, std::max(1, p.px(2)), th.colour(Mui_colour::frame_dark), th.colour(Mui_colour::frame_light));
 	} else {
 		p.rounded_fill(outer, p.px(th.metrics.radius), th.colour(Mui_colour::panel_alt));
 		p.rounded_frame(outer, p.px(th.metrics.radius), b, th.colour(Mui_colour::frame_light));
 	}
-	o.root->surface_override = th.colour(th.frame_stone ? Mui_colour::panel : Mui_colour::panel_alt);
+	o.root->surface_override = th.colour(th.bevelled() ? Mui_colour::panel : Mui_colour::panel_alt);
 	o.root->paint(p);
 }
 
@@ -992,6 +1065,11 @@ bool Mui_window::mouse_up(int mx, int my, MouseButton button) {
 		Mui_widget* p = pressed;
 		pressed       = nullptr;
 		p->on_mouse_up(mx, my, int(button), p->rect.has_point(mx, my));
+	} else if (overlays.empty() && tick_rect.has_point(mx, my) && !frame_rect.has_point(mx, my)) {
+		// The checkmark closes, as the close button does.
+		post([this] {
+			on_cancel();
+		});
 	}
 	dirty = true;
 	return true;
