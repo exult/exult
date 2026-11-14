@@ -29,6 +29,7 @@
 #include "Book_gump.h"
 #include "CombatStats_gump.h"
 #include "Configuration.h"
+#include "Container_list_gump.h"
 #include "Dynamic_container_gump.h"
 #include "Face_stats.h"
 #include "Gump.h"
@@ -78,6 +79,9 @@ Gump_manager::Gump_manager() {
 	config->value("config/gameplay/gumps_dont_pause_game", str, "no");
 	dont_pause_game = str == "yes";
 	config->set("config/gameplay/gumps_dont_pause_game", dont_pause_game ? "yes" : "no", true);
+	config->value("config/gameplay/container_view", str, "picture");
+	container_list_view = str == "list";
+	config->set("config/gameplay/container_view", container_list_view ? "list" : "picture", true);
 }
 
 // Per-gump overlay layers are composited above the conversation layer (z 0)
@@ -649,6 +653,8 @@ void Gump_manager::add_gump(
 			// Check if this gump shape has container_area in gump_info.txt
 			if (Dynamic_container_gump::has_config(shapenum)) {
 				new_gump = new Dynamic_container_gump(obj->as_container(), x, y, shapenum);
+			} else if (container_list_view && !npc && Container_list_gump::is_available(shapenum)) {
+				new_gump = new Container_list_gump(obj->as_container(), x, y, shapenum);
 			} else {
 				new_gump = new Container_gump(obj->as_container(), x, y, shapenum);
 			}
@@ -673,6 +679,11 @@ void Gump_manager::add_gump(
 	if (dynamic_cast<Dynamic_container_gump*>(new_gump)) {
 		new_gump->set_pos();
 	}
+	// The list view is wider than most container gumps, so the position
+	// meant for the container's own gump may not fit.
+	if (dynamic_cast<Container_list_gump*>(new_gump) && new_gump->isOffscreen(true)) {
+		new_gump->set_pos();
+	}
 
 	// For Dynamic_container_gumps, fire the gump's shape usecode with
 	// double_click so that on-open initialisation functions can run.
@@ -680,6 +691,14 @@ void Gump_manager::add_gump(
 		auto*     ucm = gwin->get_usecode();
 		const int fn  = ucm->get_shape_fun(shapenum);
 		ucm->call_usecode(fn, obj, Usecode_machine::double_click);
+	} else if (auto* list_gump = dynamic_cast<Container_list_gump*>(new_gump)) {
+		// The list view's on-open usecode from its list_layout, if any.
+		// (Usecode may close the gump: new_gump is not used after it.)
+		const int open_fn = list_gump->get_open_fn();
+		auto*     ucm     = gwin->get_usecode();
+		if (open_fn >= 0 && ucm) {
+			ucm->call_usecode(ucm->get_shape_fun(open_fn), obj, Usecode_machine::double_click);
+		}
 	}
 	if (touchui != nullptr && !gumps_dont_pause_game()) {
 		touchui->hideGameControls();

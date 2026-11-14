@@ -434,9 +434,13 @@
 0X6C1:Press ESC to exit.
 0X6C2:Please add the games in File Sharing
 0X6C3:Touch screen for help!
-# Dynamic_list_widget.cc
+# Container_list_gump.cc and Dynamic_list_widget.cc
+0x6D0:Quantity:
+0x6D1:Weight:
 0x6D2:of
 0x6D3:Empty
+0x6D4:Double-click to use.
+0x6D5:Drag it out to take it.
 
 #Misc
 # SI copy protection failed

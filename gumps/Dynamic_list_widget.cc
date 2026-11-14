@@ -381,6 +381,22 @@ Game_object* Dynamic_list_widget::get_object(int index) {
 	return index >= 1 && index <= count ? objs[index - 1] : nullptr;
 }
 
+void Dynamic_list_widget::reset() {
+	rows.clear();
+	objs.clear();
+	signature.clear();
+	first          = 0;
+	sel_index      = -1;
+	sel_obj        = nullptr;
+	sel_hint       = 0;
+	sel_follow     = true;
+	pressed_row    = -1;
+	select_pending = false;
+	rows_pending   = true;
+	update_slider();
+	dirty();
+}
+
 /*
  *  Queries for the hosting gump.
  */

@@ -107,6 +107,9 @@ public:
 	bool set_row(int index, const Row& row, int given);
 	// Source 0: the object at a row (1-based; 0 = the selected row).
 	Game_object* get_object(int index);
+	// Start over, as when the gump opens: for a host that shows another
+	// container.  rows_fn runs again from run().
+	void reset();
 
 	// Queries for the hosting gump (screen coordinates).
 	Game_object* object_at(int mx, int my);    // Enabled source-0 row's object

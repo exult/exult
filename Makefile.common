@@ -150,6 +150,7 @@ GUMPS_OBJS:= \
 	gumps/Book_gump.o \
 	gumps/GameEngineOptions_gump.o \
 	gumps/CombatStats_gump.o \
+	gumps/Container_list_gump.o \
 	gumps/Dynamic_container_gump.o \
 	gumps/Dynamic_button.o \
 	gumps/Dynamic_text_widget.o \
@@ -574,6 +575,8 @@ shapeid.o : shapeid.cc $(EXULT_BG_FLX) $(EXULT_SI_FLX)
 audio/Midi.o : audio/Midi.cc $(EXULT_FLX)
 
 gumps/AudioOptions_gump.o : gumps/AudioOptions_gump.cc $(EXULT_FLX)
+
+gumps/Container_list_gump.o : gumps/Container_list_gump.cc $(EXULT_FLX)
 
 gumps/GameEngineOptions_gump.o : gumps/GameEngineOptions_gump.cc $(EXULT_FLX)
 
