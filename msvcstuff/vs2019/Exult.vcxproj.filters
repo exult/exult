@@ -827,6 +827,9 @@
     <ClCompile Include="..\..\gamedoctor.cc">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\gamedoctor_checkup.cc">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\perf.cc">
       <Filter>Source Files</Filter>
     </ClCompile>

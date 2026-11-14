@@ -30,6 +30,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <mutex>
 #include <string>
 #include <string_view>
+#include <utility>
 #include <vector>
 
 class Actor;
@@ -112,6 +113,34 @@ public:
 		std::vector<std::string> chain;
 	};
 
+	// One check-up rule: 'id|severity|kind|when|args|message'.
+	struct Rule {
+		struct Flag_test {
+			bool        set = true;    // '+' or '-'.
+			std::string flag;          // Number or name as written.
+		};
+
+		std::string                                      id;
+		std::string                                      severity;    // error, warning, info.
+		std::string                                      kind;        // item, npc, keys, orphans.
+		std::vector<Flag_test>                           when;        // Empty means always.
+		std::vector<std::pair<std::string, std::string>> args;
+		std::string                                      message;
+		std::string                                      source;    // file:line.
+
+		std::string arg(std::string_view key, std::string_view fallback = {}) const;
+	};
+
+	// One check-up result.
+	struct Finding {
+		std::string id;
+		std::string severity;
+		std::string message;
+		Tile_coord  tile{-1, -1, -1};    // Where to look, if known.
+		int         map = -1;
+		int         npc = -1;
+	};
+
 	static Game_doctor& get();
 	~Game_doctor();
 	Game_doctor(const Game_doctor&)            = delete;
@@ -155,6 +184,12 @@ public:
 	Action_result         goto_item(const Item_hit& hit);
 	Action_result         fetch_item(const Item_hit& hit);    // Into the Avatar's pack.
 
+	// Check-up (gamedoctor_checkup.cc). Rules come from the game's
+	// files/doctor_rules resource, then <PATCH>/doctor_rules.txt.
+	const std::vector<Rule>& rules();
+	std::vector<int>         rule_shapes();    // Every shape a rule names.
+	std::vector<Finding>     run_checkup();
+
 	static std::string              schedule_name(int type);
 	static std::string              alignment_name(int align);
 	static std::string              object_name(const Game_object* obj);
@@ -169,8 +204,12 @@ private:
 	Game_doctor() = default;
 	void load_flags();
 
+	void load_rules();
+
 	std::vector<Flag_info> flag_table;
 	std::string            flag_table_key;    // Game and mod it was loaded for.
+	std::vector<Rule>      rule_table;
+	std::string            rule_table_key;
 
 	mutable std::mutex           log_mutex;
 	std::deque<std::string>      log_lines;

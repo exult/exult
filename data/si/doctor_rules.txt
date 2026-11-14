@@ -1,0 +1,58 @@
+# Game doctor check-up rules for Serpent Isle.
+#
+# One rule per line:  id|severity|kind|when|args|message
+#   id        unique name; a mod's <PATCH>/doctor_rules.txt replaces a rule
+#             with the same id, and 'id|off' disables it.
+#   severity  error, warning or info.
+#   kind      item     args: shape=N [frame=N] [quality=N] [min=N]
+#                      finding when fewer than min (default 1) exist anywhere,
+#                      containers and NPC inventories included.
+#             npc      args: npc=N
+#                      finding when the NPC is dead or missing.
+#             keys     args: key=N doors=N,N,.. locked=N containers=N,..
+#                      [ignore=Q,Q,..]
+#                      finding for each key quality that locks a door
+#                      (frame % 4 == locked) or a locked container but has
+#                      no key of that quality anywhere or on the keyring.
+#             orphans  args: [ignore=N,N,..]
+#                      objects whose owner does not list them,
+#                      containers nested deeper than 16 or in a cycle,
+#                      objects outside the map, bodies of living NPCs
+#                      (except the NPCs in ignore=, whose bodies the game
+#                      places in the map on purpose).
+#   when      'always', or space-separated flag tests that must all hold:
+#             +N / -N (flag N set / clear, decimal or 0x hex) or
+#             +NAME / -NAME (a name from global_flags.txt).
+#   message   shown to the player; the rest of the line.
+# Lines starting with '#' and blank lines are ignored.
+
+# Thoxa resurrects the party; once the Banes are loose the Hourglass of
+# Fate summons her the normal way (content/sifixes/src/items/hourglass.uc:36-38,
+# content/sifixes/src/npcs/thoxa.uc:127-128).
+thoxa_alive|error|npc|+BANES_RELEASED|npc=211|Thoxa is dead or missing. After the Banes are released she is needed to resurrect the party.
+
+# The Hound of Doskar tracks the Banes after their release
+# (content/sifixes/src/npcs/hound.uc:72-83).
+hound_alive|warning|npc|+BANES_RELEASED|npc=269|The Hound of Doskar is dead or missing. He is needed to track the Banes.
+
+# The Hound tracks the Bane of Insanity by Iolo's lute (or the white diamond
+# necklace) while that Bane lives (content/sifixes/src/npcs/hound.uc:72-76;
+# shapes in content/sifixes/src/header/si/si_shapes.uc:343,606).
+iolos_lute|warning|item|+BANES_RELEASED -INSANITY_BANE_DEAD|shape=692 frame=2 min=1|Iolo's lute is missing. The Hound of Doskar needs it (or the white diamond necklace) to track the Bane of Insanity.
+
+# The Hound tracks the Bane of Wantonness by Dupre's shield
+# (content/sifixes/src/npcs/hound.uc:75-76; shape in si_shapes.uc:242).
+dupres_shield|warning|item|+BANES_RELEASED -WANTONNESS_BANE_DEAD|shape=490 min=1|Dupre's shield is missing. The Hound of Doskar needs it to track the Bane of Wantonness.
+
+# Doors 270/376/432/433 are locked when frame % 4 == 2 (3 is a magic lock);
+# keys are shape 641 matched by quality, and SI keyring keys count
+# (content/sifixes/src/misc/inn_keys.uc:30-35, si_shapes.uc:330,400).
+# ignore= lists the qualities that are locked without any key on a new
+# game (keys handed out by usecode later, or doors opened by other means);
+# found by running the check-up on a new game.
+locked_without_key|warning|keys|always|key=641 doors=270,376,432,433 locked=2 containers=522 ignore=0,3,4,5,6,7,11,15,24,25,40,50,51,61,79,81,82,84,85,89,94,97,102,103,104,117,122,135,139,141,179,180,194,200,202,203,211,223,230,231,232,233,234,235,238,239,241,254,255|Something is locked and no key for it exists
+
+# Generic consistency checks. A new game already has bodies of NPCs who are
+# alive (Gwenno 149, Murder7 184, the automatons 1Auto-4Auto 197, 228-230,
+# Larry 231 and Stan 232), placed by the game; found on a new game.
+orphans|error|orphans|always|ignore=149,184,197,228,229,230,231,232|Object tree problem
