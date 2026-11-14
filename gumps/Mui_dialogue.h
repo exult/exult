@@ -206,6 +206,8 @@ private:
 	bool               hist_drag   = false;
 	int                hist_grab   = 0;    // Pointer offset into the thumb.
 	Hist_layout        hl;
+	// Auto-advance: milliseconds of reading time per character, 0 = off.
+	int advance_ms = 0;
 
 	bool                                  ensure_layers();
 	void                                  destroy_layers();

@@ -147,6 +147,9 @@ config/gameplay/menu_style|enum|classic|classic,ultima,modern|now|Look of the ga
 config/gameplay/menu_scale|int|100|50..200|now|Size of the themed menus in percent. 100 grows with the shorter side of the screen, so a wide screen gets the same size as a 16:9 one of the same height.
 config/gameplay/menu_journey_view|enum|grid|grid,list|now|How the themed Journey Log shows the saves: as cards with screenshots (grid) or as a list.
 config/gameplay/menu_journey_sort|enum|newest|newest,oldest,name,day|now|Order of the saves in the themed Journey Log: newest first, oldest first, by name, or furthest in-game day first.
+config/gameplay/dialogue_style|enum|follow|follow,classic,ultima,modern|now|Look of conversations: follow the menu style, the classic faces and text, or a themed screen. A mod theme name also works.
+config/gameplay/dialogue_text_size|enum|normal|small,normal,large|now|Text size on the themed conversation screen.
+config/gameplay/dialogue_auto_advance|enum|off|off,slow,normal,fast|now|Turn the pages of the themed conversation screen by themselves after a reading time; answers always wait for you.
 config/gameplay/cheat|bool|no||now|Allow cheats (cheat keys and the cheat screen).
 config/gameplay/feeding|enum|manual|manual,automatic,disabled|now|How the party eats when cheats are on: manual, automatic, or not at all (disabled).
 config/gameplay/skip_splash|bool|no||restart|Skip the Origin and Exult splash screens and go straight to the menu.

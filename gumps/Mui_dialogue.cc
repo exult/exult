@@ -48,6 +48,14 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <limits>
 
 namespace {
+	// The conversation screen keeps its own size: display-height based (1 at
+	// 720 px), capped so a 1280x720 reference fits, clamped to 1-4. The menus'
+	// Mui_theme::ui_scale() and their Menu size setting do not apply here.
+	float conversation_scale(int display_w, int display_h) {
+		const float s = std::min(display_h / 720.f, display_w / 1280.f);
+		return std::clamp(s, 1.f, 4.f);
+	}
+
 	class Strings : public GumpStrings {
 	public:
 		static auto Continue() {
@@ -100,7 +108,14 @@ namespace {
 		return t == "bye" || t == "goodbye" || t == "good-bye" || t == "farewell";
 	}
 
-	// Text for the history: '*' and '\r' dropped, '^x' upper-cases x, trimmed.
+	// The game fonts draw '@' as a double quote and usecode relies on it
+	// ("@Yes?@"); the themed fonts draw a real '@', so map it.
+	char game_glyph(char c) {
+		return c == '@' ? '"' : c;
+	}
+
+	// Text for the history: '*' and '\r' dropped, '^x' upper-cases x, '@' is
+	// a quote, trimmed.
 	std::string history_text(const std::string& text) {
 		std::string out;
 		for (size_t i = 0; i < text.size(); i++) {
@@ -114,7 +129,7 @@ namespace {
 				}
 				continue;
 			}
-			out += c;
+			out += game_glyph(c);
 		}
 		const auto b = out.find_first_not_of(" \t\n");
 		if (b == std::string::npos) {
@@ -155,7 +170,20 @@ bool Mui_dialogue::resolve_style(std::string& theme_out) {
 	return true;
 }
 
-Mui_dialogue::Mui_dialogue(std::shared_ptr<Mui_theme> theme_) : theme(std::move(theme_)) {}
+/*
+ *  Created at the start of a session, so the accessibility settings are
+ *  read once per conversation (without creating the keys):
+ *  dialogue_text_size small/normal/large scales the body text,
+ *  dialogue_auto_advance off/slow/normal/fast turns text pages by itself.
+ */
+Mui_dialogue::Mui_dialogue(std::shared_ptr<Mui_theme> theme_) : theme(std::move(theme_)) {
+	std::string size;
+	config->value("config/gameplay/dialogue_text_size", size, "normal");
+	text_size = size == "small" ? 0.85f : size == "large" ? 1.3f : 1.0f;
+	std::string advance;
+	config->value("config/gameplay/dialogue_auto_advance", advance, "off");
+	advance_ms = advance == "slow" ? 60 : advance == "normal" ? 40 : advance == "fast" ? 25 : 0;
+}
 
 Mui_dialogue::~Mui_dialogue() {
 	destroy_layers();
@@ -208,7 +236,7 @@ bool Mui_dialogue::ensure_layers() {
 		}
 		w->layer_set_index_argb(face_layer, boosted);
 	}
-	scale = Mui_theme::ui_scale(dw, dh);
+	scale = conversation_scale(dw, dh);
 	shown = false;
 	dirty = true;
 	return true;
@@ -358,7 +386,8 @@ void Mui_dialogue::layout(Mui_painter& p) {
 /*
  *  Paging, with the rules of Shape_manager::paint_text_box: '\n' breaks
  *  the line, '\r' is dropped, '^x' upper-cases x, '*' starts a new page
- *  unless it falls on the page's first line (then it is dropped).
+ *  unless it falls on the page's first line (then it is dropped). '@' is
+ *  shown as the double quote the game fonts draw for it.
  */
 std::vector<std::vector<std::string>> Mui_dialogue::paginate(const std::string& text, const Mui_text_font* font) const {
 	std::vector<std::string> chunks(1);
@@ -377,7 +406,7 @@ std::vector<std::vector<std::string>> Mui_dialogue::paginate(const std::string& 
 			chunks.emplace_back();
 			continue;
 		}
-		chunks.back() += c;
+		chunks.back() += game_glyph(c);
 	}
 	std::vector<std::vector<std::string>> pages;
 	const size_t                          per   = size_t(std::max(3, lay.lines));
@@ -1019,9 +1048,14 @@ int Mui_dialogue::wait_input(Wait mode) {
 	float         last_my     = -1;
 	bool          rightclick  = false;
 	bool          bar_press   = false;    // Left button went down on the history scrollbar.
-	int           result      = -1;
-	bool          done        = false;
-	auto          hover_at    = [&](int sx, int sy) {
+	// Auto-advance of text pages (never of choices): reading time of the
+	// page, at least 1.5 s; it starts again when the history closes.
+	const uint32 read_ms
+			= advance_ms > 0 && mode != Wait::choice ? std::max<uint32>(1500, uint32(page_text.size()) * uint32(advance_ms)) : 0;
+	uint32 deadline = SDL_GetTicks() + read_ms;
+	int    result   = -1;
+	bool   done     = false;
+	auto   hover_at = [&](int sx, int sy) {
         int lx;
         int ly;
         if (mode == Wait::choice && !hist_open && to_layer(sx, sy, lx, ly)) {
@@ -1263,6 +1297,13 @@ int Mui_dialogue::wait_input(Wait mode) {
 				break;
 			default:
 				break;
+			}
+		}
+		if (!done && read_ms > 0) {
+			if (hist_open) {
+				deadline = ticks + read_ms;
+			} else if (ticks >= deadline) {
+				done = true;
 			}
 		}
 		if (dirty && !done) {

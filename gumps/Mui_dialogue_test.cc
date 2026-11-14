@@ -26,6 +26,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "Mui_selftest.h"
 #include "actors.h"
 #include "conversation.h"
+#include "game.h"
 #include "gamewin.h"
 #include "ucmachine.h"
 
@@ -132,7 +133,10 @@ namespace {
 		}
 		std::cout << "MUI-TEST info talk " << rest << " (npc " << npc->get_npc_num() << ", usecode 0x" << std::hex
 				  << npc->get_usecode() << std::dec << ")" << std::endl;
-		const int ret = uc->call_usecode(npc->get_usecode(), npc, Usecode_machine::double_click);
+		// The event the Talk schedule sends when the NPC reaches the Avatar
+		// (Talk_schedule in schedule.cc): SI's double click only starts it.
+		const auto event = GAME_BG ? Usecode_machine::double_click : Usecode_machine::chat;
+		const int  ret   = uc->call_usecode(npc->get_usecode(), npc, event);
 		std::cout << "MUI-TEST info talk " << rest << " returned " << ret << std::endl;
 	}
 
