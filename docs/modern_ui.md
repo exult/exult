@@ -2,6 +2,8 @@
 ## Overview
 This document describes the themed menu system. It adds a small widget toolkit, two built-in themes ("Ultima" and "Modern") and five themed screens: the game menu, the Options window (six classic tabs plus an Advanced exult.cfg editor), the Journey Log (load and save), and the cheat window.
 
+The themed conversation screen, which uses this toolkit, is described in [modern_dialogue.md](modern_dialogue.md).
+
 **Design Philosophy:** The classic gumps stay the default and are untouched in classic style. Every themed screen is an ordinary `Modal_gump`, so pausing, quitting, Escape and the modal loop behave as before. Where a classic screen already holds the behaviour (option gumps, Newfile_gump's save model, the text-mode cheat menus), the themed screen reuses it instead of copying it.
 
 ---
@@ -185,6 +187,9 @@ Why not FreeType now: Exult itself links neither FreeType nor SDL_ttf (FreeType 
 | `config/gameplay/menu_scale` | 50–200 (percent; the UI page offers 75, 90, 100, 110, 125, 150) | `100` |
 | `config/gameplay/menu_journey_view` | `grid`, `list` | `grid` |
 | `config/gameplay/menu_journey_sort` | `newest`, `oldest`, `name`, `day` | `newest` |
+| `config/gameplay/dialogue_style` | `follow`, `classic`, `ultima`, `modern`, or a theme name | `follow` |
+| `config/gameplay/dialogue_text_size` | `small`, `normal`, `large` | `normal` |
+| `config/gameplay/dialogue_auto_advance` | `off`, `slow`, `normal`, `fast` | `off` |
 
 ---
 ## Config Metadata Table
