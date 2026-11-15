@@ -170,6 +170,8 @@ GUMPS_OBJS:= \
 	gumps/Mui_font.o \
 	gumps/Mui_game_menu.o \
 	gumps/Mui_journey_log.o \
+	gumps/Mui_keys_editor.o \
+	gumps/Mui_keys_model.o \
 	gumps/Mui_options.o \
 	gumps/Mui_options_model.o \
 	gumps/Mui_painter.o \

@@ -46,7 +46,7 @@ config/disk/game/*/patch|path|||restart|Folder whose files override this game's 
 config/disk/game/*/source|path|||restart|Folder with this game's source files for Exult Studio. Empty means the source folder inside the game folder.
 config/disk/game/*/codepage|string|ASCII||restart|Character set of this game's text. ASCII is the original 7-bit set.
 config/disk/game/*/editing|bool|no||restart|Mark this game as being edited in Exult Studio.
-config/disk/game/*/keys|path|(default)||restart|Key bindings file for this game. (default) uses Exult's built-in bindings.
+config/disk/game/*/keys|path|(default)||restart|Key bindings file for this game. (default) uses Exult's built-in bindings. Options > Input > Key bindings writes its own file (keys-<game>.txt in the save folder) and sets this key; edits made there apply at once.
 config/disk/game/*/autonotes|path|(default)||restart|Automatic notes text file for this game's notebook. (default) uses the built-in notes.
 config/disk/game/*/waves|string|---||restart|Digital sound effects pack for this game (a file in the data folder). --- lets Exult pick one that is installed.
 config/disk/game/*/language|enum||en,fr,de,es,|restart|Language of this game's text when config/gameplay/language is not set. Empty keeps the game's own language.

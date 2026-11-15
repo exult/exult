@@ -33,6 +33,7 @@
 #	pragma GCC diagnostic pop
 #endif    // __GNUC__
 
+#include "Configuration.h"
 #include "Scroll_gump.h"
 #include "U7file.h"
 #include "actors.h"
@@ -262,6 +263,14 @@ const struct {
 using ParseKeyMap    = std::map<std::string, SDL_Keycode>;
 using ParseActionMap = std::map<std::string, const Action*>;
 
+static void to_lowercase_ascii(string& str) {
+	for (auto& c : str) {
+		c = static_cast<char>(std::tolower(static_cast<unsigned char>(c)));
+	}
+}
+
+static void fill_parse_maps();
+
 static ParseKeyMap    keys;
 static ParseActionMap actions;
 
@@ -286,7 +295,7 @@ void KeyBinder::AddKeyBinding(SDL_Keycode key, SDL_Keymod mod, const Action* act
 	bindings[k] = a;
 }
 
-bool KeyBinder::DoAction(const ActionType& a, bool press) const {
+bool KeyBinder::DoAction(ActionType a, bool press) const {
 	if (!cheat() && (a.action->key_type == Action::cheat_keys || a.action->key_type == Action::mapedit_keys)) {
 		return true;
 	}
@@ -347,31 +356,36 @@ bool KeyBinder::DoAction(const ActionType& a, bool press) const {
 	return true;
 }
 
-KeyMap::const_iterator KeyBinder::TranslateEvent(const SDL_Event& ev) const {
-	ExultKey key{ev.key.key, ev.key.mod};
-
+bool KeyBinder::NormaliseEvent(const SDL_Event& ev, ExultKey& out) {
 	if (ev.type != SDL_EVENT_KEY_DOWN && ev.type != SDL_EVENT_KEY_UP) {
-		return bindings.end();
+		return false;
 	}
-
-	key.mod = SDL_KMOD_NONE;
+	out.key = ev.key.key;
+	out.mod = SDL_KMOD_NONE;
 	if (ev.key.mod & SDL_KMOD_SHIFT) {
-		key.mod = key.mod | SDL_KMOD_SHIFT;
+		out.mod = out.mod | SDL_KMOD_SHIFT;
 	}
 	if (ev.key.mod & SDL_KMOD_CTRL) {
-		key.mod = key.mod | SDL_KMOD_CTRL;
+		out.mod = out.mod | SDL_KMOD_CTRL;
 	}
 #ifdef MACOSX
 	// map Meta to Alt on OS X
 	if (ev.key.mod & SDL_KMOD_GUI) {
-		key.mod = key.mod | SDL_KMOD_ALT;
+		out.mod = out.mod | SDL_KMOD_ALT;
 	}
 #else
 	if (ev.key.mod & SDL_KMOD_ALT) {
-		key.mod = key.mod | SDL_KMOD_ALT;
+		out.mod = out.mod | SDL_KMOD_ALT;
 	}
 #endif
+	return true;
+}
 
+KeyMap::const_iterator KeyBinder::TranslateEvent(const SDL_Event& ev) const {
+	ExultKey key{ev.key.key, ev.key.mod};
+	if (!NormaliseEvent(ev, key)) {
+		return bindings.end();
+	}
 	return bindings.find(key);
 }
 
@@ -528,7 +542,9 @@ void KeyBinder::ParseLine(char* line, int lineNumber) {
 	string u;
 	string desc;
 	string keycode;
+	string comment;
 	bool   show;
+	bool   hidden = false;
 
 	skipspace(s);
 
@@ -660,10 +676,15 @@ void KeyBinder::ParseLine(char* line, int lineNumber) {
 	// read optional help comment
 	if (s.length() >= 1 && s[0] == '#') {
 		if (s.length() >= 2 && s[1] == '-') {    // don't show in help
-			show = false;
+			show   = false;
+			hidden = true;
 		} else {
 			s.erase(0, 1);
 			skipspace(s);
+			comment = s;
+			while (!comment.empty() && isspace(static_cast<unsigned char>(comment.back()))) {
+				comment.pop_back();
+			}
 			// Always show if there is a comment.
 			show = true;
 		}
@@ -711,6 +732,19 @@ void KeyBinder::ParseLine(char* line, int lineNumber) {
 
 	// bind key
 	AddKeyBinding(k.key, k.mod, a.action, np, a.params);
+
+	Binding b;
+	b.key    = k;
+	b.action = a.action->s;
+	to_lowercase_ascii(b.action);
+	b.nparams = np;
+	for (int n = 0; n < c_maxparams; n++) {
+		b.params[n] = n < np ? a.params[n] : -1;
+	}
+	b.source  = cur_source;
+	b.comment = comment;
+	b.hidden  = hidden;
+	log.push_back(std::move(b));
 }
 
 void KeyBinder::LoadFromFileInternal(const char* filename) {
@@ -735,6 +769,7 @@ void KeyBinder::LoadFromFileInternal(const char* filename) {
 
 void KeyBinder::LoadFromFile(const char* filename) {
 	Flush();
+	cur_source = Source::file;
 
 	cout << "Loading keybindings from file " << filename << endl;
 	LoadFromFileInternal(filename);
@@ -743,14 +778,18 @@ void KeyBinder::LoadFromFile(const char* filename) {
 void KeyBinder::LoadFromPatch() {
 	if (U7exists(PATCH_KEYS)) {
 		cout << "Loading patch keybindings" << endl;
+		cur_source = Source::patch;
 		LoadFromFileInternal(PATCH_KEYS);
 	}
 }
 
-void KeyBinder::LoadDefaults() {
+void KeyBinder::LoadDefaults(bool quiet) {
 	Flush();
+	cur_source = Source::defaults;
 
-	cout << "Loading default keybindings" << endl;
+	if (!quiet) {
+		cout << "Loading default keybindings" << endl;
+	}
 
 	const str_int_pair& resource = game->get_resource("config/defaultkeys");
 
@@ -762,8 +801,195 @@ void KeyBinder::LoadDefaults() {
 	}
 }
 
+void KeyBinder::LoadConfigured() {
+	std::string d;
+	std::string keyfilename;
+	d = "config/disk/game/" + Game::get_gametitle() + "/keys";
+	config->value(d.c_str(), keyfilename, "(default)");
+	if (keyfilename == "(default)") {
+		config->set(d.c_str(), keyfilename, true);
+		LoadDefaults();
+	} else {
+		try {
+			LoadFromFile(keyfilename.c_str());
+		} catch (file_open_exception&) {
+			cerr << "Key mappings file '" << keyfilename << "' not found, falling back to default mappings." << endl;
+			LoadDefaults();
+		}
+	}
+	LoadFromPatch();
+}
+
+void KeyBinder::LoadFromText(const std::string& text, Source source) {
+	cur_source      = source;
+	std::string buf = text;
+	if (buf.empty() || buf.back() != '\n') {
+		buf += '\n';
+	}
+	std::vector<char> mem(buf.begin(), buf.end());
+	mem.push_back('\0');
+	ParseText(mem.data(), static_cast<int>(buf.size()));
+}
+
+std::vector<KeyBinder::Binding> KeyBinder::ListBindings() const {
+	std::vector<Binding>                   out = log;
+	std::map<ExultKey, size_t, ltExultKey> last;
+	for (size_t i = 0; i < out.size(); i++) {
+		last[out[i].key] = i;
+	}
+	for (size_t i = 0; i < out.size(); i++) {
+		out[i].effective = last[out[i].key] == i;
+	}
+	return out;
+}
+
+std::vector<KeyBinder::ActionInfo> KeyBinder::ListActions() {
+	std::vector<ActionInfo> out;
+	for (int i = 0; ExultActions[i].s[0] != '\0'; i++) {
+		const Action& a = ExultActions[i];
+		ActionInfo    info;
+		info.name = a.s;
+		to_lowercase_ascii(info.name);
+		switch (a.key_type) {
+		case Action::normal_keys:
+			info.type = ActionInfo::Type::normal;
+			break;
+		case Action::cheat_keys:
+			info.type = ActionInfo::Type::cheat;
+			break;
+		case Action::mapedit_keys:
+			info.type = ActionInfo::Type::mapedit;
+			break;
+		default:
+			info.type = ActionInfo::Type::hidden;
+			break;
+		}
+		if (info.type != ActionInfo::Type::hidden) {
+			info.label = a.desc();
+		}
+		info.game         = a.game;
+		const string n    = a.s;
+		info.needs_params = n == "USEITEM" || n == "CALL_USECODE" || n == "MOVE_SELECTED" || n == "CYCLE_FRAMES_NEXT"
+							|| n == "CYCLE_FRAMES_PREV" || n == "PLAY_MUSIC";
+		out.push_back(std::move(info));
+	}
+	return out;
+}
+
+string KeyBinder::ActionName(const ActionType& a) {
+	string n = a.action ? a.action->s : "";
+	to_lowercase_ascii(n);
+	return n;
+}
+
+bool KeyBinder::ParseKeyToken(const string& token, ExultKey& out) {
+	// Same rules as a keys file line: modifier prefixes, then one key.
+	string s = token;
+	string u = s;
+	to_uppercase(u);
+	ExultKey k{SDLK_UNKNOWN, SDL_KMOD_NONE};
+	for (;;) {
+		if (u.substr(0, 4) == "ALT-" && u.size() > 4) {
+			k.mod = k.mod | SDL_KMOD_ALT;
+			s.erase(0, 4);
+			u.erase(0, 4);
+		} else if (u.substr(0, 5) == "CTRL-" && u.size() > 5) {
+			k.mod = k.mod | SDL_KMOD_CTRL;
+			s.erase(0, 5);
+			u.erase(0, 5);
+		} else if (u.substr(0, 6) == "SHIFT-" && u.size() > 6) {
+			k.mod = k.mod | SDL_KMOD_SHIFT;
+			s.erase(0, 6);
+			u.erase(0, 6);
+		} else {
+			break;
+		}
+	}
+	if (u.empty()) {
+		return false;
+	}
+	if (u.length() == 1) {
+		const auto c = static_cast<unsigned char>(u[0]);
+		if (!std::isgraph(c) || c == '%' || c == '{' || c == '|' || c == '}' || c == '~') {
+			return false;
+		}
+		k.key = static_cast<SDL_Keycode>(std::tolower(c));
+	} else {
+		fill_parse_maps();
+		auto it = keys.find(u);
+		if (it == keys.end()) {
+			return false;
+		}
+		k.key = it->second;
+	}
+	out = k;
+	return true;
+}
+
+string KeyBinder::FormatKeyToken(ExultKey key) {
+	string name;
+	for (int i = 0; SDLKeyStringTable[i].s[0] != '\0'; i++) {
+		if (SDLKeyStringTable[i].k == key.key) {
+			name = SDLKeyStringTable[i].s;
+			break;
+		}
+	}
+	if (name.empty()) {
+		if (key.key > 0x20 && key.key < 0x7f) {
+			const auto c = static_cast<unsigned char>(key.key);
+			if (c == '%' || c == '{' || c == '|' || c == '}' || c == '~') {
+				return {};
+			}
+			// A '#' with no modifier would start a comment.
+			if (c == '#' && key.mod == SDL_KMOD_NONE) {
+				return {};
+			}
+			name = string(1, static_cast<char>(std::toupper(c)));
+		} else {
+			return {};
+		}
+	}
+	string out;
+	if (key.mod & SDL_KMOD_CTRL) {
+		out += "Ctrl-";
+	}
+	if (key.mod & SDL_KMOD_ALT) {
+		out += "Alt-";
+	}
+	if (key.mod & SDL_KMOD_SHIFT) {
+		out += "Shift-";
+	}
+	return out + name;
+}
+
+string KeyBinder::DescribeKey(ExultKey key) {
+	string out;
+	string name = FormatKeyToken(ExultKey{key.key, SDL_KMOD_NONE});
+	if (name.empty()) {
+		name = SDL_GetKeyName(key.key);
+	}
+	if (key.mod & SDL_KMOD_CTRL) {
+		out += "Ctrl-";
+	}
+	if (key.mod & SDL_KMOD_ALT) {
+#ifdef MACOSX
+		out += "Cmd-";
+#else
+		out += "Alt-";
+#endif
+	}
+	if (key.mod & SDL_KMOD_SHIFT) {
+		out += "Shift-";
+	}
+	return out + name;
+}
+
 // codes used in keybindings-files. (use uppercase here)
 void KeyBinder::FillParseMaps() {
+	fill_parse_maps();
+}
+
+static void fill_parse_maps() {
 	int i;    // For MSVC
 	for (i = 0; strlen(SDLKeyStringTable[i].s) > 0; i++) {
 		keys[SDLKeyStringTable[i].s] = SDLKeyStringTable[i].k;

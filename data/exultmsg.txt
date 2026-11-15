@@ -1443,3 +1443,45 @@
 0xD29:Size of these menus; 100% is a comfortable part of the screen, whatever its width.
 0xD2A:Confirm
 0xD2B:How many?
+# Key bindings editor on the Input tab of the themed Options window
+0xDD0:Key bindings
+0xDD1:keys keyboard shortcut shortcuts binding bindings rebind controls hotkey
+0xDD2:Game keys
+0xDD3:Cheat keys
+0xDD4:Map editor keys
+0xDD5:Change
+0xDD6:Add key
+0xDD7:Unbind
+0xDD8:Reset
+0xDD9:Reset all keys
+0xDDA:Press a key... (Esc cancels)
+0xDDB:Not set
+0xDDC:From mod
+0xDDD:Overridden by mod
+0xDDE:Find a key or action
+0xDDF:Click a key, then press the new key. Esc cancels.
+0xDE0:Give this action another key.
+0xDE1:Remove every key from this action.
+0xDE2:Put this action back to Exult's own keys.
+0xDE3:Put every action back to Exult's own keys.
+0xDE4:%1 is already used by %2. Use it for %3 instead?
+0xDE5:%1 is used by the mod for %2. A mod's key always wins, so choose another key.
+0xDE6:%1 can't be used as a key binding.
+0xDE7:%1 is already set for %2.
+0xDE8:Put every key back to Exult's own keys? (Press Apply to keep this.)
+0xDE9:Exult is using the keys file %1. Save your changes to %2 and use that instead? %1 is not changed.
+0xDEA:%1 exists but was not written by this editor, so it was left alone. Move it away and try again.
+0xDEB:Couldn't write %1.
+0xDEC:Your keys are saved to %1.
+0xDED:Using Exult's own keys. Changes are saved to %1.
+0xDEE:Escape cancels a key press, so it can't be bound here.
+0xDEF:Cheat keys only work while cheats are on.
+0xDF0:Reset will give %1 back to %2 (now used by %3). Carry on?
+0xDF1:Show
+0xDF2:Hide
+0xDF3:This key comes from the mod's patchkeys.txt. It can't be changed here.
+0xDF4:Type part of an action name or a key to list the matching rows.
+0xDF5:Changes apply as soon as you press Apply.
+0xDF6:Using the keys file %1.
+0xDF7:%1 no longer has a key.
+0xDF8:Reset %1 to Exult's own keys.

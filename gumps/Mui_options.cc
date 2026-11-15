@@ -261,6 +261,9 @@ Mui_options_window::Mui_options_window(const char* tab) : Mui_window(Strings::Op
 	editor    = std::make_unique<Mui_config_editor>(*this, [this](const std::string& focus_id) {
         rebuild(focus_id);
     });
+	keys      = std::make_unique<Mui_keys_editor>(*this, [this](const std::string& focus_id) {
+        rebuild(focus_id);
+    });
 	tab_index = last_tab;
 	if (tab && *tab) {
 		for (int i = 0; i <= advanced_tab; i++) {
@@ -341,9 +344,19 @@ void Mui_options_window::build_title(Mui_box& bar) {
 					}
 				}
 			}
-			const auto keys = editor->search(needle);
-			if (!keys.empty()) {
-				jump_to_key(keys.front()->path);
+			bool       key_section = false;
+			const auto key_rows    = keys->search(needle, key_section);
+			if (key_section) {
+				jump_to_key_section();
+				return;
+			}
+			if (!key_rows.empty()) {
+				jump_to_key_row(key_rows.front());
+				return;
+			}
+			const auto adv = editor->search(needle);
+			if (!adv.empty()) {
+				jump_to_key(adv.front()->path);
 			}
 		});
 	};
@@ -371,7 +384,10 @@ void Mui_options_window::build_footer(Mui_box& footer) {
         });
     });
 	reset->help    = Strings::ResetHelp();
-	reset->enabled = search.empty() && (tab_index < num_model_tabs ? models[size_t(tab_index)]->changed() : editor->changed());
+	reset->enabled = search.empty()
+					 && (tab_index < num_model_tabs
+								 ? models[size_t(tab_index)]->changed() || (tab_index == int(Model::Tab::input) && keys->changed())
+								 : editor->changed());
 	auto* cancel   = footer.add<Mui_button>("options.cancel", Strings::Cancel(), Mui_button::Style::secondary, [this] {
         post([this] {
             on_cancel();
@@ -417,6 +433,9 @@ void Mui_options_window::build_page(Mui_box& body, int tab) {
 		if (r.visible) {
 			build_row(body, tab, r);
 		}
+	}
+	if (tab == int(Model::Tab::input)) {
+		keys->build(body);
 	}
 }
 
@@ -535,8 +554,11 @@ void Mui_options_window::build_results(Mui_box& body) {
 			count += matches(*models[size_t(t)], r, needle) ? 1 : 0;
 		}
 	}
-	const auto keys = editor->search(needle);
-	count += int(keys.size());
+	bool       key_section = false;
+	const auto key_rows    = keys->search(needle, key_section);
+	count += int(key_rows.size()) + (key_section ? 1 : 0);
+	const auto adv = editor->search(needle);
+	count += int(adv.size());
 	auto* found = body.add<Mui_label>(
 			count ? std::to_string(count) + " " + (count == 1 ? Strings::SettingFound() : Strings::SettingsFound())
 				  : std::string(Strings::NoMatches()),
@@ -545,14 +567,17 @@ void Mui_options_window::build_results(Mui_box& body) {
 	for (int t = 0; t < num_model_tabs; t++) {
 		const Model& m     = *models[size_t(t)];
 		bool         first = true;
+		auto         header = [&] {
+            if (first) {
+                body.add<Mui_section_header>(Strings::Tab(t));
+                first = false;
+            }
+		};
 		for (const auto& r : m.rows()) {
 			if (!matches(m, r, needle)) {
 				continue;
 			}
-			if (first) {
-				body.add<Mui_section_header>(Strings::Tab(t));
-				first = false;
-			}
+			header();
 			const std::string id = r.id;
 			auto*             b  = body.add<Mui_button>(
                     std::string("options.result.") + tab_key(t) + "." + r.id, m.label(r), Mui_button::Style::secondary,
@@ -568,12 +593,39 @@ void Mui_options_window::build_results(Mui_box& body) {
 				body.add<Help_label>(help, 8);
 			}
 		}
+		if (t == int(Model::Tab::input)) {
+			// The key bindings: the section itself, or the matching actions.
+			if (key_section) {
+				header();
+				auto* b = body.add<Mui_button>(
+						"options.result.keys", Mui_keys_model::text(0xDD0), Mui_button::Style::secondary, [this] {
+							post([this] {
+								jump_to_key_section();
+							});
+						});
+				b->fill_w = true;
+				b->help   = Strings::JumpHelp();
+			}
+			for (const auto& id : key_rows) {
+				header();
+				const std::string rid = id;
+				auto*             b   = body.add<Mui_button>(
+                        "options.result.keys." + id, Mui_keys_model::text(0xDD0) + ": " + keys->row_label(id),
+                        Mui_button::Style::secondary, [this, rid] {
+                            post([this, rid] {
+                                jump_to_key_row(rid);
+                            });
+                        });
+				b->fill_w = true;
+				b->help   = Strings::JumpHelp();
+			}
+		}
 	}
 	// exult.cfg keys of the Advanced tab.
-	if (!keys.empty()) {
+	if (!adv.empty()) {
 		body.add<Mui_section_header>(Strings::Tab(advanced_tab));
 	}
-	for (const auto* e : keys) {
+	for (const auto* e : adv) {
 		const std::string path = e->path;
 		auto* b   = body.add<Mui_button>("options.result.advanced." + path, path, Mui_button::Style::secondary, [this, path] {
             post([this, path] {
@@ -603,6 +655,23 @@ void Mui_options_window::jump_to_key(const std::string& path) {
 	rebuild(Mui_config_editor::control_id(path));
 }
 
+void Mui_options_window::jump_to_key_row(const std::string& id) {
+	search.clear();
+	highlight.clear();
+	tab_index = int(Model::Tab::input);
+	last_tab  = tab_index;
+	keys->reveal(id);
+	rebuild(Mui_keys_editor::focus_id(id));
+}
+
+void Mui_options_window::jump_to_key_section() {
+	search.clear();
+	highlight.clear();
+	tab_index = int(Model::Tab::input);
+	last_tab  = tab_index;
+	rebuild("keys.filter");
+}
+
 /*
  *  Apply and reset.
  */
@@ -617,6 +686,11 @@ void Mui_options_window::apply_all() {
 		}
 		m.apply();
 		display_applied |= m.get_tab() == Model::Tab::display;
+	}
+	// The key bindings write their own keys file and use it at once.
+	bool keys_wrote = false;
+	if (keys->changed()) {
+		keys->apply(keys_wrote);
 	}
 	// The pages may have written keys the Advanced tab shows.
 	editor->reload();
@@ -634,6 +708,7 @@ void Mui_options_window::apply_all() {
 		create_models();
 		title = Strings::Options();
 	}
+	keys->reload();
 	rebuild();
 	gwin->set_all_dirty();
 	// A new menu style (UI page) applies to every themed window; classic
@@ -651,6 +726,9 @@ void Mui_options_window::apply_all() {
 void Mui_options_window::reset_page() {
 	if (tab_index < num_model_tabs) {
 		models[size_t(tab_index)]->revert();
+		if (tab_index == int(Model::Tab::input)) {
+			keys->revert();
+		}
 	} else {
 		editor->revert();
 	}

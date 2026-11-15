@@ -46,6 +46,8 @@
 		5FD5D30D88C6600DFC1A53FD /* Mui_font.cc in Sources */ = {isa = PBXBuildFile; fileRef = 611E30B3B7684F69A7A42EB6 /* Mui_font.cc */; };
 		85BF55C2BB60BDDFA9C8D581 /* Mui_game_menu.cc in Sources */ = {isa = PBXBuildFile; fileRef = AF5DF8C5F2ABA80D03116866 /* Mui_game_menu.cc */; };
 		0F48ACC8A99804CB91D0CFBC /* Mui_journey_log.cc in Sources */ = {isa = PBXBuildFile; fileRef = 4723FFEBB5EB29FF620BEDA2 /* Mui_journey_log.cc */; };
+		41C67A0A622336E69E123571 /* Mui_keys_editor.cc in Sources */ = {isa = PBXBuildFile; fileRef = 1C2E8229017399D5AE982A9C /* Mui_keys_editor.cc */; };
+		5A586572CD137C766CC2AB69 /* Mui_keys_model.cc in Sources */ = {isa = PBXBuildFile; fileRef = 9BE07FB210DB9F5B25044498 /* Mui_keys_model.cc */; };
 		398FDC355B8932A69CD2DDBC /* Mui_options.cc in Sources */ = {isa = PBXBuildFile; fileRef = AE7ED961820FD2C8113BE86B /* Mui_options.cc */; };
 		12900DF5323DB5B1B26D6CE2 /* Mui_options_model.cc in Sources */ = {isa = PBXBuildFile; fileRef = 6BAAE0F36582D8B30C15981A /* Mui_options_model.cc */; };
 		B1CC8AF349F3F7D4F3B1FF2C /* Mui_painter.cc in Sources */ = {isa = PBXBuildFile; fileRef = 7F1188412F6B47CD4F44FC76 /* Mui_painter.cc */; };
@@ -415,6 +417,10 @@
 		87E70EF97B728C5C642BB002 /* Mui_game_menu.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Mui_game_menu.h; path = ../gumps/Mui_game_menu.h; sourceTree = "<group>"; };
 		4723FFEBB5EB29FF620BEDA2 /* Mui_journey_log.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Mui_journey_log.cc; path = ../gumps/Mui_journey_log.cc; sourceTree = "<group>"; };
 		4990824A7AD7E6A67A635FB5 /* Mui_journey_log.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Mui_journey_log.h; path = ../gumps/Mui_journey_log.h; sourceTree = "<group>"; };
+		1C2E8229017399D5AE982A9C /* Mui_keys_editor.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Mui_keys_editor.cc; path = ../gumps/Mui_keys_editor.cc; sourceTree = "<group>"; };
+		649AF1CAA1BDCF2044F70001 /* Mui_keys_editor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Mui_keys_editor.h; path = ../gumps/Mui_keys_editor.h; sourceTree = "<group>"; };
+		9BE07FB210DB9F5B25044498 /* Mui_keys_model.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Mui_keys_model.cc; path = ../gumps/Mui_keys_model.cc; sourceTree = "<group>"; };
+		C766E6506422F0974FCB7E39 /* Mui_keys_model.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Mui_keys_model.h; path = ../gumps/Mui_keys_model.h; sourceTree = "<group>"; };
 		AE7ED961820FD2C8113BE86B /* Mui_options.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Mui_options.cc; path = ../gumps/Mui_options.cc; sourceTree = "<group>"; };
 		330881FB1B7E7AC82D709483 /* Mui_options.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Mui_options.h; path = ../gumps/Mui_options.h; sourceTree = "<group>"; };
 		6BAAE0F36582D8B30C15981A /* Mui_options_model.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Mui_options_model.cc; path = ../gumps/Mui_options_model.cc; sourceTree = "<group>"; };
@@ -1518,6 +1524,10 @@
 				87E70EF97B728C5C642BB002 /* Mui_game_menu.h */,
 				4723FFEBB5EB29FF620BEDA2 /* Mui_journey_log.cc */,
 				4990824A7AD7E6A67A635FB5 /* Mui_journey_log.h */,
+				1C2E8229017399D5AE982A9C /* Mui_keys_editor.cc */,
+				649AF1CAA1BDCF2044F70001 /* Mui_keys_editor.h */,
+				9BE07FB210DB9F5B25044498 /* Mui_keys_model.cc */,
+				C766E6506422F0974FCB7E39 /* Mui_keys_model.h */,
 				AE7ED961820FD2C8113BE86B /* Mui_options.cc */,
 				330881FB1B7E7AC82D709483 /* Mui_options.h */,
 				6BAAE0F36582D8B30C15981A /* Mui_options_model.cc */,
@@ -2072,6 +2082,8 @@
 				5FD5D30D88C6600DFC1A53FD /* Mui_font.cc in Sources */,
 				85BF55C2BB60BDDFA9C8D581 /* Mui_game_menu.cc in Sources */,
 				0F48ACC8A99804CB91D0CFBC /* Mui_journey_log.cc in Sources */,
+				41C67A0A622336E69E123571 /* Mui_keys_editor.cc in Sources */,
+				5A586572CD137C766CC2AB69 /* Mui_keys_model.cc in Sources */,
 				398FDC355B8932A69CD2DDBC /* Mui_options.cc in Sources */,
 				12900DF5323DB5B1B26D6CE2 /* Mui_options_model.cc in Sources */,
 				B1CC8AF349F3F7D4F3B1FF2C /* Mui_painter.cc in Sources */,

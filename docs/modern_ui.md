@@ -171,6 +171,7 @@ Why not FreeType now: Exult itself links neither FreeType nor SDL_ttf (FreeType 
 |---|---|---|
 | Game menu | `Mui_game_menu` | Return, Journey Log, Options, Cheats (when enabled), Quit (classic Yesno). |
 | Options | `Mui_options_window` | Tabs Video, Audio, Engine, Display, Input, UI, Advanced. Cross-tab search in the title bar; help line; badges; Reset page, Cancel, Apply. |
+| Key bindings | `Mui_keys_editor`, `Mui_keys_model` (end of the Input tab) | Every bindable action with its keys, grouped Game keys, Cheat keys, Map editor keys; rebind by pressing a key, conflict questions, From mod and Overridden by mod badges, Unbind, Reset, Reset all keys, filter. See Key Bindings below. |
 | Advanced | `Mui_config_editor` (inside Options) | exult.cfg tree with counts, filter, full paths, typed controls, Applies now / Needs restart, Changed from default, Reset to default, Not set rows, "Other" for unknown keys. |
 | Journey Log | `Mui_journey_window` | Cards or list, thumbnails, search, sort, details panel (saved at, in-game time, play time, party, game, mod, running build), New save, Save here, Load, Rename, Delete. |
 | Cheats | `Mui_cheat_window` | Red accent, standing warning, sidebar Player, World & time, NPCs, Teleport, Global flags, Usecode, Map editor; opens the text-mode menus for the deep tools and "Open classic cheat screen" for the whole RootMenu. |
@@ -178,6 +179,20 @@ Why not FreeType now: Exult itself links neither FreeType nor SDL_ttf (FreeType 
 **Options models.** `Mui_options_model` builds each classic option gump (VideoOptions_gump … UIOptions_gump) without showing it (each header gains only `friend class Mui_options_model;`), reads its buttons (`Gump_ToggleTextButton::get_selections()`, `getselection()`), changes values with the gump's own `toggle_*` methods into a scratch render target, and applies with the gump's own `save_settings()`. Keys and side effects are therefore those of the classic gumps. No/Yes, Off/On and Disabled/Enabled become toggles, ordered numeric choices sliders, other two-choice sets segmented controls, the rest dropdowns. Game Area is always a dropdown and offers every size the classic gump knows on any platform (Auto, 320×200, 400×250, 480×300 and a custom size from exult.cfg), ordered by size. The UI page also has two rows with no classic button (`Row::native_key`): Menu style and Menu size, written to exult.cfg on Apply.
 
 **Cheat screen bridge.** `CheatScreen::run_menu_screen(Which, Actor*, unsigned flag)` runs one text-mode submenu (Root, NPC, Usecode, Teleport, GlobalFlag) with `show_screen()`'s setup and teardown, now split into `begin_screen()`/`end_screen()`. `CheatScreen::toggle_paperdolls()` is shared by both screens.
+
+---
+## Key Bindings
+The Input tab of the themed Options window (Ultima and Modern styles) ends with a Key bindings section. The Classic style is unchanged: Options there is the original gump set, and its Input options gump has no key editor.
+
+**How Exult reads keys** (keys.cc, gamewin.cc). A keys file has one binding per line: `[Ctrl-][Alt-][Shift-]KEY  ACTION  [up to 4 numbers]  [# help text]`. KEY is one printable character (not `% { | } ~`) or a name such as `ESC`, `SPACE`, `ENTER`, `UP`, `KP7`, `KP+`, `F1`..`F15`; `#-` hides a line from the help screen. One key has one action; an action can have many keys; a later line for the same key replaces the earlier one. The same action with other numbers is another command (`walk_west` runs, `walk_west 1` walks). At game start `KeyBinder::LoadConfigured()` reads `config/disk/game/<game>/keys`: `(default)` loads the built-in set (`config/defaultkeys` in exult.flx, from data/bg|si/defaultkeys.txt), any other value loads that file instead of the defaults (the defaults are not loaded too). Then `<PATCH>/patchkeys.txt` (a mod's keys) loads on top, so a mod's key always wins.
+
+**Where the editor writes.** Its own file `<SAVEGAME>/keys-<game>.txt` (for example `keys-silverseed.txt` in the save folder), with the first line `# exult-keys-editor v1`, and it sets `config/disk/game/<game>/keys` to that absolute path. No new exult.cfg key. Because a keys file replaces the defaults, the file is a complete list of the user's keys (defaults plus edits), never a list of changes; a mod's keys are never written into it. It writes `<file>.tmp`, checks that the text reads back as exactly the pending keys, then renames it into place. It never writes the built-in defaults, a mod's patchkeys.txt or any keys file it did not write: if the setting names another file, Apply asks "save to the editor's file and use that instead? (the other file is not changed)"; if the editor's own path holds a file without the first line, it refuses and says so. When every key is back to the built-in set, Apply sets the key to `(default)` and leaves any old file of the editor unused.
+
+**Applying.** Changes are held until the window's Apply, like every Options page ("Applies now" and "Changed" badges on edited rows; Reset page and Cancel drop them). Apply reloads the bindings at once with the same `LoadConfigured()` as game start: no restart. To make that safe `KeyBinder::DoAction` takes the action by value (the window can be opened from a key action whose binding the reload frees) and the Avatar is stopped after a reload (a held walk key's release would no longer match).
+
+**Editing.** Click a key (or Add key) and press the new key; the capture sees the key as SDL delivered it (`Gump::raw_key_event`, before the keypad is mapped by NumLock), with Shift, Ctrl and Alt (Cmd counts as Alt on macOS), exactly as the bindings match. Escape cancels the capture, so Escape cannot be bound here; Alt-X and Ctrl-Alt-S are taken by the window manager loop before the window sees them. Modifier keys on their own are ignored. A key another action has asks "X is already used by Y. Use it for Z instead?"; Yes moves it (Y may be left Not set). A key the row already has, a key with no keys-file name, and a mod's key are refused with a message. Unbind clears a row; Reset puts a row back to its built-in keys (asking if one of them now belongs to another action); Reset all keys puts the whole set back. Rows with keys from `<PATCH>/patchkeys.txt` show "From mod" and those keys are read-only; a user key hidden by a mod's key shows "Overridden by mod". Actions that do nothing without numbers (useitem, call_usecode, move_selected, cycle_frames_next/prev, play_music) are listed only for the commands a keys file binds. The list comes from the action table (`KeyBinder::ListActions()`), so actions added on other branches (for example the Troubleshooting action `game_doctor`) appear without editor changes; cheat and map editor keys are collapsed until opened, found or filtered.
+
+**Search.** The window search lists the section ("key", "binding", "shortcut", "rebind", ...) and each matching action (by label, action name or key) under Input; Enter or a click jumps to the Input tab and highlights the row. Strings: data/exultmsg.txt 0xDD0–0xDF8.
 
 ---
 ## Configuration Keys
@@ -241,6 +256,9 @@ The editor keeps edits pending until Apply, validates them all, then calls `conf
 | `expect-cheat NAME on\|off`, `expect-time D H M`, `expect-flag N on\|off` | Cheat checks. |
 | `expect-style NAME`, `expect-scale N` (UI scale × 100), `expect-frame [W H]` (window size; logs it), `expect-no-widget ID`, `expect-game-area W H` | Window and display checks. |
 | `ask TEXT`, `expect-answer yes\|no`, `prompt-number MIN MAX STEP DEFAULT`, `expect-number N [escaped]` | Ask a Yes/No or a number from the window on top (themed dialogs). |
+| `expect-binding KEY COMMAND\|none` | The live binding of a key (spec as for `key`), e.g. `expect-binding ctrl+s quicksave`, `expect-binding ctrl+u create_item 952 -1 100`. |
+| `expect-keysfile has\|lacks TEXT`, `expect-keysfile absent` | Text in the keys file `config/disk/game/<game>/keys` names. |
+| `expect-keys-roundtrip` | The key editor's file text for the live keys reads back as the same keys. |
 | `gclick X Y [right]`, `expect-gump CLASS\|none` | Click a point of the classic modal gump on top (relative to its origin, through its layer); check which classic gump is on top. |
 | `save-game NUM NAME`, `save-compression N`, `play-time SECS`, `restore-game NUM`, `expect-saves N`, `expect-visible N`, `expect-card-name I NAME`, `select-card NAME`, `expect-save-name NUM NAME`, `expect-save-play-time NUM none\|MIN`, `expect-restored yes\|no` | Journey Log checks. |
 
@@ -259,6 +277,7 @@ Run it headless only: `SDL_VIDEO_DRIVER=dummy SDL_AUDIO_DRIVER=dummy EXULT_MUI_T
 | gumps/Mui_game_menu.{h,cc} | Game menu. |
 | gumps/Mui_options_model.{h,cc}, gumps/Mui_options.{h,cc} | Options window. |
 | gumps/Mui_config_meta.{h,cc}, gumps/Mui_config_editor.{h,cc} | Advanced tab. |
+| gumps/Mui_keys_model.{h,cc}, gumps/Mui_keys_editor.{h,cc} | Key bindings on the Input tab (model and widgets). |
 | gumps/Mui_journey_log.{h,cc} | Journey Log. |
 | gumps/Mui_cheats.{h,cc} | Cheat window. |
 | gumps/Mui_selftest.{h,cc} | Headless test driver. |
@@ -276,3 +295,4 @@ User-visible strings are in data/exultmsg.txt, block 0xC00–0xDFF.
 - Saves do not record the Exult build that wrote them; the details panel shows the running build, labelled as such.
 - Comments in exult.cfg follow `Configuration::write_back` behaviour.
 - The Exult launcher menu stays classic.
+- The key editor cannot bind Escape, Alt-X or Ctrl-Alt-S, does not edit a mod's patchkeys.txt, and does not add new rows for actions that need numbers (they can only be rekeyed where a keys file binds them).

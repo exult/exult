@@ -110,6 +110,10 @@ public:
 		return false;
 	}
 
+	// A key capture: gets every key press first (Tab and Escape too).
+	virtual bool wants_raw_keys() const {
+		return false;
+	}
 	// Called when the widget loses keyboard focus.
 	virtual void on_blur() {}
 

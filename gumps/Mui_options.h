@@ -20,6 +20,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define MUI_OPTIONS_H
 
 #include "Mui_config_editor.h"
+#include "Mui_keys_editor.h"
 #include "Mui_options_model.h"
 #include "Mui_window.h"
 
@@ -34,7 +35,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *  behave and are saved exactly as in the classic screens. A search field
  *  in the title bar finds settings on every page by name, help text or
  *  config key. Changes are held until Apply. The Advanced tab
- *  (Mui_config_editor) edits any exult.cfg key directly.
+ *  (Mui_config_editor) edits any exult.cfg key directly. The Input tab ends
+ *  with the Key bindings section (Mui_keys_editor); its actions and keys
+ *  are found by the search too.
  */
 class Mui_options_window : public Mui_window {
 public:
@@ -57,6 +60,7 @@ private:
 
 	std::vector<std::unique_ptr<Model>> models;    // One per classic tab.
 	std::unique_ptr<Mui_config_editor>  editor;    // The Advanced tab.
+	std::unique_ptr<Mui_keys_editor>    keys;      // Key bindings, end of the Input tab.
 	std::string                         search;
 	std::string                         highlight;    // Control id of a found row.
 
@@ -71,6 +75,8 @@ private:
 	void reset_page();
 	void jump_to(int tab, const std::string& id);
 	void jump_to_key(const std::string& path);
+	void jump_to_key_row(const std::string& id);
+	void jump_to_key_section();
 };
 
 #endif

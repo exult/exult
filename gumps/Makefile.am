@@ -81,6 +81,10 @@ libgumps_la_SOURCES = \
 	Mui_game_menu.h \
 	Mui_journey_log.cc \
 	Mui_journey_log.h \
+	Mui_keys_editor.cc \
+	Mui_keys_editor.h \
+	Mui_keys_model.cc \
+	Mui_keys_model.h \
 	Mui_options.cc \
 	Mui_options.h \
 	Mui_options_model.cc \

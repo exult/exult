@@ -32,6 +32,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #		pragma GCC diagnostic ignored "-Wuseless-cast"
 #	endif
 #endif    // __GNUC__
+#include <SDL3/SDL_events.h>
 #include <SDL3/SDL_keycode.h>
 #ifdef __GNUC__
 #	pragma GCC diagnostic pop
@@ -99,6 +100,11 @@ public:
 		return false;
 	}
 
+	// The key event as SDL delivered it, just before key_down gets the
+	// translated key (the keypad is mapped by NumLock there).
+	virtual void raw_key_event(const SDL_Event& ev) {
+		ignore_unused_variable_warning(ev);
+	}
 	virtual bool key_down(SDL_Keycode chr,
 						  SDL_Keycode unicode) {    // Key pressed
 		ignore_unused_variable_warning(chr, unicode);

@@ -23,6 +23,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "Mui_theme.h"
 #include "Mui_widgets.h"
 
+#include <SDL3/SDL_events.h>
+
 #include <functional>
 #include <memory>
 #include <string>
@@ -65,7 +67,13 @@ public:
 	bool     mousewheel_up(int mx, int my) override;
 	bool     mousewheel_down(int mx, int my) override;
 	bool     key_down(SDL_Keycode chr, SDL_Keycode unicode) override;
+	void     raw_key_event(const SDL_Event& ev) override;
 	bool     text_input(const char* text) override;
+
+	// The last key event as SDL delivered it (for key capture widgets).
+	const SDL_Event& last_raw_key() const {
+		return raw_key;
+	}
 
 	// Widget services.
 	const Mui_theme& theme() const {
@@ -258,6 +266,7 @@ private:
 	Mui_widget*          hover         = nullptr;
 	Mui_widget*          focus         = nullptr;
 	Mui_widget*          pressed       = nullptr;
+	SDL_Event            raw_key{};
 	bool                 text_input_on = false;
 	uint32               caret_ticks   = 0;
 

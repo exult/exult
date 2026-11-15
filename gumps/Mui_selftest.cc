@@ -28,6 +28,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "Gump_manager.h"
 #include "Mui_dialogue_test.h"
 #include "Mui_journey_log.h"
+#include "Mui_keys_model.h"
 #include "Mui_router.h"
 #include "Mui_window.h"
 #include "Newfile_gump.h"
@@ -40,9 +41,11 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "gameclk.h"
 #include "gamewin.h"
 #include "keyactions.h"
+#include "keys.h"
 #include "listfiles.h"
 #include "mouse.h"
 #include "ucmachine.h"
+#include "utils.h"
 #include "vgafile.h"
 
 #include <SDL3/SDL.h>
@@ -51,6 +54,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <cstdlib>
 #include <fstream>
 #include <iostream>
+#include <map>
 #include <sstream>
 #include <string>
 #include <thread>
@@ -269,6 +273,61 @@ namespace {
 		SDL_PushEvent(&e);
 	}
 
+	// The command a key is bound to now, e.g. "quicksave" or
+	// "create_item 952 -1 100"; "none" if unbound (a mod's key counts).
+	std::string binding_of(const std::string& spec) {
+		SDL_Keycode key;
+		SDL_Keymod  mod;
+		if (!keybinder || !parse_key(spec, key, mod)) {
+			return "<bad key>";
+		}
+		SDL_Event e{};
+		e.type    = SDL_EVENT_KEY_DOWN;
+		e.key.key = key;
+		e.key.mod = mod;
+		ExultKey k{key, SDL_KMOD_NONE};
+		KeyBinder::NormaliseEvent(e, k);
+		for (const auto& b : keybinder->ListBindings()) {
+			if (b.effective && b.key.key == k.key && b.key.mod == k.mod) {
+				std::string out = b.action;
+				int         n   = b.nparams;
+				while (n > 0 && b.params[n - 1] == -1) {
+					n--;
+				}
+				for (int i = 0; i < n; i++) {
+					out += " " + std::to_string(b.params[i]);
+				}
+				return out;
+			}
+		}
+		return "none";
+	}
+
+	std::string keys_file_path() {
+		std::string path;
+		config->value(("config/disk/game/" + Game::get_gametitle() + "/keys").c_str(), path, "(default)");
+		return path;
+	}
+
+	// The user's live bindings as key = command lines, sorted.
+	std::vector<std::string> flatten_bindings(const std::vector<KeyBinder::Binding>& all, bool user_only) {
+		std::map<std::string, std::string> m;
+		for (const auto& b : all) {
+			if (user_only && b.source == KeyBinder::Source::patch) {
+				continue;
+			}
+			std::string v = b.action;
+			for (int i = 0; i < c_maxparams; i++) {
+				v += " " + std::to_string(b.params[i]);
+			}
+			m[std::to_string(b.key.key) + "/" + std::to_string(unsigned(b.key.mod))] = v;
+		}
+		std::vector<std::string> out;
+		for (const auto& kv : m) {
+			out.push_back(kv.first + " " + kv.second);
+		}
+		return out;
+	}
 	int count_saves() {
 		char mask[256];
 		snprintf(mask, sizeof(mask), SAVENAME2, GAME_BG ? "bg" : GAME_SI ? "si" : "dev");
@@ -506,6 +565,55 @@ namespace {
 				got = "<absent>";
 			}
 			expect(got == want, "config " + key + " = " + want, got);
+		} else if (cmd == "expect-binding") {
+			// expect-binding KEY ACTION [PARAMS...] | none
+			std::string spec;
+			args >> spec;
+			std::string want;
+			std::getline(args, want);
+			const auto wb         = want.find_first_not_of(' ');
+			want                  = wb == std::string::npos ? std::string() : want.substr(wb);
+			const std::string got = binding_of(spec);
+			expect(got == want, "binding " + spec + " = " + want, got);
+		} else if (cmd == "expect-keysfile") {
+			// expect-keysfile has|lacks|absent [TEXT]: the file the keys setting names.
+			std::string how;
+			args >> how;
+			std::string text;
+			std::getline(args, text);
+			const auto tb          = text.find_first_not_of(' ');
+			text                   = tb == std::string::npos ? std::string() : text.substr(tb);
+			const std::string path = keys_file_path();
+			std::string       body;
+			bool              exists = false;
+			if (path != "(default)") {
+				if (auto in = U7open_in(path.c_str(), true)) {
+					exists = true;
+					std::ostringstream all;
+					all << in->rdbuf();
+					body = all.str();
+				}
+			}
+			if (how == "absent") {
+				expect(!exists, "keys file absent", path + (exists ? " exists" : ""));
+			} else if (how == "has") {
+				expect(exists && body.find(text) != std::string::npos, "keys file has " + text,
+					   exists ? "text missing" : "no file");
+			} else if (how == "lacks") {
+				expect(exists && body.find(text) == std::string::npos, "keys file lacks " + text,
+					   exists ? "text present" : "no file");
+			} else {
+				expect(false, "expect-keysfile " + how, "has|lacks|absent");
+			}
+		} else if (cmd == "expect-keys-roundtrip") {
+			// The editor's snapshot of the live keys reads back as the same keys.
+			Mui_keys_model model;
+			KeyBinder      scratch;
+			scratch.LoadFromText(model.snapshot(), KeyBinder::Source::file);
+			const auto want = flatten_bindings(keybinder ? keybinder->ListBindings() : std::vector<KeyBinder::Binding>(), true);
+			const auto got  = flatten_bindings(scratch.ListBindings(), false);
+			expect(!want.empty() && want == got, "keys round trip",
+				   std::to_string(got.size()) + " keys read back, " + std::to_string(want.size()) + " expected");
 		} else if (cmd == "expect-widget") {
 			std::string id;
 			std::string want;

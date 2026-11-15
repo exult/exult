@@ -598,22 +598,7 @@ void Game_window::init_files(bool cycle) {
 	delete keybinder;
 	keybinder = new KeyBinder();
 
-	std::string d;
-	std::string keyfilename;
-	d = "config/disk/game/" + Game::get_gametitle() + "/keys";
-	config->value(d.c_str(), keyfilename, "(default)");
-	if (keyfilename == "(default)") {
-		config->set(d.c_str(), keyfilename, true);
-		keybinder->LoadDefaults();
-	} else {
-		try {
-			keybinder->LoadFromFile(keyfilename.c_str());
-		} catch (file_open_exception&) {
-			cerr << "Key mappings file '" << keyfilename << "' not found, falling back to default mappings." << endl;
-			keybinder->LoadDefaults();
-		}
-	}
-	keybinder->LoadFromPatch();
+	keybinder->LoadConfigured();
 	cycle_load_palette();
 
 	int fps;    // Init. animation speed.

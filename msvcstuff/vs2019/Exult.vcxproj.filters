@@ -770,6 +770,12 @@
     <ClCompile Include="..\..\gumps\Mui_journey_log.cc">
       <Filter>gumps</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\gumps\Mui_keys_editor.cc">
+      <Filter>gumps</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\gumps\Mui_keys_model.cc">
+      <Filter>gumps</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\gumps\Mui_options.cc">
       <Filter>gumps</Filter>
     </ClCompile>
@@ -1580,6 +1586,12 @@
       <Filter>gumps</Filter>
     </ClInclude>
     <ClInclude Include="..\..\gumps\Mui_journey_log.h">
+      <Filter>gumps</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\gumps\Mui_keys_editor.h">
+      <Filter>gumps</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\gumps\Mui_keys_model.h">
       <Filter>gumps</Filter>
     </ClInclude>
     <ClInclude Include="..\..\gumps\Mui_options.h">

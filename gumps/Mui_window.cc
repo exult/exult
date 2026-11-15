@@ -1120,9 +1120,16 @@ bool Mui_window::text_input(const char* text) {
 	return true;
 }
 
+void Mui_window::raw_key_event(const SDL_Event& ev) {
+	raw_key = ev;
+}
 bool Mui_window::key_down(SDL_Keycode chr, SDL_Keycode unicode) {
 	process_pending();
 	dirty = true;
+	// A key capture sees every key, including Tab and Escape.
+	if (chr != SDLK_UNKNOWN && focus && focus->is_live() && focus->wants_raw_keys() && focus->on_key(chr, int(unicode))) {
+		return true;
+	}
 	// Text input events arrive with chr == SDLK_UNKNOWN.
 	if (chr == SDLK_UNKNOWN) {
 		if (focus && focus->wants_text() && unicode >= ' ' && unicode < 127) {
