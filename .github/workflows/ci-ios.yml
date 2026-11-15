@@ -53,6 +53,7 @@ on:
       - "!.github/workflows/*"
       - ".github/workflows/ci-ios.yml"
       - ".github/workflows/notify.yml"
+  workflow_dispatch:
 
 jobs:
   ci-ios:

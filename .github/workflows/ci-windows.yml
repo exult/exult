@@ -51,7 +51,8 @@ on:
       - "!.gitattributes"
       - "!.github/workflows/*"
       - ".github/workflows/ci-windows.yml"
-
+  workflow_dispatch:
+    
 jobs:
   ci-windows:
     runs-on: ${{ matrix.runner }}
