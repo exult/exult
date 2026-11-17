@@ -112,6 +112,11 @@ version: 0.15.15
 	  and the plain shield had a few problems.
 	- The Pillars in dining hall of Serpent's Fang Keep no longer teleport you
 	  to the Test of Purity;
+	- Isstanar now keeps Surok's promise: once Aram-Dol is slain (or his blue
+	  orb taken from his lair), he rewards you with gold and a sealed
+	  commendation.
+	- Surok now takes Commander Ardiniss's body if you bring it back to
+	  Serpent's Fang, as he asks you to.
 	- After the the Wall of Lights cutscene, you can no longer summon Thoxa to
 	  "resurrect" your possessed party. Or rather, you can summon her, but she
 	  won't bring Iolo, Dupre and Shamino back as they are the Banes now. Even
@@ -180,6 +185,14 @@ version: 0.15.15
 	    
 6	Version history
 -------------------
+version 0.15.18 - 2026-11-13
+	- Aram-Dol's death is now recorded: the egg that creates him (0x769) tags
+	  him, and his shape (0x3D5) sets the new flag ARAM_DOL_SLAIN (813).
+	- Isstanar (0x3B1) pays the reward Surok promises for Aram-Dol, once; new
+	  flag ISSTANAR_REWARDED_ARAM_DOL (814). Surok (0x3B2) reminds you of it.
+	- Surok (0x3B2) takes Commander Ardiniss's body and gives back what was in
+	  it, and turns away other bodies; new flag ARDINISS_BROUGHT_HOME (815).
+	- The commendation (scroll 0x31D, quality 184) has its own text.
 version 0.15.17 - 2025-02-26
 	- Upped the intelligence to 6 of shapes 299 (Cantra), 652 (Frigidazzi, Lydia),
 	  660 (skinless Yelinda), 744 (Goblin woman) so they can act on npc->is_sentient.
