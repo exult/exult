@@ -115,6 +115,9 @@
 // Show a hint that tracking Batlin via his Medallion is required to progress
 #include "misc/egg_shamino_sees_his_castle.uc"
 
+// The prisoner in Vasculio's cell no longer comes back after being freed
+#include "misc/vasculio_prisoner.uc"
+
 // Dupre now refuses to leave in Spinebreaker mountains
 #include "npcs/dupre.uc"
 
