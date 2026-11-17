@@ -47,9 +47,49 @@ libimagewin_la_SOURCES += \
 	BilinearScalerInternal_X2Y24.cpp \
 	PointScaler.cpp \
 	PointScaler.h \
+	scale_scalefx.h \
+	scalefx_gpu.h \
+	scalefx_gpu_ui.h \
+	scaler_shaders.h \
+	shaders/scalers_spirv.h \
+	shaders/scalers_metal.h \
+	shaders/scalers_dxil.h \
+	shaders/scalers_hq_lut.h \
 	scale_xbr.cc \
 	scale_xbr.h
 endif
 endif
 
-EXTRA_DIST =
+EXTRA_DIST = \
+	tests/validate_spirv.py \
+	tests/validate_metal.py \
+	tests/run_gpu_tests.ps1 \
+	tests/test_gpu_fallback.cc \
+	tests/test_shader_selection.cc \
+	tests/run_gpu_tests.sh \
+	shaders/LICENSE.scalers \
+	tests/test_gpu_lifecycle.cc \
+	tests/test_gpu_scalers.cc \
+	tests/scaler_reference.h \
+	tests/scaler_reference.cc \
+	tests/hq_reference.cc \
+	shaders/generate_scalers.py \
+	shaders/scalers.frag \
+	shaders/scalers-output.frag \
+	tests/test_scalefx_gpu_ui.cc \
+	shaders/scalefx-reduce.frag \
+	shaders/scalefx-matte.frag \
+	shaders/LICENSE.scalefx \
+	shaders/scalefx.vert \
+	shaders/scalefx-0.frag \
+	shaders/scalefx-1.frag \
+	shaders/scalefx-2.frag \
+	shaders/scalefx-3.frag \
+	shaders/scalefx-4.frag \
+	shaders/compile_scalefx.py \
+	tests/test_scalefx_gpu.cc \
+	tests/test_scalefx.cc \
+	tests/benchmark_scalefx.cc \
+	tests/compare_scalefx.py \
+	tests/slopes-32-24.txt \
+	tests/noise-17-19.txt

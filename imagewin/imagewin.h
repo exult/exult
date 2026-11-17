@@ -57,6 +57,12 @@ struct SDL_IOStream;
  *   should be derived from it.
  */
 
+namespace ScaleFX {
+	struct Workspace;
+	class GPU;
+	class UIGPU;
+}
+
 namespace Pentagram {
 	class ArbScaler;
 }
@@ -177,6 +183,8 @@ public:
 		friend class Image_window8;
 		SDL_Surface*                  surface = nullptr;    // SDL Surface for buf
 		std::unique_ptr<Image_buffer> buf;                  // 8-bit drawing buffer.
+		std::unique_ptr<ScaleFX::GPU> scalefx_gpu;
+		std::unique_ptr<ScaleFX::UIGPU> scalefx_ui_gpu;
 		struct SDL_Texture*           texture = nullptr;    // GPU cache (rebuilt on resize).
 		int                           logw;                 // Logical (game-pixel) width.
 		int                           logh;                 // Logical (game-pixel) height.
@@ -251,6 +259,11 @@ public:
 	};
 
 private:
+	std::unique_ptr<ScaleFX::Workspace>               scalefx_workspace;
+	std::unique_ptr<ScaleFX::GPU>                     scalefx_gpu;
+	bool                                              scaler_gpu_enabled      = true;
+	bool                                              scaler_gpu_world_failed = false;
+	bool                                              show_scaled_gpu(int x, int y, int w, int h);
 	static ScalerVector                               p_scalers;
 	static std::map<uint32, Image_window::Resolution> p_resolutions;
 	static bool                                       any_res_allowed;
@@ -261,6 +274,7 @@ public:
 	static const bool&                                       AnyResAllowed;
 
 	static ScalerType get_scaler_for_name(const char* scaler);
+	static int        normalize_scalefx_factor(int factor);
 
 	static inline const char* get_name_for_scaler(int num) {
 		if (num < 0 || static_cast<size_t>(num) >= Scalers.size()) {
@@ -303,6 +317,7 @@ public:
 	static const ScalerConst    _2xBR;
 	static const ScalerConst    _3xBR;
 	static const ScalerConst    _4xBR;
+	static const ScalerConst    ScaleFX;
 	static const ScalerConst    SDLScaler;
 	static const ScalerConst    NumScalers;
 
@@ -396,7 +411,7 @@ protected:
 											 // screen_texture and contains the current full frame being displayed
 
 	// Update screen_texture_a with the dirtyRect changes made to screen_texture and render fullRect of screen_texture_a
-	void UpdateRect(SDL_FRect* dirtyRect, SDL_FRect* fullRect, bool for_screenshot);
+	void UpdateRect(SDL_FRect* dirtyRect, SDL_FRect* fullRect, bool for_screenshot, bool already_updated = false);
 
 	SDL_Surface* paletted_surface;    // Surface that palette is set on (Example
 									  // res) - Never null
@@ -440,6 +455,12 @@ protected:
 	// into a 32-bit destination surface, by temporarily repointing the
 	// scaling state.  Returns false if the current scaler can't be used this
 	// way (arb or SDL scaler).  Used to apply the game scaler to layers.
+	static int gpu_scaler_method(int method);
+	bool       scale_layer_gpu(Layer& layer, SDL_Surface* source, int factor);
+
+	bool gpu_scalers_allowed() const {
+		return scaler_gpu_enabled;
+	}
 	bool scale_layer_color(const Layer& layer, struct SDL_Surface* src8, int logw, int logh, struct SDL_Surface* dst32);
 	// Free any GPU textures owned by layers (e.g. before the renderer is
 	// destroyed).  The layers and their buffers are kept.
@@ -448,6 +469,9 @@ protected:
 	/*
 	 *   Scaled blits:
 	 */
+	void show_scaled8to16_ScaleFX(int x, int y, int w, int h);
+	void show_scaled8to32_ScaleFX(int x, int y, int w, int h);
+
 	void show_scaled8to16_2xSaI(int x, int y, int w, int h);
 	void show_scaled8to555_2xSaI(int x, int y, int w, int h);
 	void show_scaled8to565_2xSaI(int x, int y, int w, int h);
@@ -568,14 +592,7 @@ public:
 	// Create with given buffer.
 	Image_window(
 			Image_buffer* ib, int w, int h, int gamew, int gameh, int scl = 1, bool fs = false, int sclr = point,
-			FillMode fmode = AspectCorrectCentre, int fillsclr = point)
-			: ibuf(ib), scale(scl), scaler(sclr), uses_palette(true), fullscreen(fs), game_width(gamew), game_height(gameh),
-			  saved_game_width(gamew), saved_game_height(gameh), fill_mode(fmode), fill_scaler(fillsclr), screen_window(nullptr),
-			  screen_renderer(nullptr), screen_texture(nullptr), screen_texture_a(nullptr), paletted_surface(nullptr),
-			  inter_surface(nullptr), draw_surface(nullptr) {
-		static_init();
-		create_surface(w, h);
-	}
+			FillMode fmode = AspectCorrectCentre, int fillsclr = point);
 
 	virtual ~Image_window();
 

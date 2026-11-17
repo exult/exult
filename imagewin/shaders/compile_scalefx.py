@@ -1,0 +1,98 @@
+#!/usr/bin/env python3
+"""Regenerate embedded SPIR-V with glslangValidator (development-time only)."""
+import os
+import re
+from pathlib import Path
+import shutil
+import struct
+import subprocess
+import tempfile
+
+ROOT = Path(__file__).resolve().parent
+
+
+def strict_arithmetic(words):
+    """Prevent vendor FMA contraction in the CPU-matching edge arithmetic."""
+    decorations = []
+    position = 5  # SPIR-V module header.
+    insertion = None
+    while position < len(words):
+        count, opcode = words[position] >> 16, words[position] & 65535
+        if insertion is None and 19 <= opcode <= 39:  # First type declaration.
+            insertion = position
+        if opcode in (129, 131, 133, 136, 142, 148):  # Floating arithmetic.
+            # OpDecorate <result id> NoContraction; no new ids are allocated.
+            decorations.extend([(3 << 16) | 71, words[position + 2], 42])
+        position += count
+    if decorations:
+        assert insertion is not None
+        words[insertion:insertion] = decorations
+    return words
+
+
+def main():
+    import argparse
+    import sys
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--format", choices=("all", "spirv", "metal", "dxil"), default="all")
+    args = parser.parse_args()
+    formats = ("spirv", "metal", "dxil") if args.format == "all" else (args.format,)
+    subprocess.run([sys.executable, str(ROOT / "generate_scalers.py")], check=True)
+    modules = [(f"pass{i}", ROOT / f"scalefx-{i}.frag") for i in range(5)]
+    modules += [(f"pass{i}", ROOT / f"scalefx-{i}.frag") for i in ("reduce", "matte")]
+    modules += [("passvertex", ROOT / "scalefx.vert"), ("scalers", ROOT / "scalers.frag"),
+                ("scalersoutput", ROOT / "scalers-output.frag")]
+    output = {fmt: [] for fmt in formats}
+    with tempfile.TemporaryDirectory() as temporary:
+        for name, source in modules:
+            binary = Path(temporary) / (name + ".spv")
+            # Metal imports its standard namespace. Prefix custom helpers to
+            # avoid collisions with types such as metal::level and overloads.
+            code = source.read_text()
+            helpers = set(re.findall(r"(?m)^\s*(?:void|float|int|uint|bool|[biu]?vec[234])\s+(\w+)\s*\(", code)) - {"main"}
+            for helper in sorted(helpers):
+                code = re.sub(r"\b" + re.escape(helper) + r"(?=\s*\()", "exult_sfx_" + helper, code)
+            portable_source = Path(temporary) / source.name
+            portable_source.write_text(code)
+            subprocess.run([os.environ.get("GLSLANG_VALIDATOR", "glslangValidator"), "-V",
+                            "--target-env", "vulkan1.0", "-o", str(binary), str(portable_source)], check=True)
+            data = binary.read_bytes()
+            words = strict_arithmetic(list(struct.unpack("<" + "I" * (len(data) // 4), data)))
+            binary.write_bytes(struct.pack("<" + "I" * len(words), *words))
+            validator = os.environ.get("SPIRV_VAL") or shutil.which("spirv-val")
+            if validator:
+                subprocess.run([validator, "--target-env", "vulkan1.0", str(binary)], check=True)
+            if "spirv" in output:
+                output["spirv"].append(f"inline constexpr uint32_t {name}[]={{\n" + "".join(
+                    "    " + ",".join(f"0x{x:08x}" for x in words[i:i+8]) + ",\n"
+                    for i in range(0, len(words), 8)) + "};\n")
+            for fmt in (f for f in formats if f != "spirv"):
+                native = Path(temporary) / (name + (".metal" if fmt == "metal" else ".hlsl"))
+                options = ["--msl", "--msl-version", "20100"] if fmt == "metal" else ["--hlsl", "--shader-model", "60"]
+                subprocess.run([os.environ.get("SPIRV_CROSS", "spirv-cross"), str(binary), *options,
+                                "--output", str(native)], check=True)
+                if fmt == "metal":
+                    code = "#pragma clang fp contract(off)\n#pragma clang fp reassociate(off)\n" + native.read_text()
+                    # Numeric character arrays avoid MSVC's string literal
+                    # length limit when Metal sources ship on Windows too.
+                    data = code.encode("ascii") + b"\0"
+                    output[fmt].append(f"inline constexpr char {name}[]={{\n" + "".join(
+                        "    " + ",".join(str(x) for x in data[i:i+24]) + ",\n"
+                        for i in range(0, len(data), 24)) + "};\n")
+                else:
+                    dxil = Path(temporary) / (name + ".dxil")
+                    subprocess.run([os.environ.get("DXC", "dxc"), "-T",
+                                    "vs_6_0" if source.suffix == ".vert" else "ps_6_0", "-E", "main",
+                                    "-Gis", "-Fo", str(dxil), str(native)], check=True)
+                    data = dxil.read_bytes()
+                    output[fmt].append(f"inline constexpr unsigned char {name}[]={{\n" + "".join(
+                        "    " + ",".join(str(x) for x in data[i:i+24]) + ",\n"
+                        for i in range(0, len(data), 24)) + "};\n")
+    notice = "/* Generated by compile_scalefx.py. See LICENSE.scalefx and LICENSE.scalers. */\n"
+    for fmt, parts in output.items():
+        text = notice + "#pragma once\n#include <cstdint>\n" + f"namespace ScaleFX {{ namespace Shaders {{ namespace {fmt.upper()} {{\n" + "".join(parts) + "}}}\n"
+        (ROOT / f"scalers_{fmt}.h").write_text("\n".join(line.rstrip() for line in text.splitlines()) + "\n")
+
+
+if __name__ == "__main__":
+    main()
