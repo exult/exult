@@ -62,7 +62,7 @@ jobs:
           update: true
           release: true
           install: |
-            base-devel git p7zip zip
+            base-devel git p7zip zip bison flex dos2unix
             ${{ matrix.env }}-toolchain ${{ matrix.env }}-binutils ${{ matrix.env }}-ntldd 
              ${{ matrix.env }}-zlib
              ${{ matrix.env }}-autotools ${{ matrix.env }}-cmake            
