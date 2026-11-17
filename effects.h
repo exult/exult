@@ -30,7 +30,10 @@
 #include <list>
 #include <memory>
 #include <string>
+#include <vector>
 
+class IDataSource;
+class ODataSource;
 class Xform_palette;
 class PathFinder;
 class Game_object;
@@ -47,6 +50,15 @@ using Game_object_weak = std::weak_ptr<Game_object>;
  *  Manage special effects.
  */
 class Effects_manager {
+	// Weather read from a savegame, waiting for restore_weather().
+	struct Saved_weather {
+		int        type;       // Weather number (1-6).
+		int        minutes;    // Game minutes left.
+		Tile_coord eggloc;     // Egg that started it, or (-1, -1, -1).
+	};
+
+	std::vector<Saved_weather> saved_weather;
+
 	Game_window*                               gwin;       // Handy pointer.
 	std::list<std::unique_ptr<Special_effect>> effects;    // Sprite effects, projectiles, etc.
 	std::list<std::unique_ptr<Text_effect>>    texts;      // Text snippets.
@@ -69,6 +81,20 @@ public:
 	// Remove just the weather.
 	void remove_weather_effects(int dist = 0);
 	void remove_usecode_lightning();
+	// Weather in savegames (gamewin.dat). read_weather() only reads it;
+	// restore_weather() starts it once the game is set up.
+	void write_weather(ODataSource& out) const;
+	void read_weather(IDataSource& in);
+	void restore_weather();
+
+	void clear_saved_weather() {
+		saved_weather.clear();
+	}
+
+	// Is a weather restore_weather() started, from this egg, still on?
+	// end_weather_restore() is called once the eggs have run after loading.
+	bool has_restored_weather(int num, const Tile_coord& eggloc) const;
+	void end_weather_restore();
 	int  get_weather();                  // Get # of last weather added.
 	bool has_active_sprites() const;     // Any sprite anims playing?
 	void set_sprites_always(bool tf);    // Set/clear 'always' on sprites.
@@ -271,6 +297,9 @@ protected:
 	uint32     stop_time;    // Time in 1/1000 secs. to stop.
 	int        num;          // Weather ID (0-6), or -1.
 	Tile_coord eggloc;       // Location of egg that started this.
+
+	bool restored = false;    // Started from a savegame.
+
 public:
 	Weather_effect(int duration, int delay, int n, Game_object* egg = nullptr);
 	// Avatar out of range?
@@ -280,8 +309,32 @@ public:
 		return true;
 	}
 
-	int get_num() {
+	int get_num() const {
 		return num;
+	}
+
+	// Weather Egg_object::set_weather() started, as opposed to the rain,
+	// clouds and lightning it adds. This is what savegames keep.
+	virtual bool is_saved_weather() const {
+		return num >= 0;
+	}
+
+	int get_minutes_left() const;    // Game minutes, rounded up.
+
+	const Tile_coord& get_eggloc() const {
+		return eggloc;
+	}
+
+	void set_eggloc(const Tile_coord& t) {
+		eggloc = t;
+	}
+
+	bool is_restored() const {
+		return restored;
+	}
+
+	void set_restored(bool tf) {
+		restored = tf;
 	}
 };
 
