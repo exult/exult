@@ -394,6 +394,18 @@
 						Verifies that the files in static dir are not corrupt.<br>
 						Only valid if used together with '<span class="highlight">--bg</span>', '<span class="highlight">--si</span>', '<span class="highlight">--fov</span>',
 						'<span class="highlight">--ss</span>', '<span class="highlight">--sib</span>' or '<span class="highlight">--game gamename</span>'; you cannot specify a mod with this flag.</li>
+					<li>'<span class="highlight">--autotest</span> <em>function</em>'<br>
+						Runs the usecode function <em>function</em> (decimal or <kbd>0x</kbd> hex) once after
+						the game has started, then quits. Meant for automated tests of usecode and gumps.
+						Use it with '<span class="highlight">--nomenu</span>' and SDL's dummy drivers to run without a window or
+						sound, for example <kbd>SDL_VIDEO_DRIVER=dummy SDL_AUDIO_DRIVER=dummy exult --nomenu --autotest 0x1F90</kbd>.
+						The function reports through the console (<kbd>UI_error_message</kbd>, <kbd>UI_printf</kbd>).
+						<em>Exult</em> prints <kbd>AUTOTEST: returned</kbd> when the function has finished. If a modal loop
+						(a conversation or a gump) blocks the quit, <em>Exult</em> exits with status 124 ten seconds after the timeout.</li>
+					<li>'<span class="highlight">--autotest-delay</span> <em>ms</em>'<br>
+						Milliseconds to wait before the '<span class="highlight">--autotest</span>' function runs (default 3000).</li>
+					<li>'<span class="highlight">--autotest-timeout</span> <em>seconds</em>'<br>
+						Seconds after which <em>Exult</em> quits when used with '<span class="highlight">--autotest</span>' (default 60).</li>
 					<li>'<span class="highlight">--edit</span>'<br>
 						Start in map-edit mode. This will also load <em>Exult Studio</em> when the game is started.</li>
 					<li>'<span class="highlight">--write-xml</span>'<br>
