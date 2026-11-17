@@ -45,6 +45,7 @@ Boston, MA  02111-1307, USA.
 
 #include <algorithm>
 #include <cstdlib>
+#include <functional>
 #include <iostream>
 #include <string>
 
@@ -765,6 +766,7 @@ bool Image_window::create_scale_surfaces(int w, int h, int bpp) {
 
 	set_ui_layer_config(UiLayerFullScreenBilinear, w, h, NoScaler, Fill, bilinear, true);
 	set_ui_layer_config(UiLayerFullScreenPoint, w, h, NoScaler, Fill, point, true);
+	set_ui_layer_config(UiLayerLikeGameWorld, draw_width, draw_height, scaler, fill_mode, fill_scaler, true);
 
 	return true;
 }
@@ -1270,6 +1272,18 @@ bool Image_window::screenshot(SDL_IOStream* dst, bool paletted) {
 	return false;
 }
 
+bool Image_window::SDLBlendModeSupported(SDL_BlendMode blendmode) {
+	SDL_BlendMode original;
+	if (!screen_renderer || !SDL_GetRenderDrawBlendMode(screen_renderer, &original)) {
+		return false;
+	}
+
+	bool supported = SDL_SetRenderDrawBlendMode(screen_renderer, blendmode);
+	SDL_SetRenderDrawBlendMode(screen_renderer, original);
+
+	return supported;
+}
+
 void Image_window::set_title(const char* title) {
 	SDL_SetWindowTitle(screen_window, title);
 }
@@ -1598,11 +1612,76 @@ int Image_window::create_layer(std::string&& name, int w, int h, unsigned char t
 	return static_cast<int>(layers.size() - 1);
 }
 
+int Image_window::create_sdl_render_target_layer(std::string&& name, int z, SDL_PixelFormat format) {
+	auto layer                      = std::make_unique<Layer>(nullptr, display_width, display_height, 0, 1, z, std::move(name));
+	layer->sdl_render_target_format = format;
+	layer->dirty                    = false;
+	// Reuse a freed slot if there is one, so handles stay stable.
+	for (size_t i = 0; i < layers.size(); i++) {
+		if (!layers[i]) {
+			layers[i] = std::move(layer);
+			return static_cast<int>(i);
+		}
+	}
+	layers.push_back(std::move(layer));
+	return static_cast<int>(layers.size() - 1);
+}
+
+bool Image_window::layer_get_is_sdl_rendertarget(int handle) {
+	if (handle < 0 || unsigned(handle) >= layers.size() || !layers[handle]) {
+		return false;
+	}
+	return layers[handle]->sdl_render_target_format != SDL_PIXELFORMAT_UNKNOWN;
+}
+
+bool Image_window::layer_set_sdl_render_target(int handle, int rthandle) {
+	if (handle < 0 || unsigned(handle) >= layers.size() || !layers[handle]) {
+		return false;
+	}
+	if (rthandle == -1) {
+		layers[handle]->sdl_render_target = nullptr;
+		return true;
+	}
+
+	if (rthandle < 0 || unsigned(rthandle) >= layers.size() || !layers[rthandle]
+		|| layers[rthandle]->sdl_render_target_format == SDL_PIXELFORMAT_UNKNOWN) {
+		return false;
+	}
+	layers[handle]->sdl_render_target = layers[rthandle].get();
+	return true;
+}
+
+int Image_window::layer_get_sdl_render_target(int handle) {
+	if (handle < 0 || unsigned(handle) >= layers.size() || !layers[handle]) {
+		return -1;
+	}
+	const auto& layer = layers[handle];
+
+	for (unsigned rthandle = 0; rthandle < layers.size(); rthandle++) {
+		const auto& rtl = layers[rthandle];
+		if (layer->sdl_render_target == rtl.get()) {
+			return rthandle;
+		}
+	}
+
+	return -1;
+}
+
 void Image_window::destroy_layer(int handle) {
 	if (handle < 0 || handle >= static_cast<int>(layers.size()) || !layers[handle]) {
 		return;
 	}
-	layers[handle].reset();
+	auto& layer = layers[handle];
+	if (layer->sdl_render_target_format != SDL_PIXELFORMAT_UNKNOWN) {
+		// Clear render target of any layer that was using this this layer as its render target
+		for (auto& l : layers) {
+			if (l && l->sdl_render_target == layer.get()) {
+				l->sdl_render_target = nullptr;
+			}
+		}
+	}
+
+	layer.reset();
 }
 
 Image_buffer* Image_window::get_layer_ibuf(int handle) {
@@ -1643,7 +1722,7 @@ bool Image_window::layer_is_visible(int handle) {
 	return layers[handle]->is_visible();
 }
 
-void Image_window::layer_set_index_argb(int handle, const uint32* argb256) {
+void Image_window::layer_set_index_argb(int handle, const uint32* argb256, bool nogc) {
 	if (handle < 0 || handle >= static_cast<int>(layers.size()) || !layers[handle]) {
 		return;
 	}
@@ -1652,6 +1731,7 @@ void Image_window::layer_set_index_argb(int handle, const uint32* argb256) {
 		layer.index_argb.clear();
 	} else {
 		layer.index_argb.assign(argb256, argb256 + 256);
+		layer.no_gammacorrection = nogc;
 	}
 	layer.set_dirty();
 }
@@ -1670,7 +1750,14 @@ void Image_window::layer_set_alpha(int handle, unsigned char a) {
 	layers[handle]->alpha = a;
 }
 
-void Image_window::layer_set_dest(int handle, int x, int y, int w, int h, bool add) {
+void Image_window::layer_set_blendmode(int handle, SDL_BlendMode blendmode) {
+	if (handle < 0 || handle >= static_cast<int>(layers.size()) || !layers[handle]) {
+		return;
+	}
+	layers[handle]->blend_mode = blendmode;
+}
+
+void Image_window::layer_set_dest(int handle, int x, int y, int w, int h, bool add, int alpha) {
 	if (handle < 0 || handle >= static_cast<int>(layers.size()) || !layers[handle]) {
 		return;
 	}
@@ -1683,6 +1770,7 @@ void Image_window::layer_set_dest(int handle, int x, int y, int w, int h, bool a
 	layer.dest.back().y = float(y);
 	layer.dest.back().w = float(w);
 	layer.dest.back().h = float(h);
+	layer.dest.back().a = alpha;
 }
 
 void Image_window::layer_clear_dest(int handle) {
@@ -1805,13 +1893,25 @@ SDL_Surface* Image_window::get_layer_dst32_surface(unsigned index, int w, int h)
 	return surface;
 }
 
-bool Image_window::get_layer_dest(const Layer& layer, SDL_FRect& dst, int num) {
+bool Image_window::get_layer_dest(const Layer& layer, SDL_FRect& dst, int& alpha, int num) {
 	if (num >= 0 && size_t(num) < layer.dest.size()) {    // Explicit placement (e.g. the mouse cursor).
-		dst = layer.dest[num];
+		const auto& dst_full = layer.dest[num];
+		dst                  = dst_full;
+		alpha                = dst_full.a != -1 ? dst_full.a : layer.alpha;
 	} else if (num <= 0) {
-		compute_layer_fill_dest(layer.logw, layer.logh, dst, layer.ui_kind);
+		if (layer.sdl_render_target_format != SDL_PIXELFORMAT_UNKNOWN) {
+			// Render targets draw fullscreen
+			dst.x = 0;
+			dst.y = 0;
+			dst.w = display_width;
+			dst.h = display_height;
+		} else {
+			compute_layer_fill_dest(layer.logw, layer.logh, dst, layer.ui_kind);
+		}
+		alpha = layer.alpha;
 	} else {
-		dst = {0, 0, 0, 0};
+		dst   = {0, 0, 0, 0};
+		alpha = layer.alpha;
 		return false;
 	}
 	return true;
@@ -2053,7 +2153,8 @@ bool Image_window::screen_to_layer(int handle, int sx, int sy, int& lx, int& ly)
 	}
 	const Layer& layer = *layers[handle];
 	SDL_FRect    dst;
-	get_layer_dest(layer, dst);
+	int          alpha;
+	get_layer_dest(layer, dst, alpha);
 	if (dst.w <= 0 || dst.h <= 0) {
 		return false;
 	}
@@ -2069,7 +2170,8 @@ bool Image_window::layer_to_screen(int handle, int lx, int ly, int& sx, int& sy)
 	}
 	const Layer& layer = *layers[handle];
 	SDL_FRect    dst;
-	get_layer_dest(layer, dst);
+	int          alpha;
+	get_layer_dest(layer, dst, alpha);
 	if (dst.w <= 0 || dst.h <= 0 || layer.logw <= 0 || layer.logh <= 0) {
 		return false;
 	}
@@ -2088,16 +2190,44 @@ void Image_window::free_layer_textures() {
 	}
 }
 
+template <typename T>
+struct ScopedRestorer {
+	T*                            pointer;
+	T                             originalvalue;
+	std::function<void(const T&)> func;
+
+	ScopedRestorer(T& torestore) : pointer(&torestore), originalvalue(torestore), func() {}
+
+	ScopedRestorer(const ScopedRestorer&) = delete;
+
+	ScopedRestorer(T originalvalue, std::function<void(const T&)> func)
+			: pointer(nullptr), originalvalue(originalvalue), func(func) {}
+
+	~ScopedRestorer() {
+		if (func) {
+			func(originalvalue);
+		}
+		if (pointer) {
+			*pointer = originalvalue;
+		}
+	}
+};
+
 void Image_window::composite_layers() {
 	if (layers.empty() || screen_renderer == nullptr) {
 		return;
 	}
+	SDL_Texture*                 sdl_render_target = SDL_GetRenderTarget(screen_renderer);
+	ScopedRestorer<SDL_Texture*> sdl_render_target_restorer(sdl_render_target, [this](SDL_Texture* const& originalvalue) -> void {
+		SDL_SetRenderTarget(screen_renderer, originalvalue);
+	});
+
 	auto perftimer = PerformanceTimer::GetScopedPerfTimer(__func__);
 	// Gather the visible layers and composite them from lowest to highest z.
 	std::vector<Layer*> ordered;
 	ordered.reserve(layers.size());
 	for (auto& lp : layers) {
-		if (!lp || !lp->visible || !lp->buf) {
+		if (!lp || !lp->visible || !(lp->buf || lp->sdl_render_target_format != SDL_PIXELFORMAT_UNKNOWN)) {
 			continue;
 		}
 		const UiLayerKind kind = lp->ui_kind;
@@ -2120,45 +2250,64 @@ void Image_window::composite_layers() {
 		Layer& layer     = *lptr;
 		auto   perftimer = PerformanceTimer::GetScopedPerfTimer("Composite_Layer:", layer.get_name(), true);
 
-		const UiLayerConfig& cfg = get_ui_cfg(layer.ui_kind);
-		// Match filtering to this layer's scaler/fill scaler.
+		if (layer.sdl_render_target) {
+			// Render target texture hasn't been created yet
+			if (!layer.sdl_render_target->texture) {
+				layer.sdl_render_target->texture = SDL_CreateTexture(
+						screen_renderer, layer.sdl_render_target->sdl_render_target_format, SDL_TEXTUREACCESS_TARGET, display_width,
+						display_height);
+			}
+
+			if (sdl_render_target != layer.sdl_render_target->texture) {
+				SDL_SetRenderTarget(screen_renderer, (sdl_render_target = layer.sdl_render_target->texture));
+			}
+		} else if (sdl_render_target) {
+			SDL_SetRenderTarget(screen_renderer, (sdl_render_target = nullptr));
+		}
+		bool                 is_sdl_render_target = layer.sdl_render_target_format != SDL_PIXELFORMAT_UNKNOWN;
+		const UiLayerConfig& cfg                  = get_ui_cfg(layer.ui_kind);
+		// Match filtering to this layer's scaler/fill scaler. Render targets are always smooth
 		const bool smooth = (eff_ui_scaler(cfg) == bilinear) || (eff_ui_scaler(cfg) == SDLScaler)
 							|| (eff_ui_fill_scaler(cfg) == bilinear) || (eff_ui_fill_scaler(cfg) == SDLScaler);
 		const SDL_ScaleMode smode = smooth ? SDL_SCALEMODE_LINEAR : SDL_SCALEMODE_NEAREST;
 		// If a software (member) scaler is active, layers are pre-scaled by it
-		// to this factor; otherwise they are uploaded 1:1 and scaled on the GPU.
-		const int render_scale = layer_render_scale(layer);
+		// to this factor; otherwise they are uploaded 1:1 and scaled on the GPU. Render targets can not be software scaled
+		const int render_scale = is_sdl_render_target ? 1 : layer_render_scale(layer);
 		// Recreate the texture if the render scale changed (its size depends
 		// on it) or it was dropped.
-		if (layer.render_scale != render_scale && layer.texture != nullptr) {
+		if (!is_sdl_render_target && layer.render_scale != render_scale && layer.texture != nullptr) {
 			SDL_DestroyTexture(layer.texture);
 			layer.texture = nullptr;
 		}
 		layer.render_scale = render_scale;
-		if (layer.texture == nullptr) {    // Lazily (re)create the GPU texture.
+		if (!is_sdl_render_target && layer.texture == nullptr) {    // Lazily (re)create the GPU texture if its not a render target
 			layer.texture = SDL_CreateTexture(
 					screen_renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING,
 					(layer.logw + 2 * guard_band + 2) * render_scale, (layer.logh + 2 * guard_band) * render_scale);
-			if (layer.texture == nullptr) {
-				continue;
-			}
-
-			SDL_SetTextureBlendMode(layer.texture, layer.is_opaque() ? SDL_BLENDMODE_NONE : SDL_BLENDMODE_BLEND);
 			layer.dirty = true;
 		}
+		if (layer.texture == nullptr) {
+			continue;
+		}
+
+		SDL_SetTextureBlendMode(layer.texture, layer.blend_mode);
 		SDL_SetTextureScaleMode(layer.texture, smode);
-		if (layer.dirty) {
+		if (layer.dirty && !is_sdl_render_target) {
 			refresh_layer(layer);
 			layer.dirty = false;
 		}
-		SDL_SetTextureAlphaMod(layer.texture, layer.alpha);
-		SDL_FRect dst, src = {float(guard_band * render_scale), float(guard_band * render_scale), float(layer.logw * render_scale),
+		// Render targets have no guardband
+		int       gb = is_sdl_render_target ? 0 : guard_band;
+		SDL_FRect dst, src = {float(gb * render_scale), float(gb * render_scale), float(layer.logw * render_scale),
 							  float(layer.logh * render_scale)};
 
 		for (int i = 0;; i++) {
-			if (!get_layer_dest(layer, dst, i)) {
+			int alpha;
+			if (!get_layer_dest(layer, dst, alpha, i)) {
 				break;
 			}
+			SDL_SetTextureAlphaMod(layer.texture, alpha);
+
 			// Only draw if dest rect is valid
 			if (dst.w > 0 && dst.h > 0) {
 				SDL_RenderTexture(screen_renderer, layer.texture, &src, &dst);
@@ -2271,7 +2420,8 @@ Image_window::Layer::~Layer() {
 }
 
 Image_window::Layer::Layer(SDL_Surface* surface, int w, int h, unsigned char transp, int fscale, int zorder, std::string&& name)
-		: surface(surface),
-		  buf(std::make_unique<Image_buffer8>(
-				  surface->w, surface->h, surface->pitch, reinterpret_cast<unsigned char*>(surface->pixels), guard_band)),
+		: surface(surface), buf(surface ? std::make_unique<Image_buffer8>(
+												  surface->w, surface->h, surface->pitch,
+												  reinterpret_cast<unsigned char*>(surface->pixels), guard_band)
+										: nullptr),
 		  logw(w), logh(h), fixed_scale(fscale), transparent(transp), z(zorder), name(std::move(name)) {}

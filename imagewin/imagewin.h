@@ -83,6 +83,8 @@ public:
 		UiLayerFullScreenBilinear,
 		// Layer is drawn fullscreen with point fill scaling
 		UiLayerFullScreenPoint,
+		// Layer is drawn using the same scaler configuration as the game workd
+		UiLayerLikeGameWorld,
 
 		NumUiLayerKinds
 	};
@@ -185,11 +187,17 @@ public:
 		bool                          opaque = false;       // If set, NO index is transparent (a
 															// full-screen opaque scene: every pixel
 															// is drawn, even the 'transparent' index).
-		bool                   visible = true;
-		bool                   dirty   = true;    // Buffer changed => re-upload.
-		int                    z       = 0;       // Composite order (higher = on top).
-		std::vector<SDL_FRect> dest    = {};      // Destination rects to paint layer. If more than 1 the layer is painted multiple
-												  // tines, if 0 default foe UIConfog is used
+		bool visible = true;
+		bool dirty   = true;    // Buffer changed => re-upload.
+		int  z       = 0;       // Composite order (higher = on top).
+
+		// A FRect with alpha. This alpha value is used instead of the layer's alpha. If -1 the layer's alpha is used
+		struct FrectAlpha : SDL_FRect {
+			int a;
+		};
+
+		std::vector<FrectAlpha> dest = {};    // Destination rects to paint layer. If more than 1 the layer is painted multiple
+											  // times, if 0 default from UIConfig is used
 		UiLayerKind ui_kind      = UiLayerDefault;
 		int         render_scale = 1;    // 1 = 1:1 upload; >1 = pre-scaled by
 										 // the game's scaler at this factor.
@@ -198,10 +206,31 @@ public:
 		// entry is used verbatim (with its own alpha) instead of the opaque
 		// palette colour, letting a layer draw translucent pixels.
 		std::vector<uint32> index_argb;
-		std::vector<uint32> gamma_argb;
-		double              gamma_r = 0;
-		double              gamma_g = 0;
-		double              gamma_b = 0;
+		bool                no_gammacorrection = false;    // If set no gamma correction is applied to index_argb
+		SDL_BlendMode       blend_mode         = SDL_BLENDMODE_BLEND;
+
+		/* SDL Render Targets
+
+		* A layer can be created as a SDL render target. A SDL Render Target
+		  layer can only be used as a render target as another layer. It has no
+		  surface or buf and cannot be drawn to in software. A SDL render target
+		  layer is always created at the display resolution. It will by default
+		  render fullscreen. It cannot use software scalers. Render target
+		  contents will persist between frames.
+
+		* These are used to do complex layering effects in Hardware
+
+		* When a layer is set to use a sdl render target, it will be rendered to
+		  the sdl render target layer instead of to the screen. a regular layer
+		  created with create Layer cannot be used as a SDlrender target. A sdl
+		  render target layer can itself have a sdl render target
+
+		* A sdl render target layer should have a higher z than any layer that uses it.
+		*
+		*/
+
+		SDL_PixelFormat sdl_render_target_format = SDL_PIXELFORMAT_UNKNOWN;
+		Layer*          sdl_render_target        = nullptr;
 
 		std::string name;
 
@@ -231,6 +260,14 @@ public:
 
 		void set_opaque(bool o) {
 			opaque = o;
+			// If setting opaque disable blending
+			if (o) {
+				blend_mode = SDL_BLENDMODE_NONE;
+			}
+			// If not opaque only change blending mode if it was set to none
+			else if (!o && blend_mode == SDL_BLENDMODE_NONE) {
+				blend_mode = SDL_BLENDMODE_BLEND;
+			}
 		}
 
 		void set_dirty() {
@@ -413,7 +450,7 @@ protected:
 
 	// Compute a layer's on-screen destination rect (in display coords, which
 	// match the renderer's logical presentation).
-	bool get_layer_dest(const Layer& layer, struct SDL_FRect& dst, int num = 0);
+	bool get_layer_dest(const Layer& layer, struct SDL_FRect& dst, int& alpha, int num = 0);
 	// Place a logw x logh layer on the display using the UI fill mode / scale.
 	void compute_layer_fill_dest(int logw, int logh, struct SDL_FRect& dst) const;
 	void compute_layer_fill_dest(int logw, int logh, struct SDL_FRect& dst, UiLayerKind kind) const;
@@ -711,16 +748,18 @@ public:
 	// Give a layer an explicit destination rectangle (in display coords),
 	// overriding the centred auto-fit placement.  Used to position a layer
 	// (e.g. the mouse cursor) freely. layer_clear_dest() restores auto-fit.
-	void layer_set_dest(int handle, int x, int y, int w, int h, bool add = false);
+	void layer_set_dest(int handle, int x, int y, int w, int h, bool add = false, int alpha = -1);
 	void layer_clear_dest(int handle);
 	void layer_set_ui_kind(int handle, UiLayerKind kind);
 	// Set (or clear, with nullptr) a layer's 256-entry ARGB override table.
 	// Non-zero entries replace the opaque palette colour for that index,
 	// carrying their own alpha (used for translucent pixels).
-	void layer_set_index_argb(int handle, const uint32* argb256);
+	void layer_set_index_argb(int handle, const uint32* argb256, bool nogc);
 	// Whole-layer opacity (255 = opaque). Lets an opaque-painted layer be
 	// composited semi-transparently (e.g. the translucent shortcut bar).
 	void layer_set_alpha(int handle, unsigned char a);
+
+	void layer_set_blendmode(int handle, SDL_BlendMode blendmode);
 
 	// -------- Layer scaling config --------
 	// Configure how layers (conversation, mouse cursor) are scaled and
@@ -772,6 +811,19 @@ public:
 	// Mark a layer as fully opaque: no palette index is treated as transparent
 	// (for a full-screen scene whose content may legitimately use index 255).
 	void layer_set_opaque(int handle, bool opaque);
+
+	// Create a laayer to use a render target for other layers
+	int create_sdl_render_target_layer(std::string&& name, int z, SDL_PixelFormat format);
+
+	// Returns true if the layer is a render target layer
+	bool layer_get_is_sdl_rendertarget(int handle);
+
+	// Set the Render Target of a layer
+	// rthandle is the handle to a render target layer or -1 to clear
+	bool layer_set_sdl_render_target(int handle, int rthandle);
+
+	// Get the handle of the layer's render arget
+	int layer_get_sdl_render_target(int handle);
 
 	// Set palette.
 	virtual void set_palette(const unsigned char* rgbs, int maxval, int brightness = 100) {
@@ -950,5 +1002,7 @@ public:
 	}
 
 	bool screenshot(SDL_IOStream* dst, bool paletted);
+
+	bool SDLBlendModeSupported(SDL_BlendMode blendmode);
 };
 #endif /* INCL_IMAGEWIN    */
