@@ -124,57 +124,15 @@ static void Set_location(char* text    // ->first digit of line #.
 	Uc_location::set_cur(name, line - 1);
 }
 
+
 /*
  *	Include another source. Each file is included ONCE.
+ *
+ * Forward declaration for function moved to end of file to fix  macos builds usaing flex 2.6.11
  */
 
-static void Include(char* yytext    // ->text containing name.
-) {
-	if (bufstack.size() > 20) {
-		Uc_location::yyerror("include nesting exceeds the limit of 21 files");
-		return;
-	}
-	char* ename;
-	char* name = Find_name(yytext, ename);
-	if (!name) {
-		Uc_location::yyerror("expected a quoted filename after #include");
-		return;
-	}
-	// Check if file has already been included.
-	auto it = inclfiles.find(name);
-	if (it != inclfiles.end()) {
-		return;
-	}
-	string source_path(name);
-	FILE* include_file = fopen(name, "r");
-	// Look in -I list if not found here.
-	if (include_file == nullptr) {
-		for (char* dir : include_dirs) {
-			string path(dir);
-			path += '/';
-			path += name;
-			include_file = fopen(path.c_str(), "r");
-			if (include_file != nullptr) {
-				source_path = path;
-				break;
-			}
-		}
-	}
+static void Include(char* yytext);
 
-	if (!include_file) {
-		Uc_location::yyerror("cannot open include file '%s': %s", name, strerror(errno));
-		return;
-	}
-	locstack.push_back(new Uc_location(Uc_location::next_location()));
-	bufstack.push_back(YY_CURRENT_BUFFER);
-	yyin = include_file;
-	// Add file to list of included files.
-	inclfiles.insert(name);
-	Uc_location::register_source(source_path.c_str(), source_path.c_str());
-	// Set location to new file.
-	Uc_location::set_cur(source_path.c_str(), 0);
-	yy_switch_to_buffer(yy_create_buffer(yyin, YY_BUF_SIZE));
-}
 
 /*
  *	Handle #game directive.
@@ -765,3 +723,56 @@ bool can_continue() {
 extern "C" int yywrap() {
 	return 1;
 } /* Stop at EOF. */
+
+
+/*
+ *	Include another source. Each file is included ONCE.
+ */
+
+static void Include(char* yytext    // ->text containing name.
+) {
+	if (bufstack.size() > 20) {
+		Uc_location::yyerror("include nesting exceeds the limit of 21 files");
+		return;
+	}
+	char* ename;
+	char* name = Find_name(yytext, ename);
+	if (!name) {
+		Uc_location::yyerror("expected a quoted filename after #include");
+		return;
+	}
+	// Check if file has already been included.
+	auto it = inclfiles.find(name);
+	if (it != inclfiles.end()) {
+		return;
+	}
+	string source_path(name);
+	FILE* include_file = fopen(name, "r");
+	// Look in -I list if not found here.
+	if (include_file == nullptr) {
+		for (char* dir : include_dirs) {
+			string path(dir);
+			path += '/';
+			path += name;
+			include_file = fopen(path.c_str(), "r");
+			if (include_file != nullptr) {
+				source_path = path;
+				break;
+			}
+		}
+	}
+
+	if (!include_file) {
+		Uc_location::yyerror("cannot open include file '%s': %s", name, strerror(errno));
+		return;
+	}
+	locstack.push_back(new Uc_location(Uc_location::next_location()));
+	bufstack.push_back(YY_CURRENT_BUFFER);
+	yyin = include_file;
+	// Add file to list of included files.
+	inclfiles.insert(name);
+	Uc_location::register_source(source_path.c_str(), source_path.c_str());
+	// Set location to new file.
+	Uc_location::set_cur(source_path.c_str(), 0);
+	yy_switch_to_buffer(yy_create_buffer(yyin, YY_BUF_SIZE));
+}

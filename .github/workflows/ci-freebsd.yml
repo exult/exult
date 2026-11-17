@@ -53,6 +53,7 @@ on:
       - "!.gitattributes"
       - "!.github/workflows/*"
       - ".github/workflows/ci-freebsd.yml"
+  workflow_dispatch:
 
 jobs:
   ci-freebsd:

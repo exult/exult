@@ -51,6 +51,7 @@ on:
       - "!.gitattributes"
       - "!.github/workflows/*"
       - ".github/workflows/ci-android.yml"
+  workflow_dispatch:
 
 jobs:
   ci-android:
