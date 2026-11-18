@@ -117,6 +117,7 @@ V		about
 Shift-V		volume_mixer
 Alt-W		toggle_wizard_mode
 W		useitem			675 21	# Use watch
+X		useitem			650 	# Use sextant
 Alt-X		quit
 Z		stats
 
