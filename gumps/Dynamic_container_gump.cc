@@ -575,11 +575,17 @@ bool Dynamic_container_gump::mousewheel_down(int mx, int my) {
  *  Called from Gump_manager::update_gumps().
  */
 void Dynamic_container_gump::update_gump() {
-	Game_window* gwin = Game_window::get_instance();
+	Game_window*   gwin    = Game_window::get_instance();
+	const unsigned changes = gumpman->get_chain_changes();
 	for (auto* w : elems) {
 		if (w && w->run()) {
 			if (gwin) {
 				gwin->set_all_dirty();
+			}
+			// Usecode run by the widget may have closed this gump:
+			// touch nothing more of `this`.
+			if (gumpman->get_chain_changes() != changes) {
+				return;
 			}
 		}
 	}
