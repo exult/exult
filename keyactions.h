@@ -29,6 +29,7 @@ void ActionHelp(const int* params);
 void ActionCloseGumps(const int* params);
 void ActionCloseOrMenu(const int* params);
 void ActionMenuGump(const int* params);
+void ActionMenuStyle(const int* params);
 void ActionOldFileGump(const int* params);
 
 void ActionScreenshot(const int* params);
@@ -98,6 +99,7 @@ void ActionTime(const int* params);
 void ActionWizard(const int* params);
 void ActionHeal(const int* params);
 void ActionCheatScreen(const int* params);
+void ActionGameDoctor(const int* params);
 void ActionPickPocket(const int* params);
 void ActionNPCNumbers(const int* params);
 void ActionGrabActor(const int* params);

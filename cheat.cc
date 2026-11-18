@@ -25,6 +25,7 @@
 #include "Configuration.h"
 #include "Gump.h"
 #include "Gump_manager.h"
+#include "Mui_router.h"
 #include "actors.h"
 #include "browser.h"
 #include "cheat_screen.h"
@@ -1522,6 +1523,12 @@ void Cheat::cheat_screen() const {
 		return;
 	}
 
+	// Themed menus show their own cheat window.
+	if (Mui::open_cheats()) {
+		gwin->set_all_dirty();
+		gwin->paint();
+		return;
+	}
 	cscreen->show_screen();
 	gwin->set_all_dirty();
 	gwin->paint();

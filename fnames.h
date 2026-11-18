@@ -186,6 +186,8 @@
 
 #define GLOBAL_FLAGS       "global_flags.txt"
 #define PATCH_GLOBAL_FLAGS "<PATCH>/global_flags.txt"
+#define DOCTOR_RULES       "doctor_rules.txt"
+#define PATCH_DOCTOR_RULES "<PATCH>/doctor_rules.txt"
 
 #define EXULT_SERVER "<GAMEDAT>/exultserver"
 

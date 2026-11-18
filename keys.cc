@@ -188,6 +188,8 @@ const struct Action {
 		{             "REPAINT",            ActionRepaint,           nullptr, 0x855,    Action::dont_show,         NONE,  true,  true,  true, false},
 		{       "TOGGLE_BBOXES",       ActionToggleBBoxes,           nullptr, 0x856, Action::mapedit_keys,         NONE, false,  true,  true, false},
 		{       "PERF_METRICS",         ActionPerfMetrics,           nullptr, 0x856, Action::dont_show,            NONE, false,  true,  true, false},
+		{          "MENU_STYLE",          ActionMenuStyle,           nullptr, 0xC03,  Action::normal_keys,         NONE,  true,  true,  true, false},
+		{         "GAME_DOCTOR",         ActionGameDoctor,           nullptr, 0xD45,   Action::cheat_keys,         NONE,  true,  true,  true, false},
 		{                    "",                  nullptr,           nullptr,     0,    Action::dont_show,         NONE, true,  true,  true, false}  //  terminator
 		// clang-format on
 };

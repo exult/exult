@@ -34,6 +34,7 @@
 #include "Face_stats.h"
 #include "Gump_button.h"
 #include "Gump_manager.h"
+#include "Mui_selftest.h"
 #include "Scroll_gump.h"
 #include "ShortcutBar_gump.h"
 #include "U7file.h"
@@ -55,6 +56,7 @@
 #include "font.h"
 #include "font_map.h"
 #include "game.h"
+#include "gamedoctor.h"
 #include "gamemap.h"
 #include "gamemgr/modmgr.h"
 #include "gamewin.h"
@@ -295,6 +297,7 @@ int main(int argc, char* argv[]) {
 	parameters.declare("--fov", &run_fov, true);
 	parameters.declare("--ss", &run_ss, true);
 	parameters.declare("--sib", &run_sib, true);
+	Game_doctor::declare_options(parameters);
 	parameters.declare("--nomenu", &arg_nomenu, true);
 	parameters.declare("-v", &showversion, true);
 	parameters.declare("--version", &showversion, true);
@@ -316,6 +319,9 @@ int main(int argc, char* argv[]) {
 #endif
 	// Process the args
 	parameters.process(argc, argv);
+	if (Game_doctor::load_save_requested()) {
+		arg_nomenu = true;
+	}
 	add_system_path("<alt_cfg>", arg_configfile);
 #if defined _WIN32
 	if (portable) {
@@ -657,6 +663,9 @@ int exult_main(const char* runpath) {
 #endif
 
 	cheat.init();
+	if (cheat() || Game_doctor::cli_active()) {
+		Game_doctor::get().install_log_capture();
+	}
 
 #ifdef SDL_PLATFORM_IOS
 	iOS_SetupQuickActions();
@@ -1136,6 +1145,9 @@ static void Init() {
 		midi->set_timbre_lib(MyMidiPlayer::TIMBRE_LIB_GAME);
 	}
 
+	if (!Game_doctor::get().apply_load_save()) {
+		exit(2);
+	}
 	gwin->init_files();
 	gwin->read_gwin();
 	gwin->setup_game(arg_edit_mode);    // This will start the scene.
@@ -1164,6 +1176,7 @@ static int Play() {
 		}
 	} while (quitting_time == QUIT_TIME_RESTART);
 
+	Game_doctor::get().cli_at_exit();
 	delete gwin;
 
 	Audio::Destroy();    // Deinit the sound system.
@@ -1172,7 +1185,7 @@ static int Play() {
 	Free_text();
 	fontManager.reset();
 	delete game;
-	return 0;
+	return Game_doctor::get().exit_status();
 }
 
 #ifdef USE_EXULTSTUDIO    // Shift-click means 'paint'.
@@ -1385,6 +1398,8 @@ static void Handle_events() {
 		while (!quitting_time && SDL_PollEvent(&event)) {
 			Handle_event(event);
 		}
+		Mui_selftest::tick(ticks);
+		Game_doctor::get().cli_tick(ticks);
 
 		// Animate unless dormant.
 		if (gwin->have_focus() && !dragging) {
@@ -2324,6 +2339,10 @@ static void Handle_event(SDL_Event& event) {
 	}
 }
 
+// Test driver hook (see exult.h); null unless the menu test driver runs.
+void (*Get_click_frame_hook)(Paintable* paint) = nullptr;
+// What the current Get_click paints over everything (passed to the hook).
+static Paintable* click_paint = nullptr;
 /*
  *  Wait for a click, or optionally, a kbd. chr.
  *
@@ -2345,6 +2364,9 @@ static bool Get_click(
 
 		const uint32 ticks = SDL_GetTicks();
 		Game::set_ticks(ticks);
+		if (Get_click_frame_hook) {
+			Get_click_frame_hook(click_paint);
+		}
 		Mouse::mouse()->hide();    // Turn off mouse.
 		Mouse::mouse_update = false;
 
@@ -2510,7 +2532,10 @@ bool Get_click(
 	Mouse::mouse()->show();
 	gwin->show(true);    // Want to see new mouse.
 	gwin->get_tqueue()->pause(Game::get_ticks());
-	const bool ret = Get_click(x, y, chr, drag_ok, rotate_colors);
+	Paintable* const save_paint = click_paint;
+	click_paint                 = paint;
+	const bool ret              = Get_click(x, y, chr, drag_ok, rotate_colors);
+	click_paint                 = save_paint;
 	gwin->get_tqueue()->resume(Game::get_ticks());
 	Mouse::mouse()->set_shape(saveshape);
 	return ret;

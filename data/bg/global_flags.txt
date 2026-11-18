@@ -862,3 +862,21 @@
 0x342:PLACED_ONE_TALISMAN
 0x343:BEGIN_BOND
 0x344:FINISHED_BOND
+%%section descriptions
+0x65:Allows you to ask Rudyom about it?
+0x85:Heard about Jeanette's crush on Willy the Baker
+0xCB:Hired by Willy to bake bread
+0xD1:Allows you to ask Patterson about it
+0xD4:Stops you ever asking him again (yes, plaster over those plot-holes)
+0x212:Heard from an NPC about the theft
+0x213:Feridwyn accused Tobias of the theft
+0x218:Found Garritt was the thief
+0x21A:Given the wheat by Camille (prevents her offering it again)
+0x21D:Delivered the wheat to Thurston (so you don't get paid for it twice)
+0x234:Camille has run out to say that her son is innocent of the theft (prevents conversation recurring)
+0x25E:Got the mission from John-Paul to find who defaced the statue
+0x261:Finished the statue investigation properly, pinning Sir Pendaran as the culprit
+0x277:Heard that Tory's baby son was kidnapped by harpies
+0x278:Player has rescued Riky (prevents conversation from coming up again)
+0x30D:Received Lord British's reward for completing the Forge of Virtue
+%%endsection descriptions

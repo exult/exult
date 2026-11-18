@@ -28,6 +28,7 @@
 #include "Gamemenu_gump.h"
 #include "Gump_manager.h"
 #include "Mixer_gump.h"
+#include "Mui_router.h"
 #include "Newfile_gump.h"
 #include "Notebook_gump.h"
 #include "Scroll_gump.h"
@@ -110,6 +111,9 @@ void ActionOldFileGump(const int* params) {
 // { ActionMenuGump, 0, "GameMenu", normal_keys, NONE },
 void ActionMenuGump(const int* params) {
 	ignore_unused_variable_warning(params);
+	if (Mui::open_game_menu()) {
+		return;
+	}
 	auto* gmenu = new Gamemenu_gump();
 	Game_window::get_instance()->get_gump_man()->do_modal_gump(gmenu, Mouse::hand);
 	delete gmenu;
@@ -126,6 +130,9 @@ void ActionMixerGump(const int* params) {
 // { ActionFileGump, 0, "Save/restore", normal_keys, NONE },
 void ActionFileGump(const int* params) {
 	ignore_unused_variable_warning(params);
+	if (Mui::open_journey_log()) {
+		return;
+	}
 	auto* fileio = new Newfile_gump();
 	Game_window::get_instance()->get_gump_man()->do_modal_gump(fileio, Mouse::hand);
 	delete fileio;
@@ -211,6 +218,15 @@ void ActionCloseOrMenu(const int* params) {
 	} else {
 		ActionMenuGump(nullptr);
 	}
+}
+
+//  { ActionMenuStyle, 0, "Cycle menu style", normal_keys, NONE },
+void ActionMenuStyle(const int* params) {
+	ignore_unused_variable_warning(params);
+	const std::string style = Mui::cycle_menu_style();
+	std::string       msg   = get_text_msg(0xC04 - msg_file_start);
+	msg += style;
+	Game_window::get_instance()->get_effects()->center_text(msg.c_str());
 }
 
 //  { ActionScreenshot, 0, "Take screenshot", normal_keys, NONE },
@@ -867,6 +883,13 @@ void ActionHeal(const int* params) {
 void ActionCheatScreen(const int* params) {
 	ignore_unused_variable_warning(params);
 	cheat.cheat_screen();
+}
+
+//  { ActionGameDoctor, 0, "Open Troubleshooting", cheat_keys, NONE },
+void ActionGameDoctor(const int* params) {
+	ignore_unused_variable_warning(params);
+	// The themed cheat window on Check-up, in every menu style.
+	Mui::open_doctor("doctor_checkup");
 }
 
 //  { ActionPickPocket, 1, "Toggle Pickpocket", cheat_keys, NONE },

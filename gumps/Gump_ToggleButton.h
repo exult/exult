@@ -108,6 +108,10 @@ public:
 
 	virtual void toggle(int state) = 0;
 
+	const std::vector<std::string>& get_selections() const {
+		return selections;
+	}
+
 private:
 	std::vector<std::string> selections;
 };

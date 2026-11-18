@@ -139,6 +139,7 @@ SI_Game::SI_Game() {
 		add_resource("config/avatar_data", gameflx, EXULT_SI_FLX_AVATAR_DATA_TXT);
 		add_resource("config/autonotes", gameflx, EXULT_SI_FLX_AUTONOTES_TXT);
 		add_resource("files/global_flags", gameflx, EXULT_SI_FLX_GLOBAL_FLAGS_TXT);
+		add_resource("files/doctor_rules", gameflx, EXULT_SI_FLX_DOCTOR_RULES_TXT);
 
 		add_resource("palettes/count", nullptr, 14);
 		add_resource("palettes/0", PALETTES_FLX, 0);
