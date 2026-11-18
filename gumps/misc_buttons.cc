@@ -27,6 +27,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "Gump_manager.h"
 #include "Modal_gump.h"
 #include "actors.h"
+#include "exult_flx.h"
 #include "game.h"
 #include "gamewin.h"
 #include "mouse.h"
@@ -35,7 +36,41 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 /*
  *  A checkmark for closing its parent:
  */
-Checkmark_button::Checkmark_button(Gump* par, int px, int py) : Gump_button(par, game->get_shape("gumps/check"), px, py) {}
+Checkmark_button::Checkmark_button(Gump* par, int px, int py, bool with_tab)
+		: Gump_button(par, game->get_shape("gumps/check"), px, py), has_tab(with_tab),
+		  tab(EXULT_FLX_CHECKMARK_BACKGROUND_SHP, 0, SF_EXULT_FLX) {}
+
+/*
+ *  The tab's screen rectangle: the tab shape centred on the checkmark.
+ */
+
+TileRect Checkmark_button::get_tab_rect() const {
+	Shape_frame* tshape = has_tab ? tab.get_shape() : nullptr;
+	if (!tshape) {
+		return TileRect(0, 0, 0, 0);
+	}
+	const TileRect check = get_rect();
+	return TileRect(
+			check.x - (tshape->get_width() - check.w + 1) / 2, check.y - (tshape->get_height() - check.h + 1) / 2,
+			tshape->get_width(), tshape->get_height());
+}
+
+void Checkmark_button::paint_tab() {
+	const TileRect r = get_tab_rect();
+	if (r.w > 0) {
+		Shape_frame* tshape = tab.get_shape();
+		tab.paint_shape(r.x + tshape->get_xleft(), r.y + tshape->get_yabove());
+	}
+}
+
+bool Checkmark_button::on_tab(int mx, int my) const {
+	const TileRect r = get_tab_rect();
+	if (r.w <= 0 || !r.has_point(mx, my)) {
+		return false;
+	}
+	Shape_frame* tshape = tab.get_shape();
+	return tshape->has_point(mx - r.x - tshape->get_xleft(), my - r.y - tshape->get_yabove());
+}
 
 /*
  *  Handle click on a 'checkmark'.

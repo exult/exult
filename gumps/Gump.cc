@@ -23,6 +23,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "Gump.h"
 
 #include "Dynamic_button.h"
+#include "Dynamic_list_widget.h"
 #include "Dynamic_shape_widget.h"
 #include "Dynamic_slider.h"
 #include "Dynamic_text_widget.h"
@@ -186,29 +187,42 @@ void Gump::set_pos(int newx, int newy) {    // Set new spot on screen.
 	gwin->add_dirty(get_rect());
 }
 
-void Gump::set_object_area(TileRect area, int checkx, int checky, bool set_check) {
-	// Try to read container area and checkmark position from gump_info.txt
-	if (get_shapenum() >= 0 && get_shapefile() == SF_GUMPS_VGA) {
-		const Gump_info* info = Gump_info::get_gump_info(get_shapenum());
-		if (info) {
-			if (info->has_area) {
-				area.x = info->container_x;
-				area.y = info->container_y;
-				area.w = info->container_w;
-				area.h = info->container_h;
-			}
-			if (info->has_checkmark) {
-				checkx = info->checkmark_x;
-				checky = info->checkmark_y;
+/*
+ *  Override a gump's container area and checkmark position with those
+ *  from gump_info.txt, if it has them.
+ */
+
+void Gump::read_gump_info(int shnum, TileRect& area, int& checkx, int& checky, bool* check_tab) {
+	const Gump_info* info = Gump_info::get_gump_info(shnum);
+	if (info) {
+		if (info->has_area) {
+			area.x = info->container_x;
+			area.y = info->container_y;
+			area.w = info->container_w;
+			area.h = info->container_h;
+		}
+		if (info->has_checkmark) {
+			checkx = info->checkmark_x;
+			checky = info->checkmark_y;
+			if (check_tab) {
+				*check_tab = info->checkmark_tab != 0;
 			}
 		}
+	}
+}
+
+void Gump::set_object_area(TileRect area, int checkx, int checky, bool set_check) {
+	// Try to read container area and checkmark position from gump_info.txt
+	bool check_tab = false;
+	if (get_shapenum() >= 0 && get_shapefile() == SF_GUMPS_VGA) {
+		read_gump_info(get_shapenum(), area, checkx, checky, &check_tab);
 	}
 
 	object_area = area;
 	if (set_check && std::none_of(elems.begin(), elems.end(), [](auto elem) -> bool {
 			return dynamic_cast<Checkmark_button*>(elem) != nullptr;
 		})) {
-		elems.push_back(new Checkmark_button(this, checkx, checky));
+		elems.push_back(new Checkmark_button(this, checkx, checky, check_tab));
 	}
 
 	// Create dynamic elements from gump_info.txt configuration.
@@ -228,6 +242,9 @@ void Gump::set_object_area(TileRect area, int checkx, int checky, bool set_check
 			}
 			for (const auto& def : info->dynamic_sliders) {
 				elems.push_back(new Dynamic_slider(this, def));
+			}
+			for (const auto& def : info->dynamic_lists) {
+				elems.push_back(new Dynamic_list_widget(this, def));
 			}
 		}
 	}
@@ -387,23 +404,36 @@ bool Gump::add(
 	// -2's mean tx, ty are already set.
 	else if (sx != -2 && sy != -2 && mx != -2 && my != -2) {
 		// Put it where desired.
-		sx -= x + object_area.x;    // Get point rel. to object_area.
-		sy -= y + object_area.y;
-		Shape_frame* shape = obj->get_shape();
-		// But shift within range.
-		if (sx - shape->get_xleft() < 0) {
-			sx = shape->get_xleft();
-		} else if (sx + shape->get_xright() > object_area.w) {
-			sx = object_area.w - shape->get_xright();
-		}
-		if (sy - shape->get_yabove() < 0) {
-			sy = shape->get_yabove();
-		} else if (sy + shape->get_ybelow() > object_area.h) {
-			sy = object_area.h - shape->get_ybelow();
-		}
-		obj->set_shape_pos(sx, sy);
+		place_object(obj, sx, sy);
 	}
 	return true;
+}
+
+/*
+ *  Set an object's tx, ty so its hotspot is at screen point (sx, sy),
+ *  shifted to keep it inside object_area.
+ */
+
+void Gump::place_object(Game_object* obj, int sx, int sy) {
+	sx -= x + object_area.x;    // Get point rel. to object_area.
+	sy -= y + object_area.y;
+	Shape_frame* shape = obj->get_shape();
+	if (!shape) {    // No frame to keep in range.
+		obj->set_shape_pos(sx, sy);
+		return;
+	}
+	// But shift within range.
+	if (sx - shape->get_xleft() < 0) {
+		sx = shape->get_xleft();
+	} else if (sx + shape->get_xright() > object_area.w) {
+		sx = object_area.w - shape->get_xright();
+	}
+	if (sy - shape->get_yabove() < 0) {
+		sy = shape->get_yabove();
+	} else if (sy + shape->get_ybelow() > object_area.h) {
+		sy = object_area.h - shape->get_ybelow();
+	}
+	obj->set_shape_pos(sx, sy);
 }
 
 /*
@@ -468,6 +498,13 @@ void check_elem_positions(Object_list& objects) {
  */
 
 void Gump::paint() {
+	// A checkmark's tab (gump_info.txt checkmark_pos) goes under the gump,
+	// so it looks like it hangs out from behind the frame.
+	for (auto* elem : elems) {
+		if (auto* check = dynamic_cast<Checkmark_button*>(elem)) {
+			check->paint_tab();
+		}
+	}
 	// Paint the gump itself.
 	if (get_shape()) {
 		paint_shape(x, y);
@@ -477,6 +514,29 @@ void Gump::paint() {
 	// Paint red "checkmark".
 	paint_elems();
 
+	if (!container) {
+		return;    // Empty.
+	}
+	paint_objects();
+	// Outline selections in this gump.
+	const Game_object_shared_vector& sel = cheat.get_selected();
+	for (const auto& it : sel) {
+		Game_object* obj = it.get();
+		if (container == obj->get_owner()) {
+			int x;
+			int y;
+			get_shape_location(obj, x, y);
+			obj->ShapeID::paint_outline(x, y, HIT_PIXEL);
+		}
+	}
+}
+
+/*
+ *  Paint the container's objects in object_area, placing any that
+ *  haven't been placed yet.
+ */
+
+void Gump::paint_objects() {
 	if (!container) {
 		return;    // Empty.
 	}
@@ -526,17 +586,6 @@ void Gump::paint() {
 		}
 		obj->paint_shape(box.x + obj->get_tx(), box.y + obj->get_ty());
 	}
-	// Outline selections in this gump.
-	const Game_object_shared_vector& sel = cheat.get_selected();
-	for (const auto& it : sel) {
-		Game_object* obj = it.get();
-		if (container == obj->get_owner()) {
-			int x;
-			int y;
-			get_shape_location(obj, x, y);
-			obj->ShapeID::paint_outline(x, y, HIT_PIXEL);
-		}
-	}
 }
 
 /*
@@ -562,6 +611,11 @@ bool Gump::has_point(int sx, int sy) const {
 		if (w && w->on_widget(sx, sy)) {
 			return true;
 		}
+		// A checkmark's tab is part of the gump: clicking it drags the gump.
+		const auto* check = dynamic_cast<const Checkmark_button*>(w);
+		if (check && check->on_tab(sx, sy)) {
+			return true;
+		}
 	}
 	return false;
 }
@@ -576,8 +630,18 @@ TileRect Gump::get_rect() const {
 	if (!s) {
 		return TileRect(0, 0, 0, 0);
 	}
-
-	return TileRect(x - s->get_xleft(), y - s->get_yabove(), s->get_width(), s->get_height());
+	TileRect rect(x - s->get_xleft(), y - s->get_yabove(), s->get_width(), s->get_height());
+	// Include a checkmark's tab, should it stick out of the gump's art.
+	for (const auto* w : elems) {
+		const auto* check = dynamic_cast<const Checkmark_button*>(w);
+		if (check) {
+			const TileRect tab = check->get_tab_rect();
+			if (tab.w > 0) {
+				rect = rect.add(tab);
+			}
+		}
+	}
+	return rect;
 }
 
 bool Gump::isOffscreen(bool partially) const {
@@ -602,29 +666,47 @@ bool Gump::isOffscreen(bool partially) const {
  */
 
 void Container_gump::initialize(int shnum) {
+	TileRect area{};
+	int      checkx = 0;
+	int      checky = 0;
+	get_layout(shnum, area, checkx, checky);
+	set_object_area(area, checkx, checky);
+}
+
+/*
+ *  Built-in object area and checkmark position of a container gump
+ *  (before gump_info.txt overrides).
+ */
+
+void Container_gump::get_layout(int shnum, TileRect& area, int& checkx, int& checky) {
+	auto set = [&](const TileRect& a, int cx, int cy) {
+		area   = a;
+		checkx = cx;
+		checky = cy;
+	};
 	if (shnum == game->get_shape("gumps/box")) {
-		set_object_area(TileRect(46, 28, 74, 32), 24, 44);
+		set(TileRect(46, 28, 74, 32), 24, 44);
 	} else if (shnum == game->get_shape("gumps/crate")) {
-		set_object_area(TileRect(50, 20, 80, 24), 24, 52);
+		set(TileRect(50, 20, 80, 24), 24, 52);
 	} else if (shnum == game->get_shape("gumps/barrel")) {
-		set_object_area(TileRect(32, 32, 40, 40), 28, 112);
+		set(TileRect(32, 32, 40, 40), 28, 112);
 	} else if (shnum == game->get_shape("gumps/bag")) {
-		set_object_area(TileRect(48, 20, 66, 44), 24, 54);
+		set(TileRect(48, 20, 66, 44), 24, 54);
 	} else if (shnum == game->get_shape("gumps/backpack")) {
-		set_object_area(TileRect(36, 36, 85, 40), 24, 50);
+		set(TileRect(36, 36, 85, 40), 24, 50);
 	} else if (shnum == game->get_shape("gumps/basket")) {
-		set_object_area(TileRect(42, 32, 70, 26), 24, 44);
+		set(TileRect(42, 32, 70, 26), 24, 44);
 	} else if (shnum == game->get_shape("gumps/chest")) {
-		set_object_area(TileRect(40, 18, 60, 37), 24, 34);
+		set(TileRect(40, 18, 60, 37), 24, 34);
 	} else if (shnum == game->get_shape("gumps/shipshold")) {
-		set_object_area(TileRect(38, 10, 82, 80), 24, 80);
+		set(TileRect(38, 10, 82, 80), 24, 80);
 	} else if (shnum == game->get_shape("gumps/drawer")) {
-		set_object_area(TileRect(36, 12, 70, 26), 24, 34);
+		set(TileRect(36, 12, 70, 26), 24, 34);
 	} else if (shnum == game->get_shape("gumps/tree")) {
-		set_object_area(TileRect(62, 22, 36, 44), 25, 88);
+		set(TileRect(62, 22, 36, 44), 25, 88);
 	} else if (shnum == game->get_shape("gumps/body")) {
-		set_object_area(TileRect(36, 46, 84, 40), 24, 58);
+		set(TileRect(36, 46, 84, 40), 24, 58);
 	} else {
-		set_object_area(TileRect(52, 22, 60, 40), 24, 52);
+		set(TileRect(52, 22, 60, 40), 24, 52);
 	}
 }

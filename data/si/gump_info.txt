@@ -1,6 +1,7 @@
 #	Gumps information for Serpent Isle.
 #	Sections: container_area, checkmark_pos, special, snap_zones,
-#	          dynamic_buttons, dynamic_texts, dynamic_shapes, dynamic_sliders
+#	          dynamic_buttons, dynamic_texts, dynamic_shapes, dynamic_sliders,
+#	          dynamic_lists, list_layout
 #
 #	container_area: Defines the object placement area within gumps
 #	checkmark_pos: Position of the close button for each gump
@@ -10,6 +11,8 @@
 #	dynamic_texts: Data-driven text fields, set by usecode
 #	dynamic_shapes: Data-driven shape displays, set by usecode
 #	dynamic_sliders: Data-driven slider controls, set/read by usecode
+#	dynamic_lists: Data-driven scrolling lists, from contents or usecode
+#	list_layout: Layout of the container list view (Containers: List)
 #
 
 %%section version
@@ -25,7 +28,9 @@
 #
 # gump_shape  = Shape number in gumps.vga
 # x/y         = Top-left corner of the container area (relative to gump origin)
-# width/height= Size of the container area (not bottom-right corner)
+# width/height= Size of the container area (not bottom-right corner);
+#               width/height 0 = a panel that holds no objects (drops are
+#               refused), for a dynamic gump that is only a UI panel
 # debug_flags = Optional bitmask for debug visualization (omit field or use 0 for disabled)
 #               0x01 (1)  = Border outline
 #               0x02 (2)  = Major grid lines
@@ -68,6 +73,10 @@
 #body
 :48/36/46/84/40
 
+# shop (book): see docs/shop_kit.md. An empty area: a panel that
+# holds no objects, so nothing dropped on the shop is lost.
+:27/0/0/0/0
+
 %%endsection
 
 %%section checkmark_pos
@@ -75,6 +84,9 @@
 # Gump::set_object_area uses this to override the default values defined in the c++ code
 # Format:
 # Shape in :Gumps.vga/position X/position Y/checkmark shape
+# [/tab]: optional; 1 paints Exult's checkmark tab (exult.flx, as on
+# Exult's menus) centred behind the checkmark and under the gump, for
+# art with no tab of its own. 0 or absent: no tab.
 
 # box
 :0/24/44/2
@@ -144,6 +156,10 @@
 
 # magic scroll
 :65/24/56/2
+
+# shop (book): Close, on a tab outside the book's bottom-left corner,
+# in the book art's empty left margin like the original windows
+:27/25/135/2/1
 
 %%endsection
 
@@ -238,6 +254,10 @@
 # visibility_flag = Global flag controlling visibility (-1 = always visible)
 # usecode_param   = Legacy, read but unused (event is always double_click; use -1)
 #
+
+# Shop (book, see docs/shop_kit.md): Yes = Buy/Sell, calls 3843
+:27/52/296/140/0/1/-1/3843/0/-1/-1
+
 %%endsection
 
 %%section dynamic_texts
@@ -253,19 +273,51 @@
 #
 # Text is set at runtime via UI_set_gump_text(item, field_id, "text")
 #
+
+# Shop (book, see docs/shop_kit.md).
+# 1: shop title, centred on the left page
+:27/1/97/9/2/2
+# 2: the chosen ware's name, centred on the right page
+:27/2/235/9/2/2
+# 4: its description (one line)
+:27/4/178/61/4
+# 5: "Price: 15 guilders each"
+:27/5/178/70/4
+# 6: "In stock: 12" / "Plenty" / "You have: 4"
+:27/6/178/79/4
+# 7: "Quantity: 3"
+:27/7/178/88/2
+# 9: "Total: 45 guilders"
+:27/9/178/100/2
+# 10: "You have 120 guilders"
+:27/10/178/111/4
+# 11: status ("You cannot afford that." / "Thank you."), centred
+:27/11/235/120/4/2
+# 12: prompt ("Buy 3 for 45 guilders?"), right-aligned next to Yes
+:27/12/272/132/4/1
+
 %%endsection
 
 %%section dynamic_shapes
-# Format: :gump_shape/field_id/pos_x/pos_y/shape_num/frame_num/shapefile
+# Format: :gump_shape/field_id/pos_x/pos_y/shape_num/frame_num/shapefile[/list_id[/box_w/box_h]]
 #
 # field_id      = Unique integer ID for usecode to address this field
 # pos_x/pos_y   = Position relative to gump origin
 # shape_num     = Initial shape number (0 = none until set by usecode)
 # frame_num     = Initial frame number
 # shapefile     = 0 = SF_SHAPES_VGA (shapes.vga), 1 = SF_GUMPS_VGA (gumps.vga)
+# list_id       = Optional: show the selected row of the dynamic list with
+#                 this field_id (-1 = none, the default)
+# box_w/box_h   = Optional: pos_x/pos_y is a box's top-left; the shape is
+#                 centred in it and enlarged up to 4x (0 = off, the default)
 #
 # Shape is set at runtime via UI_set_gump_shape(item, field_id, shape, frame)
 #
+
+# Shop (book, see docs/shop_kit.md).
+# 3: preview of the selected ware of list 1, boxed and enlarged
+:27/3/180/20/0/0/0/1/110/40
+
 %%endsection
 
 %%section dynamic_sliders
@@ -288,6 +340,50 @@
 #   UI_set_slider_value(item, field_id, value)
 #   UI_get_slider_value(item, field_id)
 #
+
+# Shop (book, see docs/shop_kit.md).
+# 8: quantity, a horizontal spinner (1-99, the kit clamps to the stock),
+#    calls 3842
+:27/8/262/96/17/16/-1/1/99/1/1/0/3842/1
+
+%%endsection
+
+%%section dynamic_lists
+# Format: :gump_shape/field_id/x/y/width/rows/row_height/font/source/up_shape/down_shape/thumb_shape/select_fn/activate_fn/rows_fn/flags
+#
+# field_id      = Unique integer ID for usecode to address this list
+# x/y           = Top-left of the first row, relative to gump origin
+# width         = Row width in pixels; the scroll controls sit to the right
+# rows          = Visible rows
+# row_height    = Pixel height of each row
+# font          = Row font (fonts.vga)
+# source        = 0 = the gump container's contents (drag in and out),
+#                 1 = rows set by usecode
+# up_shape      = gumps.vga scroll-up arrow (-1 = Exult's own scroll controls)
+# down_shape    = gumps.vga scroll-down arrow
+# thumb_shape   = gumps.vga thumb (-1 = spinner: arrows only)
+# select_fn     = Usecode called when the player changes the selection (-1 = none)
+# activate_fn   = Usecode called on double-click or Enter on a source 1 row (-1 = none)
+# rows_fn       = Usecode called after source 0 rows changed (-1 = none)
+# flags         = 0x01 = "N-M of T" line under the rows, 0x02 = "Empty" text
+#
+# Rows and selection at runtime (slots provisional), see docs/dynamic_lists.md:
+#   UI_set_list_rows(item, field_id, rows)
+#   UI_set_list_row(item, field_id, index, row)
+#   UI_get_list_selection(item, field_id)
+#   UI_set_list_selection(item, field_id, index)
+#   UI_get_list_count(item, field_id)
+#   UI_get_list_object(item, field_id, index)
+#
+# Example (not active): a contents list with Exult's scroll controls
+# :<gump>/1/20/30/123/8/12/2/0/-1/-1/-1/-1/-1/-1/3
+#
+
+# Shop (book, see docs/shop_kit.md).
+# 1: the wares (icon, "Name (stock)", price on the right, "N-M of T"),
+#    select calls 3840, double-click/Enter (buy) calls 3841
+:27/1/35/21/110/9/11/2/1/-1/-1/-1/3840/3841/-1/1
+
 %%endsection
 
 %%section shortcutbar_icon
@@ -390,4 +486,57 @@
 # jawbone
 :9/activate_item/0
 
+%%endsection
+
+%%section list_layout
+# Layout of the container list view, used only when the player sets
+# Containers to List in Game Display Options.  See docs/dynamic_lists.md.
+#
+# Format: :gump_shape/part/fields...   (one line per part)
+#
+# gump_shape = the container's gump shape; -1 = the default for every
+#              container gump.  A shape's lines replace those parts of
+#              the default only.
+# Numbers are decimal.  Positions are relative to the top-left of the
+# widened background.
+#
+# Parts and their fields:
+#   off                                  this gump opens in the picture
+#                                        view (:-1/off: list view off)
+#   background/shape/width/height/strip_x0/strip_x1/extra_w
+#                                        gumps.vga art (-1 = gumps/scroll)
+#                                        and its size (else the picture
+#                                        view); columns strip_x0 to
+#                                        strip_x1-1 repeat to widen it by
+#                                        extra_w
+#   list/<the 15 dynamic_lists fields after gump_shape>
+#                                        the rows; source is always 0
+#   title/x/y/width/font                 container name and rule
+#   divider/x/y0/y1                      dotted line between the columns
+#   panel/x/y/width/font/small_font      selected item's name and details
+#   preview/x/y/box_w/box_h              selected item, enlarged in a box
+#   picture/right/top                    the container's own picture, its
+#                                        top-right corner
+#   nav/left_x/right_x/y                 arrows through nested containers
+#                                        (any value < 0 hides them)
+#   usecode/open_fn                      usecode when the view opens
+#                                        (item = the container; -1 = none)
+#
+# The list part's select_fn and rows_fn are the on-select and row-text
+# hooks, as in dynamic_lists.
+#
+# Examples (not active):
+# :<gump>/off
+# :-1/list/0/51/42/123/8/12/2/0/-1/-1/-1/-1/-1/1234/3
+#
+# The default: Exult's built-in layout.
+:-1/background/49/224/173/80/140/96
+:-1/list/0/51/42/123/8/12/2/0/-1/-1/-1/-1/-1/-1/3
+:-1/title/51/31/138/2
+:-1/divider/193/33/145
+:-1/panel/198/31/91/2/4
+:-1/preview/198/43/91/50
+:-1/picture/46/150
+:-1/nav/51/177/27
+:-1/usecode/-1
 %%endsection
