@@ -29,6 +29,7 @@ void ActionHelp(const int* params);
 void ActionCloseGumps(const int* params);
 void ActionCloseOrMenu(const int* params);
 void ActionMenuGump(const int* params);
+void ActionMenuStyle(const int* params);
 void ActionOldFileGump(const int* params);
 
 void ActionScreenshot(const int* params);

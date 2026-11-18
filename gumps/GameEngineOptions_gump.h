@@ -29,6 +29,7 @@ class Gump_button;
 
 class GameEngineOptions_gump : public Modal_gump {
 private:
+	friend class Mui_options_model;
 	bool                     allow_autonotes;
 	int                      gumps_pause;
 	bool                     alternate_drop;

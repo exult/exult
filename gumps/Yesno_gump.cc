@@ -42,6 +42,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "gamewin.h"
 #include "mouse.h"
 
+#include <algorithm>
 #include <cstring>
 
 /*
@@ -126,6 +127,9 @@ bool Yesno_gump::key_down(SDL_Keycode chr, SDL_Keycode unicode) {
 bool Yesno_gump::ask(
 		const char* txt,    // What to ask.
 		Paintable* paint, const char* font) {
+	if (themed_ask) {
+		return themed_ask(txt, -1);
+	}
 	// make sure gumps are loaded
 	auto sm = Shape_manager::get_instance();
 	if (!sm->are_gumps_loaded()) {
@@ -164,6 +168,9 @@ bool Countdown_gump::run() {
 }
 
 bool Countdown_gump::ask(const char* txt, int timeout, const char* font) {
+	if (themed_ask) {
+		return themed_ask(txt, std::max(0, timeout));
+	}
 	Countdown_gump dlg(txt, timeout, font);
 	bool           answer;
 	if (!gumpman->do_modal_gump(&dlg, Mouse::hand)) {

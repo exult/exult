@@ -25,15 +25,19 @@
 
 #include <array>
 #include <deque>
+#include <memory>
 #include <string>
 #include <vector>
 
+class Actor;
+class Mui_dialogue;
 class Npc_face_info;
 class Usecode_value;
 class Game_window;
 
 class Conversation : public Game_singletons, public Paintable {
 public:
+	Conversation();
 	~Conversation() override;
 
 private:
@@ -48,6 +52,11 @@ private:
 
 	std::vector<std::string>             answers;
 	std::deque<std::vector<std::string>> answer_stack;
+	// Themed view (null in the classic style), resolved once per session.
+	std::unique_ptr<Mui_dialogue> view;
+	std::string                   style_name       = "classic";
+	bool                          session_resolved = false;
+	int                           usecode_depth    = 0;
 
 public:
 	inline int get_num_answers() const {
@@ -59,7 +68,7 @@ public:
 	}
 
 	void init_faces();
-	void show_face(int shape, int frame, int slot = -1);
+	void show_face(int shape, int frame, int slot = -1, Actor* speaker = nullptr);
 	void change_face_frame(int frame, int slot);
 	void remove_face(int shape);
 	void remove_slot_face(int slot);    // SI.
@@ -96,6 +105,51 @@ public:
 
 	static bool noface;
 
+	// Themed conversations: true while the session uses the themed view.
+	bool is_themed() const {
+		return view != nullptr;
+	}
+
+	Mui_dialogue* get_view() const {
+		return view.get();
+	}
+
+	// Around each outermost usecode call; the session ends at depth 0.
+	void enter_usecode();
+	void leave_usecode();
+	// Themed wait for a click / an answer (index, or -2 for Escape).
+	void themed_continue();
+	int  themed_choose();
+
+	// Test support (menu test driver): the answer chosen last.
+	std::string last_choice;
+	void        note_choice(int index);
+
+	// What the test driver can check about the conversation.
+	struct Conv_debug {
+		std::string style;          // "classic" or the theme name.
+		int         active = -1;    // Slot of the face that spoke last.
+
+		struct Slot {
+			int  shape    = -1;
+			int  frame    = -1;
+			int  npc_num  = -1;
+			bool used     = false;
+			bool drawable = false;    // Has a face frame and is not hidden.
+		};
+
+		Slot                     slots[2];
+		std::string              page;    // Text shown for the active face.
+		std::string              wait;    // "choice", "continue" or "none".
+		std::vector<std::string> answers;
+		std::string              last_choice;
+	};
+
+	void describe(Conv_debug& out) const;
+	// Write the conv and convbg layer buffers: "EXCV", then per layer a
+	// uint32 width and height and the index bytes (0x0 if missing).
+	bool dump_layers(const char* path) const;
+
 private:
 	void     set_face_rect(Npc_face_info* info, Npc_face_info* prev);
 	TileRect get_conv_rect() const;
@@ -114,6 +168,11 @@ private:
 	void show_avatar_choices(int num_choices, char** choices);
 	void add_answer(const char* str);
 	void remove_answer(const char* str);
+	// Resolve the style at the first face, text or choice of a session.
+	void begin_session_if_needed();
+	void end_session();
+	// Push faces and speaker names to the themed view.
+	void sync_view();
 };
 
 #endif
