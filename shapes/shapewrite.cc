@@ -50,6 +50,7 @@
 #include "warminf.h"
 #include "weaponinf.h"
 
+#include <algorithm>
 #include <iomanip>
 #include <map>
 #include <vector>
@@ -296,6 +297,7 @@ void Shapes_vga_file::Write_Gumpinf_text_data_file(Exult_Game game) {
 	std::map<int, const Gump_info*> dyntexts_data;
 	std::map<int, const Gump_info*> dynshapes_data;
 	std::map<int, const Gump_info*> dynsliders_data;
+	std::map<int, const Gump_info*> dynlists_data;
 	std::map<int, const Gump_info*> gumpname_data;
 
 	for (const auto& [shapenum, gumpinf] : Gump_info::gump_info_map) {
@@ -323,14 +325,23 @@ void Shapes_vga_file::Write_Gumpinf_text_data_file(Exult_Game game) {
 		if (gumpinf.has_dynamic_sliders() && gumpinf.is_dynsliders_dirty()) {
 			dynsliders_data[shapenum] = &gumpinf;
 		}
+		if (gumpinf.has_dynamic_lists() && gumpinf.is_dynlists_dirty()) {
+			dynlists_data[shapenum] = &gumpinf;
+		}
 		if (gumpinf.has_gump_name() && gumpinf.is_gumpname_dirty()) {
 			gumpname_data[shapenum] = &gumpinf;
 		}
 	}
 
+	// list_layout entries read from the patch (key -1 first).
+	const bool has_layouts
+			= std::any_of(Gump_info::get_list_layouts().begin(), Gump_info::get_list_layouts().end(), [](const auto& entry) {
+				  return entry.second.patch_parts != 0;
+			  });
+
 	if (container_data.empty() && checkmark_data.empty() && special_data.empty() && snapzones_data.empty()
 		&& dynbuttons_data.empty() && dyntexts_data.empty() && dynshapes_data.empty() && dynsliders_data.empty()
-		&& gumpname_data.empty()) {
+		&& dynlists_data.empty() && gumpname_data.empty() && !has_layouts) {
 		return;
 	}
 
@@ -421,7 +432,15 @@ void Shapes_vga_file::Write_Gumpinf_text_data_file(Exult_Game game) {
 		for (const auto& [shapenum, info] : dynshapes_data) {
 			for (const auto& def : info->dynamic_shapes) {
 				out << ":" << shapenum << "/" << def.field_id << "/" << def.pos_x << "/" << def.pos_y << "/" << def.shape_num << "/"
-					<< def.frame_num << "/" << def.shapefile << std::endl;
+					<< def.frame_num << "/" << def.shapefile;
+				// Optional trailing fields only when used, so old entries stay unchanged.
+				if (def.list_id >= 0 || def.box_w > 0) {
+					out << "/" << def.list_id;
+					if (def.box_w > 0) {
+						out << "/" << def.box_w << "/" << def.box_h;
+					}
+				}
+				out << std::endl;
 			}
 		}
 		out << "%%endsection" << std::endl;
@@ -439,12 +458,73 @@ void Shapes_vga_file::Write_Gumpinf_text_data_file(Exult_Game game) {
 		}
 		out << "%%endsection" << std::endl;
 	}
+	// dynamic_lists
+	if (!dynlists_data.empty()) {
+		out << "%%section dynamic_lists" << std::endl;
+		for (const auto& [shapenum, info] : dynlists_data) {
+			for (const auto& def : info->dynamic_lists) {
+				out << ":" << shapenum << "/" << def.field_id << "/" << def.pos_x << "/" << def.pos_y << "/" << def.width << "/"
+					<< def.rows << "/" << def.row_height << "/" << def.font << "/" << def.source << "/" << def.up_shape << "/"
+					<< def.down_shape << "/" << def.thumb_shape << "/" << def.select_fn << "/" << def.activate_fn << "/"
+					<< def.rows_fn << "/" << def.flags << std::endl;
+			}
+		}
+		out << "%%endsection" << std::endl;
+	}
 
 	// gump_name
 	if (!gumpname_data.empty()) {
 		out << "%%section gump_name" << std::endl;
 		for (const auto& [shapenum, info] : gumpname_data) {
 			out << ":" << shapenum << "/" << info->gump_name << std::endl;
+		}
+		out << "%%endsection" << std::endl;
+	}
+
+	// list_layout: one line per part, in the parser's order.
+	if (has_layouts) {
+		out << "%%section list_layout" << std::endl;
+		for (const auto& [key, layout] : Gump_info::get_list_layouts()) {
+			const int parts = layout.patch_parts;
+			if (parts & LISTLAYOUT_OFF) {
+				out << ":" << key << "/off" << std::endl;
+			}
+			if (parts & LISTLAYOUT_BACKGROUND) {
+				out << ":" << key << "/background/" << layout.bg_shape << "/" << layout.bg_width << "/" << layout.bg_height << "/"
+					<< layout.strip_x0 << "/" << layout.strip_x1 << "/" << layout.extra_w << std::endl;
+			}
+			if (parts & LISTLAYOUT_LIST) {
+				const Dynamic_list_def& def = layout.list;
+				out << ":" << key << "/list/" << def.field_id << "/" << def.pos_x << "/" << def.pos_y << "/" << def.width << "/"
+					<< def.rows << "/" << def.row_height << "/" << def.font << "/" << def.source << "/" << def.up_shape << "/"
+					<< def.down_shape << "/" << def.thumb_shape << "/" << def.select_fn << "/" << def.activate_fn << "/"
+					<< def.rows_fn << "/" << def.flags << std::endl;
+			}
+			if (parts & LISTLAYOUT_TITLE) {
+				out << ":" << key << "/title/" << layout.title_x << "/" << layout.title_y << "/" << layout.title_w << "/"
+					<< layout.title_font << std::endl;
+			}
+			if (parts & LISTLAYOUT_DIVIDER) {
+				out << ":" << key << "/divider/" << layout.divider_x << "/" << layout.divider_y0 << "/" << layout.divider_y1
+					<< std::endl;
+			}
+			if (parts & LISTLAYOUT_PANEL) {
+				out << ":" << key << "/panel/" << layout.panel_x << "/" << layout.panel_y << "/" << layout.panel_w << "/"
+					<< layout.panel_font << "/" << layout.panel_small_font << std::endl;
+			}
+			if (parts & LISTLAYOUT_PREVIEW) {
+				out << ":" << key << "/preview/" << layout.preview_x << "/" << layout.preview_y << "/" << layout.preview_w << "/"
+					<< layout.preview_h << std::endl;
+			}
+			if (parts & LISTLAYOUT_PICTURE) {
+				out << ":" << key << "/picture/" << layout.pic_right << "/" << layout.pic_top << std::endl;
+			}
+			if (parts & LISTLAYOUT_NAV) {
+				out << ":" << key << "/nav/" << layout.nav_left_x << "/" << layout.nav_right_x << "/" << layout.nav_y << std::endl;
+			}
+			if (parts & LISTLAYOUT_USECODE) {
+				out << ":" << key << "/usecode/" << layout.open_fn << std::endl;
+			}
 		}
 		out << "%%endsection" << std::endl;
 	}
