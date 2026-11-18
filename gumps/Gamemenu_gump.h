@@ -37,6 +37,7 @@ private:
 		id_game_display_options,
 		id_game_engine_options,
 		id_input,
+		id_menu_style,
 		id_quit,
 		id_count
 	};
@@ -72,6 +73,8 @@ public:
 	void game_display_options();
 	void game_engine_options();
 	void input_options();
+	// Cycle Classic, Ultima, Modern (config/gameplay/menu_style).
+	void menu_style();
 
 	static void  do_exult_menu();
 	Gump_button* on_button(int mx, int my) override;

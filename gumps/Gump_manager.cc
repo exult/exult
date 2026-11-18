@@ -333,6 +333,7 @@ void Gump_manager::render_gumps_to_layer(bool modal) {
 		if (g->uses_render_layer()) {
 			render_gump_to_layer(g, gump_layer_z_base + z_tier_offset_for(g) + idx);
 		} else {
+			g->set_layer_z_hint(gump_layer_z_base + z_tier_offset_for(g) + idx);
 			g->paint();
 		}
 	}
@@ -893,6 +894,9 @@ bool Gump_manager::handle_modal_gump_event(Modal_gump* gump, SDL_Event& event) {
 		SDL_ConvertEventToRenderCoordinates(renderer, &event);
 		gwin->get_win()->screen_to_game(event.button.x, event.button.y, gwin->get_fastmouse(), gx, gy);
 		map_game_to_gump(gump, gx, gy, rgx, rgy);
+		if (gump->wants_display_coords()) {
+			gump->display_to_local(int(event.button.x), int(event.button.y), rgx, rgy);
+		}
 
 #ifdef DEBUG
 		cout << "(x,y) rel. to gump is (" << (gx - gump->get_x()) << ", " << (gy - gump->get_y()) << ")" << endl;
@@ -921,6 +925,9 @@ bool Gump_manager::handle_modal_gump_event(Modal_gump* gump, SDL_Event& event) {
 		SDL_ConvertEventToRenderCoordinates(renderer, &event);
 		gwin->get_win()->screen_to_game(event.button.x, event.button.y, gwin->get_fastmouse(), gx, gy);
 		map_game_to_gump(gump, gx, gy, rgx, rgy);
+		if (gump->wants_display_coords()) {
+			gump->display_to_local(int(event.button.x), int(event.button.y), rgx, rgy);
+		}
 		if (g_shortcutBar && g_shortcutBar->handle_event(&event)) {
 			break;
 		}
@@ -943,6 +950,9 @@ bool Gump_manager::handle_modal_gump_event(Modal_gump* gump, SDL_Event& event) {
 		SDL_ConvertEventToRenderCoordinates(renderer, &event);
 		gwin->get_win()->screen_to_game(event.button.x, event.button.y, gwin->get_fastmouse(), gx, gy);
 		map_game_to_gump(gump, gx, gy, rgx, rgy);
+		if (gump->wants_display_coords()) {
+			gump->display_to_local(int(event.button.x), int(event.button.y), rgx, rgy);
+		}
 		static int   numFingers = 0;
 		SDL_Finger** fingers    = SDL_GetTouchFingers(event.tfinger.touchID, &numFingers);
 		if (fingers) {
@@ -972,6 +982,15 @@ bool Gump_manager::handle_modal_gump_event(Modal_gump* gump, SDL_Event& event) {
 		int wx;
 		int wy;
 		map_game_to_gump(gump, Mouse::mouse()->get_mousex(), Mouse::mouse()->get_mousey(), wx, wy);
+		if (gump->wants_display_coords()) {
+			float fx;
+			float fy;
+			float rx;
+			float ry;
+			SDL_GetMouseState(&fx, &fy);
+			SDL_RenderCoordinatesFromWindow(renderer, fx, fy, &rx, &ry);
+			gump->display_to_local(int(rx), int(ry), wx, wy);
+		}
 		if (event.wheel.y > 0) {
 			gump->mousewheel_up(wx, wy);
 		} else if (event.wheel.y < 0) {
@@ -986,6 +1005,9 @@ bool Gump_manager::handle_modal_gump_event(Modal_gump* gump, SDL_Event& event) {
 		SDL_ConvertEventToRenderCoordinates(renderer, &event);
 		gwin->get_win()->screen_to_game(event.motion.x, event.motion.y, gwin->get_fastmouse(), gx, gy);
 		map_game_to_gump(gump, gx, gy, rgx, rgy);
+		if (gump->wants_display_coords()) {
+			gump->display_to_local(int(event.motion.x), int(event.motion.y), rgx, rgy);
+		}
 
 		Mouse::mouse()->move(gx, gy);
 		Mouse::mouse_update = true;
@@ -1103,6 +1125,9 @@ bool Gump_manager::do_modal_gump(
 		// own paint() calls (made while handling the event) otherwise land
 		// directly in the game window as an unscaled duplicate while the scaled
 		// overlay layer stays stale (looking like the click "did nothing").
+		if (modal_frame_hook) {
+			modal_frame_hook(gump);
+		}
 		const bool ran = gump->run();
 		if (ran || gwin->is_dirty() || got_event) {
 			gwin->paint();    // Paint each cycle.
@@ -1156,6 +1181,14 @@ int Gump_manager::prompt_for_number(
 		Paintable* paint,     // Should be the conversation.
 		bool*      escaped    // If non-null, allow user to escape and will be set indicating if user escaped
 ) {
+	if (themed_number_hook) {
+		int        value = defval;
+		const bool ok    = themed_number_hook(minval, maxval, step, defval, escaped != nullptr, value);
+		if (escaped) {
+			*escaped = !ok;
+		}
+		return value;
+	}
 	auto*      slider = new Slider_gump(minval, maxval, step, defval, escaped != nullptr);
 	const bool ok     = do_modal_gump(slider, Mouse::hand, paint);
 	if (escaped) {

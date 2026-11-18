@@ -83,6 +83,8 @@ public:
 		UiLayerFullScreenBilinear,
 		// Layer is drawn fullscreen with point fill scaling
 		UiLayerFullScreenPoint,
+		// Themed Exult menus, drawn 1:1 at display resolution.
+		UiLayerMenus,
 
 		NumUiLayerKinds
 	};
@@ -950,5 +952,8 @@ public:
 	}
 
 	bool screenshot(SDL_IOStream* dst, bool paletted);
+	// Full renderer output (layers included) at display size, without the
+	// guard-band crop. Used by the themed menu test driver.
+	bool screenshot_display(SDL_IOStream* dst, int& w, int& h);
 };
 #endif /* INCL_IMAGEWIN    */

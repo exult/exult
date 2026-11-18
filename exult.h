@@ -48,6 +48,8 @@ extern bool Get_click(
 		Paintable*          paint         = nullptr,    // Paint over everything else.
 		bool                rotate_colors = false       // If the palette colors should rotate.
 );
+// Test driver hook run every frame of Get_click's loop (null in normal play).
+extern void (*Get_click_frame_hook)(Paintable* paint);
 
 /*
  *  Make a screenshot of the current screen display
