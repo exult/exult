@@ -30,6 +30,7 @@ class Font;
 
 class InputOptions_gump : public Modal_gump {
 private:
+	friend class Mui_options_model;
 	int  doubleclick;
 	int  rightclick_close;
 	int  right_pathfind;

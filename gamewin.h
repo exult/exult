@@ -140,6 +140,10 @@ class Game_window {
 	TileRect dirty;                 // Dirty rectangle.
 	// Savegames:
 	std::array<std::string, 10> save_names;    // Names of saved games.
+	// Play time: seconds recorded in the save this game came from, plus
+	// the real time since it was set up (time in menus counts too).
+	uint32 play_seconds_base = 0;
+	uint64 play_start_ticks  = 0;
 	// Options:
 	bool         mouse3rd;    // use third (middle) mouse button
 	bool         fastmouse;
@@ -853,8 +857,15 @@ public:
 	// From Savegame
 	bool get_saveinfo(int num, char*& name, std::unique_ptr<Shape_file>& map, SaveGame_Details*& details, SaveGame_Party*& party);
 	void read_saveinfo(IDataSource* in, SaveGame_Details*& details, SaveGame_Party*& party);
+	// Change the stored name of savegame num. False (file untouched) on error.
+	bool rename_savegame(int num, const char* newname);
+	// Total seconds played in this game (0 if never recorded).
+	uint32 get_play_seconds() const;
+	void   set_play_seconds(uint32 secs);
 
 private:
+	// Take the play time from gamedat's save info and restart the clock.
+	void read_play_time();
 #ifdef HAVE_ZIP_SUPPORT
 	bool get_saveinfo_zip(
 			const char* fname, char*& name, std::unique_ptr<Shape_file>& map, SaveGame_Details*& details, SaveGame_Party*& party);

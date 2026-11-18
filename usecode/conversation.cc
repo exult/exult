@@ -24,6 +24,7 @@
 
 #include "Face_stats.h"
 #include "Gump_manager.h"
+#include "Mui_dialogue.h"
 #include "ShortcutBar_gump.h"
 #include "actors.h"
 #include "data/exult_bg_flx.h"
@@ -38,6 +39,8 @@
 #include "touchui.h"
 #include "tqueue.h"
 #include "useval.h"
+
+#include <fstream>
 
 using std::size_t;
 using std::string;
@@ -95,11 +98,15 @@ public:
 	bool     large_face;          // Guardian, snake.
 	int      last_text_height;    // Height of last text painted.
 	string   cur_text;            // Current text being shown.
+	int      npc_num = -1;        // Speaker, or -1 for a shape-only face.
 
 	Npc_face_info(ShapeID& sid, int num) : shape(sid), face_num(num), text_pending(false), no_show_face(false), large_face(false) {}
 };
 
+Conversation::Conversation() = default;
+
 Conversation::~Conversation() {
+	view.reset();
 	if (conv_layer >= 0) {
 		gwin->destroy_layer(conv_layer);
 		conv_layer = -1;
@@ -113,6 +120,9 @@ Conversation::~Conversation() {
 
 void Conversation::clear_answers() {
 	answers.clear();
+	if (view) {
+		view->set_answers(answers);
+	}
 }
 
 void Conversation::add_answer(const char* str) {
@@ -135,6 +145,9 @@ void Conversation::add_answer(Usecode_value& val) {
 		}
 	} else if ((str = val.get_str_value()) != nullptr) {
 		add_answer(str);
+	}
+	if (view) {
+		view->set_answers(answers);
 	}
 }
 
@@ -165,6 +178,9 @@ void Conversation::remove_answer(Usecode_value& val) {
 	} else {
 		str = val.get_str_value();
 		remove_answer(str);
+	}
+	if (view) {
+		view->set_answers(answers);
 	}
 }
 
@@ -198,6 +214,10 @@ void Conversation::init_faces() {
 	if (conv_bg_layer >= 0) {
 		gwin->layer_set_visible(conv_bg_layer, false);
 		gwin->layer_set_dirty(conv_bg_layer);
+	}
+	if (view) {
+		sync_view();
+		view->paint();
 	}
 }
 
@@ -274,6 +294,11 @@ void Conversation::position_conv_layer(int layer) {
  *  Repaint the conversation into the overlay layer.
  */
 void Conversation::repaint_conversation() {
+	if (view) {
+		sync_view();
+		view->paint();
+		return;
+	}
 	render_conv_layer();
 }
 
@@ -396,7 +421,8 @@ void Conversation::set_face_rect(Npc_face_info* info, Npc_face_info* prev) {
  *  If shape < 0, an empty space is shown.
  */
 
-void Conversation::show_face(int shape, int frame, int slot) {
+void Conversation::show_face(int shape, int frame, int slot, Actor* speaker) {
+	begin_session_if_needed();
 	ShapeID face_sid(shape, frame, SF_FACES_VGA);
 
 	// Make sure mode is set right.
@@ -411,6 +437,9 @@ void Conversation::show_face(int shape, int frame, int slot) {
 		if (face_info[i] && face_info[i]->face_num == shape) {
 			info            = face_info[i];
 			last_face_shown = i;
+			if (speaker) {
+				info->npc_num = speaker->get_npc_num();
+			}
 			break;
 		}
 	}
@@ -419,7 +448,8 @@ void Conversation::show_face(int shape, int frame, int slot) {
 			// None free?  Steal last one.
 			remove_slot_face(face_info.size() - 1);
 		}
-		info = new Npc_face_info(face_sid, shape);
+		info          = new Npc_face_info(face_sid, shape);
+		info->npc_num = speaker ? speaker->get_npc_num() : -1;
 		if (noface) {
 			info->no_show_face = true;
 		}
@@ -533,6 +563,11 @@ void Conversation::remove_slot_face(int slot) {
 			}
 		}
 	}
+	if (view) {
+		sync_view();
+		view->paint();
+		return;
+	}
 	// Repaint the remaining faces, or hide the overlay layer if empty.
 	if (num_faces > 0 || choices_active) {
 		repaint_conversation();
@@ -551,6 +586,7 @@ void Conversation::remove_slot_face(int slot) {
  */
 
 void Conversation::show_npc_message(const char* msg) {
+	begin_session_if_needed();
 	if (last_face_shown <= -1 || size_t(last_face_shown) >= face_info.size() || !face_info[last_face_shown]) {
 		return;
 	}
@@ -577,6 +613,15 @@ void Conversation::show_npc_message(const char* msg) {
 	}
 	// Make sure we don't write into a freed face_info slot.
 	if (last_face_shown < 0 || size_t(last_face_shown) >= face_info.size() || !face_info[last_face_shown]) {
+		return;
+	}
+	if (view) {    // Themed: the view pages the text itself.
+		Npc_face_info* info = face_info[last_face_shown];
+		info->cur_text      = translated;
+		sync_view();
+		view->say(translated, info->large_face);
+		info->text_pending = true;
+		gwin->set_painted();
 		return;
 	}
 	Npc_face_info* info    = face_info[last_face_shown];
@@ -848,13 +893,22 @@ void Conversation::build_avatar_choices() {
  */
 
 void Conversation::show_avatar_choices() {
+	begin_session_if_needed();
 	choices_active = true;
+	if (view) {
+		clear_text_pending();
+		view->set_answers(answers);
+		view->show_choices(true);
+	}
 	repaint_conversation();
 }
 
 void Conversation::clear_avatar_choices() {
 	choices_active = false;
 	avatar_face.w  = 0;
+	if (view) {
+		view->show_choices(false);
+	}
 	repaint_conversation();    // Repaint the faces without the choices.
 }
 
@@ -950,10 +1004,203 @@ int Conversation::locate_answer(const char* str) {
 void Conversation::push_answers() {
 	answer_stack.push_front(answers);
 	answers.clear();
+	if (view) {
+		view->set_answers(answers);
+	}
 }
 
 void Conversation::pop_answers() {
 	answers = answer_stack.front();
 	answer_stack.pop_front();
 	gwin->paint();    // Really just need to figure tbox.
+	if (view) {
+		view->set_answers(answers);
+	}
+}
+
+/*
+ *  Remember the answer the user chose (for the test driver).
+ */
+void Conversation::note_choice(int index) {
+	if (index >= 0 && static_cast<size_t>(index) < answers.size()) {
+		last_choice = answers[index];
+		if (view) {    // Themed: the history labels it with the Avatar's name.
+			Actor* avatar = gwin->get_main_actor();
+			view->add_choice(avatar ? avatar->get_npc_name() : std::string(), last_choice);
+		}
+	} else {
+		last_choice.clear();
+	}
+}
+
+/*
+ *  Describe the conversation for the test driver.
+ */
+void Conversation::describe(Conv_debug& out) const {
+	out.style  = style_name;
+	out.active = last_face_shown;
+	for (size_t i = 0; i < face_info.size(); i++) {
+		Conv_debug::Slot&    slot  = out.slots[i];
+		const Npc_face_info* finfo = face_info[i];
+		slot                       = Conv_debug::Slot();
+		if (!finfo) {
+			continue;
+		}
+		slot.used               = true;
+		slot.npc_num            = finfo->npc_num;
+		slot.shape              = finfo->face_num;
+		slot.frame              = finfo->shape.get_framenum();
+		const Shape_frame* face = finfo->face_num >= 0 ? finfo->shape.get_shape() : nullptr;
+		slot.drawable           = face != nullptr && !finfo->no_show_face;
+	}
+	out.page.clear();
+	if (last_face_shown >= 0 && static_cast<size_t>(last_face_shown) < face_info.size() && face_info[last_face_shown]) {
+		out.page = face_info[last_face_shown]->cur_text;
+	}
+	bool pending = false;
+	for (const Npc_face_info* finfo : face_info) {
+		if (finfo && finfo->text_pending) {
+			pending = true;
+		}
+	}
+	out.wait        = choices_active ? "choice" : pending ? "continue" : "none";
+	out.answers     = answers;
+	out.last_choice = last_choice;
+	if (view) {    // Themed: what the view shows and waits for.
+		out.page = view->current_page();
+		switch (view->waiting()) {
+		case Mui_dialogue::Wait::page:
+			out.wait = "page";
+			break;
+		case Mui_dialogue::Wait::cont:
+			out.wait = "continue";
+			break;
+		case Mui_dialogue::Wait::choice:
+			out.wait = "choice";
+			break;
+		case Mui_dialogue::Wait::none:
+			out.wait = "none";
+			break;
+		}
+	}
+}
+
+/*
+ *  Write the conversation layer buffers to a file (for the test driver):
+ *  "EXCV", then for the conv and the convbg layer a little-endian uint32
+ *  width and height followed by the index bytes, row by row (0x0 and no
+ *  bytes for a layer that does not exist).
+ */
+bool Conversation::dump_layers(const char* path) const {
+	std::ofstream out(path, std::ios::binary);
+	if (!out) {
+		return false;
+	}
+	out.write("EXCV", 4);
+	auto put32 = [&out](uint32 v) {
+		const char b[4]
+				= {static_cast<char>(v & 0xff), static_cast<char>((v >> 8) & 0xff), static_cast<char>((v >> 16) & 0xff),
+				   static_cast<char>((v >> 24) & 0xff)};
+		out.write(b, 4);
+	};
+	for (const int layer : {conv_layer, conv_bg_layer}) {
+		Image_buffer8* buf = layer >= 0 ? gwin->get_layer_ibuf(layer) : nullptr;
+		if (!buf) {
+			put32(0);
+			put32(0);
+			continue;
+		}
+		const unsigned int w = buf->get_width();
+		const unsigned int h = buf->get_height();
+		put32(w);
+		put32(h);
+		const unsigned char* bits = buf->get_bits();
+		for (unsigned int y = 0; y < h; y++) {
+			out.write(reinterpret_cast<const char*>(bits + static_cast<size_t>(y) * buf->get_line_width()), w);
+		}
+	}
+	return static_cast<bool>(out);
+}
+
+/*
+ *  Themed conversations. The style is resolved at the first face, text or
+ *  choice list of a session and kept until the outermost usecode call
+ *  returns, so init_conversation() in the middle of a scene keeps it.
+ */
+void Conversation::begin_session_if_needed() {
+	if (session_resolved) {
+		return;
+	}
+	session_resolved = true;
+	std::string                name;
+	std::shared_ptr<Mui_theme> theme = Mui_dialogue::resolve_style(name) ? Mui_theme::load(name) : nullptr;
+	if (theme) {
+		view       = std::make_unique<Mui_dialogue>(theme);
+		style_name = name;
+	} else {
+		view.reset();
+		style_name = "classic";
+	}
+}
+
+void Conversation::end_session() {
+	if (view) {
+		view->clear_history();    // The history lasts one session.
+		view->hide();
+		view.reset();
+	}
+	session_resolved = false;
+}
+
+void Conversation::enter_usecode() {
+	usecode_depth++;
+}
+
+void Conversation::leave_usecode() {
+	if (usecode_depth > 0) {
+		usecode_depth--;
+	}
+	if (usecode_depth == 0) {
+		end_session();
+	}
+}
+
+/*
+ *  Push the faces to the themed view. Labels: the Avatar's own name, the
+ *  name (if met, else the description) of other NPCs, none for faces that
+ *  only name a shape.
+ */
+void Conversation::sync_view() {
+	if (!view) {
+		return;
+	}
+	std::array<Mui_dialogue::Face, 2> faces;
+	for (size_t i = 0; i < face_info.size(); i++) {
+		const Npc_face_info* finfo = face_info[i];
+		if (!finfo) {
+			continue;
+		}
+		Mui_dialogue::Face& f   = faces[i];
+		const Shape_frame*  frm = finfo->face_num >= 0 ? finfo->shape.get_shape() : nullptr;
+		f.used                  = true;
+		f.shape                 = finfo->shape.get_shapenum();
+		f.frame                 = finfo->shape.get_framenum();
+		f.drawable              = frm != nullptr && !finfo->no_show_face;
+		f.large                 = finfo->large_face;
+		Actor* npc              = finfo->npc_num >= 0 ? gwin->get_npc(finfo->npc_num) : nullptr;
+		if (npc) {
+			f.name = npc == gwin->get_main_actor() ? npc->get_npc_name() : npc->get_name();
+		}
+	}
+	view->set_faces(faces, last_face_shown);
+}
+
+void Conversation::themed_continue() {
+	if (view) {
+		view->wait_continue();
+	}
+}
+
+int Conversation::themed_choose() {
+	return view ? view->choose() : -2;
 }

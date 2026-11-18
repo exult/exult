@@ -29,6 +29,7 @@ class Gump_button;
 
 class GameDisplayOptions_gump : public Modal_gump {
 private:
+	friend class Mui_options_model;
 	int                      facestats;
 	int                      sc_enabled;
 	int                      sc_outline;

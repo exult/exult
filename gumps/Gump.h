@@ -32,6 +32,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #		pragma GCC diagnostic ignored "-Wuseless-cast"
 #	endif
 #endif    // __GNUC__
+#include <SDL3/SDL_events.h>
 #include <SDL3/SDL_keycode.h>
 #ifdef __GNUC__
 #	pragma GCC diagnostic pop
@@ -99,6 +100,11 @@ public:
 		return false;
 	}
 
+	// The key event as SDL delivered it, just before key_down gets the
+	// translated key (the keypad is mapped by NumLock there).
+	virtual void raw_key_event(const SDL_Event& ev) {
+		ignore_unused_variable_warning(ev);
+	}
 	virtual bool key_down(SDL_Keycode chr,
 						  SDL_Keycode unicode) {    // Key pressed
 		ignore_unused_variable_warning(chr, unicode);
@@ -260,6 +266,25 @@ public:
 
 	virtual bool uses_render_layer() const {
 		return true;
+	}
+
+	// Gumps that paint into their own display-resolution layer (themed menus)
+	// want mouse coordinates in display pixels mapped by display_to_local()
+	// instead of game coordinates.
+	virtual bool wants_display_coords() const {
+		return false;
+	}
+
+	virtual bool display_to_local(int sx, int sy, int& lx, int& ly) const {
+		lx = sx;
+		ly = sy;
+		return true;
+	}
+
+	// Composite order the gump manager would give a layer-backed gump at this
+	// position, passed to gumps that manage their own layers.
+	virtual void set_layer_z_hint(int z) {
+		ignore_unused_variable_warning(z);
 	}
 
 	virtual bool     has_point(int x, int y) const;

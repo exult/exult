@@ -765,6 +765,9 @@ bool Image_window::create_scale_surfaces(int w, int h, int bpp) {
 
 	set_ui_layer_config(UiLayerFullScreenBilinear, w, h, NoScaler, Fill, bilinear, true);
 	set_ui_layer_config(UiLayerFullScreenPoint, w, h, NoScaler, Fill, point, true);
+	// Themed menus: protected, unscaled, 1:1 with the display, day palette.
+	set_ui_layer_config(UiLayerMenus, w, h, NoScaler, Fill, point, true);
+	set_ui_layer_palette(UiLayerMenus, UiPaletteDay);
 
 	return true;
 }
@@ -1270,6 +1273,25 @@ bool Image_window::screenshot(SDL_IOStream* dst, bool paletted) {
 	return false;
 }
 
+bool Image_window::screenshot_display(SDL_IOStream* dst, int& w, int& h) {
+	w = h = 0;
+	if (!screen_renderer) {
+		return false;
+	}
+	UpdateRect(nullptr, nullptr, true);
+	SDL_Surface* surf = SDL_RenderReadPixels(screen_renderer, nullptr);
+	if (!surf) {
+		const char* err = SDL_GetError();
+		std::cerr << "SDL_RenderReadPixels failed when trying to make screenshot: " << (err ? err : "") << std::endl;
+		SDL_ClearError();
+		return false;
+	}
+	w        = surf->w;
+	h        = surf->h;
+	bool res = SaveIMG_RW(surf, dst, true, 0);
+	SDL_DestroySurface(surf);
+	return res;
+}
 void Image_window::set_title(const char* title) {
 	SDL_SetWindowTitle(screen_window, title);
 }

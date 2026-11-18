@@ -65,6 +65,42 @@ libgumps_la_SOURCES = \
 	Modal_gump.h \
 	Mixer_gump.cc \
 	Mixer_gump.h \
+	Mui_cheats.cc \
+	Mui_cheats.h \
+	Mui_config_editor.cc \
+	Mui_config_editor.h \
+	Mui_config_meta.cc \
+	Mui_config_meta.h \
+	Mui_dialogue.cc \
+	Mui_dialogue.h \
+	Mui_dialogue_test.cc \
+	Mui_dialogue_test.h \
+	Mui_font.cc \
+	Mui_font.h \
+	Mui_game_menu.cc \
+	Mui_game_menu.h \
+	Mui_journey_log.cc \
+	Mui_journey_log.h \
+	Mui_keys_editor.cc \
+	Mui_keys_editor.h \
+	Mui_keys_model.cc \
+	Mui_keys_model.h \
+	Mui_options.cc \
+	Mui_options.h \
+	Mui_options_model.cc \
+	Mui_options_model.h \
+	Mui_painter.cc \
+	Mui_painter.h \
+	Mui_router.cc \
+	Mui_router.h \
+	Mui_selftest.cc \
+	Mui_selftest.h \
+	Mui_theme.cc \
+	Mui_theme.h \
+	Mui_widgets.cc \
+	Mui_widgets.h \
+	Mui_window.cc \
+	Mui_window.h \
 	Gump_ToggleButton.cc	\
 	Gump_ToggleButton.h	\
 	CombatStats_gump.cc	\

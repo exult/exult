@@ -598,22 +598,7 @@ void Game_window::init_files(bool cycle) {
 	delete keybinder;
 	keybinder = new KeyBinder();
 
-	std::string d;
-	std::string keyfilename;
-	d = "config/disk/game/" + Game::get_gametitle() + "/keys";
-	config->value(d.c_str(), keyfilename, "(default)");
-	if (keyfilename == "(default)") {
-		config->set(d.c_str(), keyfilename, true);
-		keybinder->LoadDefaults();
-	} else {
-		try {
-			keybinder->LoadFromFile(keyfilename.c_str());
-		} catch (file_open_exception&) {
-			cerr << "Key mappings file '" << keyfilename << "' not found, falling back to default mappings." << endl;
-			keybinder->LoadDefaults();
-		}
-	}
-	keybinder->LoadFromPatch();
+	keybinder->LoadConfigured();
 	cycle_load_palette();
 
 	int fps;    // Init. animation speed.
@@ -2871,6 +2856,7 @@ void Game_window::setup_game(bool map_editing) {
 	}
 	// Init. current 'tick'.
 	Game::set_ticks(SDL_GetTicks());
+	read_play_time();
 	Face_stats::RemoveGump();    // it tries to update when reading actors so
 								 // delete it until finished loading
 	init_actors();               // Set up actors if not already done.
