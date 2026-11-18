@@ -4988,7 +4988,14 @@ Npc_actor::Npc_actor(
  *  Kill an actor.
  */
 
-Npc_actor::~Npc_actor() = default;
+Npc_actor::~Npc_actor() {
+	// Tie the nearby-list entry to our lifetime: not every free goes through
+	// remove_this() with the 'nearby' flag set.
+	Game_window* gw = Game_window::get_instance();
+	if (gw != nullptr) {
+		gw->purge_nearby_npc(this);
+	}
+}
 
 /*
  *  Set schedule list.
@@ -5319,7 +5326,7 @@ void Npc_actor::remove_this(Game_object_shared* keep    // Non-null to not delet
 	//	schedule = nullptr;
 	// Messes up resurrection   num_schedules = 0;
 	gwin->get_tqueue()->remove(this);    // Remove from time queue.
-	gwin->remove_nearby_npc(this);       // Remove from nearby list.
+	gwin->purge_nearby_npc(this);        // Remove from nearby list.
 	// Store old chunk list.
 	Map_chunk*         olist = get_chunk();
 	Game_object_shared keep_this;

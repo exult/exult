@@ -2509,6 +2509,22 @@ void Game_window::remove_nearby_npc(Npc_actor* npc) {
 		npc_prox->remove(npc);
 	}
 }
+/*
+ *  Remove every nearby-list entry for an NPC, regardless of its 'nearby'
+ *  flag.  The proximity handler keeps raw Npc_actor pointers as time-queue
+ *  data, so this must run before the NPC is freed or get_nearby_npcs()
+ *  returns a dangling pointer.  Time_queue::remove() erases only the first
+ *  matching entry, hence the loop.  Safe during shutdown (null tqueue).
+ */
+void Game_window::purge_nearby_npc(Npc_actor* npc) {
+	npc->clear_nearby();
+	if (tqueue == nullptr || npc_prox == nullptr) {
+		return;
+	}
+	const auto udata = reinterpret_cast<uintptr>(npc);
+	while (tqueue->remove(npc_prox, udata)) {
+	}
+}
 
 /*
  *  Add all nearby NPC's to the given list.
