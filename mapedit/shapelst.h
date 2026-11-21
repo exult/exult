@@ -205,6 +205,8 @@ public:
 	void        import_all_pngs(const char* fname, int shnum);
 	void        new_frame();    // Add/del.
 	void        from_font_toggled(bool on);
+	void        new_shape_flat_toggled(bool on);
+	void        new_shape_num_changed(int shnum);
 	void        new_shape();
 	void        create_new_shape();
 	void        del_frame();

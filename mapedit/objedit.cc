@@ -125,7 +125,7 @@ void ExultStudio::open_obj_window(
 			obj_single = new Shape_single(
 					get_widget("obj_shape"), get_widget("obj_name"),
 					[](int shnum) -> bool {
-						return (shnum >= c_first_obj_shape) && (shnum < c_max_shapes);
+						return ExultStudio::get_instance()->is_object_shape(shnum);
 					},
 					get_widget("obj_frame"), U7_SHAPE_SHAPES, vgafile->get_ifile(), palbuf.get(), get_widget("obj_draw"));
 		}
@@ -236,6 +236,10 @@ int ExultStudio::save_obj_window() {
 	const int shape   = get_spin("obj_shape");
 	const int frame   = get_spin("obj_frame");
 	const int quality = get_spin("obj_quality");
+	if (!is_object_shape(shape)) {
+		EStudio::Alert("You must set a valid object shape #.");
+		return 0;
+	}
 
 	if (Object_out(server_socket, Exult_server::obj, addr, tx, ty, tz, shape, frame, quality, locname) == -1) {
 		cout << "Error sending object data to server" << endl;

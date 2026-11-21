@@ -315,6 +315,7 @@ public:
 	}
 
 	const char* get_shape_name(int shnum);
+	bool        is_object_shape(int shnum);
 
 	const char* get_image_editor() {
 		return image_editor;

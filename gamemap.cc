@@ -1574,8 +1574,8 @@ void Game_map::find_unused_shapes(
 			}
 		}
 	}
-	for (i = c_first_obj_shape; i < maxbits; i++) {    // Ignore flats (<0x96).
-		if (!(found[i / 8] & (1 << (i % 8)))) {
+	for (i = c_first_obj_shape; i < maxbits; i++) {    // Ignore flats.
+		if (!(found[i / 8] & (1 << (i % 8))) && !sman->get_shapes().is_flat(i)) {
 			cout << "Shape " << i << " not found in game" << endl;
 		}
 	}
