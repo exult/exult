@@ -63,7 +63,7 @@ jobs:
           release: true
           install: |
             base-devel git p7zip zip bison flex dos2unix
-            ${{ matrix.env }}-toolchain ${{ matrix.env }}-binutils ${{ matrix.env }}-ntldd 
+            ${{ matrix.env }}-toolchain ${{ matrix.env }}-binutils ${{ matrix.env }}-ntldd ${{ matrix.env }}-pkgconf 
              ${{ matrix.env }}-zlib
              ${{ matrix.env }}-autotools ${{ matrix.env }}-cmake            
       - name: Install dependencies 64bit only
