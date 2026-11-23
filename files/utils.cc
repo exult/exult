@@ -584,7 +584,7 @@ protected:
 
 public:
 	shell32_wrapper() {
-		hLib = LoadLibrary("shell32.dll");
+		hLib = LoadLibraryEx("shell32.dll",nullptr,LOAD_LIBRARY_SEARCH_SYSTEM32);
 		if (hLib != nullptr) {
 			SHGetFolderPath = get_function<SHGetFolderPathFunc>("SHGetFolderPathA");
 			/*
