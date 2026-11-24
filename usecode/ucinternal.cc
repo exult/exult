@@ -260,11 +260,17 @@ bool Usecode_internal::call_function(int funcid, int eventid, Game_object* calle
 		oldstack++;
 	}
 
-	// Store args in first num_args locals
-	int i;
+	// Store args in first num_args locals. An indirect call takes its
+	// argument count from the calling script, which can exceed the callee's
+	// locals; the extra arguments are popped and dropped.
+	const int num_locals = frame->num_args + frame->num_vars;
+	int       i;
 	for (i = 0; i < num_args; i++) {
-		const Usecode_value val         = pop();
-		frame->locals[num_args - i - 1] = val;
+		const Usecode_value val  = pop();
+		const int           slot = num_args - i - 1;
+		if (slot < num_locals) {
+			frame->locals[slot] = val;
+		}
 	}
 
 	// save stack pointer
@@ -284,7 +290,7 @@ bool Usecode_internal::call_function(int funcid, int eventid, Game_object* calle
 		cout << "]";
 	}
 	cout << " (";
-	for (i = 0; i < num_args; i++) {
+	for (i = 0; i < std::min(num_args, num_locals); i++) {
 		if (i) {
 			cout << ", ";
 		}
