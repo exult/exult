@@ -438,8 +438,24 @@ bool Image_window8::refresh_layer_scaled(Layer& layer, int factor) {
 		fill_guardband(odst->pixels, tex_w, tex_h, odst->pitch, guard_band * factor, 0);
 		bool done = false;
 		if (scale_layer_color(layer, lsurf, logw, logh, odst)) {
-			auto texpix = make_unique<uint32[]>(static_cast<size_t>(tex_w) * tex_h);
-
+			// The scaler's output alpha is undefined for an opaque layer:
+			// force it opaque and apply the light-coverage mask over the
+			// content region (at the scaled guard-band offset).
+			const size_t dpitch = static_cast<size_t>(odst->pitch) / sizeof(uint32);
+			const size_t sgb    = static_cast<size_t>(factor) * guard_band;
+			uint32*      pix    = static_cast<uint32*>(odst->pixels);
+			for (int y = 0; y < tex_h; y++) {
+				uint32*              row  = pix + (static_cast<size_t>(y) + sgb) * dpitch + sgb;
+				const unsigned char* crow = covbuf ? covbuf + static_cast<size_t>(y / factor) * logw : nullptr;
+				for (int x = 0; x < tex_w; x++) {
+					uint32 argb = 0xff000000u | (row[x] & 0x00ffffffu);
+					if (crow) {
+						const uint32 a = (0xffu * crow[x / factor]) / 255;
+						argb           = (a << 24) | (argb & 0x00ffffffu);
+					}
+					row[x] = argb;
+				}
+			}
 			done = true;
 		}
 
