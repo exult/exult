@@ -26,6 +26,7 @@
 #include "contain.h"
 
 #include "Gump_manager.h"
+#include "actors.h"
 #include "ShortcutBar_gump.h"
 #include "cheat.h"
 #include "databuf.h"
@@ -42,6 +43,9 @@
 #include "ucmachine.h"
 #include "ucsched.h"
 #include "weaponinf.h"
+
+#include <algorithm>
+#include <vector>
 
 #ifdef USE_EXULTSTUDIO
 #	include "objserial.h"
@@ -107,6 +111,7 @@ bool Container_game_object::add(
 		bool noset    // True to prevent actors from setting sched. weapon.
 ) {
 	ignore_unused_variable_warning(noset);
+	const int added_shapenum = obj->get_shapenum();
 	// Prevent dragging the avatar into a container.
 	// Casting to void* to avoid including actors.h.
 	if (obj == static_cast<void*>(gwin->get_main_actor())) {
@@ -148,6 +153,9 @@ bool Container_game_object::add(
 			if (g_shortcutBar) {
 				g_shortcutBar->check_for_updates(shape_num);
 			}
+			if (shape_num == c_gold_coin_shapenum) {
+				Maybe_consolidate_backpack_gold(this);
+			}
 			return true;
 		} else if (newquant < quant) {    // Partly successful.
 			obj->modify_quantity(newquant - quant);
@@ -171,7 +179,82 @@ bool Container_game_object::add(
 	if (g_shortcutBar) {
 		g_shortcutBar->check_for_updates(obj->get_shapenum());
 	}
+	if (added_shapenum == c_gold_coin_shapenum) {
+		Maybe_consolidate_backpack_gold(this);
+	}
 	return true;
+}
+
+/*
+ *  Combine gold coins in this container into piles of 100.
+ */
+
+void Container_game_object::consolidate_gold(int shapenum) {
+	static int consolidating = 0;
+	if (consolidating || !Can_be_added(this, shapenum)) {
+		return;
+	}
+	Game_object_vector gold_objs;
+	int                total = 0;
+	Game_object*       obj;
+	Object_iterator    next(objects);
+	while ((obj = next.get_next()) != nullptr) {
+		if (obj->get_shapenum() == shapenum) {
+			gold_objs.push_back(obj);
+			total += obj->get_quantity();
+		}
+	}
+	if (gold_objs.empty()) {
+		return;
+	}
+	std::vector<int> expected;
+	int              remaining = total;
+	while (remaining >= 100) {
+		expected.push_back(100);
+		remaining -= 100;
+	}
+	if (remaining > 0) {
+		expected.push_back(remaining);
+	}
+	std::vector<int> current;
+	current.reserve(gold_objs.size());
+	for (Game_object* gold : gold_objs) {
+		current.push_back(gold->get_quantity());
+	}
+	std::sort(current.begin(), current.end(), std::greater<int>());
+	if (current == expected) {
+		return;
+	}
+	++consolidating;
+	const Shape_info& shp_info = ShapeID::get_info(shapenum);
+	for (size_t i = 0; i < expected.size(); ++i) {
+		const int want = expected[i];
+		if (i < gold_objs.size()) {
+			Game_object* pile = gold_objs[i];
+			const int    have = pile->get_quantity();
+			if (have != want) {
+				pile->modify_quantity(want - have);
+			}
+		} else {
+			Game_object_shared newobj = gmap->create_ireg_object(
+					shp_info, shapenum, 0, 0, 0, 0);
+			if (!add(newobj.get())) {
+				newobj.reset();
+				break;
+			}
+			int left = want - 1;
+			if (left > 0) {
+				newobj->modify_quantity(left);
+			}
+		}
+	}
+	for (size_t i = expected.size(); i < gold_objs.size(); ++i) {
+		gold_objs[i]->remove_this();
+	}
+	--consolidating;
+	if (g_shortcutBar) {
+		g_shortcutBar->check_for_updates(shapenum);
+	}
 }
 
 /*
@@ -222,6 +305,7 @@ int Container_game_object::add_quantity(
 	if (delta <= 0 || !Can_be_added(this, shapenum)) {
 		return delta;
 	}
+	const int start_delta = delta;
 
 	int cant_add  = 0;                   // # we can't add due to weight.
 	int maxweight = get_max_weight();    // Check weight.
@@ -264,11 +348,19 @@ int Container_game_object::add_quantity(
 			delta = obj->add_quantity(delta, shapenum, qual, framenum, true, temporary);
 		}
 	}
+	int result;
 	if (!delta || dontcreate) {    // All added?
-		return delta + cant_add;
+		result = delta + cant_add;
 	} else {
-		return cant_add + create_quantity(delta, shapenum, qual, framenum == c_any_framenum ? 0 : framenum, temporary);
+		result = cant_add
+				 + create_quantity(
+						 delta, shapenum, qual,
+						 framenum == c_any_framenum ? 0 : framenum, temporary);
 	}
+	if (shapenum == c_gold_coin_shapenum && result < start_delta) {
+		Maybe_consolidate_backpack_gold(this);
+	}
+	return result;
 }
 
 /*
@@ -415,6 +507,7 @@ bool Container_game_object::show_gump(int event) {
 		// Run normal usecode fun.
 		return false;
 	} else if ((gump = inf.get_gump_shape()) >= 0) {
+		Maybe_consolidate_backpack_gold(this);
 		Gump_manager* gump_man = gumpman;
 		gump_man->add_gump(this, gump);
 		return true;
