@@ -26,23 +26,26 @@
  *	2016-07-05 Written by Malignant Manor
  *	2016-07-17 Knight Captain added full conversation so bad checks are skipped.
  */
-
 void Bwundiai object#(0x490) () {
 	if (event == STARTED_TALKING) {
 		if (gwaniCloakCheck(true)) {
 			BWUNDIAI->set_schedule_type(SHY);
 			UI_clear_item_say(BWUNDIAI);
 			UI_show_npc_face0(BWUNDIAI, 0);
-			say("@Botoka na guta!@ *This creature looks at you with eyes so filled with hate that it is painful to look at them.");
+			say(
+				"@Botoka na guta!@ *This creature looks at you with eyes so filled with hate that it is painful to look at them.");
 			if (npcNearbyAndVisible(MWAERNO)) {
 				UI_show_npc_face1(MWAERNO, 0);
 				UI_set_conversation_slot(1);
-				say("@Umgabar fotuba na Gwani!@ *This one looks at you with eyes that are cold and feral.");
+				say(
+					"@Umgabar fotuba na Gwani!@ *This one looks at you with eyes that are cold and feral.");
 				UI_remove_npc_face1();
-				partyUtters(1, "@Avatar, they smell the Gwani pelts!@", "@They smell the Gwani pelts!@", false);
+				partyUtters(1, "@Avatar, they smell the Gwani pelts!@",
+					"@They smell the Gwani pelts!@", false);
 				return;
 			} else {
-				partyUtters(1, "@Avatar, he can smell the Gwani pelts!@", "@He can smell the Gwani pelts!@", false);
+				partyUtters(1, "@Avatar, he can smell the Gwani pelts!@",
+					"@He can smell the Gwani pelts!@", false);
 				return;
 			}
 		}
@@ -51,41 +54,39 @@ void Bwundiai object#(0x490) () {
 		// 3 AM Loiter @ 0932, 0872
 		// 9 AM MajorSit @ 1073, 0840
 		// 6 PM Sleep @ 1063, 0845
-		BWUNDIAI->set_new_schedules([EARLY		, MORNING	  , EVENING],
-		                            [LOITER	   , MAJOR_SIT	, SLEEP],
-		                            [0x03A4,0x0368, 0x0431,0x0348, 0x0427,0x034D]);
+		BWUNDIAI->set_new_schedules([EARLY, MORNING, EVENING],[LOITER, MAJOR_SIT, SLEEP],[0x03A4,
+			0x0368, 0x0431, 0x0348, 0x0427, 0x034D]);
 		// He does not return to his regular schedule.
 		BWUNDIAI->set_schedule_type(SHY);
 		BWUNDIAI->clear_item_say();
 		BWUNDIAI->show_npc_face0();
 		if (!BWUNDIAI->get_item_flag(MET)) {
-			say("@Thou... the one... Gwenno spoke.@ ~You can tell the creature obviously has great trouble with your language.");
+			say(
+				"@Thou... the one... Gwenno spoke.@ ~You can tell the creature obviously has great trouble with your language.");
 		} else {
 			say("@Be good very much to meet again.@");
 		}
 		add(["name", "Gwani", "bye"]);
-
 		converse (0) {
-			case "name" (remove):
-				// His name was misspelled in his original code!
-				say("@Bwundiai my name is.@");
-				BWUNDIAI->set_item_flag(MET);
-
-			case "Gwani" (remove):
-				say("@Our village near. But, thou seek Gwenno...@ ~He pauses thoughtfully before speaking to you again. ~@Gwani Death Temple on island north. West of Ice Dragon caves.@");
-				if (npcNearbyAndVisible(IOLO) && npcCanTalk(IOLO)) {
-					UI_show_npc_face1(IOLO, 0);
-					UI_set_conversation_slot(1);
-					say("Iolo glances over to you with a glint of sadness in his eyes.");
-					UI_remove_npc_face1();
-				}
-
-			case "bye":
-				UI_remove_npc_face0();
+		case "name" (remove):
+			// His name was misspelled in his original code!
+			say("@Bwundiai my name is.@");
+			BWUNDIAI->set_item_flag(MET);
+		case "Gwani" (remove):
+			say(
+				"@Our village near. But, thou seek Gwenno...@ ~He pauses thoughtfully before speaking to you again. ~@Gwani Death Temple on island north. West of Ice Dragon caves.@");
+			if (npcNearbyAndVisible(IOLO) && npcCanTalk(IOLO)) {
+				UI_show_npc_face1(IOLO, 0);
+				UI_set_conversation_slot(1);
+				say("Iolo glances over to you with a glint of sadness in his eyes.");
 				UI_remove_npc_face1();
-				delayedBark(AVATAR, "@Farewell, little fellow.@", 1);
-				delayedBark(BWUNDIAI, "@Fare -- well@", 5);
-				break;
+			}
+		case "bye":
+			UI_remove_npc_face0();
+			UI_remove_npc_face1();
+			delayedBark(AVATAR, "@Farewell, little fellow.@", 1);
+			delayedBark(BWUNDIAI, "@Fare -- well@", 5);
+			break;
 		}
 	} else {
 		Bwundiai.original();

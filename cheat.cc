@@ -45,6 +45,7 @@
 #include "party.h"
 #include "soundtest.h"
 #include "touchui.h"
+#include "utils.h"
 
 #include <algorithm>
 #include <filesystem>
@@ -383,6 +384,13 @@ void Cheat::toggle_map_editor() {
 			gwin->paint();
 		}
 		if (client_socket < 0 && !gwin->get_win()->is_fullscreen()) {
+			// A mod's title comes from its own .cfg file, so every value below
+			// must be quoted or a hostile mod could run shell commands.
+#	ifdef _WIN32
+			const auto quote_arg = quote_windows_arg;
+#	else
+			const auto quote_arg = quote_posix_shell_arg;
+#	endif
 			std::string cmnd("exult_studio -x ");    // Set up command.
 #	ifdef _WIN32
 			if (get_system_path("<HOME>") == ".") {    // portable
@@ -402,7 +410,7 @@ void Cheat::toggle_map_editor() {
 				app_path  = std::filesystem::absolute(app_path).string();
 				data_path = app_path;
 				cmnd      = "open ";
-				cmnd += app_path;
+				cmnd += quote_arg(app_path);
 				cmnd += " --args -x ";
 				data_path += "/Contents/Resources/data/";
 				std::cout << "cmnd Path   : " << cmnd << std::endl;
@@ -411,22 +419,19 @@ void Cheat::toggle_map_editor() {
 			} else
 #	endif
 				data_path = get_system_path("<DATA>");
-			if (data_path.find(' ') != std::string::npos) {
-				data_path = "\"" + data_path + "\"";
-			}
-			cmnd += data_path;    // Path to where .glade file should be.
-			cmnd += " -g ";       // Now want game name.
-			cmnd += Game::get_gametitle();
+			cmnd += quote_arg(data_path);    // Path to where .glade file should be.
+			cmnd += " -g ";                  // Now want game name.
+			cmnd += quote_arg(Game::get_gametitle());
 			// Now want mod name.
 			const std::string modnamestr = Game::get_modtitle();
 			if (!modnamestr.empty()) {
 				cmnd += " -m ";
-				cmnd += modnamestr;
+				cmnd += quote_arg(modnamestr);
 			}
 			const std::string alt_cfg = get_system_path("<alt_cfg>");
 			if (alt_cfg != "<alt_cfg>") {
 				cmnd += " -c ";
-				cmnd += alt_cfg;
+				cmnd += quote_arg(alt_cfg);
 			}
 			cmnd += " &";
 			cout << "Executing: " << cmnd << endl;

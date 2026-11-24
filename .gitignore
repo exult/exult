@@ -19,6 +19,7 @@ gamedat
 exult.spec
 Exult.suo
 exult*.tar.gz
+compile_commands.json
 conf/confregress
 content/*/build/*
 content/bg/usecode
@@ -85,6 +86,8 @@ data/exult_iphone.flx
 data/exult_iphone_flx.h
 data/exult_si.flx
 data/exult_si_flx.h
+data/shortcutbar.vga
+data/shortcutbar_vga.h
 /exult
 files/rwregress
 mapedit/exult_studio
@@ -327,7 +330,6 @@ data/fonts_original.vga
 data/fonts_original_vga.h
 data/fonts_serif.vga
 data/fonts_serif_vga.h
-.github
 .gradle/
 android/app/build/
 android/lib/build/

@@ -22,12 +22,12 @@
  *	Author: Marzo Junior
  *	Last Modified: 2006-02-27
  */
-
 void LB_Sceptre_Hit object#(0xB7E) () {
 	if (event != WEAPON) {
 		return;
 	}
-	var field_shapes = [SHAPE_ENERGY_FIELD, SHAPE_FIRE_FIELD, SHAPE_POISON_FIELD, SHAPE_SLEEP_FIELD];
+	var field_shapes = [SHAPE_ENERGY_FIELD, SHAPE_FIRE_FIELD, SHAPE_POISON_FIELD,
+		SHAPE_SLEEP_FIELD];
 	if (get_item_shape() in field_shapes) {
 		struct<Position> pos = get_object_position();
 		UI_sprite_effect(ANIMATION_BLUE_BEADS, pos.x - 1, pos.y - 1, 0, 0, 0, -1);

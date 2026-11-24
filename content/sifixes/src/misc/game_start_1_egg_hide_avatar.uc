@@ -23,11 +23,9 @@
  *
  *  2026-02-27 Knight Captain
  */
-
 extern void gameStartModChanges object#(0x9F3) ();
 
-void eggGameStartHideAvatar object#(0x6CB) ()
-{
+void eggGameStartHideAvatar object#(0x6CB) () {
 	// Print output into stdout.txt
 	UI_error_message("SERPENT ISLE FIXES.");
 	// Run the original function, we are not recreating it here.

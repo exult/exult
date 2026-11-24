@@ -201,4 +201,12 @@ int   Find_next_map(int start, int maxtry);
 std::string_view get_filename_from_path(std::string_view path);
 std::string_view get_directory_from_path(std::string_view path);
 
+// Quote one argument so a POSIX shell passes it on unchanged, whatever
+// characters it holds. Use it for every value placed in a system() command.
+std::string quote_posix_shell_arg(std::string_view arg);
+
+// Quote one argument so the Windows command-line parsing used with
+// CreateProcess passes it on as a single unchanged argument.
+std::string quote_windows_arg(std::string_view arg);
+
 #endif /* _UTILS_H_ */

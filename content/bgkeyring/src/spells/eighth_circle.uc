@@ -36,19 +36,18 @@
 	extern void spellTimeStop ();
 	extern void spellMassResurrect ();
 */
-
 enum eighth_circle_spells {
-	SPELL_DEATH_VORTEX				= 0,
-	SPELL_INVISIBILITY_ALL			= 1,
-	SPELL_MASS_DEATH				= 2,
-	SPELL_RESURRECT					= 3,
-	SPELL_SUMMON					= 4,
-	SPELL_SWORDSTRIKE				= 5,
-	SPELL_TIME_STOP					= 6,			//NPC-only spell
-	SPELL_MASS_RESURRECT			= 7			//Special NPC-only spell
+	SPELL_DEATH_VORTEX = 0,
+	SPELL_INVISIBILITY_ALL = 1,
+	SPELL_MASS_DEATH = 2,
+	SPELL_RESURRECT = 3,
+	SPELL_SUMMON = 4,
+	SPELL_SWORDSTRIKE = 5,
+	SPELL_TIME_STOP = 6,  //NPC-only spell
+	SPELL_MASS_RESURRECT = 7  //Special NPC-only spell
 };
 
-void spellDeathVortex (struct<ObjPos> target) {
+void spellDeathVortex(struct<ObjPos> target) {
 	if (event == DOUBLECLICK) {
 		//struct<ObjPos> target = UI_click_on_item();
 		var dir = direction_from(target);
@@ -76,13 +75,13 @@ void spellDeathVortex (struct<ObjPos> target) {
 	}
 }
 
-void spellInvisibilityAll () {
+void spellInvisibilityAll() {
 	if (event == DOUBLECLICK) {
 		halt_scheduled();
 		item_say("@Vas Sact Lor@");
 		if (inMagicStorm()) {
 			struct<Position> pos = get_object_position();
-			UI_sprite_effect(ANIMATION_TELEPORT, (pos.x - 2), (pos.y - 2), 0, 0, 0, -1);
+			UI_sprite_effect(ANIMATION_TELEPORT,(pos.x - 2),(pos.y - 2), 0, 0, 0, -1);
 			script item {
 				nohalt;
 				actor frame raise_1h;
@@ -114,13 +113,13 @@ void spellInvisibilityAll () {
 	}
 }
 
-void spellMassDeath () {
+void spellMassDeath() {
 	if (event == DOUBLECLICK) {
 		halt_scheduled();
 		item_say("@Vas Corp@");
 		if (inMagicStorm()) {
 			struct<Position> pos = get_object_position();
-			UI_sprite_effect(ANIMATION_TELEPORT, (pos.x - 2), (pos.y - 2), 0, 0, 0, -1);
+			UI_sprite_effect(ANIMATION_TELEPORT,(pos.x - 2),(pos.y - 2), 0, 0, 0, -1);
 			script item {
 				nohalt;
 				sfx 65;
@@ -131,11 +130,8 @@ void spellMassDeath () {
 				sfx 67;
 			}
 			var nearby_npcs = find_nearby(-1, 25, MASK_NPC);
-			var safenpcs = [
-				UI_get_party_list2(),
-				LORD_BRITISH->get_npc_object(),
-				BATLIN->get_npc_object()
-			];
+			var safenpcs = [UI_get_party_list2(), LORD_BRITISH->get_npc_object(),
+				BATLIN->get_npc_object()];
 			var killed_anyone = false;
 			for (npc in nearby_npcs) {
 				if (!(npc in safenpcs)) {
@@ -148,12 +144,11 @@ void spellMassDeath () {
 					killed_anyone = true;
 				}
 			}
-
 			if (killed_anyone == true) {
 				var party = UI_get_party_list();
 				for (npc in party) {
 					var hps = npc->get_npc_prop(HEALTH);
-					hurtNPC(npc, (hps - 2));
+					hurtNPC(npc,(hps - 2));
 				}
 			}
 		} else {
@@ -169,7 +164,7 @@ void spellMassDeath () {
 	}
 }
 
-void spellResurrect (struct<ObjPos> target) {
+void spellResurrect(struct<ObjPos> target) {
 	if (event == DOUBLECLICK) {
 		//struct<ObjPos> target = UI_click_on_item();
 		var target_shape = target->get_item_shape();
@@ -178,7 +173,8 @@ void spellResurrect (struct<ObjPos> target) {
 		target->halt_scheduled();
 		halt_scheduled();
 		var canresurrect = false;
-		if (target->get_item_shape() in [SHAPE_BODIES_1, SHAPE_BODIES_2, SHAPE_LARGE_BODIES, SHAPE_NEW_BODIES]) {
+		if (target->get_item_shape() in[SHAPE_BODIES_1, SHAPE_BODIES_2, SHAPE_LARGE_BODIES,
+			SHAPE_NEW_BODIES]) {
 			var target_quality = target->get_item_quality();
 			var quant = target->get_item_quantity(target_shape);
 			if ((target_quality == 0) && (quant == 0)) {
@@ -189,7 +185,6 @@ void spellResurrect (struct<ObjPos> target) {
 		} else {
 			canresurrect = false;
 		}
-
 		item_say("@In Mani Corp@");
 		if (inMagicStorm() && canresurrect) {
 			script item {
@@ -202,7 +197,7 @@ void spellResurrect (struct<ObjPos> target) {
 			}
 			UI_play_music(15, 0);
 			UI_sprite_effect(ANIMATION_LIGHTNING, pos.x, pos.y, 0, 0, 0, -1);
-			UI_sprite_effect(ANIMATION_GREEN_BUBBLES, (pos.x - 2), (pos.y - 2), 0, 0, 0, -1);
+			UI_sprite_effect(ANIMATION_GREEN_BUBBLES,(pos.x - 2),(pos.y - 2), 0, 0, 0, -1);
 		} else {
 			script item {
 				nohalt;
@@ -216,7 +211,7 @@ void spellResurrect (struct<ObjPos> target) {
 	}
 }
 
-void spellSummon () {
+void spellSummon() {
 	if (event == DOUBLECLICK) {
 		halt_scheduled();
 		item_say("@Kal Vas Xen@");
@@ -245,7 +240,7 @@ void spellSummon () {
 	}
 }
 
-void spellSwordStrike (struct<ObjPos> target) {
+void spellSwordStrike(struct<ObjPos> target) {
 	if ((event == DOUBLECLICK) || (event == WEAPON)) {
 		//struct<ObjPos> target = UI_click_on_item();
 		halt_scheduled();
@@ -281,7 +276,7 @@ void spellSwordStrike (struct<ObjPos> target) {
 	}
 }
 
-void spellTimeStop () {
+void spellTimeStop() {
 	if (event == DOUBLECLICK) {
 		halt_scheduled();
 		item_say("@An Tym@");
@@ -304,16 +299,14 @@ void spellTimeStop () {
 	}
 }
 
-void spellMassResurrect () {
+void spellMassResurrect() {
 	var bodyshapes = [SHAPE_BODIES_1, SHAPE_BODIES_2, SHAPE_LARGE_BODIES, SHAPE_NEW_BODIES];
 	var bodies = [];
 	for (shnum in bodyshapes) {
 		bodies = [bodies, find_nearby(shnum, 25, MASK_NONE)];
 	}
-
 	if (event == DOUBLECLICK) {
 		item_say("@Vas Mani Corp Hur@");
-
 		var have_resurrectables = false;
 		for (body in bodies) {
 			var qual = body->get_item_quality();
@@ -323,7 +316,6 @@ void spellMassResurrect () {
 				break;
 			}
 		}
-
 		if (inMagicStorm() && have_resurrectables) {
 			script item {
 				nohalt;

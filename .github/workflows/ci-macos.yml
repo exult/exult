@@ -51,6 +51,7 @@ on:
       - "!.gitattributes"
       - "!.github/workflows/*"
       - ".github/workflows/ci-macos.yml"
+  workflow_dispatch:
 
 jobs:
   ci-macos:

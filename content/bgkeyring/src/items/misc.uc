@@ -28,7 +28,7 @@ void SwordInAStone shape#(0x315) () {
 
 	//Player doubleclicked on the stone - march them to it so we can start animating
 	if (event == DOUBLECLICK) {
-		gotoObject(item, [-3, 1, 0], [-1, 1, -1], 0, SwordInAStone, item, SCRIPTED);
+		gotoObject(item,[-3, 1, 0],[-1, 1, -1], 0, SwordInAStone, item, SCRIPTED);
 	} else if (event == SCRIPTED) {
 		//Player arrived at the stone, animate them trying to get it out
 		script AVATAR {
@@ -67,7 +67,6 @@ void SwordInAStone shape#(0x315) () {
 				actor frame bowing;
 				wait 5;
 			};
-
 			actor frame bowing;
 			wait 2;
 			actor frame standing;
@@ -77,7 +76,8 @@ void SwordInAStone shape#(0x315) () {
 		}
 
 		//Snide comments from the mules
-		barks = ["-sigh-", "@Lord British is not out of a job yet!@", "@Stick to being the Avatar.@"];
+		barks = ["-sigh-", "@Lord British is not out of a job yet!@",
+			"@Stick to being the Avatar.@"];
 		delayedBark(randomPartyMember(), randomIndex(barks), 75);
 	}
 }
@@ -124,14 +124,14 @@ void runPuppets() {
 void TripleCrossbow shape#(0x287) () {
 	if (event == DOUBLECLICK) {
 		if (inParty(IOLO)) {
-			IOLO.say("@I know what thou thinkest. Thou thinkest: 'Hath he fired 60 bolts, or only 57?'",
+			IOLO.say(
+				"@I know what thou thinkest. Thou thinkest: 'Hath he fired 60 bolts, or only 57?'",
 				"~@Well, to tell thee truthfully, in all this excitement I rather lost track myself.");
-			IOLO.say("@But being as this is a triple crossbow, the most powerful ranged weapon in Britannia, and would blow thine head clean off, thou must ask thyself a question: 'Do I feel lucky?'");
+			IOLO.say(
+				"@But being as this is a triple crossbow, the most powerful ranged weapon in Britannia, and would blow thine head clean off, thou must ask thyself a question: 'Do I feel lucky?'");
 			IOLO.say("@Well dost thou, punk?@*");
 			IOLO.hide();
-
 			delayedBark(IOLO, "@I always wanted to say that.@", 6);
 		}
 	}
 }
-

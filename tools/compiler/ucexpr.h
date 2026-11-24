@@ -29,7 +29,11 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "opcodes.h"
 #include "ucloc.h"
 
+#include <map>
+#include <memory>
+#include <optional>
 #include <string>
+#include <utility>
 #include <vector>
 
 class Uc_symbol;
@@ -41,6 +45,49 @@ class Uc_function_symbol;
 class Uc_class;
 class Basic_block;
 class Uc_array_expression;
+class Uc_script_offset_expression;
+
+// Facts about a value, independent of its runtime representation. An unknown
+// length is distinct from both an empty array and a scalar (one array slot).
+struct Uc_array_info {
+	enum class Kind {
+		unknown,
+		scalar,
+		array,
+		script
+	};
+	Kind               kind = Kind::unknown;
+	std::optional<int> length;
+	bool               contains_repeat = false;
+
+	bool is_script() const {
+		return kind == Kind::script;
+	}
+
+	bool is_array() const {
+		return kind == Kind::array || is_script();
+	}
+
+	bool operator==(const Uc_array_info& other) const {
+		return kind == other.kind && length == other.length && contains_repeat == other.contains_repeat;
+	}
+
+	bool operator!=(const Uc_array_info& other) const {
+		return !(*this == other);
+	}
+
+	static Uc_array_info scalar() {
+		return {Kind::scalar, 1};
+	}
+
+	static Uc_array_info concat(Uc_array_info left, Uc_array_info right);
+	static Uc_array_info merge(Uc_array_info left, Uc_array_info right);
+};
+
+using Uc_array_state = std::map<Uc_var_symbol*, Uc_array_info>;
+
+// Run after building the CFG, before optimizing or serializing instructions.
+void Analyze_array_shapes(Basic_block* entry);
 
 /*
  *  Base class for expressions.
@@ -100,6 +147,16 @@ public:
 	}
 
 	virtual void add_to(Uc_array_expression* arr);
+
+	virtual Uc_array_info array_info(const Uc_array_state&) const {
+		return {};
+	}
+
+	// Legacy inline script operands occupy one slot; explicit script expansion
+	// supplies its proven array length instead.
+	virtual std::optional<int> script_slots(const Uc_array_state&) const {
+		return 1;
+	}
 };
 
 /*
@@ -132,6 +189,7 @@ public:
 	int               is_object_function(bool error = true) const override;
 	void              set_is_obj_fun(int s) override;
 	int               get_type() const override;
+	Uc_array_info     array_info(const Uc_array_state& state) const override;
 };
 
 /*
@@ -148,6 +206,10 @@ public:
 	void gen_value(Basic_block* out) override;
 	int  is_object_function(bool error = true) const override;
 	bool eval_const(int& val) override;
+
+	Uc_array_info array_info(const Uc_array_state&) const override {
+		return Uc_array_info::scalar();
+	}
 };
 
 /*
@@ -157,6 +219,7 @@ class Uc_arrayelem_expression : public Uc_expression {
 protected:
 	Uc_var_symbol* array;
 	Uc_expression* index;
+	void           track_assignment(Basic_block* out);
 
 public:
 	Uc_arrayelem_expression(Uc_var_symbol* a, Uc_expression* i) : array(a), index(i) {}
@@ -214,6 +277,10 @@ class Uc_flag_expression : public Uc_expression {
 public:
 	Uc_flag_expression(Uc_expression* f) : flag(f) {}
 
+	Uc_array_info array_info(const Uc_array_state&) const override {
+		return Uc_array_info::scalar();
+	}
+
 	// Gen. code to put result on stack.
 	void gen_value(Basic_block* out) override;
 	// Gen. to assign from stack.
@@ -227,6 +294,7 @@ class Uc_binary_expression : public Uc_expression {
 	UsecodeOps     opcode;          // Should be the UC_<opcode>
 	Uc_expression *left, *right;    // Operands to add, sub, etc.
 	UsecodeOps     intop;           // If we want to use pushb or pushi32 instead of pushi.
+	std::optional<Uc_location> right_location;    // Full operand span for a dereferenced repeat.
 public:
 	Uc_binary_expression(UsecodeOps o, Uc_expression* l, Uc_expression* r, UsecodeOps iop = UC_PUSHI)
 			: opcode(o), left(l), right(r), intop(iop) {}
@@ -235,6 +303,24 @@ public:
 	void gen_value(Basic_block* out) override;
 	// Evaluate constant.
 	bool eval_const(int& val) override;
+	Uc_array_info array_info(const Uc_array_state& state) const override;
+	void set_right_location(Uc_location loc) { right_location = loc; }
+	bool split_script_repeat(Uc_expression*& count, Uc_expression*& body, Uc_location& location);
+};
+
+// A dereferenced repeat concatenates its operand with a separate repeat tail.
+// Inline enclosing repeats must count the expanded operand, rather than one
+// expression slot, when computing their own backward jump.
+class Uc_repeated_script_expression : public Uc_binary_expression {
+	Uc_expression* body;
+	Uc_script_offset_expression* offset;
+	int tail_size;
+
+public:
+	Uc_repeated_script_expression(Uc_expression* b, Uc_expression* tail, Uc_script_offset_expression* o, int size)
+			: Uc_binary_expression(UC_ARRA, b, tail), body(b), offset(o), tail_size(size) {}
+	void gen_value(Basic_block* out) override;
+	std::optional<int> script_slots(const Uc_array_state& state) const override;
 };
 
 /*
@@ -250,6 +336,10 @@ public:
 	// Gen. code to put result on stack.
 	void gen_value(Basic_block* out) override;
 	bool eval_const(int& val) override;
+
+	Uc_array_info array_info(const Uc_array_state&) const override {
+		return Uc_array_info::scalar();
+	}
 };
 
 /*
@@ -275,6 +365,10 @@ public:
 	// Evaluate constant.
 	bool eval_const(int& val) override;
 	int  is_object_function(bool error = true) const override;
+
+	Uc_array_info array_info(const Uc_array_state&) const override {
+		return Uc_array_info::scalar();
+	}
 };
 
 /*
@@ -285,6 +379,10 @@ class Uc_bool_expression : public Uc_expression {
 
 public:
 	Uc_bool_expression(bool t) : tf(t) {}
+
+	Uc_array_info array_info(const Uc_array_state&) const override {
+		return Uc_array_info::scalar();
+	}
 
 	// Gen. code to put result on stack.
 	void gen_value(Basic_block* out) override;
@@ -300,6 +398,9 @@ public:
  */
 class Uc_event_expression : public Uc_expression {
 public:
+	Uc_array_info array_info(const Uc_array_state&) const override {
+		return Uc_array_info::scalar();
+	}
 	// Gen. code to put result on stack.
 	void gen_value(Basic_block* out) override;
 	// Gen. to assign from stack.
@@ -311,6 +412,9 @@ public:
  */
 class Uc_item_expression : public Uc_expression {
 public:
+	Uc_array_info array_info(const Uc_array_state&) const override {
+		return Uc_array_info::scalar();
+	}
 	// Gen. code to put result on stack.
 	void gen_value(Basic_block* out) override;
 };
@@ -322,6 +426,10 @@ class Uc_string_expression : public Uc_expression {
 	int offset;    // Offset in function's data area.
 public:
 	Uc_string_expression(int o) : offset(o) {}
+
+	Uc_array_info array_info(const Uc_array_state&) const override {
+		return Uc_array_info::scalar();
+	}
 
 	// Gen. code to put result on stack.
 	void gen_value(Basic_block* out) override;
@@ -342,6 +450,10 @@ class Uc_string_prefix_expression : public Uc_expression {
 public:
 	Uc_string_prefix_expression(Uc_function* f, char* pre) : fun(f), prefix(pre), offset(-1) {}
 
+	Uc_array_info array_info(const Uc_array_state&) const override {
+		return Uc_array_info::scalar();
+	}
+
 	// Gen. code to put result on stack.
 	void gen_value(Basic_block* out) override;
 	int  get_string_offset() override;    // Get offset in text_data.
@@ -352,6 +464,9 @@ public:
  */
 class Uc_choice_expression : public Uc_expression {
 public:
+	Uc_array_info array_info(const Uc_array_state&) const override {
+		return Uc_array_info::scalar();
+	}
 	// Gen. code to put result on stack.
 	void gen_value(Basic_block* out) override;
 };
@@ -361,9 +476,14 @@ public:
  */
 class Uc_array_expression : public Uc_expression {
 	std::vector<Uc_expression*> exprs;
+	bool contains_repeat = false;
 
 public:
 	Uc_array_expression() = default;
+
+	void mark_repeat() {
+		contains_repeat = true;
+	}
 
 	Uc_array_expression(Uc_expression* e0) {
 		add(e0);    // Create with 1st expression.
@@ -390,7 +510,7 @@ public:
 
 	void concat(Uc_expression* e);    // Concat e's elements onto this.
 
-	const std::vector<Uc_expression*>& get_exprs() {
+	const std::vector<Uc_expression*>& get_exprs() const {
 		return exprs;
 	}
 
@@ -399,6 +519,54 @@ public:
 	// Gen code to push value(s).
 	int  gen_values(Basic_block* out) override;
 	void add_to(Uc_array_expression* arr) override;
+	Uc_array_info      array_info(const Uc_array_state& state) const override;
+	std::optional<int> script_slots(const Uc_array_state& state) const override;
+};
+
+// Marks the result of `new script`, without changing its generated value.
+class Uc_script_expression : public Uc_expression {
+	Uc_expression* body;
+	bool           expanded;
+
+public:
+	Uc_script_expression(Uc_expression* b, bool expand = false) : body(b), expanded(expand) {}
+
+	~Uc_script_expression() override {
+		delete body;
+	}
+
+	void               gen_value(Basic_block* out) override;
+	Uc_array_info      array_info(const Uc_array_state& state) const override;
+	std::optional<int> script_slots(const Uc_array_state& state) const override;
+};
+
+// Keeps the existing << bytecode, while checking each concatenation separately.
+class Uc_append_expression : public Uc_array_expression {
+	Uc_expression*       left;
+	Uc_array_expression* right;
+
+public:
+	Uc_append_expression(Uc_expression* l, Uc_array_expression* r) : Uc_array_expression(l, r), left(l), right(r) {}
+
+	void          gen_value(Basic_block* out) override;
+	Uc_array_info array_info(const Uc_array_state& state) const override;
+};
+
+// The offset is resolved from flow-sensitive metadata before serialization.
+// The referenced expressions belong to the surrounding script array.
+class Uc_script_offset_expression : public Uc_expression {
+	std::vector<Uc_expression*> body;
+	std::shared_ptr<Uc_array_state> captured_state;
+
+public:
+	Uc_script_offset_expression(std::vector<Uc_expression*> b) : body(std::move(b)) {}
+	void capture_state(Basic_block* out);
+
+	void gen_value(Basic_block* out) override;
+
+	Uc_array_info array_info(const Uc_array_state&) const override {
+		return Uc_array_info::scalar();
+	}
 };
 
 /*

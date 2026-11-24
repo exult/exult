@@ -16,27 +16,22 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
-
 void DeskItem shape#(0x2A3) () {
 	if (!gflags[TIME_FORMAT_24_HOURS]) {
 		DeskItem.original();
 		abort;
 	}
-
 	if (event == DOUBLECLICK) {
 		var framenum = UI_get_item_frame(item);
 		if (framenum == 21) {
-
 			var hour = UI_game_hour();
 			if (hour <= 9) {
 				hour = ("0" + hour);
 			}
-
 			var minute = UI_game_minute();
 			if (minute <= 9) {
 				minute = ("0" + minute);
 			}
-
 			var bark = hour + ":" + minute;
 			if (UI_in_gump_mode()) {
 				UI_item_say(item, bark);
@@ -55,7 +50,6 @@ void Sundial shape#(0x11C) () {
 		Sundial.original();
 		abort;
 	}
-
 	if (event == DOUBLECLICK) {
 		var hour = UI_game_hour();
 		if (hour == 12) {

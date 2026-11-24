@@ -19,6 +19,7 @@
 
 //Tells the compiler the game type
 #game "blackgate"
+
 // Want to enforce braces around all statements
 #strictbraces "true"
 
@@ -28,27 +29,20 @@
 //512 unique functions. That is likely much more
 //than enough...
 #autonumber 0xC00
-
 #include "headers/constants.uc"					//standard constant definitions
 #include "headers/constants2.uc"				//standard constant definitions
-
 #include "headers/bg/bg_npcs.uc"				//Black Gate npc constants
 #include "headers/npcs.uc"						//New npc constants
-
 #include "headers/bg/bg_shapes.uc"				//Black Gate shape and frame constants
 #include "headers/bg/bg_shapes2.uc"				//Black Gate shape and frame constants
 #include "headers/new_shapes.uc"				//Brand new shape and frame constants
-
 #include "headers/bg/bg_gflags.uc"				//Black Gate global flags
 #include "headers/bg/bg_gflags2.uc"				//Black Gate global flags
 #include "headers/new_flags.uc"					//Brand new global flags
-
 #include "headers/bg/bg_structs.uc"				//standard structure definitions
 #include "headers/bg/bg_externals.uc"			//extern declarations for BG functions
 #include "headers/bg/bg_externals2.uc"			//extern declarations for BG functions
-
 #include "headers/new_items.uc"					//extern declarations for new items
-
 #include "headers/functions.uc"					//new general-purpose functions
 #include "headers/functions2.uc"				//Some new general-purpose functions
 #include "headers/array_functions.uc"			//Several array functions

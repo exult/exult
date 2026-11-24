@@ -19,7 +19,6 @@
  *	I did this so the companions can refuse Blue potions while on Spinebreaker
  *	Mountains. It also is a good learning exercise...
  */
-
 extern void healByAmount 0x976 (var target, var amount);
 
 enum potions {
@@ -38,19 +37,18 @@ enum potions {
 void Potion shape#(0x154) () {
 	var itemframe;
 	struct<ObjPos> target;
-
 	if (event == DOUBLECLICK) {
 		itemframe = get_item_frame();
 		target = UI_click_on_item();
-
 		UI_play_sound_effect2(0x24, item);
 		if (target->is_npc()) {
 			UI_play_sound_effect(0x39);
 			if (itemframe == SLEEP_POTION) {
 				var npcnum = target->get_npc_number();
-				if ((getAvatarLocationID() == SPINEBREAKER_MOUNTAINS) &&
-				    ((npcnum == IOLO) || (npcnum == SHAMINO) || (npcnum == DUPRE))) {
-					npcnum.say("@But we are so close to Batlin now, Avatar! I don't want to miss all the action!@");
+				if ((getAvatarLocationID() == SPINEBREAKER_MOUNTAINS) && ((npcnum == IOLO)
+					|| (npcnum == SHAMINO) || (npcnum == DUPRE))) {
+					npcnum.say(
+						"@But we are so close to Batlin now, Avatar! I don't want to miss all the action!@");
 					abort;
 				}
 				target->set_item_flag(ASLEEP);

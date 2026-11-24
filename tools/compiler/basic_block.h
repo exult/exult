@@ -29,6 +29,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "opcodes.h"
 #include "ucexpr.h"
 
+#include <functional>
 #include <iomanip>
 #include <iostream>
 #include <set>
@@ -152,6 +153,16 @@ public:
 		Write4(params, val);
 	}
 
+	void set_integer(int value) {
+		opcode = value < -32768 || value > 32767 ? UC_PUSHI32 : UC_PUSHI;
+		params.clear();
+		if (opcode == UC_PUSHI32) {
+			Write4(params, value);
+		} else {
+			Write2(params, value);
+		}
+	}
+
 private:
 	uint32 get_real_opcode() const {
 		if (op32bit) {
@@ -258,6 +269,14 @@ protected:
 	bool                 reachable = false;
 
 public:
+	// Analysis annotations are consumed before CFG optimizations. They do not
+	// contribute instructions or alter the runtime stack.
+	std::vector<std::function<void(Uc_array_state&, bool)>> array_actions;
+
+	Opcode* last_instruction() {
+		return instructions.empty() ? nullptr : instructions.back();
+	}
+
 	Basic_block() {
 		instructions.reserve(100);
 	}

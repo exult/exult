@@ -1186,10 +1186,8 @@ Usecode_value Usecode_internal::remove_party_items(
 		Usecode_value& quantval,    // Quantity to remove.
 		Usecode_value& shapeval,    // Shape.
 		Usecode_value& qualval,     // Quality??
-		Usecode_value& frameval,    // Frame.
-		Usecode_value& flagval      // Flag??
+		Usecode_value& frameval     // Frame.
 ) {
-	ignore_unused_variable_warning(flagval);
 	int                 quantity = quantval.need_int_value();
 	const int           shapenum = shapeval.get_int_value();
 	const int           framenum = frameval.get_int_value();
@@ -1333,13 +1331,12 @@ Usecode_value Usecode_internal::remove_cont_items(
 		Usecode_value& quantval,     // Quantity to add.
 		Usecode_value& shapeval,     // Shape.
 		Usecode_value& qualval,      // Quality.
-		Usecode_value& frameval,     // Frame.
-		Usecode_value& flagval       // Flag??
+		Usecode_value& frameval      // Frame.
 ) {
 	Game_object* obj = get_item(container);
 	if (!obj) {
 		if (container.get_int_value() == -357) {
-			return remove_party_items(quantval, shapeval, qualval, frameval, flagval);
+			return remove_party_items(quantval, shapeval, qualval, frameval);
 		}
 		return Usecode_value(0);
 	}
@@ -1580,7 +1577,7 @@ using UsecodeIntrinsicFn = Usecode_value (Usecode_internal::*)(tcb::span<Usecode
 #	endif
 #endif
 
-#define USECODE_INTRINSIC_PTR(NAME) {&Usecode_internal::UI_##NAME, TO_STRING(NAME)}
+#define USECODE_INTRINSIC_PTR(NAME) {&Usecode_internal::UI_##NAME, TO_STRING(NAME), Usecode_internal::min_args_##NAME}
 
 // Black Gate Intrinsic Function Table
 Usecode_internal::IntrinsicTableEntry Usecode_internal::intrinsics_bg[] = {
@@ -1608,7 +1605,7 @@ Usecode_value Usecode_internal::call_intrinsic(
 	static_assert(std::size(intrinsics_bg) <= std::numeric_limits<uint16>::max());
 	static_assert(std::size(intrinsics_si) <= std::numeric_limits<uint16>::max());
 	static_assert(std::size(intrinsics_sib) <= std::numeric_limits<uint16>::max());
-	std::vector<Usecode_value> parms(std::max(num_parms, 13));    // Get parms.
+	std::vector<Usecode_value> parms(static_cast<size_t>(num_parms));    // Get exactly the supplied arguments.
 	for (int i = 0; i < num_parms; i++) {
 		const Usecode_value val = pop();
 		parms[i]                = val;
@@ -1623,10 +1620,14 @@ Usecode_value Usecode_internal::call_intrinsic(
 	} else {
 		table = intrinsics_bg;
 	}
-	if (static_cast<size_t>(intrinsic) <= table.size()) {
+	if (static_cast<size_t>(intrinsic) < table.size()) {
 		auto&                    table_entry = table[intrinsic];
 		const UsecodeIntrinsicFn func        = table_entry.func;
 		const char*              name        = table_entry.name;
+		if (static_cast<size_t>(num_parms) < table_entry.min_args) {
+			cerr << name << ": Expected at least " << table_entry.min_args << " arguments, got " << num_parms << endl;
+			return no_ret;
+		}
 		return Execute_Intrinsic(func, name, intrinsic, parms);
 	}
 	return no_ret;

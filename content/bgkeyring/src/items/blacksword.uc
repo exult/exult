@@ -22,7 +22,6 @@
  *	Author: Marzo Junior
  *	Last Modified: 2006-02-27
  */
-
 #include "items/related_functions/arcadion_dialog.uc"		//Arcadion's dialog (broken into three functions) and related functions
 
 void arcadionDialog object#(0x6F6) () {
@@ -30,22 +29,19 @@ void arcadionDialog object#(0x6F6) () {
 	//the dialog is contained in a single function... I think things could still be
 	//improved (e.g., by modifying the usecode for mirrors/gems/the black sword so that
 	//they are the ones to call the dialog), but this is sufficient for the moment:
-
 	if (!gflags[BROKE_MIRROR]) {
 		item->arcadionMirrorFormDialog();
 	} else if (!gflags[COMMANDED_BOND]) {
 		if (event == DOUBLECLICK) {
 			UI_close_gumps();
-			script item after 1 ticks
-				call arcadionGemFormDialog;
+			script item after 1 ticks call arcadionGemFormDialog;
 		} else if (event == SCRIPTED) {
 			item->arcadionGemFormDialog();
 		}
 	} else {
 		if (event == DOUBLECLICK) {
 			UI_close_gumps();
-			script item after 1 ticks
-				call arcadionSwordFormDialog;
+			script item after 1 ticks call arcadionSwordFormDialog;
 		} else if (event == SCRIPTED) {
 			item->arcadionSwordFormDialog();
 		}
@@ -53,20 +49,17 @@ void arcadionDialog object#(0x6F6) () {
 }
 
 var isWorthyToKill 0x848 (var target_shape) {
-	var killables = [
-		SHAPE_DRAGON, SHAPE_DRAKE, SHAPE_ETHEREAL_MONSTER, SHAPE_HYDRA, SHAPE_UNICORN,
-		SHAPE_FAIRY, SHAPE_WISP, SHAPE_MONSTER_CYCLOPS, SHAPE_CYCLOPS, SHAPE_DRAXINUSOM,
-		SHAPE_IOLO, SHAPE_SHAMINO, SHAPE_DUPRE, SHAPE_SPARK, SHAPE_HOOK,
-		SHAPE_MAGE_MALE, SHAPE_MAGE_FEMALE, SHAPE_MONSTER_MAGE
-	];
-
-	return (target_shape in killables);
+	var killables = [SHAPE_DRAGON, SHAPE_DRAKE, SHAPE_ETHEREAL_MONSTER, SHAPE_HYDRA, SHAPE_UNICORN,
+		SHAPE_FAIRY, SHAPE_WISP, SHAPE_MONSTER_CYCLOPS, SHAPE_CYCLOPS, SHAPE_DRAXINUSOM, SHAPE_IOLO,
+		SHAPE_SHAMINO, SHAPE_DUPRE, SHAPE_SPARK, SHAPE_HOOK, SHAPE_MAGE_MALE, SHAPE_MAGE_FEMALE,
+		SHAPE_MONSTER_MAGE];
+	return(target_shape in killables);
 }
 
 var isUndead 0x849 (var target_shape) {
-	var undead = [SHAPE_LICHE2, SHAPE_LICHE, SHAPE_SKELETON, SHAPE_GHOST2, SHAPE_GHOST_MALE, SHAPE_GHOST_FEMALE];
-
-	return (target_shape in undead);
+	var undead = [SHAPE_LICHE2, SHAPE_LICHE, SHAPE_SKELETON, SHAPE_GHOST2, SHAPE_GHOST_MALE,
+		SHAPE_GHOST_FEMALE];
+	return(target_shape in undead);
 }
 
 void teleportIsleOfFire object#(0x6F9) () {

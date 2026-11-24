@@ -39,19 +39,18 @@
 	extern void spellRechargeMagic (struct<ObjPos> target);
 	extern void spellBlink (struct<ObjPos> target);
 */
-
 enum fourth_circle_spells {
-	SPELL_CONJURE					= 0,
-	SPELL_LIGHTNING					= 1,
-	SPELL_MASS_CURSE				= 2,
-	SPELL_REVEAL					= 3,
-	SPELL_SEANCE					= 4,
-	SPELL_UNLOCK_MAGIC				= 5,
-	SPELL_RECHARGE_MAGIC			= 6,		//NPC-only spell
-	SPELL_BLINK						= 7			//NPC-only spell
+	SPELL_CONJURE = 0,
+	SPELL_LIGHTNING = 1,
+	SPELL_MASS_CURSE = 2,
+	SPELL_REVEAL = 3,
+	SPELL_SEANCE = 4,
+	SPELL_UNLOCK_MAGIC = 5,
+	SPELL_RECHARGE_MAGIC = 6,  //NPC-only spell
+	SPELL_BLINK = 7  //NPC-only spell
 };
 
-void spellConjure () {
+void spellConjure() {
 	if (event == DOUBLECLICK) {
 		halt_scheduled();
 		item_say("@Kal Xen@");
@@ -76,7 +75,7 @@ void spellConjure () {
 	}
 }
 
-void spellLightning (struct<ObjPos> target) {
+void spellLightning(struct<ObjPos> target) {
 	if ((event == DOUBLECLICK) || (event == WEAPON)) {
 		//struct<ObjPos> target = UI_click_on_item();
 		halt_scheduled();
@@ -110,13 +109,13 @@ void spellLightning (struct<ObjPos> target) {
 	}
 }
 
-void spellMassCurse () {
+void spellMassCurse() {
 	if (event == DOUBLECLICK) {
 		halt_scheduled();
 		item_say("@Vas Des Sanct@");
 		if (inMagicStorm()) {
 			struct<Position> pos = get_object_position();
-			UI_sprite_effect(ANIMATION_TELEPORT, (pos.x - 2), (pos.y - 2), 0, 0, 0, -1);
+			UI_sprite_effect(ANIMATION_TELEPORT,(pos.x - 2),(pos.y - 2), 0, 0, 0, -1);
 			script item {
 				nohalt;
 				actor frame cast_up;
@@ -148,7 +147,7 @@ void spellMassCurse () {
 	}
 }
 
-void spellReveal () {
+void spellReveal() {
 	if (event == DOUBLECLICK) {
 		halt_scheduled();
 		struct<Position> pos = get_object_position();
@@ -161,7 +160,6 @@ void spellReveal () {
 				actor frame reach_1h;
 				actor frame strike_1h;
 			}
-
 			struct<Position> findpos = get_object_position();
 			var offset_x = [-15, -15, -15, -5, -5, -5, 5, 5, 5, 15, 15, 15];
 			var offset_y = [-7, 2, 11, -7, 2, 11, -7, 2, 11, -7, 2, 11];
@@ -203,7 +201,7 @@ void spellReveal () {
 	}
 }
 
-void spellSeance () {
+void spellSeance() {
 	if (event == DOUBLECLICK) {
 		halt_scheduled();
 		item_say("@Kal Wis Corp@");
@@ -215,7 +213,6 @@ void spellSeance () {
 				actor frame raise_1h;
 				actor frame strike_1h;
 			}
-
 			struct<Position> pos = get_object_position();
 			var sprite_x = (pos.x - 2);
 			var sprite_y = (pos.y - 2);
@@ -233,11 +230,9 @@ void spellSeance () {
 			gflags[SEANCE_PAULETTE] = true;
 			gflags[SEANCE_QUENTON] = true;
 			gflags[SEANCE_FORSYTHE] = true;
-
 			var hour = UI_game_hour();
 			var minute = UI_game_minute();
 			var delay;
-
 			if (hour < 6) {
 				delay = ((6 - hour) * 60);
 				delay += (60 - minute);
@@ -247,7 +242,6 @@ void spellSeance () {
 				delay += (60 - minute);
 				delay *= 25;
 			}
-
 			script item after delay ticks {
 				nohalt;
 				finish;
@@ -265,17 +259,14 @@ void spellSeance () {
 	}
 }
 
-void spellUnlockMagic (struct<ObjPos> target) {
+void spellUnlockMagic(struct<ObjPos> target) {
 	if (event == DOUBLECLICK) {
 		//struct<ObjPos> target = UI_click_on_item();
 		var target_shape = target->get_item_shape();
 		var dir = direction_from(target);
 		halt_scheduled();
-		var unlockables = [
-			SHAPE_DOOR_HORIZONTAL, SHAPE_DOOR_VERTICAL,
-			SHAPE_DOOR2_HORIZONTAL, SHAPE_DOOR2_VERTICAL,
-			SHAPE_FALSE_WALL_HORIZONTAL, SHAPE_FALSE_WALL_VERTICAL
-		];
+		var unlockables = [SHAPE_DOOR_HORIZONTAL, SHAPE_DOOR_VERTICAL, SHAPE_DOOR2_HORIZONTAL,
+			SHAPE_DOOR2_VERTICAL, SHAPE_FALSE_WALL_HORIZONTAL, SHAPE_FALSE_WALL_VERTICAL];
 		item_say("@Ex Por@");
 		if (inMagicStorm()) {
 			if (target_shape in unlockables) {
@@ -289,7 +280,6 @@ void spellUnlockMagic (struct<ObjPos> target) {
 						actor frame strike_1h;
 						sfx 66;
 					}
-
 					script target after 6 ticks {
 						nohalt;
 						frame target_frame - 3;
@@ -309,7 +299,7 @@ void spellUnlockMagic (struct<ObjPos> target) {
 	}
 }
 
-void spellRechargeMagic (struct<ObjPos> target) {
+void spellRechargeMagic(struct<ObjPos> target) {
 	if (event == DOUBLECLICK) {
 		halt_scheduled();
 		//struct<ObjPos> target = UI_click_on_item();
@@ -317,7 +307,8 @@ void spellRechargeMagic (struct<ObjPos> target) {
 		var dir = direction_from(target);
 		item_say("@Uus Ort@");
 		var charges = target->get_item_quality();
-		if (inMagicStorm() && (target_shape in [SHAPE_LIGHTNING_WAND, SHAPE_FIRE_WAND, SHAPE_FIREDOOM_STAFF]) && (charges < 100)) {
+		if (inMagicStorm() && (target_shape in[SHAPE_LIGHTNING_WAND, SHAPE_FIRE_WAND,
+			SHAPE_FIREDOOM_STAFF]) && (charges < 100)) {
 			if (charges < 50) {
 				charges += UI_die_roll(12, 25);
 			} else if (charges < 70) {
@@ -348,9 +339,9 @@ void spellRechargeMagic (struct<ObjPos> target) {
 	}
 }
 
-const int CREATE_CLOUDS					= 15;
-void spellBlink (struct<ObjPos> target) {
+const int CREATE_CLOUDS = 15;
 
+void spellBlink(struct<ObjPos> target) {
 	var nearbyobjs;
 	var party;
 	var index;
@@ -359,15 +350,14 @@ void spellBlink (struct<ObjPos> target) {
 	var delay;
 	var rand;
 	var pathegg;
-
 	if (event == DOUBLECLICK) {
 		halt_scheduled();
 		struct<Position> destpos = getClickPosition(target);
 		var dir = direction_from(target);
 		UI_item_say(item, "@Rel Por@");
 		if (inMagicStorm() && is_dest_reachable(destpos)) {
-			var move_party = (get_npc_object() in UI_get_party_list()) &&
-			                 (get_schedule_type() != IN_COMBAT);
+			var move_party = (get_npc_object() in UI_get_party_list())
+				&& (get_schedule_type() != IN_COMBAT);
 			script item {
 				nohalt;
 				face dir;
@@ -376,7 +366,6 @@ void spellBlink (struct<ObjPos> target) {
 				actor frame raise_1h;
 				actor frame standing;
 			}
-
 			var targets;
 			if (move_party) {
 				targets = party;
@@ -401,7 +390,6 @@ void spellBlink (struct<ObjPos> target) {
 					}
 				}
 			}
-
 			if (move_party) {
 				PARTY->move_object(destpos);
 			} else {
@@ -409,7 +397,6 @@ void spellBlink (struct<ObjPos> target) {
 			}
 			return;
 		}
-
 		script item {
 			nohalt;
 			face dir;

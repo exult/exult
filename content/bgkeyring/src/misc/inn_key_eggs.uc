@@ -24,51 +24,43 @@
  */
 
 //Inn identifiers:
-const int INN_WAYFARERS_NORTH			= 1;
-const int INN_WAYFARERS_SOUTH			= 2;
-const int INN_FALLEN_VIRGIN				= 3;
-const int INN_OUT_N_INN					= 4;
-const int INN_BUNK_AND_STOOL			= 5;
-const int INN_MODEST_DAMSEL				= 6;
-const int INN_SALTY_DOG					= 7;
-const int INN_HONORABLE_HOUND			= 8;
-const int INN_CHEQUERED_CORK_EAST		= 9;
-const int INN_CHEQUERED_CORK_SOUTH		= 10;
+const int INN_WAYFARERS_NORTH = 1;
+const int INN_WAYFARERS_SOUTH = 2;
+const int INN_FALLEN_VIRGIN = 3;
+const int INN_OUT_N_INN = 4;
+const int INN_BUNK_AND_STOOL = 5;
+const int INN_MODEST_DAMSEL = 6;
+const int INN_SALTY_DOG = 7;
+const int INN_HONORABLE_HOUND = 8;
+const int INN_CHEQUERED_CORK_EAST = 9;
+const int INN_CHEQUERED_CORK_SOUTH = 10;
 
 //For locking doors:
 enum door_states {
-	DOOR_UNLOCKED						= 0,
-	DOOR_OPEN							= 1,
-	DOOR_LOCKED							= 2,
-	DOOR_MAGIC_LOCK						= 3
+	DOOR_UNLOCKED = 0,
+	DOOR_OPEN = 1,
+	DOOR_LOCKED = 2,
+	DOOR_MAGIC_LOCK = 3
 };
 
 //For making beds:
 enum bed_states {
-	BED_MADE							= 0,
-	BED_UNMADE							= 1
+	BED_MADE = 0,
+	BED_UNMADE = 1
 };
 
 //To get the proper offsets and NPC IDs:
-const int EVENT_FIND_EGG				= 20;
-const int EVENT_TALK					= 21;
+const int EVENT_FIND_EGG = 20;
+const int EVENT_TALK = 21;
 
 void eggLockInnDoors object#() () {
 	var polite_title = getPoliteTitle();
-	var inn_keepers = [
-		JAMES, JAMES, MANDY, PAMELA, OPHELIA, BORIS, POLLY,
-		APOLLONIA, RUTHERFORD, RUTHERFORD
-	];
-	var inn_names = [
-		"Wayfarer's Inn", "Wayfarer's Inn", "Fallen Virgin",
-		"Out 'n' Inn", "Bunk and Stool", "Modest Damsel",
-		"Salty Dog", "Honorable Hound", "Chequered Cork", "Chequered Cork"
-	];
-	var step_directions = [
-		SOUTH, NORTH, NORTH, NORTHEAST, WEST, WEST,
-		NORTH, WEST, WEST, NORTH
-	];
-
+	var inn_keepers = [JAMES, JAMES, MANDY, PAMELA, OPHELIA, BORIS, POLLY, APOLLONIA, RUTHERFORD,
+		RUTHERFORD];
+	var inn_names = ["Wayfarer's Inn", "Wayfarer's Inn", "Fallen Virgin", "Out 'n' Inn",
+		"Bunk and Stool", "Modest Damsel", "Salty Dog", "Honorable Hound", "Chequered Cork",
+		"Chequered Cork"];
+	var step_directions = [SOUTH, NORTH, NORTH, NORTHEAST, WEST, WEST, NORTH, WEST, WEST, NORTH];
 	if (event == EVENT_TALK) {
 		set_schedule_type(TALK);
 		script item {
@@ -127,7 +119,6 @@ void eggLockInnDoors object#() () {
 			inn_keys += 1;
 		}
 	}
-
 	if (inn_keys) {
 		//If there are any inn keys at all,
 		if (UI_is_pc_inside() || (event == PATH_SUCCESS)) {
@@ -143,9 +134,7 @@ void eggLockInnDoors object#() () {
 
 				//Start to move the innkeeper towards the Avatar:
 				inn_keeper->approach_avatar();
-
 				inn_keeper->set_npc_id(egg_quality);
-
 				var delay = inn_keeper->get_distance(AVATAR) / 5;
 				//Innkeeper calls out to Avatar:
 				script inn_keeper {
@@ -162,7 +151,6 @@ void eggLockInnDoors object#() () {
 					wait 2;
 					say "@Yes?@";
 				}
-
 				abort;
 			} else if (event == PATH_SUCCESS) {
 				inn_keeper->set_npc_id(0);
@@ -178,21 +166,19 @@ void eggLockInnDoors object#() () {
 
 				//The innkeeper has reached destination (or gave up
 				//trying and called the usecode anyway...)
-				inn_keeper.say("@I take it that thou art checking out then, ",
-				               polite_title + "?@");
+				inn_keeper.say("@I take it that thou art checking out then, ", polite_title + "?@");
 				//Ask Avatar is he is checking out:
 				if (askYesNo()) {
 					//Yes he is;
-					say("@Here, let me have the room keys then. Worry not, I shall lock the doors myself.@");
-					say("@I hope thou didst enjoy thy stay at the ",
-					    inn_names[egg_quality], "!@");
+					say(
+						"@Here, let me have the room keys then. Worry not, I shall lock the doors myself.@");
+					say("@I hope thou didst enjoy thy stay at the ", inn_names[egg_quality], "!@");
 
 					//Unfreeze Avatar:
 					AVATAR->trueUnfreeze();
 				} else {
 					//No, he is not;
-					say("@Come back inside, then, and enjoy thy room, ",
-					    polite_title, "!@");
+					say("@Come back inside, then, and enjoy thy room, ", polite_title, "!@");
 					var step_to = step_directions[egg_quality];
 					//Halt scripts:
 					AVATAR->halt_scheduled();
@@ -227,23 +213,15 @@ void eggLockInnDoors object#() () {
 			key->remove_item();
 		}
 	}
-
-
 	var inn_doors = [];
-	var door_shapes = [
-			SHAPE_DOOR_HORIZONTAL,
-			SHAPE_DOOR_VERTICAL,
-			SHAPE_DOOR2_HORIZONTAL,
-			SHAPE_DOOR2_VERTICAL
-			];
+	var door_shapes = [SHAPE_DOOR_HORIZONTAL, SHAPE_DOOR_VERTICAL, SHAPE_DOOR2_HORIZONTAL,
+		SHAPE_DOOR2_VERTICAL];
 	//Find unlocked doors
 	for (door in door_shapes) {
 		inn_doors &= pos->find_nearby(door, 20, MASK_NONE);
 	}
-
 	var door_state;
 	var door_function;
-
 	for (door in inn_doors) {
 		//For each nearby door,
 		if (door->get_item_quality() == KEY_INN) {
@@ -257,7 +235,7 @@ void eggLockInnDoors object#() () {
 				//Set event to DOUBLECLICK:
 				event = DOUBLECLICK;
 				//Close door; this is an indirect calle:
-				door->(*door_function)();
+				door->(*door_function) ();
 				//Lock door
 				UseKeyOnDoor(door);
 			} else if (door_state == DOOR_UNLOCKED) {
@@ -285,7 +263,6 @@ void eggLockInnDoors object#() () {
 		}
 	}
 }
-
 
 //New NPC usecode for better handling:
 void James object#(0x42E) () {

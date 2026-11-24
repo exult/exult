@@ -33,6 +33,8 @@ ucparse.h: ucparse.cc
 uclex.o: uclex.cc ucparse.h
 
 EXTRA_DIST = \
+	tests/README.md \
+	tests/test_diagnostics.py \
 	test1.uc \
 	ucdefs.h
 

@@ -34,7 +34,7 @@ jobs:
           join: true
           tls: true
           message: "\x0313exult\x03/\x0306${{ github.ref }}\x03 \x0314${{ github.sha }}\x03 https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }} ${{ inputs.build_name }} \x033succeeded\x03."
-      - name: IRC failure notification (ircs://irc.libera.chat:6697/#exult)
+      - name: IRC non-success notification (ircs://irc.libera.chat:6697/#exult)
         uses: mauke/notify-irc@v1
         continue-on-error: true
         if: inputs.build_result != 'success'
@@ -45,7 +45,7 @@ jobs:
           nickname: github-actions
           join: true
           tls: true
-          message: "\x0313exult\x03/\x0306${{ github.ref }}\x03 \x0314${{ github.sha }}\x03 https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }} ${{ inputs.build_name }} \x034failed\x03."
+          message: "\x0313exult\x03/\x0306${{ github.ref }}\x03 \x0314${{ github.sha }}\x03 https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }} ${{ inputs.build_name }} \x034${{ inputs.build_result == 'failure' && 'failed' || inputs.build_result }}\x03."
       - name: Discord success notification
         uses: opp-studio/discord-webhook-notify@2.2.5
         continue-on-error: true
@@ -56,13 +56,13 @@ jobs:
           username: Exult github-actions
           avatarUrl: https://avatars.githubusercontent.com/u/15114538?s=200&v=4
           text: '**[${{ inputs.build_name }} succeeded:](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})**'
-      - name: Discord failure notification
+      - name: Discord non-success notification
         uses: opp-studio/discord-webhook-notify@2.2.5
         continue-on-error: true
         if: inputs.build_result != 'success'
         with:
-          severity: error
+          severity: ${{ inputs.build_result == 'failure' && 'error' || 'info' }}
           webhookUrl: ${{ secrets.DISCORD_WEBHOOK }}
           username: Exult github-actions
           avatarUrl: https://avatars.githubusercontent.com/u/15114538?s=200&v=4
-          text: '**[${{ inputs.build_name }} failed:](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})**'
+          text: '**[${{ inputs.build_name }} ${{ inputs.build_result == ''failure'' && ''failed'' || inputs.build_result }}:](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})**'

@@ -28,8 +28,7 @@
 //-----------------
 
 //returns a random entry from an array
-var randomIndex(var array)
-{
+var randomIndex(var array) {
 	var size = UI_get_array_size(array);
 	var rand = UI_get_random(size);
 	return array[rand];
@@ -39,21 +38,27 @@ var randomIndex(var array)
 //---------------------
 
 //Returns true if the specified object is the avatar, false otherwise.
-var isAvatar(var object)	{ return (object->get_npc_object() == UI_get_avatar_ref()); }
+var isAvatar(var object) {
+	return(object->get_npc_object() == UI_get_avatar_ref());
+}
 
 //Check if the player has met the specified person (i.e. whether their Met flag has been set).
 //Can take either an NPC constant or an object reference.
-var hasMet(var npc)		{ return npc->get_item_flag(MET); }
+var hasMet(var npc) {
+	return npc->get_item_flag(MET);
+}
 
 //Returns true if the specified NPC is in the party, false otherwise
 //There should be an intrinsic for this, but it doesn't appear to be defined
 //Can take an NPC constant or an object reference.
-var inParty(var npc)		{ npc = npc->get_npc_object(); return (npc in UI_get_party_list()); }
+var inParty(var npc) {
+	npc = npc->get_npc_object();
+	return(npc in UI_get_party_list());
+}
 
 //quick bark/say functions, useful for testing. See also randomPartySay() and randomPartyBark() (original functions)
 //avatarBark(var line)	{ if (canTalk(AVATAR)) AVATAR->item_say(line); }
 //avatarSay(var line)		{ if (canTalk(AVATAR)) AVATAR.say(line); }
-
 
 //Moving-stuff-around functions
 //-----------------------------
@@ -199,77 +204,74 @@ gotoAndGet (var target)
 	}
 }
 */
-//returns true if obj is contained by target, or false otherwise
-var containedBy (var obj, var target)
-{
-	var container;
 
+//returns true if obj is contained by target, or false otherwise
+var containedBy(var obj, var target) {
+	var container;
 	container = obj->get_container();
-	while (container)
-	{
+	while (container) {
 		if (container == target) return true;
 		container = container->get_container();
 	}
 	return false;
 }
 
-
 //Animation functions
 //-------------------
 
 //returns the direction (N/S/W/E) that the NPC is currently facing
-var getFacing (var npc)
-{
+var getFacing(var npc) {
 	var direction;
 	var framenum;
-	
 	framenum = npc->get_item_frame_rot();
-
-	if		(framenum >= EAST_FRAMESET)		direction = EAST;
-	else if (framenum >= WEST_FRAMESET)		direction = WEST;
-	else if (framenum >= SOUTH_FRAMESET)	direction = SOUTH;
+	if (framenum >= EAST_FRAMESET) direction = EAST;
+	else if (framenum >= WEST_FRAMESET) direction = WEST;
+	else if (framenum >= SOUTH_FRAMESET) direction = SOUTH;
 	else direction = NORTH;
-
 	return direction;
 }
 
 //Simple function to reverse a direction (NORTH becomes SOUTH, etc.)
-var invertDirection (var direction)	{ return (direction + 4) % 8; }
+var invertDirection(var direction) {
+	return(direction + 4) % 8;
+}
 
 //Gold-related functions (for streamlining shopping)
 //--------------------------------------------------
 
 //returns the total amount of gold the party has
-var countGold (var amount)	{ return PARTY->count_objects(SHAPE_GOLD, QUALITY_ANY, FRAME_ANY); }
+var countGold(var amount) {
+	return PARTY->count_objects(SHAPE_GOLD, QUALITY_ANY, FRAME_ANY);
+}
 
 //returns true if the party has <amount> gold, false otherwise
-var hasGold (var amount)
-{
+var hasGold(var amount) {
 	var num_gold = PARTY->count_objects(SHAPE_GOLD, QUALITY_ANY, FRAME_ANY);
-	return (num_gold >= amount);
+	return(num_gold >= amount);
 }
 
 //tries to deduct <amount> from the party's gold: returns true if they had the cash, or false if they can't afford it
-var chargeGold (var amount)
-{
-	if (hasGold(amount)) return UI_remove_party_items(amount, SHAPE_GOLD, QUALITY_ANY, FRAME_ANY, true);
+var chargeGold(var amount) {
+	if (hasGold(amount)) return UI_remove_party_items(amount, SHAPE_GOLD, QUALITY_ANY, FRAME_ANY,
+		true);
 	else return false;
 }
 
 //give <amount> gold to the party: returns true if successful, false otherwise
-var giveGold (var amount)	{ return UI_add_party_items(amount, SHAPE_GOLD, QUALITY_ANY, FRAME_ANY, true); }
+var giveGold(var amount) {
+	return UI_add_party_items(amount, SHAPE_GOLD, QUALITY_ANY, FRAME_ANY, true);
+}
 
-var askYesNo ()
-{
+var askYesNo() {
 	UI_add_answer(["Yes", "No"]);
-	converse([])
-	{
-		case "Yes":
-			return 1;
-		case "No":
-			return 0;
+	converse ([]) {
+	case "Yes":
+		return 1;
+	case "No":
+		return 0;
 	}
 }
+
 /*
 //Script-related functions (used in script{} blocks)
 //--------------------------------------------------

@@ -19,9 +19,7 @@
  *	Author: Marzo Junior (reorganizing/updating code by Alun Bestor)
  *	Last Modified: 2006-03-19
  */
-
 #include "misc/shearing/constants.uc"		//Added sheep-shearing behaviour
 #include "misc/shearing/functions.uc"		//Added sheep-shearing behaviour
-
 #include "items/shears.uc"			//Added sheep-shearing behaviour
 #include "monsters/sheep.uc"		//Sheep!

@@ -33,8 +33,6 @@ void SwordBlank shape#(0x29C) () {
 	var warm_frames;
 	//Cooled down completely
 	var cool_frames;
-
-
 	current_frame = get_item_frame();
 
 	//The swordblank has different behaviours when clicked, depending
@@ -50,15 +48,14 @@ void SwordBlank shape#(0x29C) () {
 		warm_frames = [1];
 		cool_frames = [0, 6, 7];
 	}
-
 	if (event == DOUBLECLICK) {
 		//Avatar is wielding a hammer - now check if the swordblank
 		//is sitting on an anvil and is hot enough. If so, we will
 		//automatically hammer the sword; if not, just pick it up
 		//normally
 		if (AVATAR->is_readied(BG_WEAPON_HAND, SHAPE_HAMMER, FRAME_ANY) ||
-			//Also allow Julia's hammer:
-			AVATAR->is_readied(BG_WEAPON_HAND, SHAPE_JULIAS_HAMMER, FRAME_ANY)) {
+		//Also allow Julia's hammer:
+		AVATAR->is_readied(BG_WEAPON_HAND, SHAPE_JULIAS_HAMMER, FRAME_ANY)) {
 			var anvil = find_nearest(SHAPE_ANVIL, 3);
 			if (anvil && onAnvil(item, anvil) && current_frame in hot_frames) {
 				gotoObject(anvil, 0, 2, 0, useHammerOnSwordblank, item, SCRIPTED);
@@ -85,11 +82,11 @@ void SwordBlank shape#(0x29C) () {
 			//Used on firepit: go to firepit and call this function again
 			//with event level 9
 			gotoObject(target, 1, 0, 0, SwordBlank, item, 9);
-		} else if (target_shape in [SHAPE_TROUGH_HORIZONTAL, SHAPE_TROUGH_VERTICAL]) {
+		} else if (target_shape in[SHAPE_TROUGH_HORIZONTAL, SHAPE_TROUGH_VERTICAL]) {
 			//Used on water trough: if sword is hot enough and trough isn't
 			//empty, go to trough and call this function again with event level 10.
 			//make sure the trough is full
-			if (target->get_item_frame() in [3, 7]) {
+			if (target->get_item_frame() in[3, 7]) {
 				//now check if the swordblank is hot
 				if (current_frame in hot_frames || current_frame in warm_frames) {
 					//stolen from Bucket()
@@ -102,7 +99,6 @@ void SwordBlank shape#(0x29C) () {
 						target_offsetx = [1, 1, -2, -2, 0, -1, 0, -1];
 						target_offsety = [-1, -2, -1, -2, 1, 1, -4, -4];
 					}
-
 					gotoObject(target, target_offsetx, target_offsety, 0, SwordBlank, item, 10);
 				} else {
 					avatarBark("@The sword's not hot.@");

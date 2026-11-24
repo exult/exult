@@ -19,7 +19,6 @@
  *	Author: Marzo Junior (reorganizing/updating code by Alun Bestor)
  *	Last Modified: 2006-03-19
  */
-
 #include "items/fishingrod.uc"		//Fishing rod behaviour
 #include "npcs/gordon.uc"			//Gordon the fish-seller in Britain (adds fish-sales behaviour)
 #include "monsters/fish.uc"			//Fish!

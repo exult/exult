@@ -19,7 +19,6 @@
  *	Author: Marzo Junior (reorganizing/updating code by Alun Bestor)
  *	Last Modified: 2006-03-19
  */
-
 void Firepit shape#(0x2E3) () {
 	//Firepit is being heated up by bellows
 	//This behaviour was moved from Bellows() itself, and reorganised so
@@ -28,7 +27,6 @@ void Firepit shape#(0x2E3) () {
 	if (event == SCRIPTED) {
 		var current_frame = get_item_frame();
 		var is_fov = (current_frame > 3);
-
 		var min_frame;
 		var max_frame;
 		//well lookee here, a Forge of Virtue forge
@@ -39,9 +37,7 @@ void Firepit shape#(0x2E3) () {
 			min_frame = 0;
 			max_frame = 3;
 		}
-
 		var num_cooling_frames = current_frame - min_frame;
-
 		var target_frame = current_frame + 1;
 		if (target_frame > max_frame) {
 			target_frame = max_frame;
@@ -67,7 +63,6 @@ void Firepit shape#(0x2E3) () {
 				//Make sure the swordblank is actually on top of the firepit
 				struct<Position> firepit_pos = get_object_position();
 				struct<Position> swordblank_pos = swordblank->get_object_position();
-
 				var x_offset = swordblank_pos.x - firepit_pos.x;
 				var y_offset = swordblank_pos.y - firepit_pos.y;
 				var z_offset = swordblank_pos.z - firepit_pos.z;
@@ -84,7 +79,8 @@ void Firepit shape#(0x2E3) () {
 				if (x_offset in x_range && y_offset in y_range && z_offset in z_range) {
 					//regular forges won't heat up the Black Sword!
 					if (!is_fov && swordblank->get_item_frame() >= 8) {
-						randomPartySay("@Avatar, I do not think a regular forge is hot enough to temper such a blade. Thou shouldst take it to the Forge of Virtue.@");
+						randomPartySay(
+							"@Avatar, I do not think a regular forge is hot enough to temper such a blade. Thou shouldst take it to the Forge of Virtue.@");
 					} else {
 						script swordblank call heatSwordBlank;
 					}

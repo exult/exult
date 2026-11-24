@@ -22,7 +22,6 @@
  *	Author: Marzo Junior
  *	Last Modified: 2006-02-27
  */
-
 void Lens shape#(0x2D6) () {
 	if (event == DOUBLECLICK) {
 		//Get rotated frame #:

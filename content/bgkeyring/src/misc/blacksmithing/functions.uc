@@ -29,18 +29,16 @@ void useSwordOnAnvil object#() () {
 }
 
 //returns true if <swordblank> is correctly positioned on <anvil>, false otherwise
-var onAnvil (var swordblank, var anvil) {
+var onAnvil(var swordblank, var anvil) {
 	struct<Position> swordblank_pos = swordblank->get_object_position();
 	struct<Position> anvil_pos = anvil->get_object_position();
-
-	return (swordblank_pos.x == anvil_pos.x &&
-			swordblank_pos.y == anvil_pos.y &&
-			swordblank_pos.z == anvil_pos.z + 1);
+	return(swordblank_pos.x == anvil_pos.x && swordblank_pos.y == anvil_pos.y
+		&& swordblank_pos.z == anvil_pos.z + 1);
 }
 
 //returns true if the specified blank is the Black Sword blank, false otherwise
-var isBlackSword (var swordblank) {
-	return (swordblank->get_item_frame() >= 8);
+var isBlackSword(var swordblank) {
+	return(swordblank->get_item_frame() >= 8);
 }
 
 //Set the base cool frame of the swordblank (this depends on how much it has
@@ -49,7 +47,6 @@ var isBlackSword (var swordblank) {
 void setCooledFrame object#() () {
 	var target_frame;
 	var quality = get_item_quality();
-
 	if (isBlackSword(item)) {
 		if (gflags[FINISHED_BLADE_FORGING]) {
 			target_frame = 15;
@@ -83,10 +80,8 @@ void coolSwordBlank object#() () {
 	var min_frame;
 	var target_frame;
 	var quality;
-
 	current_frame = get_item_frame();
 	is_blacksword = isBlackSword(item);
-
 	if (is_blacksword) {
 		hot_frames = [10, 11, 12];
 		warm_frames = [8, 9];
@@ -110,7 +105,8 @@ void coolSwordBlank object#() () {
 			quality = get_item_quality();
 			if (quality == SWORDBLANK_QUENCH) {
 				set_item_quality(quality - 2);
-				avatarSay("The blank has warped as it cooled down -- it will need more heating and work to straighten the blade again.~Once the blade is at its sharpest, it must be quenched quickly in a water trough to strengthen and harden the blade.");
+				avatarSay(
+					"The blank has warped as it cooled down -- it will need more heating and work to straighten the blade again.~Once the blade is at its sharpest, it must be quenched quickly in a water trough to strengthen and harden the blade.");
 			}
 		}
 	} else if (current_frame in hot_frames || current_frame in warm_frames) {
@@ -149,32 +145,30 @@ void heatSwordBlank object#() () {
 	var warm_frames;
 	//Cooled down completely
 	var cool_frames;
-
 	current_frame = get_item_frame();
 	is_blacksword = isBlackSword(item);
 
 	//Frames for the Black Sword
 	if (is_blacksword) {
-		hot_frames	= [10, 11, 12];
+		hot_frames = [10, 11, 12];
 		warm_frames = [8, 9];
 		cool_frames = [13, 14, 15];
 
 		//The minimum heated frame to cool down to
-		min_frame =	8;
+		min_frame = 8;
 		//The maximum heated frame to heat up to
 		max_frame = 12;
 	} else {
 		//Frames for the regular swordblank
-		hot_frames	= [2, 3, 4, 5];
+		hot_frames = [2, 3, 4, 5];
 		warm_frames = [1];
 		cool_frames = [0, 6, 7];
 
 		//The minimum heated frame to cool down to
-		min_frame =	1;
+		min_frame = 1;
 		//The maximum heated frame to heat up to
 		max_frame = 5;
 	}
-
 	if (current_frame in cool_frames) {
 		target_frame = min_frame;
 	} else {
@@ -206,26 +200,27 @@ void temperSword object#() () {
 	if (!swordblank) {
 		return;
 	}
-
 	var current_frame = swordblank->get_item_frame();
 	var rand = UI_get_random(100);
-
 	var quality = swordblank->get_item_quality();
 
 	//The Black Sword works slightly different from other swords
 	if (isBlackSword(swordblank)) {
 		if (gflags[FINISHED_BLADE_FORGING]) {
 			//Sword is as good as it gets
-			avatarSay("The blade has been worked as well as it can be. It will take some form of magic to make this sword blank into a usable weapon.");
+			avatarSay(
+				"The blade has been worked as well as it can be. It will take some form of magic to make this sword blank into a usable weapon.");
 		} else if (gflags[IMPROVED_BLADE]) {
 			//Sword has been improved
 			if (rand > 66) {
 				gflags[FINISHED_BLADE_FORGING] = true;
-				avatarSay("You feel that you've done the best job that you can, but the sword doesn't feel quite right. It's much too heavy and cumbersome to wield as a weapon.");
+				avatarSay(
+					"You feel that you've done the best job that you can, but the sword doesn't feel quite right. It's much too heavy and cumbersome to wield as a weapon.");
 			} else if (rand < 20) {
 				//Whoops! There goes your hard work!
 				gflags[IMPROVED_BLADE] = false;
-				avatarSay("That last blow was perhaps a bit too hard, It'll take a while to hammer out the flaws.");
+				avatarSay(
+					"That last blow was perhaps a bit too hard, It'll take a while to hammer out the flaws.");
 			}
 		} else if (rand > 66) {
 			//Sword is at its shittiest state
@@ -236,19 +231,20 @@ void temperSword object#() () {
 		//The regular swordblanks:
 		if (quality == SWORDBLANK_READY) {
 			//Swordblank is already as good as it gets
-			avatarSay("This blade is already sharp and true, and ready to be given to a weaponsmith for the finishing touch - the hilt and pommel.");
+			avatarSay(
+				"This blade is already sharp and true, and ready to be given to a weaponsmith for the finishing touch - the hilt and pommel.");
 			return;
 		} else if (quality == SWORDBLANK_QUENCH) {
 			//Swordblank needs quenching and cannot be improved any more
-			avatarSay("You have put as fine an edge on this blade as you can. It must now be quenched in water to harden the blade before the blank cools completely.");
+			avatarSay(
+				"You have put as fine an edge on this blade as you can. It must now be quenched in water to harden the blade before the blank cools completely.");
 			return;
 		} else {
 			//Swordblank can be worked, adjust its quality
-			var strength	= AVATAR->get_npc_prop(STRENGTH);
-			var dexterity	= AVATAR->get_npc_prop(DEXTERITY);
-
-			var fail_chance		= BASE_TEMPER_FAIL_CHANCE - (dexterity / 2);
-			var succeed_chance	= BASE_TEMPER_SUCCEED_CHANCE + (strength / 2);
+			var strength = AVATAR->get_npc_prop(STRENGTH);
+			var dexterity = AVATAR->get_npc_prop(DEXTERITY);
+			var fail_chance = BASE_TEMPER_FAIL_CHANCE - (dexterity / 2);
+			var succeed_chance = BASE_TEMPER_SUCCEED_CHANCE + (strength / 2);
 
 			//Small chance (based on dexterity) that you fuck it up and
 			//mess up the blade
@@ -269,14 +265,17 @@ void temperSword object#() () {
 				//notify the player they're making progress
 				if (quality + 1 == SWORDBLANK_IMPROVED) {
 					if (isNearby(MENION)) {
-						MENION.say("Menion comes over to check on your progress. @Ah, thine blade is coming along nicely! A little more sweat and tears and thou shalt have a fine sword!@");
+						MENION.say(
+							"Menion comes over to check on your progress. @Ah, thine blade is coming along nicely! A little more sweat and tears and thou shalt have a fine sword!@");
 						MENION.hide();
 					} else {
-						avatarSay("After a short while you notice that the edge has definitely improved.");
+						avatarSay(
+							"After a short while you notice that the edge has definitely improved.");
 					}
 				} else if (UI_get_random(2) == 1) {
 					//Otherwise, give some party feedback
-					randomPartyBark(randomIndex(["@Looks good!@", "@Keep it up!@", "@Put thine arm into it!@"]));
+					randomPartyBark(randomIndex(["@Looks good!@", "@Keep it up!@",
+						"@Put thine arm into it!@"]));
 				}
 				swordblank->set_item_quality(quality + 1);
 			}
@@ -294,13 +293,12 @@ void temperSword object#() () {
 //	3.	Doubleclicking an anvil that has a swordblank on top of it while
 //		wielding a hammer
 //<item> is the swordblank in question.
-
-void useHammerOnSwordblank () {
+void useHammerOnSwordblank() {
 
 	//Make sure they're still wielding the hammer! This should always
 	//be the case, though; allow Julia's hammer to be used too
-	if (!AVATAR->is_readied(BG_WEAPON_HAND, SHAPE_HAMMER, QUALITY_ANY) &&
-			!AVATAR->is_readied(BG_WEAPON_HAND, SHAPE_JULIAS_HAMMER, QUALITY_ANY)) {
+	if (!AVATAR->is_readied(BG_WEAPON_HAND, SHAPE_HAMMER, QUALITY_ANY) && !AVATAR->is_readied(
+		BG_WEAPON_HAND, SHAPE_JULIAS_HAMMER, QUALITY_ANY)) {
 		return;
 	}
 	var current_frame = get_item_frame();
@@ -320,7 +318,6 @@ void useHammerOnSwordblank () {
 		warm_frames = [1];
 		cool_frames = [0, 6, 7];
 	}
-
 	if (current_frame in cool_frames) {
 		avatarBark("@The sword is not heated.@");
 	} else if (current_frame in warm_frames) {
@@ -389,18 +386,17 @@ void useSwordOnTrough object#() () {
 	} else {
 		placed = placeOnTarget(item, trough, offsetx, offsety, 2);
 	}
-
 	if (placed) {
 		swordblank_pos = get_object_position();
-		UI_sprite_effect(ANIMATION_POOF, (swordblank_pos.x - 3), (swordblank_pos.y - 3), 0, 0, 0, -1);
+		UI_sprite_effect(ANIMATION_POOF,(swordblank_pos.x - 3),(swordblank_pos.y - 3), 0, 0, 0, -1);
 		UI_play_sound_effect(SOUND_QUENCH_SWORD);
-
 		if (isBlackSword(item)) {
 			item->setCooledFrame();
 		} else {
 			if (get_item_quality() == SWORDBLANK_QUENCH) {
 				set_item_quality(SWORDBLANK_READY);
-				AVATAR.say("The water hisses and bubbles as you sink the red-hot swordblank into it.",
+				AVATAR.say(
+					"The water hisses and bubbles as you sink the red-hot swordblank into it.",
 					"~When you draw it out, the cold blade feels lighter in your hand and has taken on an deadly sheen.");
 			}
 			item->setCooledFrame();

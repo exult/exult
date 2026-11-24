@@ -526,7 +526,6 @@ Game_window::~Game_window() {
 	dragging = nullptr;
 	delete effects;
 	effects = nullptr;
-	delete win;
 	delete pal;
 	for (auto* map : maps) {
 		if (map) {
@@ -534,6 +533,7 @@ Game_window::~Game_window() {
 		}
 	}
 	delete usecode;
+	delete win;
 	delete clock;
 	delete npc_prox;
 	delete render;

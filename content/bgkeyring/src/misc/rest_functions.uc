@@ -1,4 +1,4 @@
-EnsureExtinguishHeldTorch () {
+EnsureExtinguishHeldTorch() {
 	//Prevent torch from further burning out:
 	halt_scheduled();
 	//Set it to spent:
@@ -17,9 +17,7 @@ advanceTimeDueToRest 0x93A (var sleep_time, var itemref) {
 	var obj_quality;
 	var obj_shape;
 	var obj_count;
-
 	party = UI_get_party_list2();
-
 	for (member in party with counter to party_count) {
 		//The party member gets nothing from rest if he is starving:
 		if (member->get_npc_prop(FOODLEVEL) >= 10) {
@@ -42,7 +40,7 @@ advanceTimeDueToRest 0x93A (var sleep_time, var itemref) {
 
 			//Make the NPC hungrier; why food level isn't reduced if
 			//the NPC is already starving???
-			member->set_npc_prop(FOODLEVEL, (sleep_time * -1));
+			member->set_npc_prop(FOODLEVEL,(sleep_time * -1));
 		}
 
 		//Gather readied light sources and torches:

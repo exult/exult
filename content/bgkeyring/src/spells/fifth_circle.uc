@@ -39,20 +39,19 @@
 	extern void spellMassSleep ();
 	extern void spellSummonSkeletons ();
 */
-
 enum fifth_circle_spells {
-	SPELL_CHARM						= 0,
-	SPELL_DANCE						= 1,
-	SPELL_DISPEL_FIELD				= 2,
-	SPELL_EXPLOSION					= 3,
-	SPELL_FIRE_FIELD				= 4,
-	SPELL_GREAT_HEAL				= 5,
-	SPELL_INVISIBILITY				= 6,
-	SPELL_MASS_SLEEP				= 7,
-	SPELL_SUMMON_SKELETONS			= 8
+	SPELL_CHARM = 0,
+	SPELL_DANCE = 1,
+	SPELL_DISPEL_FIELD = 2,
+	SPELL_EXPLOSION = 3,
+	SPELL_FIRE_FIELD = 4,
+	SPELL_GREAT_HEAL = 5,
+	SPELL_INVISIBILITY = 6,
+	SPELL_MASS_SLEEP = 7,
+	SPELL_SUMMON_SKELETONS = 8
 };
 
-void spellCharm (struct<ObjPos> target) {
+void spellCharm(struct<ObjPos> target) {
 	if (event == DOUBLECLICK) {
 		//struct<ObjPos> target = UI_click_on_item();
 		var dir = direction_from(target);
@@ -82,7 +81,7 @@ void spellCharm (struct<ObjPos> target) {
 	}
 }
 
-void spellDance () {
+void spellDance() {
 	if (event == DOUBLECLICK) {
 		halt_scheduled();
 		item_say("@Por Xen@");
@@ -108,7 +107,7 @@ void spellDance () {
 	}
 }
 
-void spellDispelField (struct<ObjPos> target) {
+void spellDispelField(struct<ObjPos> target) {
 	if (event == DOUBLECLICK) {
 		//struct<ObjPos> target = UI_click_on_item();
 		var dir = direction_from(target);
@@ -124,7 +123,6 @@ void spellDispelField (struct<ObjPos> target) {
 				actor frame cast_out;
 				actor frame strike_2h;
 			}
-
 			if (target->get_item_shape() in fields) {
 				target->halt_scheduled();
 				target->remove_item();
@@ -142,7 +140,7 @@ void spellDispelField (struct<ObjPos> target) {
 	}
 }
 
-void spellExplosion (struct<ObjPos> target) {
+void spellExplosion(struct<ObjPos> target) {
 	if ((event == DOUBLECLICK) || (event == WEAPON)) {
 		//struct<ObjPos> target = UI_click_on_item();
 		halt_scheduled();
@@ -174,7 +172,7 @@ void spellExplosion (struct<ObjPos> target) {
 	}
 }
 
-void spellFireField (struct<ObjPos> target) {
+void spellFireField(struct<ObjPos> target) {
 	if (event == DOUBLECLICK) {
 		//struct<ObjPos> target = UI_click_on_item();
 		var dir = direction_from(target);
@@ -189,7 +187,6 @@ void spellFireField (struct<ObjPos> target) {
 				actor frame reach_1h;
 				actor frame strike_1h;
 			}
-
 			var field = UI_create_new_object(SHAPE_FIRE_FIELD);
 			if (field) {
 				var field_x = (target.x + 1);
@@ -218,7 +215,7 @@ void spellFireField (struct<ObjPos> target) {
 	}
 }
 
-void spellGreatHeal (struct<ObjPos> target) {
+void spellGreatHeal(struct<ObjPos> target) {
 	if (event == DOUBLECLICK) {
 		//struct<ObjPos> target = UI_click_on_item();
 		target->halt_scheduled();
@@ -236,7 +233,7 @@ void spellGreatHeal (struct<ObjPos> target) {
 			if (target->is_npc()) {
 				var str = target->get_npc_prop(STRENGTH);
 				var hps = target->get_npc_prop(HEALTH);
-				target->set_npc_prop(HEALTH, (str - hps));
+				target->set_npc_prop(HEALTH,(str - hps));
 			}
 		} else {
 			script item {
@@ -251,7 +248,7 @@ void spellGreatHeal (struct<ObjPos> target) {
 	}
 }
 
-void spellInvisibility (struct<ObjPos> target) {
+void spellInvisibility(struct<ObjPos> target) {
 	if (event == DOUBLECLICK) {
 		//struct<ObjPos> target = UI_click_on_item();
 		halt_scheduled();
@@ -266,7 +263,6 @@ void spellInvisibility (struct<ObjPos> target) {
 				actor frame cast_out;
 				actor frame strike_2h;
 			}
-
 			script target after 4 ticks {
 				nohalt;
 				call spellSetFlag, INVISIBLE;
@@ -284,13 +280,13 @@ void spellInvisibility (struct<ObjPos> target) {
 	}
 }
 
-void spellMassSleep () {
+void spellMassSleep() {
 	if (event == DOUBLECLICK) {
 		halt_scheduled();
 		struct<Position> pos = get_object_position();
 		item_say("@Vas Zu@");
 		if (inMagicStorm()) {
-			UI_sprite_effect(ANIMATION_TELEPORT, (pos.x - 2), (pos.y - 2), 0, 0, 0, -1);
+			UI_sprite_effect(ANIMATION_TELEPORT,(pos.x - 2),(pos.y - 2), 0, 0, 0, -1);
 			script item {
 				nohalt;
 				sfx 65;
@@ -300,7 +296,6 @@ void spellMassSleep () {
 				actor frame strike_1h;
 				actor frame strike_2h;
 			}
-
 			var targets = getEnemyTargetList(item, 25);
 			for (npc in targets) {
 				script npc after 7 ticks call spellSleepEffect;
@@ -320,7 +315,7 @@ void spellMassSleep () {
 	}
 }
 
-void spellSummonSkeletons () {
+void spellSummonSkeletons() {
 	if (event == DOUBLECLICK) {
 		halt_scheduled();
 		item_say("@Kal Corp Xen@");

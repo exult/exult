@@ -403,6 +403,7 @@ void Shapes_vga_file::Read_Gumpinf_text_data_file(bool editing, Exult_Game game_
 	if (Gump_info::was_any_modified()) {
 		return;
 	}
+	Gump_info::clear();
 	std::array sections{"container_area"sv,  "checkmark_pos"sv,    "special"sv,           "snap_zones"sv,
 						"dynamic_buttons"sv, "dynamic_texts"sv,    "dynamic_shapes"sv,    "dynamic_sliders"sv,
 						"gump_name"sv,       "shortcutbar_icon"sv, "shortcutbar_action"sv};
@@ -870,6 +871,7 @@ bool Shapes_vga_file::read_info(
 	}
 
 	// Get 'equip.dat'.
+	Monster_info::clear_equip();
 	if (IExultDataSource mfile(EQUIP, PATCH_EQUIP, 0); mfile.good()) {
 		// Get # entries (with Exult extension).
 		const int num_recs = Read_count(mfile);

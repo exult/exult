@@ -16,7 +16,6 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
-
 extern void FawnTrialTrigger object#(0x7F8) ();
 extern var getTrialNPC 0x8AC (var getid);
 extern void partySetTrialFacing 0x8C5 ();
@@ -24,8 +23,9 @@ extern void partySetTrialFacing 0x8C5 ();
 void FawnTrialBarks 0x939 (var quality) {
 	if (quality == 0x00F8) {
 		var trialnpc = getTrialNPC(true);
-		UI_move_object(trialnpc, [0x407, 0x679]);
-		UI_si_path_run_usecode(trialnpc, [0x407, 0x66B], SI_PATH_SUCCESS, UI_get_npc_object(trialnpc), FawnTrialTrigger, false);
+		UI_move_object(trialnpc,[0x407, 0x679]);
+		UI_si_path_run_usecode(trialnpc,[0x407, 0x66B], SI_PATH_SUCCESS,
+			UI_get_npc_object(trialnpc), FawnTrialTrigger, false);
 		partySetTrialFacing();
 		delayedBark(trialnpc, "@" + getPoliteTitle() + "...@", 10);
 		delayedBark(AVATAR, "@" + getTrialNPC(false) + "!@", 5);
@@ -89,4 +89,3 @@ void Bolt shape#(0x2d3) () {
 		}
 	}
 }
-

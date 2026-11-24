@@ -24,13 +24,13 @@
 
 //Wheat can be used on a millstone to create a sack of flour
 extern void Millstone shape#(0x2C7) ();
+
 void Wheat shape#(0x2A5) () {
 	if (event == DOUBLECLICK) {
 		//Player double-clicked on wheat-sack - it must first be picked up
 		//in order to be used. Once the player has it, this function gets
 		//called again with event = SCRIPTED
 		gotoAndGet(item);
-
 	} else if (event == SCRIPTED) {
 		//Wheat-sack has been acquired and is now ready to use on millstone
 		UI_close_gumps();
@@ -58,22 +58,19 @@ void createFlour object#() () {
 	}
 	//changed from FRAME_FLOURSACK
 	flour->set_item_frame(FRAME_FLOURSACK_OPEN);
-
 	flour->set_item_flag(TEMPORARY);
 	flour->set_item_flag(OKAY_TO_TAKE);
-
 	struct<Position> target_pos = get_object_position();
 	//place it on the middle right-hand side of the millstone
 	target_pos.x += 1;
 	target_pos.y -= 3;
-
 	UI_update_last_created(target_pos);
 	//Added: Check if Thurston is nearby, since he'll object
 	if (isNearby(THURSTON) && UI_get_random(2) == 1) {
 		if (!gflags[THURSTON_WARNED_ABOUT_MILLING]) {
 			THURSTON.say("Thurston approaches you, obviously angry and embarrassed of his anger.",
-			             "~@I do not want to be rude ", getPoliteTitle(),
-			             "...but it is my livelihood to run the mill and grind the wheat. So I ask thou, leavest the job to me!");
+				"~@I do not want to be rude ", getPoliteTitle(),
+				"...but it is my livelihood to run the mill and grind the wheat. So I ask thou, leavest the job to me!");
 			THURSTON.say("@I shall be happy to sell thee all the flour thou couldst want.@");
 			THURSTON.hide();
 			gflags[THURSTON_WARNED_ABOUT_MILLING] = true;
@@ -83,6 +80,7 @@ void createFlour object#() () {
 
 //Performs grindage upon a sack of wheat
 const int SOUND_GRIND = 26;
+
 void Millstone shape#(0x2C7) () {
 	if (event == DOUBLECLICK) {
 		//player double-clicked on the millstone
@@ -109,9 +107,7 @@ void Millstone shape#(0x2C7) () {
 			};
 			call unfreeze;
 		}
-
-		if (isNearby(THURSTON) && gflags[THURSTON_WARNED_ABOUT_MILLING] &&
-				UI_get_random(2) == 1) {
+		if (isNearby(THURSTON) && gflags[THURSTON_WARNED_ABOUT_MILLING] && UI_get_random(2) == 1) {
 			delayedBark(THURSTON, "I have told thee before!", 10);
 		}
 

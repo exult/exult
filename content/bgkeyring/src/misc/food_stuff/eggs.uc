@@ -20,7 +20,7 @@
  *	Last Modified: 2006-03-19
  */
 
- /*	Egg used on baking hearths to cook dough that is placed upon it;
+/*	Egg used on baking hearths to cook dough that is placed upon it;
  *	Reimplemented to add in more dough recipes
  */
 void bakeBread object#(0x635) () {
@@ -48,17 +48,14 @@ void bakeBread object#(0x635) () {
 		//existence of a hearth?
 		if (UI_get_array_size(hearth) > 0) {
 			var dough_frame = get_item_frame();
-
 			remove_item();
 			var bread = UI_create_new_object(SHAPE_FOOD);
 			if (bread) {
 				var bread_frame;
 				var bread_name;
-
 				bread->set_item_flag(TEMPORARY);
 				//This whole bit has been pulled apart and rewritten to
 				//support multiple kinds of bread
-
 				if (dough_frame == FRAME_DOUGH_FLAT) {
 					//Flat dough was used: this causes pastry to be born!
 					bread_frame = FRAME_PASTRY;
@@ -81,15 +78,13 @@ void bakeBread object#(0x635) () {
 					var rand = UI_get_random(4);
 					if (rand == 1) {
 						bread_frame = FRAME_BAGUETTE;
-					} else if	(rand == 2) {
+					} else if (rand == 2) {
 						bread_frame = FRAME_ROLLS;
 					} else {
-						bread_frame	= FRAME_BREAD;
+						bread_frame = FRAME_BREAD;
 					}
 				}
-
 				bread->set_item_frame(bread_frame);
-
 				if (UI_update_last_created(dough_pos)) {
 					var rand = UI_get_random(3);
 					if (rand == 1) {

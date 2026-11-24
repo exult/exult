@@ -17,13 +17,9 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *  Author: Malignant Manor
  */
-
-void Book shape#(642)()
-{
+void Book shape#(642) () {
 	UI_book_mode_ex(false, 4);
 	var QUALITY = get_item_quality();
-	if (QUALITY == 0)
-		say("This book has very meaningful text in it. Maybe reading it later.");
-	else
-		say("I don't feel like writing anymore.");
+	if (QUALITY == 0) say("This book has very meaningful text in it. Maybe reading it later.");
+	else say("I don't feel like writing anymore.");
 }

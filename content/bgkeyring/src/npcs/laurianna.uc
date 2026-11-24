@@ -23,7 +23,6 @@
  *	Author: Marzo Junior
  *	Last Modified: 2006-02-27
  */
-
 #include "npcs/related_functions/laurianna_dialog.uc"		//Laurianna's dialog functions
 
 void Laurianna object#(0x494) () {
@@ -56,7 +55,6 @@ void Laurianna object#(0x494) () {
 
 		//Ensure met flag is not set:
 		clear_item_flag(MET);
-
 		script item {
 			nohalt;
 			call trueFreeze;
@@ -67,7 +65,6 @@ void Laurianna object#(0x494) () {
 			wait 6;
 			call lauriannaPrePotionDialog;
 		}
-
 		script AVATAR {
 			nohalt;
 			call trueFreeze;
@@ -147,7 +144,6 @@ void Laurianna object#(0x494) () {
 		var schedule = get_schedule_type();
 		var barks;
 		var partofday = UI_part_of_day();
-
 		if (queststate == LAURIANNA_MOVED_TO_YEW) {
 			scheduleBarks(item);
 			abort;
@@ -155,14 +151,9 @@ void Laurianna object#(0x494) () {
 			if ((partofday < 2) || (partofday == 7)) {
 				schedule = SLEEP;
 			}
-
 			if (schedule != SLEEP) {
-				barks = [
-					"@Looks like rain...@",
-					"@Canst thou take me to my father?@",
-					"@I am -so- hungry... -In Mani Ylem!-@",
-					"@I am tired...@"
-				];
+				barks = ["@Looks like rain...@", "@Canst thou take me to my father?@",
+					"@I am -so- hungry... -In Mani Ylem!-@", "@I am tired...@"];
 				if (count_objects(SHAPE_AMULET, QUALITY_ANY, FRAME_ANY)) {
 					barks &= "Canst thou not help me with this necklace?";
 				}
@@ -173,20 +164,13 @@ void Laurianna object#(0x494) () {
 			if ((partofday < 2) || (partofday == 7)) {
 				schedule = SLEEP;
 			}
-
 			if (schedule != SLEEP) {
-				barks = [
-					"@Tra-la-la...@",
-					"@Fire is so pretty...@",
-					"@Can I burn those flowers?@",
-					"@When do I get some food?@",
-					"@Pretty bird. Can I kill it?@"
-				];
+				barks = ["@Tra-la-la...@", "@Fire is so pretty...@", "@Can I burn those flowers?@",
+					"@When do I get some food?@", "@Pretty bird. Can I kill it?@"];
 			} else {
 				barks = "Z-z-z-z...";
 			}
 		}
-
 		script item say barks[UI_get_random(UI_get_array_size(barks))];
 	}
 }

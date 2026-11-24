@@ -757,6 +757,13 @@ ucc$(EXEEXT) : $(UCC_OBJS) files/utils.h usecode/bgintrinsics.h usecode/siintrin
 ucparse.cc: tools/compiler/ucparse.yy
 	bison -d -Wno-yacc tools/compiler/ucparse.yy -o ucparse.cc --header=ucparse.h
 
+# Bison writes both files. Wait for parser generation before compiling the
+# lexer, including when the generated header already exists but is stale.
+ucparse.h: ucparse.cc
+	test -f $@ || bison -d -Wno-yacc tools/compiler/ucparse.yy -o ucparse.cc --header=ucparse.h
+
+uclex.o: uclex.cc ucparse.h
+
 uclex.cc: tools/compiler/uclex.ll
 	flex -o uclex.cc tools/compiler/uclex.ll
 

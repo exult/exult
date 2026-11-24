@@ -107,11 +107,42 @@ void Uc_assignment_statement::gen(
 	ignore_unused_variable_warning(fun, blocks, end, labels, break_continue);
 	value->gen_value(curr);    // Get value on stack.
 	target->gen_assign(curr);
+	if (auto* var = target->get_var()) {
+		while (var->get_sym() != var) {
+			var = static_cast<Uc_var_symbol*>(var->get_sym());
+		}
+		curr->array_actions.emplace_back([this, var](Uc_array_state& state, bool) {
+			state[var] = value->array_info(state);
+		});
+	}
 }
 
 /*
  *  Generate code.
  */
+
+void Uc_assume_script_statement::gen(
+		Uc_function* fun, vector<Basic_block*>& blocks, Basic_block*& curr, Basic_block* end,
+		map<string, Basic_block*>& labels, Uc_loop_data_stack& break_continue) {
+	ignore_unused_variable_warning(fun, blocks, end, labels, break_continue);
+	auto* var = variable;
+	while (var->get_sym() != var) {
+		var = static_cast<Uc_var_symbol*>(var->get_sym());
+	}
+	curr->array_actions.emplace_back([this, var](Uc_array_state& state, bool diagnose) {
+		auto& info = state[var];
+		if (diagnose) {
+			if (info.kind == Uc_array_info::Kind::scalar) {
+				error("assume_script contradicts known scalar value of '%s'", variable->get_name());
+			} else if (info.length && *info.length != length) {
+				error("assume_script length %d contradicts known length %d of '%s'", length, *info.length, variable->get_name());
+			}
+		}
+		info.kind = Uc_array_info::Kind::script;
+		info.length = length;
+		// Preserve known repeats: an assumption must not bypass their nesting check.
+	});
+}
 
 void Uc_if_statement::gen(
 		Uc_function*               fun,
@@ -222,6 +253,11 @@ void Uc_trycatch_statement::gen(
 	}
 	// Generate error variable assignment (push is handled by abort/throw)
 	blocks.push_back(catch_block);
+	// Exceptions can leave the try body at any instruction, including after
+	// assignments that are not represented by the normal edge into catch.
+	catch_block->array_actions.emplace_back([](Uc_array_state& state, bool) noexcept {
+		state.clear();
+	});
 	catch_var->gen_assign(catch_block);
 	// Do we have anything else to generate on catch block?
 	if (catch_stmt) {
@@ -429,8 +465,7 @@ void Uc_dowhile_statement::gen(
  *  Delete.
  */
 
-Uc_infinite_loop_statement::~Uc_infinite_loop_statement() {
-}
+Uc_infinite_loop_statement::~Uc_infinite_loop_statement() {}
 
 /*
  *  Generate code.
@@ -470,8 +505,7 @@ void Uc_infinite_loop_statement::gen(
 
 	if (past_loop->is_orphan() && num_end == end->predecessor_count()) {
 		// Need to do this *before* setting fallthrough for nobreak statements.
-		error("Error: Infinite loop without any 'abort', 'break', or 'return' "
-			  "statements");
+		error("infinite loop has no reachable 'abort', 'break', or 'return' statement");
 	}
 
 	if (nobreak != nullptr) {
@@ -484,12 +518,11 @@ void Uc_infinite_loop_statement::gen(
 
 		if (nobreak_block->is_orphan()) {
 			if (next_block == nobreak_block) {
-				warning("No statements in 'nobreak' block will never execute");
+				nobreak->warning(Uc_location::Warning::unreachable_code, "statements in 'nobreak' block are unreachable");
 			} else {
 				// There may be a label somewhere in the block.
 				if (!nobreak_block->is_empty_block()) {
-					warning("Some statements in 'nobreak' block will never "
-							"execute");
+					nobreak->warning(Uc_location::Warning::unreachable_code, "some statements in 'nobreak' block are unreachable");
 				}
 			}
 		}
@@ -534,6 +567,14 @@ void Uc_arrayloop_statement_base::finish(Uc_function* fun) {
  */
 
 void Uc_arrayloop_statement_base::gen_check(Basic_block* for_top, Basic_block* loop_body, Basic_block* past_loop) {
+	for_top->array_actions.emplace_back([this](Uc_array_state& state, bool) {
+		for (auto* symbol : {var, index, array_len}) {
+			while (symbol->get_sym() != symbol) {
+				symbol = static_cast<Uc_var_symbol*>(symbol->get_sym());
+			}
+			state.erase(symbol);
+		}
+	});
 	UsecodeOps opcode;
 	if (array->is_static()) {
 		opcode = UC_LOOPTOPS;
@@ -628,7 +669,7 @@ void Uc_arrayloop_attend_statement::gen(
 	ignore_unused_variable_warning(fun, end, break_continue);
 	auto it = labels.find(label);
 	if (it == labels.end()) {
-		error("Undeclared label: '%s'", label.c_str());
+		error("use of undeclared label '%s'", label.c_str());
 		return;
 	}
 	// The start of a loop is a jump target and needs
@@ -699,7 +740,7 @@ void Uc_break_statement::gen(
 	const Uc_loop_data& ld = [&]() -> const Uc_loop_data& {
 		const auto result = break_continue.find(loop_name);
 		if (!result.has_value()) {
-			error("Undeclared loop: '%s'", loop_name.c_str());
+			error("no enclosing loop or breakable statement named '%s'", loop_name.c_str());
 			return break_continue.back();
 		}
 		return result.unsafe_get();
@@ -722,7 +763,7 @@ void Uc_continue_statement::gen(
 	const Uc_loop_data& ld = [&]() -> const Uc_loop_data& {
 		const auto result = break_continue.find(loop_name);
 		if (!result.has_value()) {
-			error("Undeclared loop: '%s'", loop_name.c_str());
+			error("no enclosing loop or breakable statement named '%s'", loop_name.c_str());
 			return break_continue.back();
 		}
 		return result.unsafe_get();
@@ -772,7 +813,7 @@ void Uc_goto_statement::gen(
 		curr = new Basic_block();
 		blocks.push_back(curr);
 	} else {
-		error("Undeclared label: '%s'", label.c_str());
+		error("use of undeclared label '%s'", label.c_str());
 	}
 }
 
@@ -1012,7 +1053,7 @@ void Uc_converse_case_attend_statement::gen(
 	ignore_unused_variable_warning(break_continue);
 	auto it = labels.find(label);
 	if (it == labels.end()) {
-		error("Undeclared label: '%s'", label.c_str());
+		error("use of undeclared label '%s'", label.c_str());
 		return;
 	}
 	// New basic block for CASE body.
@@ -1255,7 +1296,7 @@ void Uc_converse_attend_statement::gen(
 	// a new basic block.
 	auto it = labels.find(label);
 	if (it == labels.end()) {
-		error("Undeclared label: '%s'", label.c_str());
+		error("use of undeclared label '%s'", label.c_str());
 		return;
 	}
 	auto* conv_top = new Basic_block();
@@ -1331,14 +1372,15 @@ Uc_switch_statement::~Uc_switch_statement() {
  */
 
 Uc_switch_statement::Uc_switch_statement(Uc_expression* v, std::vector<Uc_statement*>* cs) : cond(v), cases(*cs) {
-	bool has_default = false;
+	Uc_switch_case_statement* previous_default = nullptr;
 	for (auto* it : cases) {
 		auto* stmt = static_cast<Uc_switch_case_statement*>(it);
 		if (stmt->is_default()) {
-			if (has_default) {
-				error("switch statement already has a default case.");
+			if (previous_default) {
+				stmt->error("multiple default labels in one switch statement");
+				previous_default->note("previous default label is here");
 			} else {
-				has_default = true;
+				previous_default = stmt;
 			}
 		}
 	}

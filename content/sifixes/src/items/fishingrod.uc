@@ -19,7 +19,6 @@
  *	Author: Marzo Junior (reorganizing/updating code by Alun Bestor)
  *	Last Modified: 2006-03-19
  */
-
 const int FRAME_FISH = 12;
 
 void FishingRod shape#(SHAPE_FISHING_ROD) () {
@@ -42,11 +41,8 @@ void FishingRod shape#(SHAPE_FISHING_ROD) () {
 				fish->set_item_frame(FRAME_FISH);
 				fish->set_item_flag(OKAY_TO_TAKE);
 				UI_update_last_created(pos);
-				var barks = [
-						"@Indeed, a whopper!@",
-						"@What a meal!@",
-						"@That doth not look right.@"
-					];
+				var barks = ["@Indeed, a whopper!@", "@What a meal!@",
+					"@That doth not look right.@"];
 				var random = UI_get_random(UI_get_array_size(barks));
 				randomPartyBark(barks[random]);
 				if (random == 1 && SHAMINO->npc_nearby()) {
@@ -54,12 +50,8 @@ void FishingRod shape#(SHAPE_FISHING_ROD) () {
 				}
 			}
 		} else {
-			var barks = [
-					"@Not even a bite!@",
-					"@It did escape!@",
-					"@I've lost my bait!@",
-					"@I felt a nibble...@"
-				];
+			var barks = ["@Not even a bite!@", "@It did escape!@", "@I've lost my bait!@",
+				"@I felt a nibble...@"];
 			var random = UI_get_random(UI_get_array_size(barks));
 			delayedBark(AVATAR, barks[random], 0);
 			if (random == 2 && IOLO->npc_nearby()) {

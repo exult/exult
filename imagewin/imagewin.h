@@ -408,7 +408,7 @@ protected:
 											 // screen_texture and contains the current full frame being displayed
 
 	// Update screen_texture_a with the dirtyRect changes made to screen_texture and render fullRect of screen_texture_a
-	void UpdateRect(SDL_FRect* dirtyRect, SDL_FRect* fullRect);
+	void UpdateRect(SDL_FRect* dirtyRect, SDL_FRect* fullRect, bool for_screenshot);
 
 	SDL_Surface* paletted_surface;    // Surface that palette is set on (Example
 									  // res) - Never null
@@ -972,6 +972,6 @@ public:
 		ibuf->put(src, destx, desty);
 	}
 
-	bool screenshot(SDL_IOStream* dst);
+	bool screenshot(SDL_IOStream* dst, bool paletted);
 };
 #endif /* INCL_IMAGEWIN    */

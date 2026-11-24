@@ -16,7 +16,6 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
-
 void setExchangedItemFlags 0x92B () {
 	var item_shapes = exchangedItemList(1);
 	var item_qualities = exchangedItemList(2);
@@ -39,30 +38,19 @@ void setExchangedItemFlags 0x92B () {
 var exchangedItemList 0x92C (var index) {
 	var rr;
 	if (index == 1) {
-		return [
-			SHAPE_PINECONE, SHAPE_NEST_EGG, SHAPE_REAGENT,
-			SHAPE_ALCHEMY_APPARATUS, SHAPE_PUMICE, SHAPE_BRUSH,
-			SHAPE_RING, SHAPE_STOCKINGS, SHAPE_FOOD, SHAPE_LARGE_SKULL,
-			SHAPE_MONITOR_SHIELD, SHAPE_BOTTLE, SHAPE_URN, SHAPE_BOOTS,
-			SHAPE_FILARI, SHAPE_SEVERED_LIMB, SHAPE_LEATHER_HELM,
-			SHAPE_BREAST_PLATE
-		];
+		return [SHAPE_PINECONE, SHAPE_NEST_EGG, SHAPE_REAGENT, SHAPE_ALCHEMY_APPARATUS,
+			SHAPE_PUMICE, SHAPE_BRUSH, SHAPE_RING, SHAPE_STOCKINGS, SHAPE_FOOD, SHAPE_LARGE_SKULL,
+			SHAPE_MONITOR_SHIELD, SHAPE_BOTTLE, SHAPE_URN, SHAPE_BOOTS, SHAPE_FILARI,
+			SHAPE_SEVERED_LIMB, SHAPE_LEATHER_HELM, SHAPE_BREAST_PLATE];
 	} else if (index == 2) {
-		return [
-			false, false, false, false, false, false, false, false, false,
-			false, false, false, 255, false, QUALITY_ANY, false, false,
-			false
-		];
+		return [false, false, false, false, false, false, false, false, false, false, false, false,
+			255, false, QUALITY_ANY, false, false, false];
 	} else if (index == 3) {
 		return [0, 3, 15, 1, 0, 6, 0, 0, 21, 0, 0, 16, 0, 5, FRAME_ANY, 0, 4, 0];
 	} else if (index == 4) {
-		return [
-			STORM_PINECONE, STORM_BLUE_EGG, STORM_RUDDY_ROCK,
-			STORM_LAB_APPARATUS, STORM_PUMICE, STORM_GOBLIN_BRUSH,
-			STORM_WEDDING_RING, STORM_STOCKINGS, -1, STORM_BEAR_SKULL,
-			STORM_MONITOR_SHIELD, STORM_ICEWINE, STORM_URN, STORM_SLIPPERS,
-			STORM_FILARI, STORM_SEVERED_HAND, STORM_FUR_CAP,
-			STORM_BREAST_PLATE
-		];
+		return [STORM_PINECONE, STORM_BLUE_EGG, STORM_RUDDY_ROCK, STORM_LAB_APPARATUS, STORM_PUMICE,
+			STORM_GOBLIN_BRUSH, STORM_WEDDING_RING, STORM_STOCKINGS, -1, STORM_BEAR_SKULL,
+			STORM_MONITOR_SHIELD, STORM_ICEWINE, STORM_URN, STORM_SLIPPERS, STORM_FILARI,
+			STORM_SEVERED_HAND, STORM_FUR_CAP, STORM_BREAST_PLATE];
 	}
 }
