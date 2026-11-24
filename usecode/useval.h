@@ -185,15 +185,32 @@ public:
 
 	~Usecode_value();
 
+	// v2 can be inside this value: UC_LOOPTOP stores an element of the array
+	// into the array's own slot when the loop variable is that slot. Copying
+	// destroys the old contents first, so take v2 out of them beforehand.
+	bool may_contain_values() const noexcept {
+		return type == array_type || type == class_obj_type;
+	}
+
 	Usecode_value& operator=(const Usecode_value& v2) {
 		if (&v2 != this) {
-			copy_internal(v2);
+			if (may_contain_values()) {
+				Usecode_value tmp(v2);
+				copy_internal(std::move(tmp));
+			} else {
+				copy_internal(v2);
+			}
 		}
 		return *this;
 	}
 
 	Usecode_value& operator=(Usecode_value&& v2) noexcept {
-		copy_internal(std::move(v2));
+		if (may_contain_values()) {
+			Usecode_value tmp(std::move(v2));
+			copy_internal(std::move(tmp));
+		} else {
+			copy_internal(std::move(v2));
+		}
 		return *this;
 	}
 
