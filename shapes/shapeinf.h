@@ -49,6 +49,7 @@ class Frame_usecode_info;
 class Light_info;
 class Warmth_info;
 class Light_passes_info;
+class Frame_list_info;
 class Content_rules;
 class Shapes_vga_file;
 class Image_buffer;
@@ -186,6 +187,72 @@ public:
 	};
 };
 
+/*
+ *  A shape/frame entry in a frame list section (roof_shapes, floor_shapes).
+ *  Frame -1 means all frames.
+ */
+class Frame_list_info : public Base_info {
+	short frame = -1;
+
+public:
+	friend class Shape_info;
+	Frame_list_info() = default;
+
+	Frame_list_info(const Frame_list_info& other) : Base_info(other), frame(other.frame) {
+		info_flags = other.info_flags;
+	}
+
+	bool read(std::istream& in, int version, Exult_Game game);
+	void write(std::ostream& out, int shapenum, Exult_Game game);
+
+	void invalidate() {
+		frame = -1;
+		set_invalid(true);
+	}
+
+	int get_frame() const {
+		return frame;
+	}
+
+	void set_frame(int f) {
+		if (frame != f) {
+			set_modified(true);
+			frame = f;
+		}
+	}
+
+	bool operator<(const Frame_list_info& other) const noexcept {
+		return static_cast<unsigned short>(frame) < static_cast<unsigned short>(other.frame);
+	}
+
+	bool operator==(const Frame_list_info& other) const {
+		return this == &other || (!(*this < other) && !(other < *this));
+	}
+
+	bool operator!=(const Frame_list_info& other) const {
+		return !(*this == other);
+	}
+
+	Frame_list_info& operator=(const Frame_list_info& other) {
+		if (this != &other) {
+			frame      = other.frame;
+			info_flags = other.info_flags;
+		}
+		return *this;
+	}
+
+	void set(const Frame_list_info& other) {
+		set_patch(other.from_patch());
+		set_invalid(other.is_invalid());
+		set_frame(other.frame);
+	}
+
+	enum {
+		is_binary  = 0,
+		entry_size = 0
+	};
+};
+
 enum Data_flag_bits {
 	tf_ready_type_flag = 0,
 	tf_gump_shape_flag,
@@ -207,8 +274,6 @@ enum Data_flag_bits {
 	tf_on_fire_flag,
 	tf_extradimensional_storage_flag,
 	tf_on_hit_usecode_flag,
-	tf_roof_flag,
-	tf_floor_flag,
 };
 
 enum Data_flag_names {
@@ -231,8 +296,6 @@ enum Data_flag_names {
 	on_fire_flag                  = (1U << tf_on_fire_flag),
 	extradimensional_storage_flag = (1U << tf_extradimensional_storage_flag),
 	on_hit_usecode_flag           = (1U << tf_on_hit_usecode_flag),
-	roof_flag                     = (1U << tf_roof_flag),
-	floor_flag                    = (1U << tf_floor_flag),
 };
 
 /*
@@ -281,6 +344,8 @@ protected:
 	std::vector<Light_passes_info>  lightpassinf;
 	std::vector<Warmth_info>        warminf;
 	std::vector<Content_rules>      cntrules;
+	std::vector<Frame_list_info>    roofinf;
+	std::vector<Frame_list_info>    floorinf;
 	int                             on_hit_usecode = -1;
 	short                           gump_shape     = -1;    // From container.dat.
 	short                           gump_font      = -1;    // From container.dat v2+.
@@ -330,8 +395,6 @@ public:
 		mirror,
 		on_fire,
 		extradimensional_storage,
-		roof,
-		floor,
 	};
 
 	enum Mountain_tops {
@@ -637,7 +700,7 @@ public:
 	void                            clean_invalid_light_passes_info();
 	void                            clear_light_passes_info();
 	void                            add_light_passes_info(Light_passes_info& add);
-	bool                            light_passes_through(int frame, int* matched_frame = nullptr) const;
+	int                             get_light_passes_percent(int frame) const;
 
 	bool has_warmth_info() const;
 
@@ -796,21 +859,13 @@ public:
 		return get_shape_flag(extradimensional_storage);
 	}
 
-	// Flagged in shape_info.txt %%section roof_shapes: a roof shape whose
-	// pixels the spatial light layers keep dark (so an interior light never
-	// lights up its own roof).
-	bool is_roof() const {
-		return get_shape_flag(roof);
-	}
+	bool is_roof(int frame) const;
+	bool is_floor(int frame) const;
 
-	// Flagged in shape_info.txt %%section floor_shapes: a floor slab used as
-	// the roof of the storey below.  It contains that storey's light like a
-	// roof, but only its top surface is masked (not its full 3d thickness),
-	// and objects standing on top of it are still lit by window/opening spill.
-	bool is_floor() const {
-		return get_shape_flag(floor);
-	}
+private:
+	static int frame_list_match(const std::vector<Frame_list_info>& vec, int frame);
 
+public:
 	unsigned char get_actor_flags() const {
 		return actor_flags;
 	}

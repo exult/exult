@@ -32,9 +32,7 @@ class Game_render {
 	int           skip       = 31;    // Set for each render.  We skip
 									  //   painting at or above this.
 	int bbox_palindex = -1;
-	// True when the Avatar is inside a completely light-tight enclosure (no
-	// light_passes_through object and no passable gap in the walls).  Computed
-	// once per paint_map and used to block outside light while inside.
+	// NaturalLight::Viewer_enclosure_sealed(), once per paint_map.
 	bool avatar_enclosure_sealed = false;
 
 public:
@@ -50,6 +48,8 @@ public:
 	// Paint objects in given chunk at
 	//   given lift.
 	int paint_chunk_objects(int cx, int cy);
+	// Collect a chunk's light sources.
+	int collect_chunk_lights(int cx, int cy);
 	// Paint an obj. after dependencies.
 	void paint_object(Game_object* obj);
 	// Render dungeon blackness

@@ -148,6 +148,11 @@ void Shapes_vga_file::Write_Shapeinf_text_data_file(Exult_Game game) {
 	// For entries that allow interior lights to pass outside.
 	using Light_passes_writer
 			= Functor_multidata_writer<Shape_info, Vector_writer_functor<Light_passes_info, Shape_info, &Shape_info::lightpassinf>>;
+	// For roof shapes and floor slabs (spatial lights).
+	using Roof_writer
+			= Functor_multidata_writer<Shape_info, Vector_writer_functor<Frame_list_info, Shape_info, &Shape_info::roofinf>>;
+	using Floor_writer
+			= Functor_multidata_writer<Shape_info, Vector_writer_functor<Frame_list_info, Shape_info, &Shape_info::floorinf>>;
 	// For warmth data.
 	using Warmth_data_writer
 			= Functor_multidata_writer<Shape_info, Vector_writer_functor<Warmth_info, Shape_info, &Shape_info::warminf>>;
@@ -261,7 +266,10 @@ void Shapes_vga_file::Write_Shapeinf_text_data_file(Exult_Game game) {
 			// For frame usecode.
 			std::make_unique<Frame_usecode_writer>("frame_usecode", info, num_shapes),
 			// For on hit usecode.
-			std::make_unique<On_hit_usecode_writer>("on_hit_usecode", info, num_shapes));
+			std::make_unique<On_hit_usecode_writer>("on_hit_usecode", info, num_shapes),
+			// For roof shapes and floor slabs.
+			std::make_unique<Roof_writer>("roof_shapes", info, num_shapes),
+			std::make_unique<Floor_writer>("floor_shapes", info, num_shapes));
 	Write_text_data_file("shape_info", writers, 7, game);
 }
 

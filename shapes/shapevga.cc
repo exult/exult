@@ -343,13 +343,11 @@ void Shapes_vga_file::Read_Shapeinf_text_data_file(bool editing, Exult_Game game
 			Shape_info, Text_reader_functor<int, Shape_info, &Shape_info::on_hit_usecode>,
 			Patch_flags_functor<on_hit_usecode_flag, Shape_info>>;
 	// For roof shapes (kept dark under spatial lights).
-	using Roof_reader = Functor_multidata_reader<
-			Shape_info, Bit_text_reader_functor<unsigned short, Shape_info, &Shape_info::shape_flags, Shape_info::roof>,
-			Patch_flags_functor<roof_flag, Shape_info>>;
+	using Roof_reader
+			= Functor_multidata_reader<Shape_info, Vector_reader_functor<Frame_list_info, Shape_info, &Shape_info::roofinf>>;
 	// For floor slabs used as the roof of the storey below.
-	using Floor_reader = Functor_multidata_reader<
-			Shape_info, Bit_text_reader_functor<unsigned short, Shape_info, &Shape_info::shape_flags, Shape_info::floor>,
-			Patch_flags_functor<floor_flag, Shape_info>>;
+	using Floor_reader
+			= Functor_multidata_reader<Shape_info, Vector_reader_functor<Frame_list_info, Shape_info, &Shape_info::floorinf>>;
 
 	std::array readers = make_unique_array<Base_reader>(
 			std::make_unique<Explosion_reader>(info), std::make_unique<SFX_reader>(info), std::make_unique<Animation_reader>(info),
@@ -750,6 +748,7 @@ void Shapes_vga_file::reload_info(Exult_Game game    // Which game.
 ) {
 	info_read = false;
 	info.clear();
+	++info_generation;
 	Gump_info::clear();
 	read_info(game);
 }

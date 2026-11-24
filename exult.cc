@@ -3121,7 +3121,7 @@ static void apply_ui_layer_config() {
 	// single-light / many-lights palette, masked to each light's radius.  They
 	// use the game's own scaler / fill scaler (so the lit copy is filtered like
 	// the world) and are placed exactly on the game viewport each frame via
-	// get_game_area_dest; build_light_layers() re-asserts this config and their
+	// get_game_area_dest; Light_layers::build re-asserts this config and their
 	// fixed palettes each frame (some video/UI changes reset per-kind configs).
 	{
 		const int                       game_scaler = gwin->get_win()->get_scaler();
