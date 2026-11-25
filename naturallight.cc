@@ -268,6 +268,72 @@ namespace {
 		return Light_chunk_roof(chunk, tx % c_tiles_per_chunk, ty % c_tiles_per_chunk, 0) < 31;
 	}
 
+	// Is a solid's top a stair's step up from the floor at `floor_z`: walking down from it, one lift per tile
+	// (the walking rise), reaches that floor.  Flat runs only on the steps below the top: a wall the stair
+	// leads onto continues the top level and is no step.
+	bool Light_step_from_floor(Game_map* gmap, Game_object* obj, int floor_z) {
+		const int top = obj->get_lift() + Fast_info(obj->get_shapenum()).get_3d_height();
+		if (top <= floor_z || top - floor_z > 2 * 5) {
+			return false;
+		}
+		const TileRect   fp    = obj->get_footprint();
+		const int        reach = top - floor_z + 2;
+		const int        x0    = fp.x - reach;
+		const int        y0    = fp.y - reach;
+		const int        w     = fp.w + 2 * reach;
+		const int        h     = fp.h + 2 * reach;
+		std::vector<int> level(static_cast<size_t>(w) * h, -1);
+		auto             level_at = [&](int bx, int by) {
+            int& l = level[static_cast<size_t>(by) * w + bx];
+            if (l < 0) {
+                const int        tx = Light_tile_norm(x0 + bx);
+                const int        ty = Light_tile_norm(y0 + by);
+                Map_chunk* const ch = gmap->get_chunk_safely(tx / c_tiles_per_chunk, ty / c_tiles_per_chunk);
+                l                   = floor_z;
+                while (ch != nullptr && l <= top && Light_occupied(ch, tx % c_tiles_per_chunk, ty % c_tiles_per_chunk, l)) {
+                    ++l;
+                }
+            }
+            return l;
+		};
+		std::vector<unsigned char>       seen(static_cast<size_t>(w) * h, 0);
+		std::vector<std::pair<int, int>> queue;
+		for (int by = reach; by < reach + fp.h; ++by) {
+			for (int bx = reach; bx < reach + fp.w; ++bx) {
+				if (level_at(bx, by) == top) {
+					seen[static_cast<size_t>(by) * w + bx] = 1;
+					queue.emplace_back(bx, by);
+				}
+			}
+		}
+		for (size_t qi = 0; qi < queue.size(); ++qi) {
+			const auto [cx, cy] = queue[qi];
+			const int cur       = level_at(cx, cy);
+			for (const auto& [dx, dy] : {
+						 std::pair{-1,  0},
+                         std::pair{ 1,  0},
+                         std::pair{ 0, -1},
+                         std::pair{ 0,  1}
+            }) {
+				const int nx = cx + dx;
+				const int ny = cy + dy;
+				if (nx < 0 || ny < 0 || nx >= w || ny >= h || seen[static_cast<size_t>(ny) * w + nx] != 0) {
+					continue;
+				}
+				const int nl = level_at(nx, ny);
+				if (nl != cur - 1 && (nl != cur || nl == top)) {
+					continue;
+				}
+				if (nl == floor_z) {
+					return true;
+				}
+				seen[static_cast<size_t>(ny) * w + nx] = 1;
+				queue.emplace_back(nx, ny);
+			}
+		}
+		return false;
+	}
+
 	// When the given absolute tile's only cover is a walkable floor-roof deck
 	// -- a storey slab whose top is at or below `max_z`, with open sky above
 	// it -- return the deck's top z-level.  Returns -1 when the tile is open
@@ -626,21 +692,65 @@ namespace {
 					const int      shape_top    = lift + info.get_3d_height();
 					const TileRect fp           = obj->get_footprint();
 					int            blocks_sight = -1;    // Lazy: 1 architecture, 0 indoor furniture.
-					auto           stamp_sight  = [&](size_t gi) {
-                        if (sight == nullptr) {
-                            return;
-                        }
-                        if (blocks_sight < 0) {
-                            bool roofed = false;
-                            if (info.get_shape_class() != Shape_info::building) {
-                                const Tile_coord ot = obj->get_tile();
-                                NaturalLight::Light_room_roof_z(gmap, ot.tx, ot.ty, ot.tz, &roofed);
-                            }
-                            blocks_sight = roofed ? 0 : 1;
-                        }
-                        if (blocks_sight > 0) {
-                            (*sight)[gi] = 1;
-                        }
+					int            free_post    = -1;    // Lazy: 1 a compact piece no wall run continues into (a pillar).
+					// A post is part of a wall only where a run of it continues into the post: a longer piece beside it
+					// whose long side points at it (a corner post, a jamb beside a window).  A pillar standing against a
+					// wall touches the run's flank and stays an object.
+					auto free_standing = [&] {
+						if (free_post >= 0) {
+							return free_post != 0;
+						}
+						const int z = std::max(lift, floor_z) + 1;
+						free_post   = 1;
+						for (int ty = fp.y - 1; ty <= fp.y + fp.h && free_post != 0; ++ty) {
+							for (int tx = fp.x - 1; tx <= fp.x + fp.w && free_post != 0; ++tx) {
+								const bool in_x = tx >= fp.x && tx < fp.x + fp.w;
+								const bool in_y = ty >= fp.y && ty < fp.y + fp.h;
+								if (in_x == in_y) {
+									continue;    // The footprint itself, or a corner.
+								}
+								const int        ntx = Light_tile_norm(tx);
+								const int        nty = Light_tile_norm(ty);
+								Map_chunk* const nch = gmap->get_chunk_safely(ntx / c_tiles_per_chunk, nty / c_tiles_per_chunk);
+								if (nch == nullptr) {
+									continue;
+								}
+								Object_iterator nit(nch->get_objects());
+								Game_object*    no;
+								while ((no = nit.get_next()) != nullptr && free_post != 0) {
+									if (no == obj || no->as_actor() != nullptr || no->is_dragable()) {
+										continue;
+									}
+									const Shape_info& ni = Fast_info(no->get_shapenum());
+									const int         nl = no->get_lift();
+									const TileRect    nf = no->get_footprint();
+									if (!ni.is_solid() || z < nl || z >= nl + ni.get_3d_height() || !nf.has_world_point(ntx, nty)) {
+										continue;
+									}
+									// Beside the post along x (in_y): a run along x continues into it; along y likewise.
+									if (in_y ? nf.w > 2 && nf.w > nf.h : nf.h > 2 && nf.h > nf.w) {
+										free_post = 0;
+									}
+								}
+							}
+						}
+						return free_post != 0;
+					};
+					auto stamp_sight = [&](size_t gi) {
+						if (sight == nullptr) {
+							return;
+						}
+						if (blocks_sight < 0) {
+							bool roofed = false;
+							if (info.get_shape_class() != Shape_info::building) {
+								const Tile_coord ot = obj->get_tile();
+								NaturalLight::Light_room_roof_z(gmap, ot.tx, ot.ty, ot.tz, &roofed);
+							}
+							blocks_sight = roofed ? 0 : 1;
+						}
+						if (blocks_sight > 0) {
+							(*sight)[gi] = 1;
+						}
 					};
 					for (int fty = fp.y; fty < fp.y + fp.h; ++fty) {
 						const int dgy = Light_tile_norm(fty - ty0);
@@ -686,8 +796,11 @@ namespace {
 								NaturalLight::Light_room_roof_z(gmap, ot.tx, ot.ty, ot.tz, &roofed);
 								return roofed;
 							}();
-							if (compact && !NaturalLight::Object_is_wall_face(obj)) {
-								if (lift <= floor_z && shape_top >= local_roof) {
+							// A pillar standing free in a hall is no wall either: light passes round it, it casts no shadow.
+							const bool wall_face = compact && NaturalLight::Object_is_wall_face(obj);
+							if (compact && (!wall_face || free_standing())) {
+								// A wall face already judged free of any run (a pillar against a wall's flank) is no post.
+								if (!wall_face && lift <= floor_z && shape_top >= local_roof) {
 									posts.push_back({static_cast<size_t>(dgy) * side + dgx, lift, shape_top});
 								}
 								continue;
@@ -2028,6 +2141,46 @@ namespace NaturalLight {
 			}
 			return true;
 		};
+		// The step from open ground onto roofed (nx, ny) enters a neighbour's interior: no opening and no doorway
+		// mouth at the crossing, and a wall right ahead -- the eave strip in front of a building.  A roofed space
+		// open to the fan in depth (a colonnade, a hall's open side) is no neighbour's interior.
+		// A diagonal step is judged by the straight crossings onto the same cell from open ground beside it.
+		auto foreign_roof_step = [&](int gx, int gy, int nx, int ny, int dx, int dy) {
+			if (real_roofed(gx, gy) || !real_roofed(nx, ny) || opening(nx, ny) != 0 || opening(gx, gy) != 0
+				|| gap_mouth(nx, ny, dx, 0) || gap_mouth(nx, ny, 0, dy)) {
+				return false;
+			}
+			for (int k = 1; k <= 2; ++k) {
+				const int ex = nx + k * dx;
+				const int ey = ny + k * dy;
+				if (ex < 0 || ey < 0 || ex >= side || ey >= side) {
+					break;
+				}
+				if (tall(ex, ey)) {
+					return true;
+				}
+			}
+			return false;
+		};
+		auto foreign_roof_entry = [&](int gx, int gy, int nx, int ny, int dx, int dy) {
+			if (dx == 0 || dy == 0) {
+				return foreign_roof_step(gx, gy, nx, ny, dx, dy);
+			}
+			bool straight = false;
+			for (const auto& [sx, sy, sdx, sdy] : {
+						 std::array<int, 4>{nx - dx,      ny, dx,  0},
+                          std::array<int, 4>{     nx, ny - dy,  0, dy}
+            }) {
+				if (sx < 0 || sy < 0 || sx >= side || sy >= side || tall(sx, sy) || real_roofed(sx, sy)) {
+					continue;
+				}
+				straight = true;
+				if (!foreign_roof_step(sx, sy, nx, ny, sdx, sdy)) {
+					return false;
+				}
+			}
+			return straight || foreign_roof_step(gx, gy, nx, ny, dx, dy);
+		};
 		// Floor-well tiles (an elevated room's stairwell / ladder hole DOWN to
 		// the storey below): reached tiles whose own floor band is missing
 		// beneath them.  Only elevated rooms qualify.
@@ -2171,6 +2324,57 @@ namespace NaturalLight {
             }
             return m == 1;
 		};
+		// A hole in the roof (a stairwell up through it, a light well): open sky over a patch the roof closes round
+		// on every side within the grid, no bigger than a hall's well.  The building goes on under it, so stepping
+		// beneath it is no way out.  Memoized per patch.
+		std::vector<signed char> holememo(static_cast<size_t>(side) * side, -1);
+		auto                     roof_hole = [&](int gx, int gy) -> bool {
+            signed char& m = holememo[static_cast<size_t>(gy) * side + gx];
+            if (m >= 0) {
+                return m != 0;
+            }
+            constexpr size_t                 max_cells = 256;
+            std::vector<std::pair<int, int>> patch{
+										{gx, gy}
+            };
+            std::vector<unsigned char> seen(static_cast<size_t>(side) * side, 0);
+            seen[static_cast<size_t>(gy) * side + gx] = 1;
+            bool closed                               = true;
+            for (size_t i = 0; i < patch.size() && closed; ++i) {
+                const auto [cx, cy] = patch[i];
+                for (const auto& [dx, dy] : {
+                             std::pair{-1,  0},
+                             std::pair{ 1,  0},
+                             std::pair{ 0, -1},
+                             std::pair{ 0,  1}
+                }) {
+                    const int nx = cx + dx;
+                    const int ny = cy + dy;
+                    if (nx < 0 || ny < 0 || nx >= side || ny >= side) {
+                        closed = false;
+                        break;
+                    }
+                    const size_t ni = static_cast<size_t>(ny) * side + nx;
+                    if (seen[ni] != 0 || roofed(nx, ny)) {
+                        continue;
+                    }
+                    seen[ni] = 1;
+                    patch.emplace_back(nx, ny);
+                    if (patch.size() > max_cells) {
+                        closed = false;
+                        break;
+                    }
+                }
+            }
+            for (const auto& [cx, cy] : patch) {
+                holememo[static_cast<size_t>(cy) * side + cx] = closed ? 1 : 0;
+            }
+            return closed;
+		};
+		// The fill steps out from under the roof: onto open sky that is not a hole in the same roof.
+		auto leaves_roof = [&](int gx, int gy, int nx, int ny) {
+			return roofed(gx, gy) && !roofed(nx, ny) && !roof_hole(nx, ny);
+		};
 		// LINE OF SIGHT from the fan's mouth.  The cone alone would let the
 		// fill walk through a passage and fan out again past its far end,
 		// lighting the passage walls' outer faces and walls beside the exit
@@ -2257,7 +2461,7 @@ namespace NaturalLight {
             const size_t n = static_cast<size_t>(ny) * side + nx;
             mouthed[n]     = (mouthed[g] != 0
                           || (!own_corr && !real_roofed(gx, gy) && real_roofed(nx, ny) && opening(nx, ny) == 0
-                              && opening(gx, gy) == 0))
+                              && opening(gx, gy) == 0 && (gap_mouth(nx, ny, nx - gx, 0) || gap_mouth(nx, ny, 0, ny - gy))))
 														   ? 1
 														   : 0;
             if (mouthed[n] != 0 && ring != nullptr && !tall(nx, ny)) {
@@ -2337,18 +2541,25 @@ namespace NaturalLight {
 			if (light_walls) {
 				set_dist(static_cast<size_t>(rt) * side + rt, 0);
 			}
+			// The art hangs on a face the camera sees, south or east: between two rooms, only that side's.
 			bool seeded = false;
-			for (const auto& d : step) {
-				const int nx = rt + d[0];
-				const int ny = rt + d[1];
-				if (nx < 0 || ny < 0 || nx >= side || ny >= side || tall(nx, ny) || !roofed(nx, ny)) {
-					continue;
+			for (const bool facing : {true, false}) {
+				for (const auto& d : step) {
+					const int nx = rt + d[0];
+					const int ny = rt + d[1];
+					if ((facing && (d[0] < 0 || d[1] < 0)) || nx < 0 || ny < 0 || nx >= side || ny >= side || tall(nx, ny)
+						|| !roofed(nx, ny)) {
+						continue;
+					}
+					const size_t nidx = static_cast<size_t>(ny) * side + nx;
+					visited[nidx]     = 1;
+					set_dist(nidx, 1);
+					queue.emplace_back(nx, ny);
+					seeded = true;
 				}
-				const size_t nidx = static_cast<size_t>(ny) * side + nx;
-				visited[nidx]     = 1;
-				set_dist(nidx, 1);
-				queue.emplace_back(nx, ny);
-				seeded = true;
+				if (seeded) {
+					break;
+				}
 			}
 			if (!seeded) {
 				// No roofed interior neighbour (a freestanding or fully exposed
@@ -2394,8 +2605,7 @@ namespace NaturalLight {
             return passes_through(gx, gy);
 		};
 		auto crosses_out = [&](int gx, int gy, int nx, int ny) {
-			return esc[static_cast<size_t>(gy) * side + gx] == 0
-				   && (exits_through(gx, gy, nx, ny) || (roofed(gx, gy) && !roofed(nx, ny)));
+			return esc[static_cast<size_t>(gy) * side + gx] == 0 && (exits_through(gx, gy, nx, ny) || leaves_roof(gx, gy, nx, ny));
 		};
 		for (;;) {
 			while (qhead < queue.size()) {
@@ -2565,7 +2775,7 @@ namespace NaturalLight {
 						}
 						continue;
 					}
-					if (start_roofed && roofed(gx, gy) && !roofed(nx, ny) && esc[static_cast<size_t>(gy) * side + gx] == 0) {
+					if (start_roofed && leaves_roof(gx, gy, nx, ny) && esc[static_cast<size_t>(gy) * side + gx] == 0) {
 						// The fill steps out from under the roof into the open:
 						// a doorway, a wall gap, the edge of a porch roof.  That
 						// first open-sky tile carries the bubble's continuation.
@@ -2628,13 +2838,12 @@ namespace NaturalLight {
 					// doorway floor and its jamb faces dark.
 					const bool own_corridor = (cone_dx != 0 || cone_dy != 0) && (nx - rt) * cone_dx + (ny - rt) * cone_dy < 0;
 					insid[nidx]             = (insid[static_cast<size_t>(gy) * side + gx] != 0
-                                   || (!own_corridor && !real_roofed(gx, gy) && real_roofed(nx, ny) && opening(nx, ny) == 0
-                                       && opening(gx, gy) == 0 && !gap_mouth(nx, ny, d[0], d[1])))
+                                   || (!own_corridor && foreign_roof_entry(gx, gy, nx, ny, d[0], d[1])))
 													  ? 1
 													  : 0;
 					mark_mouthed(gx, gy, nx, ny, own_corridor);
 					esc[nidx]   = esc[static_cast<size_t>(gy) * side + gx] != 0 || exits_through(gx, gy, nx, ny)
-                                                || (start_roofed && roofed(gx, gy) && !roofed(nx, ny))
+                                                || (start_roofed && leaves_roof(gx, gy, nx, ny))
 										  ? 1
 										  : 0;
 					trans[nidx] = trans_after(gx, gy, nx, ny);
@@ -2704,13 +2913,12 @@ namespace NaturalLight {
 					set_dist(nidx, gdist + 1);
 					const bool own_corridor_d = (cone_dx != 0 || cone_dy != 0) && (nx - rt) * cone_dx + (ny - rt) * cone_dy < 0;
 					insid[nidx]               = (insid[static_cast<size_t>(gy) * side + gx] != 0
-                                   || (!own_corridor_d && !real_roofed(gx, gy) && real_roofed(nx, ny) && opening(nx, ny) == 0
-                                       && opening(gx, gy) == 0 && !gap_mouth(nx, ny, d[0], 0) && !gap_mouth(nx, ny, 0, d[1])))
+                                   || (!own_corridor_d && foreign_roof_entry(gx, gy, nx, ny, d[0], d[1])))
 														? 1
 														: 0;
 					mark_mouthed(gx, gy, nx, ny, own_corridor_d);
 					esc[nidx]   = esc[static_cast<size_t>(gy) * side + gx] != 0 || exits_through(gx, gy, nx, ny)
-                                                || (start_roofed && roofed(gx, gy) && !roofed(nx, ny))
+                                                || (start_roofed && leaves_roof(gx, gy, nx, ny))
 										  ? 1
 										  : 0;
 					trans[nidx] = trans_after(gx, gy, nx, ny);
@@ -2730,11 +2938,7 @@ namespace NaturalLight {
 				set_dist(nidx, Grid::Dist(lit[gidx]));
 				const int ddx = nx - gx;
 				const int ddy = ny - gy;
-				insid[nidx]   = (insid[gidx] != 0
-                               || (!real_roofed(gx, gy) && real_roofed(nx, ny) && opening(nx, ny) == 0 && opening(gx, gy) == 0
-                                   && !gap_mouth(nx, ny, ddx, 0) && !gap_mouth(nx, ny, 0, ddy)))
-										? 1
-										: 0;
+				insid[nidx]   = (insid[gidx] != 0 || foreign_roof_entry(gx, gy, nx, ny, ddx, ddy)) ? 1 : 0;
 				esc[nidx]     = 1;
 				trans[nidx]   = trans_after(gx, gy, nx, ny);
 				queue.emplace_back(nx, ny);
@@ -3467,6 +3671,75 @@ namespace NaturalLight {
 					const unsigned char* rc = ring->data();
 					if (Ring::Is_foreign_wall(rc, i)) {
 						lit[i] &= Grid::Flag;
+					}
+				}
+			}
+		}
+		// A stairwell spill or an inward pool (an unconed fill starting under its storey's ceiling) lights that
+		// storey only: what it reaches past the ceiling's edge or through an opening is stripped like a room
+		// light's escape above (outdoor light is the fans' job), except the cells an interior pixel's
+		// anchor-shifted sample reads.
+		if (spills == nullptr && cone_dx == 0 && cone_dy == 0) {
+			auto covered = [&](int gx, int gy) {
+				bool found = false;
+				Light_room_roof_z(gmap, lt.tx + gx - rt, lt.ty + gy - rt, floor_z, &found);
+				return found;
+			};
+			if (covered(rt, rt)) {
+				std::vector<unsigned char>       inside(lit.size(), 0);
+				std::vector<std::pair<int, int>> stack{
+						{rt, rt}
+                };
+				inside[static_cast<size_t>(rt) * side + rt] = 1;
+				while (!stack.empty()) {
+					const auto [gx, gy] = stack.back();
+					stack.pop_back();
+					if ((gx != rt || gy != rt) && passes_through(gx, gy)) {
+						continue;    // An opening: lit itself, its far side is out.
+					}
+					for (const auto& [ddx, ddy] : {
+								 std::pair{ 1,  0},
+                                 std::pair{-1,  0},
+                                 std::pair{ 0,  1},
+                                 std::pair{ 0, -1}
+                    }) {
+						const int nx = gx + ddx;
+						const int ny = gy + ddy;
+						if (nx < 0 || ny < 0 || nx >= side || ny >= side) {
+							continue;
+						}
+						const size_t ni = static_cast<size_t>(ny) * side + nx;
+						if (inside[ni] != 0 || Grid::Dist(lit[ni]) == 0 || !covered(nx, ny)) {
+							continue;
+						}
+						inside[ni] = 1;
+						if (!tall(nx, ny)) {
+							stack.emplace_back(nx, ny);
+						}
+					}
+				}
+				const int anchor_z = Light_anchor_roof_z(gmap, lt.tx, lt.ty, lt.tz, rt, lit.data());
+				const int olo      = std::max((anchor_z - floor_z) / 2, 0);
+				const int ohi      = olo + 1;
+				for (size_t i = 0; i < lit.size(); ++i) {
+					if (inside[i] != 0 || Grid::Dist(lit[i]) == 0) {
+						continue;
+					}
+					const int x      = static_cast<int>(i % static_cast<size_t>(side));
+					const int y      = static_cast<int>(i / static_cast<size_t>(side));
+					bool      serves = false;
+					for (int o = olo; o <= ohi && !serves; ++o) {
+						const int bx = x - o;
+						const int by = y - o;
+						serves       = bx >= 0 && by >= 0 && !tall(bx, by) && inside[static_cast<size_t>(by) * side + bx] != 0;
+					}
+					if (!serves) {
+						lit[i] &= Grid::Flag;
+						if (ring != nullptr) {
+							Ring::Set(ring->data(), i, Ring::Handoff_flag);
+						}
+					} else if (ring != nullptr) {
+						Ring::Set(ring->data(), i, Ring::Apron_flag);
 					}
 				}
 			}
@@ -5732,6 +6005,25 @@ namespace NaturalLight {
             res = false;
             return false;
 		};
+		// A wall cell continuing a top's own run at either end, which this light reached: one wall top whose piece
+		// stands out of the fill's reach (behind a stair's top step) is lit with the run it belongs to.
+		auto run_end_reached = [&](const Sprite_box& s, int ecu, int ecv) -> bool {
+			const bool along_x = s.xts >= s.yts;
+			for (int k = 0; k < (along_x ? s.yts : s.xts); ++k) {
+				for (const int e : {along_x ? ecu - s.xts : ecv - s.yts, along_x ? ecu + 1 : ecv + 1}) {
+					const int u = along_x ? e : ecu - k;
+					const int v = along_x ? ecv - k : e;
+					if (u < 0 || v < 0 || u >= side || v >= side || !wall_cell(u, v)) {
+						continue;
+					}
+					const int ci = v * side + u;
+					if (Grid::Dist(grid[static_cast<size_t>(ci)]) != 0 && !escaped_only(ci)) {
+						return true;
+					}
+				}
+			}
+			return false;
+		};
 		auto wall_unit_reached = [&](int px, int py, bool fallback = true) -> bool {
 			const int wi = ring != nullptr ? wall_owner(px, py) : -1;
 			if (wi >= 0) {
@@ -5761,6 +6053,9 @@ namespace NaturalLight {
 				}
 				if (any_wall) {
 					return reached || lit_flank(wi);
+				}
+				if (run_end_reached(s, ecu, ecv)) {
+					return true;
 				}
 			}
 			if (!fallback) {
@@ -6018,7 +6313,53 @@ namespace NaturalLight {
             }
             return mountain_deck_memo != 0;
 		};
-		// The top owner at a pixel sits OVER the light: based on a storey above the light's floor, and some reached
+		// The light on a thin top's own tiles (a sill under a window): its band feet round onto the tile in front,
+		// and a sill spans its window's open tiles, which carry no wall arrival -- the brightest fill over the
+		// footprint instead.  A thin run only: over a big block (a mountain top) it would light the whole top flat.
+		auto sill_fill = [&](int px, int py) -> int {
+			const int tob = top_owner(px, py);
+			if (tob < 0 || std::min(sprites[tob].xts, sprites[tob].yts) != 1) {
+				return 0;
+			}
+			int a_ = 0;
+			int su, sv;
+			box_cell(sprites[tob], su, sv);
+			for (int v = sv - sprites[tob].yts + 1; v <= sv; ++v) {
+				for (int u = su - sprites[tob].xts + 1; u <= su; ++u) {
+					if (u >= 0 && v >= 0 && u < side && v < side) {
+						a_ = std::max(a_, object_cell_alpha(v * side + u, 0));
+					}
+				}
+			}
+			return a_;
+		};
+		// A piece the fill reaches whose top rises into a stairwell: over some reached cell of its footprint the
+		// lowest cover lies above that top (the storey above has no floor there, its roof does).  A stair up is in
+		// the room; a tower's top is open sky, and a wall's top carries the floor above.
+		auto rises_into_well = [&](int o) -> bool {
+			if (grid == nullptr) {
+				return false;
+			}
+			const int top = sprites[o].fz / 4 + Fast_info(sprites[o].shape).get_3d_height();
+			int       su, sv;
+			box_cell(sprites[o], su, sv);
+			for (int v = sv - sprites[o].yts + 1; v <= sv; ++v) {
+				for (int u = su - sprites[o].xts + 1; u <= su; ++u) {
+					if (u < 0 || v < 0 || u >= side || v >= side) {
+						continue;
+					}
+					const size_t ci = static_cast<size_t>(v) * side + u;
+					if (Grid::Dist(grid[ci]) != 0) {
+						const int c = ceiling_over(ci);
+						if (c > top && c < 99) {
+							return true;
+						}
+					}
+				}
+			}
+			return false;
+		};
+		// The top owner at a pixel sits OVER the light: based on a storey above the fill's floor, and some reached
 		// OPEN cell of its footprint (not a wall the fill only rings, not a stairwell) is covered at or below that
 		// base -- the light flowed in beneath the piece (a mountain block roofing a passage under a wall), so its top
 		// is the roof over the light, seen from above.  A stacked hall pillar stands on wall cells; open sky has no
@@ -6039,7 +6380,10 @@ namespace NaturalLight {
             const Sprite_box& s    = sprites[o];
             const int         base = s.fz / 4;
             bool              over = false;
-            if (base >= 5 * (light_floor_storey + 1)) {
+            // Above the storey the FILL runs on: a stairwell spill floods the floor above the light, and what stands
+            // on that floor is under no roof of its own.
+            const int fill_storey = is_spill ? std::max(light_floor_storey, spill_floor) : light_floor_storey;
+            if (base >= 5 * (fill_storey + 1)) {
                 int su, sv;
                 box_cell(s, su, sv);
                 for (int v = sv - s.yts + 1; v <= sv && !over; ++v) {
@@ -6531,6 +6875,14 @@ namespace NaturalLight {
 								continue;
 							}
 							const int ci = (footdx != nullptr && grid != nullptr) ? foot_cell(x, y) : -1;
+							// A low face on a wall cell this outdoor light's fill touched is part of the building's outside
+							// (a window jamb, a corner post's sliver beside the next piece): the facade the light washes as a
+							// whole (the shell dome), whichever way it faces.  Halfwalls inside a room are never touched.
+							if (!veto_roof && !is_spill && ci >= 0 && ring != nullptr
+								&& Ring::Is_wall(ring, static_cast<size_t>(ci))) {
+								srow[x] = static_cast<unsigned char>(Mask::Shell_face);
+								continue;
+							}
 							// A light level with or behind the face's plane cannot reach it.
 							// Stairwell steps ignore facing (the steps below take the plain field): a face on a well cell stays.
 							const bool well_face
@@ -6830,6 +7182,7 @@ namespace NaturalLight {
 				}
 				// A short Shell_face strip with INTERIOR faces at both ends is the junction of two room-side pieces
 				// (a south run meeting an east run), not exterior masonry: it reads the room side of the piece after it.
+				bool room_seam = false;
 				if (!top_px && iside_px < 0 && roofrow != nullptr && roofrow[x] == Mask::Shell_face) {
 					int l = x;
 					while (l > x0 && x - l < 3 && roofrow[l - 1] == Mask::Shell_face) {
@@ -6843,7 +7196,8 @@ namespace NaturalLight {
 						return m == Mask::Face_south ? 0 : m == Mask::Face_east ? 1 : -1;
 					};
 					if (r - l < 3 && l > x0 && r < x1 && room_side(roofrow[l - 1]) >= 0 && room_side(roofrow[r + 1]) >= 0) {
-						iside_px = room_side(roofrow[r + 1]);
+						iside_px  = room_side(roofrow[r + 1]);
+						room_seam = true;
 					} else if (
 							r - l < 3 && l > x0 && r < x1 && room_side(roofrow[l - 1]) >= 0 && roofrow[r + 1] == Mask::Shell_top) {
 						// Closed by a top instead (a jamb's room face meeting the halfwall's sill): still that face.
@@ -6949,9 +7303,22 @@ namespace NaturalLight {
 						} else if (fa <= 0) {
 							// No box behind: the sliver is the buried box's own wall, not the field beyond (a bright
 							// streak down a wall where a pillar stands against it).  Its face as drawn, or its other face
-							// -- whichever the room lights: beside a pillar the drawn face still faces it.
-							face_zero_w = -1.0f;
-							fa          = std::max(wall_face_alpha(x, y, false, iside_px, wf_buried, true), 0);
+							// -- whichever the room lights: beside a pillar the drawn face still faces it.  Another box
+							// holding the pixel answers first (a pillar's base showing past one buried against the wall).
+							const int buried = wf_buried;
+							face_zero_w      = -1.0f;
+							fa               = 0;
+							const auto rng   = sprites_at(x, y);
+							for (const int* bp = rng.first; bp != rng.second; ++bp) {
+								const Sprite_box& bs = sprites[*bp];
+								if (*bp != buried && bs.wall && x >= bs.x0 && x <= bs.x1 && y >= bs.y0 && y <= bs.y1) {
+									fa = std::max(fa, wall_face_alpha(x, y, false, iside_px, *bp));
+								}
+							}
+							if (fa <= 0) {
+								fa = std::max(wall_face_alpha(x, y, false, iside_px, buried, true), 0);
+							}
+							wf_buried   = buried;
 							face_zero_w = 0.0f;
 						}
 					}
@@ -7685,7 +8052,14 @@ namespace NaturalLight {
 				// where the fill reached its wall, or an outdoor light lights a room's tops.  A whole-unit
 				// exterior piece (Tall mark: a rampart's beams) takes the dome too: the outdoor light's fill
 				// would give its wall-face pixels the per-face read, dark from outside.
-				const bool shell_dome = !veto_roof && !is_spill && roofrow != nullptr
+				// A sill top (a window's low piece: object kind under the Shell_top mark) is read like the tops
+				// around it, never by the free dome, which ignores the detour round a building: part of the sill
+				// would show bright beside its faded rest.
+				const bool sill_top
+						= roofrow != nullptr && roofrow[x] == Mask::Shell_top && kindrow != nullptr
+						  && (kindrow[x] == Kind::Object_top || Kind::Is_cap(kindrow[x]) || Kind::Is_object(kindrow[x]));
+				// Nor a corner seam between two room faces (room_seam above): it is that room's face.
+				const bool shell_dome = !veto_roof && !is_spill && roofrow != nullptr && !sill_top && !room_seam
 										&& ((Mask::Is_shell(roofrow[x])
 											 // A pane's top (a closed door's thin top edge) is facade too: its threshold
 											 // tile is no wall unit the fill can reach.
@@ -7760,6 +8134,10 @@ namespace NaturalLight {
 					// Shell = certified exterior masonry: whole-unit, all-side
 					// arrivals; an interior face reads its own room side only.
 					a = face_alpha(x, y, roofrow != nullptr && Mask::Is_shell(roofrow[x]), top_px, iside_px);
+					// A sill top off the shell dome: its window's open tiles carry no arrival for the top read.
+					if (a <= 0 && sill_top && !veto_roof && !is_spill && sprites != nullptr) {
+						a = sill_fill(x, y);
+					}
 					// A spill's face looking into a passage its fan only entered through that passage's mouth.
 					if (a > 0 && is_spill && !top_px && ring != nullptr && grid != nullptr) {
 						const int mob = face_owner(x, y);
@@ -7923,28 +8301,22 @@ namespace NaturalLight {
 					// crown near the lamp glows even though its trunk stands
 					// beyond the pool.
 					a = object_alpha(x, y, 0);
-					// A top is its piece's own tiles' surface: band feet round onto the tile in front (a sill's lower
-					// rows read the room behind the window, dark to a lamp outside).  A sill only -- a thin run: over
-					// a big block (a mountain top) the brightest tile would light the whole top flat.
-					// Only where the foot read found nothing (the sill's rows over the dark room): the owner lookup is
+					// Only where the foot read found nothing (a sill's rows over the dark room): the owner lookup is
 					// costly per pixel and per light, and a lit top needs no help.
 					if (a <= 0 && !is_spill && kindrow != nullptr && (kindrow[x] == Kind::Object_top || Kind::Is_cap(kindrow[x]))
 						&& sprites != nullptr) {
-						const int tob = top_owner(x, y);
-						if (tob >= 0 && std::min(sprites[tob].xts, sprites[tob].yts) == 1) {
-							int su, sv;
-							box_cell(sprites[tob], su, sv);
-							for (int v = sv - sprites[tob].yts + 1; v <= sv; ++v) {
-								for (int u = su - sprites[tob].xts + 1; u <= su; ++u) {
-									if (u >= 0 && v >= 0 && u < side && v < side) {
-										a = std::max(a, object_cell_alpha(v * side + u, 0));
-									}
-								}
-							}
-						}
+						a = sill_fill(x, y);
 					}
 					if (is_spill && obj_side < 0) {
-						const int ua = unit_alpha(x, y);
+						int ua = unit_alpha(x, y);
+						// No art of its own: a closed gap between pieces (Light_layers::build) shares its left
+						// neighbour's foot, and its unit.
+						if (ua < 0 && x > 0 && footdx != nullptr) {
+							const size_t fi = static_cast<size_t>(y) * foot_lw + x;
+							if (footdx[fi] == footdx[fi - 1] && footdy[fi] == footdy[fi - 1]) {
+								ua = unit_alpha(x - 1, y);
+							}
+						}
 						if (ua > a) {
 							a = ua;
 						}
@@ -8058,6 +8430,7 @@ namespace NaturalLight {
 								seen = !Ring::Is_wall(ring, ci) && !apron_cell(static_cast<int>(ci)) && Grid::Dist(grid[ci]) != 0;
 							}
 						}
+						seen = seen || (toi == toi_w && run_end_reached(s, ecu, ecv));
 						if (!seen) {
 							edge_reached = 0;
 						}
@@ -8102,17 +8475,20 @@ namespace NaturalLight {
 						}
 					} else {
 						// A solid on its own wall cell (a stair step) carries no fill: its face is reached when the fill
-						// touched that cell on the face's own side.
+						// touched that cell on the face's own side -- either visible side for a piece without face tags.
 						// Only a piece standing on the light's own floor: a pillar stacked a storey up is not that cell's.
 						const bool own_side_reached = [&] {
 							const int ob = wall_owner(x, y, false);
 							if (ob < 0 || sprites[ob].fz / 4 >= 5 * (light_floor_storey + 1)) {
 								return false;
 							}
-							const int fc = obj_side >= 0 && ring != nullptr && footdx != nullptr ? foot_cell(x, y) : -1;
-							return fc >= 0 && Ring::Is_wall(ring, static_cast<size_t>(fc)) && !escaped_only(fc)
-								   && Ring::Dist(ring[static_cast<size_t>(fc) * Ring::Bytes + (obj_side == 0 ? Ring::S : Ring::E)])
-											  != 0;
+							const int fc = ring != nullptr && footdx != nullptr ? foot_cell(x, y) : -1;
+							if (fc < 0 || !Ring::Is_wall(ring, static_cast<size_t>(fc)) || escaped_only(fc)) {
+								return false;
+							}
+							const unsigned char* const rc = ring + static_cast<size_t>(fc) * Ring::Bytes;
+							return (obj_side != 1 && Ring::Dist(rc[Ring::S]) != 0)
+								   || (obj_side != 0 && Ring::Dist(rc[Ring::E]) != 0);
 						}();
 						if (!top_px
 							&& ((!unit_reached() && !own_side_reached) || obj_backlit()
@@ -8398,8 +8774,9 @@ namespace NaturalLight {
 						a = 0;
 					}
 				}
-				// What lies past the threshold is not the light's: the field's soft edge into the room's first floor
-				// cell.  The floor only: the top of a piece ON the threshold (a sill) rounds its feet onto that cell.
+				// What lies past a doorway is not the light's: the field's soft edge into the room's first floor cell.
+				// The floor only: the top of a piece ON the threshold (a sill) rounds its feet onto that cell.  A
+				// doorway has a jamb within a door's width on both sides; past an open roof edge the field fades on.
 				if (a > 0 && !veto_roof && (!is_spill || cone_dx != 0 || cone_dy != 0) && grid != nullptr && ring != nullptr
 					&& footdx != nullptr && kindrow != nullptr && kindrow[x] == Kind::Ground
 					&& (roofrow == nullptr || roofrow[x] == Mask::Clear)) {    // Bare floor: not a roof drawn over it.
@@ -8413,11 +8790,29 @@ namespace NaturalLight {
                                      std::pair{ 1,  0},
                                      std::pair{ 0,  1}
                         }) {
-							const int u = cu + du;
-							const int v = cv + dv;
+							const int u      = cu + du;
+							const int v      = cv + dv;
+							const int pu     = dv != 0 ? 1 : 0;
+							const int pv     = du != 0 ? 1 : 0;
+							auto      jambed = [&](int sgn) {
+                                for (int k = 1; k <= 4; ++k) {
+                                    const int eu = u + sgn * k * pu;
+                                    const int ev = v + sgn * k * pv;
+                                    if (eu < 0 || ev < 0 || eu >= side || ev >= side) {
+                                        return false;
+                                    }
+                                    if (wall_cell(eu, ev)) {
+                                        return true;
+                                    }
+                                    if (!Ring::Has(ring, static_cast<size_t>(ev) * side + eu, Ring::Threshold_flag)) {
+                                        return false;
+                                    }
+                                }
+                                return false;
+							};
 							if (u >= 0 && v >= 0 && u < side && v < side
 								&& Ring::Has(ring, static_cast<size_t>(v) * side + u, Ring::Threshold_flag)
-								&& !Ring::Is_wall(ring, static_cast<size_t>(v) * side + u)) {
+								&& !Ring::Is_wall(ring, static_cast<size_t>(v) * side + u) && jambed(-1) && jambed(1)) {
 								a = 0;
 								break;
 							}
@@ -8562,27 +8957,33 @@ namespace NaturalLight {
 				// room -- the wall cell's arrivals below it are no light up there.
 				if (a > 0 && veto_roof && !is_spill && sprites != nullptr && kindrow != nullptr && light_top_storey >= 1
 					&& (kindrow[x] != Kind::Ground || pane_px)) {
-					int ob = art_owner(x, y);
+					// A shell top (a sill in the wall line) is its piece's, whatever art lands over it.
+					const bool shell_top = roofrow != nullptr && roofrow[x] == Mask::Shell_top;
+					int        ob        = shell_top ? top_owner(x, y) : art_owner(x, y);
 					if (ob < 0) {
-						ob = top_owner(x, y);
+						ob = shell_top ? art_owner(x, y) : top_owner(x, y);
 					}
 					if (ob < 0) {
 						ob = face_owner(x, y);
 					}
 					if (ob >= 0 && sprites[ob].fz / 4 >= 5 * light_top_storey) {
-						// A top up there (a sill) is out of reach; a face (the upper part of a tall wall the light reaches
+						// A loose top up there is out of reach; a face (the upper part of a tall wall the light reaches
 						// below) fades with its height above the light's ceiling over about a storey and a half -- cut
-						// off flat at the floor line it looked unnatural, fully lit too.
+						// off flat at the floor line it looked unnatural, fully lit too.  So does a shell top in that
+						// wall (the sill under a window in it).
 						const bool face_like = !top_px && kindrow[x] != Kind::Object_top && !Kind::Is_cap(kindrow[x]);
 						float      fade      = 0.0f;
-						if (face_like && footdx != nullptr) {
+						if ((face_like || shell_top) && footdx != nullptr) {
 							fade = above_ceiling_fade(x, y);
 						}
 						// Unless the face looks onto a floor laid at or below its base (the room a storey up, over the
 						// light's ceiling): the tall hall's wall rises over open space, this one stands in the next room.
 						if (fade > 0.0f && ring != nullptr && grid != nullptr) {
 							const int oc = owner_cell(ob);
-							const int fs = iside_px >= 0 ? iside_px : owner_face_side(x, y, ob);
+							// A top faces the room along its run's long side.
+							const int fs = iside_px >= 0 ? iside_px
+										   : face_like   ? owner_face_side(x, y, ob)
+														 : (sprites[ob].yts > sprites[ob].xts ? 1 : 0);
 							if (oc >= 0 && fs >= 0) {
 								const int fc = face_front_cell(oc % side, oc / side, fs);
 								if (fc >= 0 && ceiling_over(static_cast<size_t>(fc)) <= sprites[ob].fz / 4) {
@@ -8613,9 +9014,44 @@ namespace NaturalLight {
 						a = 0;
 					}
 				}
+				// An outdoor light reaches a window's recess from outside only: seen from inside, the sill top and the
+				// jamb faces looking onto the window's own tile take just the light that comes IN (an inward pool, a
+				// light in the room).  The view looks into a jamb from the opening's south/east side: when the light
+				// reaches open ground there, the jamb is seen from outside, with the facade.
+				if (a > 0 && !veto_roof && !is_spill && inside_viewer) {
+					// A sill is seen from inside when the face drawn under it is a room face (from outside it is facade).
+					bool recess = false;
+					if (sill_top && roofpix != nullptr) {
+						int yy = y + 1;
+						while (yy <= y1 && yy - y <= 8 && roofpix[static_cast<size_t>(yy) * roof_lw + x] == Mask::Shell_top) {
+							++yy;
+						}
+						const int below = yy <= y1 ? roofpix[static_cast<size_t>(yy) * roof_lw + x] : -1;
+						recess          = below == Mask::Face_south || below == Mask::Face_east;
+					}
+					if (!recess && iside_px >= 0 && ring != nullptr && grid != nullptr && footdx != nullptr) {
+						const int ci = foot_cell(x, y);
+						if (ci >= 0) {
+							const int nu = ci % side + (iside_px == 1 ? 1 : 0);
+							const int nv = ci / side + (iside_px == 0 ? 1 : 0);
+							recess       = nu < side && nv < side
+									 && Ring::Has(ring, static_cast<size_t>(nv) * side + nu, Ring::Threshold_flag);
+							const int vu = nu + (iside_px == 0 ? 1 : 0);
+							const int vv = nv + (iside_px == 1 ? 1 : 0);
+							if (recess && vu < side && vv < side && !wall_cell(vu, vv)) {
+								const unsigned char g = grid[static_cast<size_t>(vv) * side + vu];
+								recess                = Grid::Dist(g) == 0 || (g & Grid::Flag) != 0;
+							}
+						}
+					}
+					if (recess) {
+						a = 0;
+					}
+				}
 				// An opening's pool lights the room under its ceiling: a top up at that ceiling or above (the tower
 				// beside a gate passage, the wall over it) is out in the open, not in the pool's room.  So is any
-				// pixel of a whole-unit exterior mass (Tall mark) that rises to it.
+				// pixel of a whole-unit exterior mass (Tall mark) that rises to it.  A piece rising into the room's
+				// stairwell (a stair up to the next storey) is in the room.
 				if (a > 0 && pool_shaped && kindrow != nullptr && sprites != nullptr
 					&& (top_px || kindrow[x] == Kind::Object_top || Kind::Is_cap(kindrow[x])
 						|| (roofrow != nullptr && Mask::Is_tall(roofrow[x])))) {
@@ -8623,7 +9059,8 @@ namespace NaturalLight {
 					if (tob < 0) {
 						tob = wall_owner(x, y);
 					}
-					if (tob >= 0 && sprites[tob].fz / 4 + Fast_info(sprites[tob].shape).get_3d_height() >= 5 * (spill_floor + 1)) {
+					if (tob >= 0 && sprites[tob].fz / 4 + Fast_info(sprites[tob].shape).get_3d_height() >= 5 * (spill_floor + 1)
+						&& !rises_into_well(tob)) {
 						a = 0;
 					}
 				}
@@ -9193,8 +9630,9 @@ namespace NaturalLight {
 				const bool boxlike = fw <= xts * c_tilesize + 4 * zh + 4 && fh <= yts * c_tilesize + 4 * zh + 4;
 				const bool obj_top = kind == Kind::Object && zh > 0 && boxlike;
 				// Only masonry (crenellations) shades by face; kegs, winches and beams take their floor whole, like trees.
-				// A thin wall piece is masonry too (class 0 like trees, so the class cannot say).
-				const bool thin_wall = sinf.is_solid() && zh >= 5 && std::min(xts, yts) == 1;
+				// A thin wall piece is masonry too (class 0 like trees, so the class cannot say); a stair's top step is not.
+				const bool thin_wall = sinf.is_solid() && zh >= 5 && std::min(xts, yts) == 1
+									   && !Light_step_from_floor(Game_window::get_instance()->get_map(), obj, 5 * ((ztop - 1) / 5));
 				// A low (2-high) building piece -- a halfwall, a balustrade -- takes its floor whole like a table: the
 				// face tags would shade one face dark while a neighbouring piece of the same halfwall stays lit.
 				// Crenellations and ramparts (3 high) keep their faces.
@@ -9370,9 +9808,17 @@ namespace NaturalLight {
 			}
 			return false;
 		};
+		// Over its whole footprint: a piece reaching into the wall line under the storey's floor carries that floor.
 		auto open_sky_above = [&](int top) {
-			const Tile_coord t = obj->get_tile();
-			return !static_cover_above(t.tx, t.ty, top);
+			const TileRect fp = obj->get_footprint();
+			for (int ty = fp.y; ty < fp.y + fp.h; ++ty) {
+				for (int tx = fp.x; tx < fp.x + fp.w; ++tx) {
+					if (static_cover_above(tx, ty, top)) {
+						return false;
+					}
+				}
+			}
+			return true;
 		};
 		// Covered only by low caps (battlements) resting on `top` that are open to the sky.
 		auto capped_open_sky = [&](int top) {
@@ -10637,7 +11083,10 @@ namespace NaturalLight {
 				&& (open_sky_above(top) || capped_open_sky(top) || (top < ceiling_z && top <= av_lift + 1))
 				&& !gwin->is_in_dungeon() && Fast_info(obj->get_shapenum()).is_solid()
 				&& !Fast_info(obj->get_shapenum()).is_floor(obj->get_framenum()) && !Fast_info(obj->get_shapenum()).is_door()
-				&& !obj->is_dragable() && !Fast_info(obj->get_shapenum()).is_light_source() && art_fills_box()) {
+				&& !obj->is_dragable() && !Fast_info(obj->get_shapenum()).is_light_source()
+				&& art_fills_box()
+				// A stair's top step is an object like the steps below it, lit by the storey it is climbed from.
+				&& !Light_step_from_floor(gwin->get_map(), obj, 5 * ((top - 1) / 5))) {
 				// A lower structure's exposed wall (gate passage side wall): its flat
 				// TOP is deck level, storey-gated like the roof beside it, or the
 				// ground light filling the passage below paints it in spots.
@@ -12018,6 +12467,37 @@ namespace NaturalLight {
 		const int            foot_lw = kindpix ? static_cast<int>(light_kind_mask->get_width()) : 0;
 		const unsigned char* footdxp = kindpix ? light_foot_dx.data() : nullptr;
 		const unsigned char* footdyp = kindpix ? light_foot_dy.data() : nullptr;
+		// A 1-2px run of bare ground between two object pixels in a row is the floor showing through between pieces
+		// (a stair's steps): read at its own foot it lands on the pieces' wall cell and draws a dark seam.  It is
+		// the object's, with its left neighbour's foot.
+		if (kindpix != nullptr) {
+			unsigned char* const kp = light_kind_mask->get_bits();
+			const int            KH = static_cast<int>(light_kind_mask->get_height());
+			for (int y = 0; y < KH; ++y) {
+				unsigned char* const       krow = kp + static_cast<size_t>(y) * kind_lw;
+				const unsigned char* const rrow = roofpix + static_cast<size_t>(y) * roof_lw;
+				for (int x = 1; x + 1 < foot_lw; ++x) {
+					if (krow[x] != Kind::Ground || rrow[x] != Mask::Clear || !Kind::Is_object(krow[x - 1])
+						|| rrow[x - 1] != Mask::Clear) {
+						continue;
+					}
+					int e = x;
+					while (e < x + 2 && e + 1 < foot_lw && krow[e + 1] == Kind::Ground && rrow[e + 1] == Mask::Clear) {
+						++e;
+					}
+					if (e + 1 >= foot_lw || !Kind::Is_object(krow[e + 1]) || rrow[e + 1] != Mask::Clear) {
+						continue;
+					}
+					const size_t src = static_cast<size_t>(y) * foot_lw + x - 1;
+					for (int g = x; g <= e; ++g) {
+						krow[g]                                             = static_cast<unsigned char>(Kind::Object);
+						light_foot_dx[static_cast<size_t>(y) * foot_lw + g] = light_foot_dx[src];
+						light_foot_dy[static_cast<size_t>(y) * foot_lw + g] = light_foot_dy[src];
+					}
+					x = e;
+				}
+			}
+		}
 		// INSIDE, the room mask applies to every light (the roof mask on top so
 		// nothing spills onto a still-drawn roof).  OUTSIDE, it still applies to a
 		// light itself under a roof (lr.mask_roof) so its walls contain it, while
