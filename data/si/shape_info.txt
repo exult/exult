@@ -544,10 +544,6 @@
 :739/2/4
 :739/3/6
 
-#		Flaming oil.
-#
-:782/-1/5
-
 #		Campfire. Has clandle-light strength in originals.
 #
 :796/-1/7
@@ -562,7 +558,7 @@
 
 #		Burning urn. Has clandle-light strength in originals.
 #
-:998/-1/7
+:992/-1/7
 
 #		Helm of light, when not being worn.
 #
