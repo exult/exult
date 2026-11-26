@@ -39,9 +39,10 @@
  *  The "shapes.vga" file:
  */
 class Shapes_vga_file : public Vga_file {
-	std::map<int, Shape_info> info;                 // Extra info. about each shape.
-	Shape_info                zinfo;                // A fake one (all 0's).
-	bool                      info_read = false;    // True when info is set.
+	std::map<int, Shape_info> info;                       // Extra info. about each shape.
+	Shape_info                zinfo;                      // A fake one (all 0's).
+	bool                      info_read       = false;    // True when info is set.
+	unsigned                  info_generation = 0;        // Bumped when `info` is rebuilt (cached pointers die).
 	void                      Read_Shapeinf_text_data_file(bool editing, Exult_Game game_type);
 	void                      Read_Bodies_text_data_file(bool editing, Exult_Game game_type);
 	void                      Read_Paperdoll_text_data_file(bool editing, Exult_Game game_type);
@@ -64,6 +65,10 @@ public:
 	bool   read_info(Exult_Game game, bool editing = false);
 	void   write_info(Exult_Game game);    // Write them back out.
 	Shape* new_shape(int shapenum) override;
+
+	unsigned get_info_generation() const {
+		return info_generation;
+	}
 
 	Shape_info& get_info(int shapenum) {
 		auto it = info.find(shapenum);

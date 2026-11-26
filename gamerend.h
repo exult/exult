@@ -32,6 +32,8 @@ class Game_render {
 	int           skip       = 31;    // Set for each render.  We skip
 									  //   painting at or above this.
 	int bbox_palindex = -1;
+	// NaturalLight::Viewer_enclosure_sealed(), once per paint_map.
+	bool avatar_enclosure_sealed = false;
 
 public:
 	void paint_terrain_only(int start_chunkx, int start_chunky, int stop_chunkx, int stop_chunky);
@@ -46,6 +48,8 @@ public:
 	// Paint objects in given chunk at
 	//   given lift.
 	int paint_chunk_objects(int cx, int cy);
+	// Collect a chunk's light sources.
+	int collect_chunk_lights(int cx, int cy);
 	// Paint an obj. after dependencies.
 	void paint_object(Game_object* obj);
 	// Render dungeon blackness

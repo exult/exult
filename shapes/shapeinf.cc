@@ -50,6 +50,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "ready.h"
 #include "sfxinf.h"
 #include "shapeid.h"
+#include "utils.h"
 #include "warminf.h"
 #include "weaponinf.h"
 
@@ -58,6 +59,51 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 using std::cerr;
 using std::endl;
 using std::vector;
+
+bool Light_passes_info::read(std::istream& in, int version, Exult_Game game) {
+	ignore_unused_variable_warning(version, game);
+	frame = ReadInt(in, -1);
+	if (frame < 0) {
+		frame = -1;
+	} else {
+		frame &= 0xff;
+	}
+	// Optional transmission percentage (0..100); omitted means 100 (light
+	// passes freely).  0 blocks light entirely.
+	int pct = ReadInt(in, 100);
+	if (pct < 0) {
+		pct = 0;
+	} else if (pct > 100) {
+		pct = 100;
+	}
+	percent = static_cast<short>(pct);
+	return true;
+}
+
+void Light_passes_info::write(std::ostream& out, int shapenum, Exult_Game game) {
+	ignore_unused_variable_warning(game);
+	out << ':' << shapenum << '/' << frame << '/' << percent << std::endl;
+}
+
+bool Frame_list_info::read(std::istream& in, int version, Exult_Game game) {
+	ignore_unused_variable_warning(version, game);
+	frame = ReadInt(in, -1);
+	if (frame < 0) {
+		frame = -1;
+	} else {
+		frame &= 0xff;
+	}
+	return true;
+}
+
+void Frame_list_info::write(std::ostream& out, int shapenum, Exult_Game game) {
+	ignore_unused_variable_warning(game);
+	out << ':' << shapenum;
+	if (frame >= 0) {
+		out << '/' << frame;
+	}
+	out << std::endl;
+}
 
 bool Shape_info::allow_enhancements = false;
 
@@ -96,6 +142,7 @@ Shape_info::~Shape_info() {
 	clear_effective_hp_info();
 	clear_frame_name_info();
 	clear_light_info();
+	clear_light_passes_info();
 	clear_warmth_info();
 }
 
@@ -159,7 +206,10 @@ void Shape_info::copy(const Shape_info& inf2, bool skip_dolls) {
 	copy_vector_info(inf2.nameinf, nameinf);
 	copy_vector_info(inf2.frucinf, frucinf);
 	copy_vector_info(inf2.lightinf, lightinf);
+	copy_vector_info(inf2.lightpassinf, lightpassinf);
 	copy_vector_info(inf2.warminf, warminf);
+	copy_vector_info(inf2.roofinf, roofinf);
+	copy_vector_info(inf2.floorinf, floorinf);
 
 	delete sfxinf;
 	sfxinf = inf2.sfxinf ? new SFX_info(*inf2.sfxinf) : nullptr;
@@ -360,6 +410,68 @@ void Shape_info::clear_light_info() {
 
 void Shape_info::add_light_info(Light_info& add) {
 	add_vector_info(add, lightinf);
+}
+
+bool Shape_info::has_light_passes_info() const {
+	return !lightpassinf.empty();
+}
+
+std::vector<Light_passes_info>& Shape_info::set_light_passes_info(bool tf) {
+	return set_vector_info(tf, lightpassinf);
+}
+
+void Shape_info::clean_invalid_light_passes_info() {
+	clean_vector(lightpassinf);
+}
+
+void Shape_info::clear_light_passes_info() {
+	lightpassinf.clear();
+}
+
+void Shape_info::add_light_passes_info(Light_passes_info& add) {
+	add_vector_info(add, lightpassinf);
+}
+
+/*
+ *  How much light the given frame lets through (light_passes_through
+ *  section): 1..100 percent, 0 when it is not listed or its entry blocks
+ *  light.
+ */
+int Shape_info::get_light_passes_percent(int frame) const {
+	const Light_passes_info* inf = Search_vector_data_single_wildcard(lightpassinf, (frame & 31), &Light_passes_info::frame);
+	return inf ? inf->percent : 0;
+}
+
+/*
+ *  Look a frame up in a frame list: 2 = listed by its own frame, 1 = by the
+ *  all-frames entry, 0 = not listed.
+ */
+int Shape_info::frame_list_match(const std::vector<Frame_list_info>& vec, int frame) {
+	const Frame_list_info* inf = Search_vector_data_single_wildcard(vec, frame, &Frame_list_info::frame);
+	if (inf == nullptr) {
+		return 0;
+	}
+	return inf->get_frame() == frame ? 2 : 1;
+}
+
+/*
+ *  roof_shapes: a roof whose pixels the spatial light layers keep dark (an
+ *  interior light never lights up its own roof).  floor_shapes: a floor slab
+ *  that is the roof of the storey below; it contains that storey's light like
+ *  a roof, but only its top surface is masked and objects standing on it are
+ *  still lit by spills.  A frame listed in one section overrides the other
+ *  section's all-frames entry.
+ */
+bool Shape_info::is_roof(int frame) const {
+	const int f    = frame & 31;
+	const int roof = frame_list_match(roofinf, f);
+	return roof == 2 || (roof == 1 && frame_list_match(floorinf, f) != 2);
+}
+
+bool Shape_info::is_floor(int frame) const {
+	const int f     = frame & 31;
+	const int floor = frame_list_match(floorinf, f);
+	return floor == 2 || (floor == 1 && frame_list_match(roofinf, f) != 2);
 }
 
 bool Shape_info::has_warmth_info() const {

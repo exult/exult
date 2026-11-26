@@ -37,11 +37,18 @@
 #include "gamemap.h"
 #include "gamewin.h"
 #include "ignore_unused_variable_warning.h"
+#include "naturallight.h"
 #include "objiter.h"
+#include "path.h"
+#include "paths.h"
 #include "perf.h"
 
 #include <algorithm>
+#include <array>
 #include <cstdio>
+#include <cstdlib>
+#include <iostream>
+#include <utility>
 
 /*
  *  Paint just the map with given top-left-corner tile.
@@ -197,6 +204,7 @@ int Game_render::paint_map(
 	Shape_manager* sman = gwin->shape_man;
 	render_seq++;    // Increment sequence #.
 	gwin->painted = true;
+	gwin->get_light_layers().clear_renders();    // Rebuild the spatial-light source list.
 
 	const int scrolltx      = gwin->scrolltx;
 	const int scrollty      = gwin->scrollty;
@@ -221,6 +229,7 @@ int Game_render::paint_map(
 		paint_terrain_only(start_chunkx, start_chunky, stop_chunkx, stop_chunky);
 		return 10;    // Pretend there's lots of light!
 	}
+	avatar_enclosure_sealed = gwin->get_natural_light() && NaturalLight::Viewer_enclosure_sealed();
 	int cx;
 	int cy;    // Chunk #'s.
 	// Paint all the flat scenery.
@@ -251,6 +260,7 @@ int Game_render::paint_map(
 	}
 	// Draw the chunks' objects
 	//   diagonally NE.
+	gwin->get_light_layers().begin_roof_mask(*gwin);    // Reset the global roof-pixel mask for this frame.
 	const int tmp_stopy = DECR_CHUNK(start_chunky);
 	for (cy = start_chunky; cy != stop_chunky; cy = INCR_CHUNK(cy)) {
 		for (int dx = start_chunkx, dy = cy; dx != stop_chunkx && dy != tmp_stopy; dx = INCR_CHUNK(dx), dy = DECR_CHUNK(dy)) {
@@ -261,6 +271,24 @@ int Game_render::paint_map(
 		for (int dx = cx, dy = (stop_chunky - 1 + c_num_chunks) % c_num_chunks; dx != stop_chunkx && dy != tmp_stopy;
 			 dx = INCR_CHUNK(dx), dy = DECR_CHUNK(dy)) {
 			light_sources += paint_chunk_objects(dx, dy);
+		}
+	}
+	// Natural light: the lights come from a FIXED range around the whole game area, independent of the painted
+	// rectangle and wide enough for any pool or spill reaching it (collect_chunk_lights drops the ones that cannot).
+	// Collecting per painted chunk would follow the smooth-scroll lerp, so lights near the edges would come and go
+	// between frames.
+	if (gwin->get_natural_light()) {
+		constexpr int margin = 5;    // Chunks.
+		const int     lx0    = (scrolltx / c_tiles_per_chunk - margin + c_num_chunks) % c_num_chunks;
+		const int     ly0    = (scrollty / c_tiles_per_chunk - margin + c_num_chunks) % c_num_chunks;
+		const int     lx1    = (scrolltx + gwin->get_width() / c_tilesize) / c_tiles_per_chunk + margin + 1;
+		const int     ly1    = (scrollty + gwin->get_height() / c_tilesize) / c_tiles_per_chunk + margin + 1;
+		const int     stopx  = lx1 % c_num_chunks;
+		const int     stopy  = ly1 % c_num_chunks;
+		for (cy = ly0; cy != stopy; cy = INCR_CHUNK(cy)) {
+			for (cx = lx0; cx != stopx; cx = INCR_CHUNK(cx)) {
+				light_sources += collect_chunk_lights(cx, cy);
+			}
 		}
 	}
 	/// Dungeon Blackness (but disable in map editor mode)
@@ -333,6 +361,21 @@ void Game_window::paint(
 	if (!win->ready()) {
 		return;
 	}
+	// The spatial-light layers hold a brightened COPY of the world image and
+	// are only rebuilt on a COMPLETE repaint (see the "Complete repaint?"
+	// block below).  A partial paint -- the strip repaints of view_left/right/
+	// up/down and paint_dirty's rects, the normal path when smooth scrolling
+	// is off -- would move the world under stale layers, leaving a displaced
+	// faint ghost of every light pool (and freezing flames/NPCs inside them).
+	// So while any light layer is visible, promote the paint to the full
+	// window, matching what smooth scrolling gets from its per-frame full
+	// paint_lerped.
+	if (natural_light && main_actor && (x > 0 || y > 0 || w < get_width() || h < get_height()) && light_layers.any_visible(*this)) {
+		x = 0;
+		y = 0;
+		w = get_width();
+		h = get_height();
+	}
 	// This will adjust and clip the rectangle as appropriate, it may end up
 	// bigger or smaller
 	win->BeginPaintIntoGuardBand(&x, &y, &w, &h);
@@ -392,21 +435,38 @@ void Game_window::paint(
 
 	// Complete repaint?
 	if (!gx && !gy && gw == get_width() && gh == get_height() && main_actor) {
-		// Look for lights.
 		Actor*    party[9];    // Get party, including Avatar.
-		const int cnt           = get_party(party, 1);
-		int       carried_light = 0;
-		for (int i = 0; i < cnt; i++) {
-			carried_light += Get_light_strength(party[i], main_actor, party[i]->get_light_source());
-		}
+		const int cnt = get_party(party, 1);
 		// Also check light spell.
 		if (special_light && clock->get_total_minutes() > special_light) {
 			// Just expired.
 			special_light = 0;
 			clock->set_palette();
 		}
-		// Set palette for lights.
-		clock->set_light_source(carried_light + light_sources, in_dungeon);
+		if (natural_light) {
+			// Carried light (torch/lamp) becomes a spatial light centred on its
+			// carrier, like any placed source, instead of tinting the whole scene.
+			for (int i = 0; i < cnt && pal && pal->get_palette_number() != PALETTE_DAY; i++) {
+				Actor* const carrier = party[i];
+				if (carrier->get_light_source() <= 0 || carrier->is_pos_invalid() || carrier->get_map() != get_map()) {
+					continue;
+				}
+				NaturalLight::Queue_light(carrier, NaturalLight::Carried_light_brightness(carrier), true);
+			}
+			// Light sources do not tint the global palette; it stays purely
+			// time-of-day (incl. dawn/dusk). The spatial light layers do the local
+			// brightening around each source.
+			clock->set_light_source(0, in_dungeon);
+			light_layers.build(*this);
+		} else {
+			// Look for lights.
+			int carried_light = 0;
+			for (int i = 0; i < cnt; i++) {
+				carried_light += Get_light_strength(party[i], main_actor, party[i]->get_light_source());
+			}
+			// Set palette for lights.
+			clock->set_light_source(carried_light + light_sources, in_dungeon);
+		}
 	}
 
 	win->EndPaintIntoGuardBand();
@@ -554,25 +614,102 @@ void Game_render::paint_chunk_flat_rles(
  *  Output: # light sources found.
  */
 
-int Game_render::paint_chunk_objects(
+/*
+ *  Collect the light sources of a chunk: legacy lighting sums their strength; natural light records each as a
+ *  spatial light (plus its spills) for Light_layers::build.
+ *
+ *  Output: # light-sources found (legacy strength).
+ */
+
+int Game_render::collect_chunk_lights(
 		int cx, int cy    // Chunk coords (0 - 12*16).
 ) {
-	Game_object*      obj;
 	Game_window*      gwin          = Game_window::get_instance();
 	Map_chunk*        olist         = gwin->map->get_chunk(cx, cy);
-	int               light_sources = 0;    // Also check for light sources.
+	int               light_sources = 0;
 	Main_actor* const main_actor    = gwin->get_main_actor();
 	if (main_actor != nullptr) {
-		const auto& lights = gwin->is_in_dungeon() ? olist->get_dungeon_lights() : olist->get_non_dungeon_lights();
+		const auto& lights         = gwin->is_in_dungeon() ? olist->get_dungeon_lights() : olist->get_non_dungeon_lights();
+		const bool  natural        = gwin->get_natural_light();
+		const bool  viewer_outside = !gwin->is_main_actor_inside();
+		// The spatial light layers are hidden at full day, so all the grid /
+		// spill building below would be wasted work then.
+		const bool day_palette = gwin->get_pal()->get_palette_number() == PALETTE_DAY;
+		// All lights in this loop live in the chunk being painted (cx, cy).
+		// Treat the Avatar's own chunk as "the building you are in".
+		const bool same_chunk = (cx == main_actor->get_cx() && cy == main_actor->get_cy());
+		// Whether this chunk has a shape light can pass through (window, open
+		// door, ...). Needed when the Avatar is outside: interior light leaks
+		// out through it. Natural light only.
+		const bool chunk_has_opening = natural && NaturalLight::Chunk_find_light_passes_through(olist);
+		const bool avatar_sealed     = avatar_enclosure_sealed;
 		for (const auto& light_obj : lights) {
 			const Shape_info& info = light_obj->get_info();
-			if (info.get_object_light(light_obj->get_framenum()) > 0) {
-				// Count light sources.
-				light_sources += get_light_strength(light_obj, main_actor);
+			// get_object_light is the authoritative test: it covers flagged
+			// light sources AND shape_info.txt enhancement entries (gated on
+			// allow_enhancements), including frame-0-brightness-0 shapes.
+			if (info.get_object_light(light_obj->get_framenum()) <= 0) {
+				continue;
+			}
+			if (!natural) {
+				// Vanilla legacy behaviour: every in-range light counts fully.
+				const int strength = get_light_strength(light_obj, main_actor);
+				if (strength > 0) {
+					light_sources += strength;
+				}
+				continue;
+			}
+			{
+				// Skip a light that cannot touch the game area before any of its verdicts or its flood.  Tested
+				// against the real scroll, not the smooth-scroll lerp, as in Light_layers::build.
+				const int reach = NaturalLight::Light_screen_reach(light_obj, info.get_object_light(light_obj->get_framenum()));
+				int       px    = 0;
+				int       py    = 0;
+				gwin->get_shape_location(light_obj, px, py);
+				px += gwin->avposx_ld;
+				py += gwin->avposy_ld;
+				if (px + reach < 0 || px - reach >= gwin->get_width() || py + reach < 0 || py - reach >= gwin->get_height()) {
+					continue;
+				}
+			}
+			// Decide whether this source reaches the viewer.
+			const NaturalLight::LightVisibility vis = NaturalLight::Evaluate_light_visibility(
+					light_obj, olist, main_actor, viewer_outside, same_chunk, avatar_sealed, chunk_has_opening);
+			const bool blocked = vis.blocked;
+			// An EXTERIOR light's containment is the field's job: keep
+			// splatting it even when it cannot reach the viewer (a lamppost
+			// pool seen through a door must not depend on the viewer's chunk).
+			// A blocked INTERIOR light keeps its outdoor SPILLS: escaped light
+			// is exterior geometry, visible from anywhere -- the blocked
+			// verdict is a viewer-relative heuristic (avatar chunk / enclosure)
+			// and walking room to room must not toggle a tree lit through a
+			// window.  Only the main splat is suppressed.
+			const bool suppress_main = blocked && NaturalLight::Light_beneath_roof(light_obj);
+			// EXCEPT when the viewer's own enclosure is light-tight: then he
+			// sees no exterior geometry at all, so another building's escaped
+			// light must not glow around its openings.  Not the general blocked
+			// case -- that one is exactly what the spills must survive.
+			const bool suppress_spills = avatar_sealed && !viewer_outside && blocked && vis.interior_source;
+			// Radius and palette tier scale with the light's intrinsic brightness (not the distance-decayed
+			// strength used for the legacy global palette).
+			if (!day_palette) {
+				NaturalLight::Queue_light(
+						light_obj, info.get_object_light(light_obj->get_framenum()), false, !suppress_main, !suppress_spills);
 			}
 		}
 	}
-	skip = gwin->get_render_skip_lift();
+	return light_sources;
+}
+
+int Game_render::paint_chunk_objects(
+		int cx, int cy    // Chunk coords (0 - 12*16).
+) {
+	Game_object* obj;
+	Game_window* gwin  = Game_window::get_instance();
+	Map_chunk*   olist = gwin->map->get_chunk(cx, cy);
+	// Natural light collects its lights in paint_map over a fixed range around the screen, not per painted chunk.
+	const int light_sources = gwin->get_natural_light() ? 0 : collect_chunk_lights(cx, cy);
+	skip                    = gwin->get_render_skip_lift();
 	Nonflat_object_iterator next(olist);
 
 	while ((obj = next.get_next()) != nullptr) {
@@ -610,6 +747,9 @@ void Game_render::paint_object(Game_object* obj) {
 				bbox_x, bbox_y, obj->get_framenum(), Game_window::get_instance()->get_win()->get_ib8(), bbox_palindex, 2);
 	}
 	obj->paint();    // Finally, paint this one.
+	// Update the roof-pixel mask: roofs mark their pixels, front objects clear
+	// them, so an overlapping shape (e.g. a tree) is not darkened as a roof.
+	Game_window::get_instance()->get_light_layers().update_roof_mask(obj, bbox_x, bbox_y);
 	// paint bbox front
 	if (bbox_palindex != -1) {
 		obj->get_info().paint_bbox(
@@ -629,6 +769,11 @@ void Game_window::paint_dirty() {
 		paint(box);    // (Could create new dirty rects.)
 	}
 	clear_dirty();
+	if (light_layers.take_repaint_pending()) {
+		// A light was placed / removed during the paint above: repaint
+		// everything next frame so the roof mask covers its new rects.
+		set_all_dirty();
+	}
 }
 
 /*

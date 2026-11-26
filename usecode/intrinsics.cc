@@ -55,6 +55,7 @@
 #include "monsters.h"
 #include "monstinf.h"
 #include "mouse.h"
+#include "naturallight.h"
 #include "objiter.h"
 #include "palette.h"
 #include "party.h"
@@ -752,6 +753,10 @@ USECODE_INTRINSIC(set_last_created) {
 	Game_object_shared keep;
 	if (obj) {
 		add_dirty(obj);    // Set to repaint area.
+		// Taking a wall-like object (shutter leaf) off the map reshapes floods.
+		if (obj->get_owner() == nullptr && obj->get_chunk() != nullptr) {
+			NaturalLight::Notify_object_edited(obj);
+		}
 		last_created.push_back(obj->shared_from_this());
 		obj->remove_this(&keep);    // Remove, but don't delete.
 	}
@@ -779,6 +784,8 @@ USECODE_INTRINSIC(update_last_created) {
 		const Tile_coord dest(
 				arr.get_elem(0).get_int_value(), arr.get_elem(1).get_int_value(), sz >= 3 ? arr.get_elem(2).get_int_value() : 0);
 		obj->move(dest.tx, dest.ty, dest.tz, sz < 4 ? -1 : arr.get_elem(3).get_int_value());
+		// Placing a wall-like object (a shutter leaf) reshapes light floods.
+		NaturalLight::Notify_object_edited(obj.get());
 	} else if (sz == 1) {
 		obj->remove_this();
 	}

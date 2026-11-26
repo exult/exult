@@ -24,6 +24,7 @@
 
 #include "flags.h"
 #include "iwin8.h"
+#include "naturallight.h"
 #include "rect.h"
 #include "shapeid.h"
 #include "shapeinf.h"
@@ -33,6 +34,7 @@
 #include <array>
 #include <memory>
 #include <string>    // STL string
+#include <utility>
 #include <vector>
 
 #ifndef ATTR_PRINTF
@@ -115,6 +117,9 @@ class Game_window {
 	bool painted;               // true if we updated image buffer.
 	bool ambient_light;         // Permanent version of special_light.
 	bool infravision_active;    // Infravision flag.
+
+	// Natural light: the queued lights, the overlay layers and their caches.
+	NaturalLight::Light_layers light_layers;
 	// Game state values:
 	int           skip_above_actor;      // Level above actor to skip rendering.
 	unsigned int  in_dungeon;            // true if inside a dungeon.
@@ -152,6 +157,7 @@ class Game_window {
 										  // key modifier
 	bool         allow_autonotes;
 	bool         allow_enhancements;
+	bool         natural_light;      // Spatial light layers instead of tinting the global palette.
 	bool         in_exult_menu;      // used for menu options
 	uint8        use_shortcutbar;    // 0 = no, 1 = trans, 2 = yes
 	Pixel_colors outline_color;
@@ -176,6 +182,7 @@ class Game_window {
 
 public:
 	friend class Game_render;
+	friend class NaturalLight::Light_layers;
 	/*
 	 *  Public flags and gameplay options:
 	 */
@@ -331,6 +338,17 @@ public:
 		allow_autonotes = s;
 	}
 
+	bool get_natural_light() const {
+		return natural_light;
+	}
+
+	void set_natural_light(bool s) {
+		if (!s && natural_light) {
+			light_layers.destroy(*this);
+		}
+		natural_light = s;
+	}
+
 	bool get_allow_enhancements() const {
 		return allow_enhancements;
 	}
@@ -474,6 +492,10 @@ public:
 
 	void layer_set_index_argb(int handle, const uint32* argb256) {
 		win->layer_set_index_argb(handle, argb256);
+	}
+
+	NaturalLight::Light_layers& get_light_layers() {
+		return light_layers;
 	}
 
 	void layer_set_alpha(int handle, unsigned char a) {

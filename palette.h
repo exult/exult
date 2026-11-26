@@ -56,12 +56,15 @@ class Palette {
 	bool           fades_enabled;
 	void           set_loaded(const U7multiobject& pal, const char* xfname, int xindex);
 	void           loadxform(const unsigned char* buf, const char* xfname, int& xindex);
-	// Push fixed-palette overrides to the layers.
-	void update_ui_layer_palettes();
+	// Load (and cache) a reference palette by number from palettes.flx.
+	const unsigned char* load_reference_palette(int pal_num);
 
 	static unsigned char border[3];
 
 public:
+	// Push fixed-palette overrides to the layers.  Public so the spatial-light
+	// renderer can force a refresh after re-asserting the light layer configs.
+	void update_ui_layer_palettes();
 	Palette();
 	Palette(Palette* pal);      // "Copy" constructor.
 	void take(Palette* pal);    // Copies a palette into another.
@@ -80,6 +83,16 @@ public:
 	int get_brightness() const {    // Percentage:  100 = normal.
 		return brightness;
 	}
+
+	int get_palette_number() const {    // Current palette # (-1 = transition).
+		return palette;
+	}
+
+	// Average perceived luminance (0..255) of the current world palette.
+	int get_luminance() const;
+	// Average perceived luminance (0..255) of a reference palette from
+	// palettes.flx.  Loads/caches it on demand; -1 if unavailable.
+	int get_reference_luminance(int pal_num);
 
 	//   the user.
 	void set_fades_enabled(bool f) {

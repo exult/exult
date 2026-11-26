@@ -235,28 +235,6 @@ void Palette::update_ui_layer_palettes() {
 	if (win == nullptr) {
 		return;
 	}
-	// Raw reference palettes, loaded once (on demand) from palettes.flx and
-	// cached by palette number.
-	constexpr static int kNumRefPalettes = 13;    // palettes.flx numbers 0..12.
-	static bool          ref_loaded[kNumRefPalettes]{};
-	static unsigned char ref_pal[kNumRefPalettes][768];
-	auto                 load_ref = [this](int pal_num) -> const unsigned char* {
-        if (pal_num < 0 || pal_num >= kNumRefPalettes) {
-            return nullptr;
-        }
-        if (!ref_loaded[pal_num]) {
-            try {
-                Palette tmp(this);
-                tmp.load(PALETTES_FLX, PATCH_PALETTES, pal_num);
-                memcpy(ref_pal[pal_num], tmp.pal1, 768);
-                ref_loaded[pal_num] = true;
-            } catch (...) {
-                return nullptr;    // palettes.flx not available yet.
-            }
-        }
-        return ref_pal[pal_num];
-	};
-
 	const int cur = palette;    // Current palette number (-1 = custom/transition).
 	// While the palette number is -1 we are mid cross-fade and don't want the UI layers to change their palette.
 	if (cur < 0) {
@@ -271,7 +249,7 @@ void Palette::update_ui_layer_palettes() {
 			win->set_ui_layer_palette_colors(kind, nullptr);
 			continue;
 		}
-		const unsigned char* raw = load_ref(pal_num);
+		const unsigned char* raw = load_reference_palette(pal_num);
 		if (raw == nullptr) {
 			win->set_ui_layer_palette_colors(kind, nullptr);
 			continue;
@@ -279,6 +257,54 @@ void Palette::update_ui_layer_palettes() {
 		win->apply_gamma_palette(raw, max_val, brightness, out);
 		win->set_ui_layer_palette_colors(kind, out.data());
 	}
+}
+
+/*
+ *  Load (on demand) and cache a reference palette by number from palettes.flx.
+ *  Returns a pointer to the 768-byte (RGB) palette, or nullptr if unavailable.
+ */
+const unsigned char* Palette::load_reference_palette(int pal_num) {
+	constexpr static int kNumRefPalettes = 13;    // palettes.flx numbers 0..12.
+	static bool          ref_loaded[kNumRefPalettes]{};
+	static unsigned char ref_pal[kNumRefPalettes][768];
+	if (pal_num < 0 || pal_num >= kNumRefPalettes) {
+		return nullptr;
+	}
+	if (!ref_loaded[pal_num]) {
+		try {
+			Palette tmp(this);
+			tmp.load(PALETTES_FLX, PATCH_PALETTES, pal_num);
+			memcpy(ref_pal[pal_num], tmp.pal1, 768);
+			ref_loaded[pal_num] = true;
+		} catch (...) {
+			return nullptr;    // palettes.flx not available yet.
+		}
+	}
+	return ref_pal[pal_num];
+}
+
+/*
+ *  Average perceived luminance (0..255) of a 768-byte RGB palette.
+ */
+static int average_palette_luminance(const unsigned char* pal) {
+	long sum = 0;
+	for (int i = 0; i < 256; ++i) {
+		// Standard integer luma weights (~0.30, 0.59, 0.11).
+		sum += (pal[3 * i] * 77 + pal[3 * i + 1] * 150 + pal[3 * i + 2] * 29) >> 8;
+	}
+	return static_cast<int>(sum / 256);
+}
+
+int Palette::get_luminance() const {
+	return average_palette_luminance(pal1);
+}
+
+int Palette::get_reference_luminance(int pal_num) {
+	const unsigned char* raw = load_reference_palette(pal_num);
+	if (raw == nullptr) {
+		return -1;
+	}
+	return average_palette_luminance(raw);
 }
 
 /**

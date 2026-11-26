@@ -69,8 +69,11 @@
 #include "monsters.h"
 #include "monstinf.h"
 #include "mouse.h"
+#include "naturallight.h"
 #include "npcnear.h"
 #include "objiter.h"
+#include "ordinfo.h"
+#include "palette.h"
 #include "party.h"
 #include "paths.h"
 #include "scene_layer.h"
@@ -84,11 +87,15 @@
 #include "version.h"
 #include "virstone.h"
 
+#include <array>
+#include <cmath>
 #include <cstdarg>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
+#include <iostream>
 #include <memory>
+#include <set>
 #include <sstream>
 
 #ifdef USE_EXULTSTUDIO
@@ -396,6 +403,9 @@ Game_window::Game_window(
 	allow_enhancements = str == "yes";
 	config->set("config/gameplay/enhancements", allow_enhancements ? "yes" : "no", false);
 	Shape_info::set_allow_enhancements(allow_enhancements);
+	config->value("config/gameplay/natural_light", str, "no");
+	natural_light = str != "no";
+	config->set("config/gameplay/natural_light", natural_light ? "yes" : "no", false);
 #if defined(SDL_PLATFORM_IOS) || defined(ANDROID)
 	const string default_scroll_with_mouse = "no";
 	const string default_item_menu         = "yes";
