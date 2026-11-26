@@ -205,6 +205,11 @@ void Scroll shape#(0x31D) () {
 				say("Some sort of vase, with soot inside.");
 			}
 		}
+	} else if (quality == 184) {
+		// Isstanar's sealed commendation (npcs/serpents_fang.uc); the
+		// original has no text for it.
+		say(
+			"A commendation from Isstanar, Commander of Serpent's Fang, sealed with his signet.~~The seal is unbroken.");
 	} else {
 		Scroll.original();
 	}
