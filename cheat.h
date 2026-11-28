@@ -236,6 +236,12 @@ public:
 
 	void cheat_screen() const;
 
+	// The text-mode cheat screen (its menus are also opened from the themed
+	// cheat window).
+	CheatScreen* get_cheat_screen() const {
+		return cscreen;
+	}
+
 	bool grabbing_actor() const {
 		return grab_actor;
 	}

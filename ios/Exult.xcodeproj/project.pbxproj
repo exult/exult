@@ -38,6 +38,24 @@
 		8A33B5E92C2051B800075AF4 /* DropDown_widget.cc in Sources */ = {isa = PBXBuildFile; fileRef = 8A33B5E82C2051B800075AF4 /* DropDown_widget.cc */; };
 		8A33B5EC2C2051B800075AF4 /* ConfigSetting_widget.cc in Sources */ = {isa = PBXBuildFile; fileRef = 8A33B5EB2C2051B800075AF4 /* ConfigSetting_widget.cc */; };
 		8A33B5EF2C2051B800075AF4 /* AdvancedOptions_gump.cc in Sources */ = {isa = PBXBuildFile; fileRef = 8A33B5EE2C2051B800075AF4 /* AdvancedOptions_gump.cc */; };
+		53752C3E4B2573A7976788FF /* Mui_cheats.cc in Sources */ = {isa = PBXBuildFile; fileRef = FCF19B9D7E90760DDB9CCF02 /* Mui_cheats.cc */; };
+		EBA86E0A69734CB47CC4FB84 /* Mui_config_editor.cc in Sources */ = {isa = PBXBuildFile; fileRef = 414278C9663F119132D75AA7 /* Mui_config_editor.cc */; };
+		EF42F9A24833BD791AD80390 /* Mui_config_meta.cc in Sources */ = {isa = PBXBuildFile; fileRef = 2CC73053F74BD48351E8B2A5 /* Mui_config_meta.cc */; };
+		FA89D6BFC421B0161E648031 /* Mui_dialogue.cc in Sources */ = {isa = PBXBuildFile; fileRef = E122BDB776741039FA108729 /* Mui_dialogue.cc */; };
+		23E0095FE286B08E09225CB9 /* Mui_dialogue_test.cc in Sources */ = {isa = PBXBuildFile; fileRef = DD0453C33A2BB208ECF36C8C /* Mui_dialogue_test.cc */; };
+		5FD5D30D88C6600DFC1A53FD /* Mui_font.cc in Sources */ = {isa = PBXBuildFile; fileRef = 611E30B3B7684F69A7A42EB6 /* Mui_font.cc */; };
+		85BF55C2BB60BDDFA9C8D581 /* Mui_game_menu.cc in Sources */ = {isa = PBXBuildFile; fileRef = AF5DF8C5F2ABA80D03116866 /* Mui_game_menu.cc */; };
+		0F48ACC8A99804CB91D0CFBC /* Mui_journey_log.cc in Sources */ = {isa = PBXBuildFile; fileRef = 4723FFEBB5EB29FF620BEDA2 /* Mui_journey_log.cc */; };
+		41C67A0A622336E69E123571 /* Mui_keys_editor.cc in Sources */ = {isa = PBXBuildFile; fileRef = 1C2E8229017399D5AE982A9C /* Mui_keys_editor.cc */; };
+		5A586572CD137C766CC2AB69 /* Mui_keys_model.cc in Sources */ = {isa = PBXBuildFile; fileRef = 9BE07FB210DB9F5B25044498 /* Mui_keys_model.cc */; };
+		398FDC355B8932A69CD2DDBC /* Mui_options.cc in Sources */ = {isa = PBXBuildFile; fileRef = AE7ED961820FD2C8113BE86B /* Mui_options.cc */; };
+		12900DF5323DB5B1B26D6CE2 /* Mui_options_model.cc in Sources */ = {isa = PBXBuildFile; fileRef = 6BAAE0F36582D8B30C15981A /* Mui_options_model.cc */; };
+		B1CC8AF349F3F7D4F3B1FF2C /* Mui_painter.cc in Sources */ = {isa = PBXBuildFile; fileRef = 7F1188412F6B47CD4F44FC76 /* Mui_painter.cc */; };
+		367E5709A2C669FF3012D52A /* Mui_router.cc in Sources */ = {isa = PBXBuildFile; fileRef = 017DE7C51958E40CCBCFE268 /* Mui_router.cc */; };
+		FB26D4E6E07E540C2A17B6CB /* Mui_selftest.cc in Sources */ = {isa = PBXBuildFile; fileRef = 1F1118693CC4BB56E4EAEC5A /* Mui_selftest.cc */; };
+		472F707B99B445BF25E0ED59 /* Mui_theme.cc in Sources */ = {isa = PBXBuildFile; fileRef = DD7CBC37B7A6AE085F70EE99 /* Mui_theme.cc */; };
+		38341016B3F05D5BAB82A874 /* Mui_widgets.cc in Sources */ = {isa = PBXBuildFile; fileRef = 20AC65992EA5884B3CB02BC0 /* Mui_widgets.cc */; };
+		1A1D761FA58E83402E0AB85E /* Mui_window.cc in Sources */ = {isa = PBXBuildFile; fileRef = AE2BE132E70DBC04B9B1E5F9 /* Mui_window.cc */; };
 		8A38EB772E2AA11300450868 /* playscene.cc in Sources */ = {isa = PBXBuildFile; fileRef = 8A38EB762E2AA11300450868 /* playscene.cc */; };
 		8A3D5ADF2EE1D9420044D0FF /* gumpinf.cc in Sources */ = {isa = PBXBuildFile; fileRef = 8A3D5ADE2EE1D9420044D0FF /* gumpinf.cc */; };
 		8A45A3B8247C068500F12F4D /* joythumb-glass.png in Resources */ = {isa = PBXBuildFile; fileRef = 8A45A3AC247C068500F12F4D /* joythumb-glass.png */; };
@@ -383,6 +401,42 @@
 		8A33B5ED2C2051B800075AF4 /* ConfigSetting_widget.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ConfigSetting_widget.h; path = ../gumps/ConfigSetting_widget.h; sourceTree = "<group>"; };
 		8A33B5EE2C2051B800075AF4 /* AdvancedOptions_gump.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = AdvancedOptions_gump.cc; path = ../gumps/AdvancedOptions_gump.cc; sourceTree = "<group>"; };
 		8A33B5F02C2051B800075AF4 /* AdvancedOptions_gump.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AdvancedOptions_gump.h; path = ../gumps/AdvancedOptions_gump.h; sourceTree = "<group>"; };
+		FCF19B9D7E90760DDB9CCF02 /* Mui_cheats.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Mui_cheats.cc; path = ../gumps/Mui_cheats.cc; sourceTree = "<group>"; };
+		1CD95A235236DCDFCC54E078 /* Mui_cheats.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Mui_cheats.h; path = ../gumps/Mui_cheats.h; sourceTree = "<group>"; };
+		414278C9663F119132D75AA7 /* Mui_config_editor.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Mui_config_editor.cc; path = ../gumps/Mui_config_editor.cc; sourceTree = "<group>"; };
+		5B3D0649B8544166297ECD7C /* Mui_config_editor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Mui_config_editor.h; path = ../gumps/Mui_config_editor.h; sourceTree = "<group>"; };
+		2CC73053F74BD48351E8B2A5 /* Mui_config_meta.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Mui_config_meta.cc; path = ../gumps/Mui_config_meta.cc; sourceTree = "<group>"; };
+		54550AC83F6603AC2906616E /* Mui_config_meta.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Mui_config_meta.h; path = ../gumps/Mui_config_meta.h; sourceTree = "<group>"; };
+		E122BDB776741039FA108729 /* Mui_dialogue.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Mui_dialogue.cc; path = ../gumps/Mui_dialogue.cc; sourceTree = "<group>"; };
+		479330209F1ED897356F7592 /* Mui_dialogue.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Mui_dialogue.h; path = ../gumps/Mui_dialogue.h; sourceTree = "<group>"; };
+		DD0453C33A2BB208ECF36C8C /* Mui_dialogue_test.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Mui_dialogue_test.cc; path = ../gumps/Mui_dialogue_test.cc; sourceTree = "<group>"; };
+		57BA681CC70430F140E53827 /* Mui_dialogue_test.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Mui_dialogue_test.h; path = ../gumps/Mui_dialogue_test.h; sourceTree = "<group>"; };
+		611E30B3B7684F69A7A42EB6 /* Mui_font.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Mui_font.cc; path = ../gumps/Mui_font.cc; sourceTree = "<group>"; };
+		2CD74A480DCED32A7A999BFA /* Mui_font.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Mui_font.h; path = ../gumps/Mui_font.h; sourceTree = "<group>"; };
+		AF5DF8C5F2ABA80D03116866 /* Mui_game_menu.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Mui_game_menu.cc; path = ../gumps/Mui_game_menu.cc; sourceTree = "<group>"; };
+		87E70EF97B728C5C642BB002 /* Mui_game_menu.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Mui_game_menu.h; path = ../gumps/Mui_game_menu.h; sourceTree = "<group>"; };
+		4723FFEBB5EB29FF620BEDA2 /* Mui_journey_log.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Mui_journey_log.cc; path = ../gumps/Mui_journey_log.cc; sourceTree = "<group>"; };
+		4990824A7AD7E6A67A635FB5 /* Mui_journey_log.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Mui_journey_log.h; path = ../gumps/Mui_journey_log.h; sourceTree = "<group>"; };
+		1C2E8229017399D5AE982A9C /* Mui_keys_editor.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Mui_keys_editor.cc; path = ../gumps/Mui_keys_editor.cc; sourceTree = "<group>"; };
+		649AF1CAA1BDCF2044F70001 /* Mui_keys_editor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Mui_keys_editor.h; path = ../gumps/Mui_keys_editor.h; sourceTree = "<group>"; };
+		9BE07FB210DB9F5B25044498 /* Mui_keys_model.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Mui_keys_model.cc; path = ../gumps/Mui_keys_model.cc; sourceTree = "<group>"; };
+		C766E6506422F0974FCB7E39 /* Mui_keys_model.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Mui_keys_model.h; path = ../gumps/Mui_keys_model.h; sourceTree = "<group>"; };
+		AE7ED961820FD2C8113BE86B /* Mui_options.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Mui_options.cc; path = ../gumps/Mui_options.cc; sourceTree = "<group>"; };
+		330881FB1B7E7AC82D709483 /* Mui_options.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Mui_options.h; path = ../gumps/Mui_options.h; sourceTree = "<group>"; };
+		6BAAE0F36582D8B30C15981A /* Mui_options_model.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Mui_options_model.cc; path = ../gumps/Mui_options_model.cc; sourceTree = "<group>"; };
+		DDD8837F27B19C018BD2D2C9 /* Mui_options_model.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Mui_options_model.h; path = ../gumps/Mui_options_model.h; sourceTree = "<group>"; };
+		7F1188412F6B47CD4F44FC76 /* Mui_painter.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Mui_painter.cc; path = ../gumps/Mui_painter.cc; sourceTree = "<group>"; };
+		FCA50364024F94E0CE295AFE /* Mui_painter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Mui_painter.h; path = ../gumps/Mui_painter.h; sourceTree = "<group>"; };
+		017DE7C51958E40CCBCFE268 /* Mui_router.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Mui_router.cc; path = ../gumps/Mui_router.cc; sourceTree = "<group>"; };
+		DF02DA002AD96E8B961F9586 /* Mui_router.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Mui_router.h; path = ../gumps/Mui_router.h; sourceTree = "<group>"; };
+		1F1118693CC4BB56E4EAEC5A /* Mui_selftest.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Mui_selftest.cc; path = ../gumps/Mui_selftest.cc; sourceTree = "<group>"; };
+		29FAF5671C880725FC94E68D /* Mui_selftest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Mui_selftest.h; path = ../gumps/Mui_selftest.h; sourceTree = "<group>"; };
+		DD7CBC37B7A6AE085F70EE99 /* Mui_theme.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Mui_theme.cc; path = ../gumps/Mui_theme.cc; sourceTree = "<group>"; };
+		DF736285B3DE9ED4417017D7 /* Mui_theme.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Mui_theme.h; path = ../gumps/Mui_theme.h; sourceTree = "<group>"; };
+		20AC65992EA5884B3CB02BC0 /* Mui_widgets.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Mui_widgets.cc; path = ../gumps/Mui_widgets.cc; sourceTree = "<group>"; };
+		CD1DA66F079F6D74EDE72F05 /* Mui_widgets.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Mui_widgets.h; path = ../gumps/Mui_widgets.h; sourceTree = "<group>"; };
+		AE2BE132E70DBC04B9B1E5F9 /* Mui_window.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Mui_window.cc; path = ../gumps/Mui_window.cc; sourceTree = "<group>"; };
+		E828A5F04795D6B0EC46B459 /* Mui_window.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Mui_window.h; path = ../gumps/Mui_window.h; sourceTree = "<group>"; };
 		8A38EB752E2AA11300450868 /* playscene.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = playscene.h; path = ../playscene.h; sourceTree = SOURCE_ROOT; };
 		8A38EB762E2AA11300450868 /* playscene.cc */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = playscene.cc; path = ../playscene.cc; sourceTree = SOURCE_ROOT; };
 		8A3D5ADD2EE1D9420044D0FF /* gumpinf.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = gumpinf.h; sourceTree = "<group>"; };
@@ -1454,6 +1508,42 @@
 				8A33B5ED2C2051B800075AF4 /* ConfigSetting_widget.h */,
 				8A33B5EE2C2051B800075AF4 /* AdvancedOptions_gump.cc */,
 				8A33B5F02C2051B800075AF4 /* AdvancedOptions_gump.h */,
+				FCF19B9D7E90760DDB9CCF02 /* Mui_cheats.cc */,
+				1CD95A235236DCDFCC54E078 /* Mui_cheats.h */,
+				414278C9663F119132D75AA7 /* Mui_config_editor.cc */,
+				5B3D0649B8544166297ECD7C /* Mui_config_editor.h */,
+				2CC73053F74BD48351E8B2A5 /* Mui_config_meta.cc */,
+				54550AC83F6603AC2906616E /* Mui_config_meta.h */,
+				E122BDB776741039FA108729 /* Mui_dialogue.cc */,
+				479330209F1ED897356F7592 /* Mui_dialogue.h */,
+				DD0453C33A2BB208ECF36C8C /* Mui_dialogue_test.cc */,
+				57BA681CC70430F140E53827 /* Mui_dialogue_test.h */,
+				611E30B3B7684F69A7A42EB6 /* Mui_font.cc */,
+				2CD74A480DCED32A7A999BFA /* Mui_font.h */,
+				AF5DF8C5F2ABA80D03116866 /* Mui_game_menu.cc */,
+				87E70EF97B728C5C642BB002 /* Mui_game_menu.h */,
+				4723FFEBB5EB29FF620BEDA2 /* Mui_journey_log.cc */,
+				4990824A7AD7E6A67A635FB5 /* Mui_journey_log.h */,
+				1C2E8229017399D5AE982A9C /* Mui_keys_editor.cc */,
+				649AF1CAA1BDCF2044F70001 /* Mui_keys_editor.h */,
+				9BE07FB210DB9F5B25044498 /* Mui_keys_model.cc */,
+				C766E6506422F0974FCB7E39 /* Mui_keys_model.h */,
+				AE7ED961820FD2C8113BE86B /* Mui_options.cc */,
+				330881FB1B7E7AC82D709483 /* Mui_options.h */,
+				6BAAE0F36582D8B30C15981A /* Mui_options_model.cc */,
+				DDD8837F27B19C018BD2D2C9 /* Mui_options_model.h */,
+				7F1188412F6B47CD4F44FC76 /* Mui_painter.cc */,
+				FCA50364024F94E0CE295AFE /* Mui_painter.h */,
+				017DE7C51958E40CCBCFE268 /* Mui_router.cc */,
+				DF02DA002AD96E8B961F9586 /* Mui_router.h */,
+				1F1118693CC4BB56E4EAEC5A /* Mui_selftest.cc */,
+				29FAF5671C880725FC94E68D /* Mui_selftest.h */,
+				DD7CBC37B7A6AE085F70EE99 /* Mui_theme.cc */,
+				DF736285B3DE9ED4417017D7 /* Mui_theme.h */,
+				20AC65992EA5884B3CB02BC0 /* Mui_widgets.cc */,
+				CD1DA66F079F6D74EDE72F05 /* Mui_widgets.h */,
+				AE2BE132E70DBC04B9B1E5F9 /* Mui_window.cc */,
+				E828A5F04795D6B0EC46B459 /* Mui_window.h */,
 				8AB53D8A1C9CA0A90084C69D /* ShortcutBar_gump.cc */,
 				8AB53D8B1C9CA0A90084C69D /* ShortcutBar_gump.h */,
 				8AD4A92F1A92B9DB0004762D /* InputOptions_gump.cc */,
@@ -1984,6 +2074,24 @@
 				E700DD5E1A6E3121006C8BE4 /* sfxinf.cc in Sources */,
 				E700DCAE1A6E30A7006C8BE4 /* shapeid.cc in Sources */,
 				8A33B5EF2C2051B800075AF4 /* AdvancedOptions_gump.cc in Sources */,
+				53752C3E4B2573A7976788FF /* Mui_cheats.cc in Sources */,
+				EBA86E0A69734CB47CC4FB84 /* Mui_config_editor.cc in Sources */,
+				EF42F9A24833BD791AD80390 /* Mui_config_meta.cc in Sources */,
+				FA89D6BFC421B0161E648031 /* Mui_dialogue.cc in Sources */,
+				23E0095FE286B08E09225CB9 /* Mui_dialogue_test.cc in Sources */,
+				5FD5D30D88C6600DFC1A53FD /* Mui_font.cc in Sources */,
+				85BF55C2BB60BDDFA9C8D581 /* Mui_game_menu.cc in Sources */,
+				0F48ACC8A99804CB91D0CFBC /* Mui_journey_log.cc in Sources */,
+				41C67A0A622336E69E123571 /* Mui_keys_editor.cc in Sources */,
+				5A586572CD137C766CC2AB69 /* Mui_keys_model.cc in Sources */,
+				398FDC355B8932A69CD2DDBC /* Mui_options.cc in Sources */,
+				12900DF5323DB5B1B26D6CE2 /* Mui_options_model.cc in Sources */,
+				B1CC8AF349F3F7D4F3B1FF2C /* Mui_painter.cc in Sources */,
+				367E5709A2C669FF3012D52A /* Mui_router.cc in Sources */,
+				FB26D4E6E07E540C2A17B6CB /* Mui_selftest.cc in Sources */,
+				472F707B99B445BF25E0ED59 /* Mui_theme.cc in Sources */,
+				38341016B3F05D5BAB82A874 /* Mui_widgets.cc in Sources */,
+				1A1D761FA58E83402E0AB85E /* Mui_window.cc in Sources */,
 				8A33B5EC2C2051B800075AF4 /* ConfigSetting_widget.cc in Sources */,
 				8A33B5E92C2051B800075AF4 /* DropDown_widget.cc in Sources */,
 				8A33B5E62C2051B800075AF4 /* Scrollable_widget.cc in Sources */,

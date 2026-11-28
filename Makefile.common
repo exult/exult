@@ -162,6 +162,24 @@ GUMPS_OBJS:= \
 	gumps/Gamemenu_gump.o \
 	gumps/GameDisplayOptions_gump.o \
 	gumps/Mixer_gump.o \
+	gumps/Mui_cheats.o \
+	gumps/Mui_config_editor.o \
+	gumps/Mui_config_meta.o \
+	gumps/Mui_dialogue.o \
+	gumps/Mui_dialogue_test.o \
+	gumps/Mui_font.o \
+	gumps/Mui_game_menu.o \
+	gumps/Mui_journey_log.o \
+	gumps/Mui_keys_editor.o \
+	gumps/Mui_keys_model.o \
+	gumps/Mui_options.o \
+	gumps/Mui_options_model.o \
+	gumps/Mui_painter.o \
+	gumps/Mui_router.o \
+	gumps/Mui_selftest.o \
+	gumps/Mui_theme.o \
+	gumps/Mui_widgets.o \
+	gumps/Mui_window.o \
 	gumps/Modal_gump.o \
 	gumps/Gump.o \
 	gumps/Gump_button.o \
@@ -322,7 +340,11 @@ EXULT_FLX_OBJECTS := \
 	data/fonts_original.vga \
 	data/fonts_serif.vga \
 	data/shortcutbar.vga \
-	data/fonts/font_map.txt
+	data/fonts/font_map.txt \
+	data/mui_fonts.vga \
+	data/mui_ultima.thm \
+	data/mui_modern.thm \
+	data/mui_config_keys.txt
 
 EXULT_FONTS_ORIGINAL_VGA := data/fonts_original.vga data/fonts_original_vga.h
 EXULT_FONTS_ORIGINAL_VGA_OBJECTS := \
@@ -585,6 +607,10 @@ gumps/Gump.o : gumps/Gump.cc $(EXULT_BG_FLX) $(EXULT_SI_FLX)
 gumps/GameDisplayOptions_gump.o : gumps/GameDisplayOptions_gump.cc $(EXULT_FLX)
 
 gumps/Mixer_gump.o : gumps/Mixer_gump.cc $(EXULT_FLX)
+gumps/Mui_config_meta.o : gumps/Mui_config_meta.cc $(EXULT_FLX)
+gumps/Mui_font.o : gumps/Mui_font.cc $(EXULT_FLX)
+gumps/Mui_theme.o : gumps/Mui_theme.cc $(EXULT_FLX)
+gumps/Mui_window.o : gumps/Mui_window.cc $(EXULT_FLX)
 gumps/ItemMenu_gump.o : gumps/ItemMenu_gump.cc $(EXULT_FLX)
 
 gumps/InputOptions_gump.o : gumps/InputOptions_gump.cc $(EXULT_FLX)
