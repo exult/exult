@@ -60,6 +60,7 @@
 #include "fnames.h"
 #include "game.h"
 #include "gameclk.h"
+#include "gamedoctor.h"
 #include "gamemap.h"
 #include "gamerend.h"
 #include "items.h"
@@ -1468,6 +1469,7 @@ void Game_window::read() {
 	// before calling read_npcs!!
 	setup_game(cheat.in_map_editor());    // Read NPC's, usecode.
 	Mouse::mouse()->set_speed_cursor();
+	Game_doctor::get().on_game_restored();
 }
 
 /*
@@ -2871,6 +2873,7 @@ void Game_window::setup_game(bool map_editing) {
 	}
 	// Init. current 'tick'.
 	Game::set_ticks(SDL_GetTicks());
+	read_play_time();
 	Face_stats::RemoveGump();    // it tries to update when reading actors so
 								 // delete it until finished loading
 	init_actors();               // Set up actors if not already done.

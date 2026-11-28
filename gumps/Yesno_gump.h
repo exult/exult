@@ -56,6 +56,9 @@ public:
 	static bool ask(
 			const char* txt, Paintable* paint = nullptr,
 			const char* font = "SMALL_BLACK_FONT");    // Ask question, get answer.
+	// Set while a themed menu window is open: asks in the menu style
+	// instead (timeout in seconds counts down to no; < 0 for none).
+	static inline bool (*themed_ask)(const std::string& txt, int timeout) = nullptr;
 };
 
 class Countdown_gump : public Yesno_gump {

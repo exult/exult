@@ -1,0 +1,46 @@
+# Game doctor check-up rules for Black Gate.
+#
+# One rule per line:  id|severity|kind|when|args|message
+#   id        unique name; a mod's <PATCH>/doctor_rules.txt replaces a rule
+#             with the same id, and 'id|off' disables it.
+#   severity  error, warning or info.
+#   kind      item     args: shape=N [frame=N] [quality=N] [min=N]
+#                      finding when fewer than min (default 1) exist anywhere,
+#                      containers and NPC inventories included.
+#             npc      args: npc=N
+#                      finding when the NPC is dead or missing.
+#             keys     args: key=N doors=N,N,.. locked=N containers=N,..
+#                      [ignore=Q,Q,..]
+#                      finding for each key quality that locks a door
+#                      (frame % 4 == locked) or a locked container but has
+#                      no key of that quality anywhere or on the keyring.
+#             orphans  args: [ignore=N,N,..]
+#                      objects whose owner does not list them,
+#                      containers nested deeper than 16 or in a cycle,
+#                      objects outside the map, bodies of living NPCs
+#                      (except the NPCs in ignore=, whose bodies the game
+#                      places in the map on purpose).
+#   when      'always', or space-separated flag tests that must all hold:
+#             +N / -N (flag N set / clear, decimal or 0x hex) or
+#             +NAME / -NAME (a name from global_flags.txt).
+#   message   shown to the player; the rest of the line.
+# Lines starting with '#' and blank lines are ignored.
+
+# Lord British hands over the Orb of the Moons in conversation and sets
+# flag 0xDD (content/bgkeyring/src/npcs/lordbritish.uc:192-205,
+# content/bgkeyring/src/headers/bg/bg_gflags.uc:81).
+lord_british_alive|error|npc|-LB_GAVE_ORB|npc=23|Lord British is dead or missing, and he has not given the Avatar the Orb of the Moons yet.
+
+# After that the Orb (shape 785) is needed for Moongate travel
+# (content/bgkeyring/src/items/orb_of_the_moons.uc, bg_shapes.uc:192).
+orb_of_the_moons|warning|item|+LB_GAVE_ORB|shape=785 min=1|The Orb of the Moons is missing. It is needed to travel by Moongate.
+
+# Doors 270/376/432/433 are locked when frame % 4 == 2 (3 is a magic lock);
+# keys are shape 641 matched by quality (content/bgkeyring/src/items/key.uc:42).
+# ignore= lists the qualities that are locked without any key on a new
+# game (keys handed out by usecode later, or doors opened by other means);
+# found with --doctor-checkup on a new Black Gate game.
+locked_without_key|warning|keys|always|key=641 doors=270,376,432,433 locked=2 containers=522 ignore=0,66,149,224,233,234,238,239,241,248,249,251,254,255|Something is locked and no key for it exists
+
+# Generic consistency checks.
+orphans|error|orphans|always||Object tree problem

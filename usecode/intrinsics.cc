@@ -46,6 +46,7 @@
 #include "frflags.h"
 #include "game.h"
 #include "gameclk.h"
+#include "gamedoctor.h"
 #include "gamemap.h"
 #include "gamewin.h"
 #include "gump_utils.h"
@@ -72,9 +73,12 @@
 #include "ucscriptop.h"
 #include "ucsymtbl.h"
 #include "useval.h"
+#include "utils.h"
 #include "virstone.h"
 
+#include <algorithm>
 #include <array>
+#include <cctype>
 #include <cmath>
 #include <limits>
 #include <map>
@@ -2862,6 +2866,124 @@ USECODE_INTRINSIC(get_shape_flag) {
 
 	const Shape_info* info = get_shape_info_for_shape(target.get_int_value());
 	return Usecode_value(info ? eval_shape_flag(*info, flag_id) : 0);
+}
+
+/*
+ *  Game doctor (Exult, provisional slots; see docs/game_doctor.md).
+ */
+namespace {
+	// A usecode string parameter, or nullptr if it is not a string.
+	const char* doctor_string_parm(const Usecode_value& v) {
+		const char* s = v.get_str_value();
+		return s != nullptr && *s != '\0' ? s : nullptr;
+	}
+}    // namespace
+
+USECODE_INTRINSIC(get_flag_number) {
+	// get_flag_number(name): flag number, or -1 if no flag has that name.
+	const char* name = doctor_string_parm(parms[0]);
+	return Usecode_value(name != nullptr ? Game_doctor::get().flag_number(name) : -1);
+}
+
+USECODE_INTRINSIC(get_flag_by_name) {
+	// get_flag_by_name(name): the flag's value; false if the name is unknown.
+	const char* name = doctor_string_parm(parms[0]);
+	const int   num  = name != nullptr ? Game_doctor::get().flag_number(name) : -1;
+	return Usecode_value(num >= 0 && get_global_flag_bool(num));
+}
+
+USECODE_INTRINSIC(set_flag_by_name) {
+	// set_flag_by_name(name, value): true if set. Sets the flag directly,
+	// as gflags[] does (not a doctor change, so no backup or undo).
+	const char* name = doctor_string_parm(parms[0]);
+	const int   num  = name != nullptr ? Game_doctor::get().flag_number(name) : -1;
+	return Usecode_value(num >= 0 && set_global_flag(num, parms[1].is_true()));
+}
+
+USECODE_INTRINSIC(doctor_find_npcs) {
+	// doctor_find_npcs(text): NPCs whose name contains the text, or whose
+	// number it is; an empty text finds every NPC.
+	const char* text = parms[0].get_str_value();
+	std::string query;
+	if (text != nullptr) {
+		query = text;
+	} else if (parms[0].is_int()) {
+		query = std::to_string(parms[0].get_int_value());
+	}
+	std::vector<Game_object*> npcs;
+	for (const int num : Game_doctor::get().find_npcs(query)) {
+		if (Actor* npc = gwin->get_npc(num)) {
+			npcs.push_back(npc);
+		}
+	}
+	Usecode_value result(static_cast<int>(npcs.size()), nullptr);
+	int           i = 0;
+	for (auto* npc : npcs) {
+		Usecode_value val(npc);
+		result.put_elem(i++, val);
+	}
+	return result;
+}
+
+USECODE_INTRINSIC(doctor_find_items) {
+	// doctor_find_items(shape[, frame, quality, max]): objects anywhere in
+	// the loaded maps and NPC inventories; -359 means any.
+	Game_doctor::Item_query query;
+	query.shape                               = parms[0].get_int_value();
+	query.frame                               = parms.size() > 1 ? parms[1].get_int_value() : c_any_framenum;
+	query.quality                             = parms.size() > 2 ? parms[2].get_int_value() : c_any_qual;
+	const int                       max_count = parms.size() > 3 ? parms[3].get_int_value() : 500;
+	const auto                      hits      = Game_doctor::get().find_items(query, static_cast<size_t>(std::max(max_count, 0)));
+	std::vector<Game_object_shared> objs;
+	for (const auto& hit : hits) {
+		if (Game_object_shared obj = hit.obj.lock()) {
+			objs.push_back(std::move(obj));
+		}
+	}
+	Usecode_value result(static_cast<int>(objs.size()), nullptr);
+	int           i = 0;
+	for (auto& obj : objs) {
+		Usecode_value val(std::move(obj));
+		result.put_elem(i++, val);
+	}
+	return result;
+}
+
+USECODE_INTRINSIC(doctor_dump) {
+	// doctor_dump(file_name): writes the state dump (with check-up
+	// findings) to <SAVEGAME>/doctor/<file_name>; true if written. Only
+	// [A-Za-z0-9._-] names, so it cannot write anywhere else.
+	const char* name = doctor_string_parm(parms[0]);
+	if (name == nullptr) {
+		return Usecode_value(false);
+	}
+	const std::string file(name);
+	const bool        safe = std::all_of(file.begin(), file.end(), [](unsigned char c) {
+        return std::isalnum(c) != 0 || c == '.' || c == '_' || c == '-';
+    });
+	if (!safe || file == "." || file == "..") {
+		return Usecode_value(false);
+	}
+	U7mkdir("<SAVEGAME>/doctor", 0755);
+	std::string err;
+	if (!Game_doctor::get().write_dump(get_system_path("<SAVEGAME>") + "/doctor/" + file, &err)) {
+		cerr << "doctor_dump: " << err << endl;
+		return Usecode_value(false);
+	}
+	return Usecode_value(true);
+}
+
+USECODE_INTRINSIC(doctor_checkup) {
+	// doctor_checkup(): the check-up findings as "severity id: message".
+	ignore_unused_variable_warning(parms);
+	const auto    findings = Game_doctor::get().run_checkup();
+	Usecode_value result(static_cast<int>(findings.size()), nullptr);
+	int           i = 0;
+	for (const auto& finding : findings) {
+		Usecode_value val(finding.severity + ' ' + finding.id + ": " + finding.message);
+		result.put_elem(i++, val);
+	}
+	return result;
 }
 
 USECODE_INTRINSIC(run_endgame) {

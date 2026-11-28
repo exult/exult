@@ -1,0 +1,148 @@
+/*
+Copyright (C) 2026 The Exult Team
+
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+*/
+
+#ifdef HAVE_CONFIG_H
+#	include <config.h>
+#endif
+
+#include "Mui_router.h"
+
+#include "Configuration.h"
+#include "Gamemenu_gump.h"
+#include "Gump_button.h"
+#include "Gump_manager.h"
+#include "Mui_cheats.h"
+#include "Mui_game_menu.h"
+#include "Mui_journey_log.h"
+#include "Mui_options.h"
+#include "Mui_theme.h"
+#include "cheat.h"
+#include "exult.h"
+#include "gamewin.h"
+#include "mouse.h"
+
+#include <algorithm>
+
+namespace Mui {
+	std::string menu_style() {
+		std::string style;
+		// Reading does not create the key; classic is the default.
+		config->value("config/gameplay/menu_style", style, "classic");
+		return style.empty() ? std::string("classic") : style;
+	}
+
+	int menu_scale() {
+		int pct = 100;
+		config->value("config/gameplay/menu_scale", pct, 100);
+		return std::clamp(pct, 50, 200);
+	}
+
+	bool themed() {
+		const std::string style = menu_style();
+		if (style == "classic") {
+			return false;
+		}
+		Game_window* gwin = Game_window::get_instance();
+		if (!gwin || gwin->is_in_exult_menu()) {
+			return false;
+		}
+		return Mui_theme::load(style) != nullptr;
+	}
+
+	bool open_game_menu() {
+		if (!themed()) {
+			return false;
+		}
+		Gump_manager* gman = Game_window::get_instance()->get_gump_man();
+		bool          classic;
+		{
+			Mui_game_menu menu;
+			gman->do_modal_gump(&menu, Mouse::hand);
+			classic = menu.wants_classic();
+		}
+		if (classic && quitting_time == QUIT_TIME_NO) {
+			// The style was set to classic in Options: go on there.
+			Gamemenu_gump gmenu;
+			gman->do_modal_gump(&gmenu, Mouse::hand);
+		}
+		return true;
+	}
+
+	bool open_options(const char* tab) {
+		if (!themed()) {
+			return false;
+		}
+		Game_window*       gwin = Game_window::get_instance();
+		Mui_options_window options(tab);
+		gwin->get_gump_man()->do_modal_gump(&options, Mouse::hand);
+		gwin->set_all_dirty();
+		return true;
+	}
+
+	bool open_journey_log(bool* restored) {
+		if (restored) {
+			*restored = false;
+		}
+		if (!themed()) {
+			return false;
+		}
+		Game_window*       gwin = Game_window::get_instance();
+		Mui_journey_window log;
+		gwin->get_gump_man()->do_modal_gump(&log, Mouse::hand);
+		gwin->set_all_dirty();
+		if (restored) {
+			*restored = log.restored_game();
+		}
+		return true;
+	}
+
+	bool open_cheats() {
+		if (!themed() || !cheat() || !cheat.get_cheat_screen()) {
+			return false;
+		}
+		Game_window*     gwin = Game_window::get_instance();
+		Mui_cheat_window window;
+		gwin->get_gump_man()->do_modal_gump(&window, Mouse::hand);
+		gwin->set_all_dirty();
+		return true;
+	}
+
+	bool open_doctor(const char* section) {
+		Game_window* gwin = Game_window::get_instance();
+		if (!cheat() || !cheat.get_cheat_screen() || !gwin || gwin->is_in_exult_menu()) {
+			return false;
+		}
+		Mui_cheat_window window;
+		window.select_section(section ? section : "doctor_checkup");
+		gwin->get_gump_man()->do_modal_gump(&window, Mouse::hand);
+		gwin->set_all_dirty();
+		return true;
+	}
+
+	std::string cycle_menu_style() {
+		const std::string cur  = menu_style();
+		std::string       next = "classic";
+		if (cur == "classic") {
+			next = "ultima";
+		} else if (cur == "ultima") {
+			next = "modern";
+		}
+		config->set("config/gameplay/menu_style", next, true);
+		return next;
+	}
+}    // namespace Mui

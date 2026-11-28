@@ -269,13 +269,13 @@ USECODE_INTRINSIC_PTR(get_random),                               // 0x00
 		USECODE_INTRINSIC_PTR(UNKNOWN),                   // 0xed
 		USECODE_INTRINSIC_PTR(UNKNOWN),                   // 0xee
 		USECODE_INTRINSIC_PTR(UNKNOWN),                   // 0xef
-		USECODE_INTRINSIC_PTR(UNKNOWN),                   // 0xf0
-		USECODE_INTRINSIC_PTR(UNKNOWN),                   // 0xf1
-		USECODE_INTRINSIC_PTR(UNKNOWN),                   // 0xf2
-		USECODE_INTRINSIC_PTR(UNKNOWN),                   // 0xf3
-		USECODE_INTRINSIC_PTR(UNKNOWN),                   // 0xf4
-		USECODE_INTRINSIC_PTR(UNKNOWN),                   // 0xf5
-		USECODE_INTRINSIC_PTR(UNKNOWN),                   // 0xf6
+		USECODE_INTRINSIC_PTR(get_flag_number),           // 0xf0 (Exult, provisional)
+		USECODE_INTRINSIC_PTR(get_flag_by_name),          // 0xf1 (Exult, provisional)
+		USECODE_INTRINSIC_PTR(set_flag_by_name),          // 0xf2 (Exult, provisional)
+		USECODE_INTRINSIC_PTR(doctor_find_npcs),          // 0xf3 (Exult, provisional)
+		USECODE_INTRINSIC_PTR(doctor_find_items),         // 0xf4 (Exult, provisional)
+		USECODE_INTRINSIC_PTR(doctor_dump),               // 0xf5 (Exult, provisional)
+		USECODE_INTRINSIC_PTR(doctor_checkup),            // 0xf6 (Exult, provisional)
 		USECODE_INTRINSIC_PTR(UNKNOWN),                   // 0xf7
 		USECODE_INTRINSIC_PTR(UNKNOWN),                   // 0xf8
 		USECODE_INTRINSIC_PTR(UNKNOWN),                   // 0xf9

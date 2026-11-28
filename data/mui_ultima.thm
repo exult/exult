@@ -1,0 +1,83 @@
+<theme>
+	<!--
+	Exult themed menu style "ultima": the look of Exult's original menu gumps
+	(a black outline round a bevelled brown body, the green checkmark tab)
+	with the layout and controls of the themed menus, gold accents and serif
+	type. Metrics are in pixels at a 720-px display
+	height and scale with the display. Colours are #RRGGBB and resolve to the
+	nearest day-palette entry. A mod can override this file with
+	mui_themes/ultima.thm in its patch folder or add new themes there.
+	-->
+	<meta>
+		<name>ultima</name>
+		<label>0xC01</label>
+	</meta>
+	<layout>
+		<tabs>top</tabs>
+		<sidebar_width>200</sidebar_width>
+	</layout>
+	<metrics>
+		<unit>8</unit>
+		<gap>8</gap>
+		<control_h>32</control_h>
+		<row_h>44</row_h>
+		<tab_h>36</tab_h>
+		<radius>0</radius>
+		<border>3</border>
+		<title_h>48</title_h>
+		<footer_h>52</footer_h>
+	</metrics>
+	<colours>
+		<backdrop>#000000</backdrop>
+		<backdrop_alpha>120</backdrop_alpha>
+		<window>#6d3c0c</window>
+		<panel>#997140</panel>
+		<panel_alt>#aa8559</panel_alt>
+		<frame>#6d3c0c</frame>
+		<frame_light>#895d2c</frame_light>
+		<frame_dark>#4c2c0c</frame_dark>
+		<text>#000000</text>
+		<text_dim>#2c1c08</text_dim>
+		<text_on_accent>#201408</text_on_accent>
+		<text_on_danger>#f6e6a5</text_on_danger>
+		<title_text>#f6e6a5</title_text>
+		<accent>#c69518</accent>
+		<accent_hover>#eeca28</accent_hover>
+		<focus>#f6e6a5</focus>
+		<danger>#9c2414</danger>
+		<warning>#b8740c</warning>
+		<success>#3f6e22</success>
+		<badge_now>#3f6e22</badge_now>
+		<badge_restart>#b8740c</badge_restart>
+		<badge_changed>#6b3a1a</badge_changed>
+		<cheat_accent>#b02018</cheat_accent>
+	</colours>
+	<fonts>
+		<title>
+			<face>serif_bold</face>
+			<px>30</px>
+		</title>
+		<heading>
+			<face>serif_bold</face>
+			<px>20</px>
+		</heading>
+		<body>
+			<face>serif</face>
+			<px>16</px>
+		</body>
+		<small>
+			<face>serif</face>
+			<px>13</px>
+		</small>
+		<mono>
+			<face>sans</face>
+			<px>16</px>
+		</mono>
+	</fonts>
+	<frame>
+		<style>gump</style>
+	</frame>
+	<panel>
+		<texture>plain</texture>
+	</panel>
+</theme>
