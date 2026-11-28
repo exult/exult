@@ -29,6 +29,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "Gump_button.h"
 #include "Gump_manager.h"
 #include "InputOptions_gump.h"
+#include "Mui_router.h"
 #include "Newfile_gump.h"
 #include "Text_button.h"
 #include "UIOptions_gump.h"
@@ -74,6 +75,21 @@ public:
 		return get_text_msg(0x5E5 - msg_file_start);
 	}
 
+	static auto MenuStyleLabel_() {
+		return get_text_msg(0xC04 - msg_file_start);
+	}
+
+	static auto Classic_() {
+		return get_text_msg(0xC05 - msg_file_start);
+	}
+
+	static auto Ultima_() {
+		return get_text_msg(0xC01 - msg_file_start);
+	}
+
+	static auto Modern_() {
+		return get_text_msg(0xC02 - msg_file_start);
+	}
 	static auto Quit() {
 		return get_text_msg(0x5E6 - msg_file_start);
 	}
@@ -112,6 +128,18 @@ void Gamemenu_gump::createButtons() {
 			this, &Gamemenu_gump::game_display_options, Strings::GameDisplay(), margin, yForRow(y++), preferred_button_width, 11);
 	buttons[id_input] = std::make_unique<Gamemenu_button>(
 			this, &Gamemenu_gump::input_options, Strings::GameInput(), margin, yForRow(y++), preferred_button_width, 11);
+	// The one way back from Classic to the themed menus; the menus follow
+	// the setting the next time they open.
+	if (!gwin->is_in_exult_menu()) {
+		const string style     = Mui::menu_style();
+		string       name      = style == "classic"  ? string(Strings::Classic_())
+								 : style == "ultima" ? string(Strings::Ultima_())
+								 : style == "modern" ? string(Strings::Modern_())
+													 : style;
+		buttons[id_menu_style] = std::make_unique<Gamemenu_button>(
+				this, &Gamemenu_gump::menu_style, string(Strings::MenuStyleLabel_()) + name, margin, yForRow(y++),
+				preferred_button_width, 11);
+	}
 #if !defined(SDL_PLATFORM_IOS) && !defined(ANDROID)
 	if (!gwin->is_in_exult_menu()) {
 		buttons[id_quit] = std::make_unique<Gamemenu_button>(
@@ -196,6 +224,12 @@ void Gamemenu_gump::input_options() {
 	gumpman->do_modal_gump(&input_opts, Mouse::hand);
 }
 
+void Gamemenu_gump::menu_style() {
+	Mui::cycle_menu_style();
+	// Rebuild the buttons to show the new name.
+	createButtons();
+	gwin->set_all_dirty();
+}
 void Gamemenu_gump::paint() {
 	Modal_gump::paint();
 	for (auto& btn : buttons) {

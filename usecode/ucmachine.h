@@ -182,6 +182,10 @@ public:
 	void init_conversation();
 	int  get_num_faces_on_screen() const;
 
+	Conversation* get_conversation() const {
+		return conv;
+	}
+
 	// intercept the next click_on_item intrinsic
 	virtual void         intercept_click_on_item(Game_object* obj)          = 0;
 	virtual Game_object* get_intercept_click_on_item() const                = 0;

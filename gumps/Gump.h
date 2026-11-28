@@ -262,6 +262,25 @@ public:
 		return true;
 	}
 
+	// Gumps that paint into their own display-resolution layer (themed menus)
+	// want mouse coordinates in display pixels mapped by display_to_local()
+	// instead of game coordinates.
+	virtual bool wants_display_coords() const {
+		return false;
+	}
+
+	virtual bool display_to_local(int sx, int sy, int& lx, int& ly) const {
+		lx = sx;
+		ly = sy;
+		return true;
+	}
+
+	// Composite order the gump manager would give a layer-backed gump at this
+	// position, passed to gumps that manage their own layers.
+	virtual void set_layer_z_hint(int z) {
+		ignore_unused_variable_warning(z);
+	}
+
 	virtual bool     has_point(int x, int y) const;
 	virtual TileRect get_rect() const;
 

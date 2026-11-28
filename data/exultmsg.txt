@@ -1140,3 +1140,306 @@
 0xB18:Lightning
 0xB19:Single light
 0xB1A:Many lights
+# Themed menus (gumps/Mui_*.cc)
+0xC01:Ultima
+0xC02:Modern
+#MENU_STYLE key action
+0xC03:Cycle menu style
+0xC04:Menu style: 
+0xC05:Classic
+0xC06:Style
+0xC07:Close
+0xC08:Tab and the arrow keys move, Enter selects, Esc closes.
+0xC09:OK
+0xC0A:Cancel
+# Game menu
+0xC10:Game Menu
+0xC11:Return to Game
+0xC12:Journey Log
+0xC13:Options
+0xC14:Cheats
+0xC15:Quit
+0xC16:Close the menu and carry on with your journey.
+0xC17:Save your journey or load an earlier one.
+0xC18:Video, audio, gameplay and control settings.
+0xC19:Open the cheat tools (cheats are enabled).
+0xC1A:Leave Exult.
+0xC1B:Choose the look of Exult's menus: Ultima or Modern.
+0xC1C:Close this window.
+0xC1D:Back
+0xC1E:Return to the game menu.
+0xC1F:Opens the classic settings screen.
+# Options window (gumps/Mui_options.cc)
+0xC20:Video
+0xC21:Audio
+0xC22:Engine
+0xC23:Display
+0xC24:Input
+0xC25:UI
+0xC26:Advanced
+0xC27:Search settings
+0xC28:Applies now
+0xC29:Needs restart
+0xC2A:Changed
+0xC2B:Reset page
+0xC2C:Apply
+0xC2D:Every setting in exult.cfg
+0xC2E:No settings match your search.
+0xC2F:settings found
+0xC30:Open
+0xC31:Volume mixer
+0xC32:MIDI driver settings
+0xC33:Changes are kept until you press Apply. Search finds settings on every page.
+0xC34:Put this page back the way it was before your unapplied changes.
+0xC35:Close the window and drop the changes you have not applied.
+0xC36:Apply the changes on every page.
+0xC37:Find a setting on any page by its name, description or exult.cfg key.
+0xC38:Clear the search.
+0xC39:Pick a section or filter by path. Changes are written when you press Apply, and only the keys you change are touched.
+0xC3A:Go to this setting.
+# Options help: Video
+0xC40:Run Exult full screen instead of in a window.
+0xC41:Size of the window, or the display mode when running full screen.
+0xC42:How the game picture is enlarged: sharp pixels or one of the smoothing filters.
+0xC43:How many times the scaler enlarges the game picture.
+0xC44:Size of the visible game world in original pixels. Auto fits it to the window.
+0xC45:Filter used to stretch the scaled picture to the window.
+0xC46:Fill stretches to the window, Fit keeps the shape, Centre keeps the size.
+0xC47:Correct for the taller pixels of the original 320x200 screens.
+0xC48:Use the same video settings for the window and for full screen.
+# Options help: Audio
+0xC49:Set the volume of the music, sound effects and speech.
+0xC4A:Turn all sound and music on or off.
+0xC4B:Audio output rate in Hz. Changing it restarts the audio system.
+0xC4C:Play the sound in mono or stereo.
+0xC4D:Play the game's music.
+0xC4E:How often a music track repeats.
+0xC4F:Use the digital (Ogg) music tracks instead of MIDI.
+0xC50:MIDI device or synthesiser that plays the music.
+0xC51:Extra settings of the selected MIDI driver.
+0xC52:Sound effects: off, digital samples or MIDI.
+0xC53:Which sound effects pack (or MIDI conversion) to use.
+0xC54:Hear voiced speech, read subtitles, or both.
+# Options help: Engine
+0xC55:Let the Avatar write notes in the notebook automatically.
+0xC56:Pause the game while gumps such as backpacks are open.
+0xC57:Drop a whole stack without asking how many; hold Ctrl to split it.
+0xC58:Game speed in animation frames per second (5 is the original speed).
+0xC59:Show the hits each blow does in combat.
+0xC5A:Space pauses combat so you can give orders.
+0xC5B:Charmed party members fight as hard as the enemy.
+0xC5C:How hard combat is, from easiest to hardest.
+0xC5D:Small additions to the original game, such as extra light sources.
+0xC5E:Enable the cheat keys and the cheat screen.
+0xC5F:How the party eats: by hand, automatically, or not at all.
+# Options help: Display
+0xC60:Where the party's status bars are shown.
+0xC61:Show the shortcut bar at the top of the screen.
+0xC62:Outline colour of the items on the shortcut bar.
+0xC63:Hide shortcut bar items the party does not carry.
+0xC64:Colour behind the text that floats over the game.
+0xC65:Scroll the game view smoothly instead of a tile at a time.
+0xC66:Skip the splash screens when Exult starts.
+0xC67:Skip the scripted first scene of a new game.
+0xC68:Play the longer Serpent Isle introduction of a new game.
+0xC69:Show the Serpent Isle paperdolls in Black Gate.
+0xC6A:Start Exult straight away instead of the Android launcher.
+0xC6B:Language of the game text.
+0xC6C:Fonts of the game text: the original ones, Serif, or none.
+# Options help: Input
+0xC6D:Double-click a gump to close it.
+0xC6E:Right-click a gump to close it.
+0xC6F:Right-click to walk to a spot, with a single or a double click.
+0xC70:Scroll the game view when the mouse touches the edge of the window.
+0xC71:Use the middle mouse button for its own actions.
+0xC72:Faster mouse movement when running full screen.
+0xC73:Show a menu of actions when you touch an item.
+0xC74:Where the on-screen direction pad is shown on touch screens.
+0xC75:Touch and hold to walk to a spot.
+# Options help: UI
+0xC76:Size of the layers that gumps, text and the mouse pointer are drawn on.
+0xC77:How those layers are enlarged to the window.
+0xC78:How the layers fit the window: Fill, Fit or Centre.
+0xC79:Filter used to stretch the layers to the window.
+0xC7A:Fixed palette of the layers at night, or follow the game's lighting.
+0xC7B:Use one set of settings for every layer, or set each layer on its own.
+0xC7C:Size, scaling and palette of this layer only.
+0xC80:Filter by path or description
+0xC81:Other
+0xC82:Not set
+0xC83:Reset to default
+0xC84:Changed from default
+0xC85:keys
+0xC86:No keys match the filter.
+0xC87:Must be yes or no.
+0xC88:Must be one of:
+0xC89:Must be a whole number.
+0xC8A:Must be a number.
+0xC8B:Must be from
+0xC8C:to
+0xC8D:Default:
+0xC8E:Not known to this version of Exult (perhaps from a mod, Exult Studio or an older version). Kept as it is.
+0xC8F:Pick a section of exult.cfg to list its keys. Choose an open section again to close it.
+0xC90:Show only keys whose path or description contains this text.
+0xC91:Put this key back to its default value (written when you press Apply).
+0xC92:Some values are not valid. Fix the ones marked in red, then press Apply again.
+0xC93:(none)
+0xC94:This section only holds sub-sections. Pick one on the left.
+0xC95:key
+0xC96:Search saves
+0xC97:Newest first
+0xC98:Oldest first
+0xC99:Name A-Z
+0xC9A:Furthest in game
+0xC9B:Cards
+0xC9C:List
+0xC9D:New save
+0xC9E:Save the current game to a free slot
+0xC9F:Quick save
+0xCA0:Unreadable
+0xCA1:Day
+0xCA2:Play time
+0xCA3:Saved at
+0xCA4:In-game time
+0xCA5:Times saved
+0xCA6:Party
+0xCA7:Lvl
+0xCA8:HP
+0xCA9:Game
+0xCAA:Running build
+0xCAB:Load
+0xCAC:Save here
+0xCAD:Rename
+0xCAE:Delete
+0xCAF:Name for the new save:
+0xCB0:New name for this save:
+0xCB1:Okay to write over existing saved game?
+0xCB2:Okay to delete saved game?
+0xCB3:The save could not be renamed.
+0xCB4:saves
+0xCB5:save
+0xCB6:No saves match the search.
+0xCB7:Order of the saves.
+0xCB8:Show the saves as cards or as a list.
+0xCB9:Load the selected save (Enter).
+0xCBA:Write the current game into the selected slot.
+0xCBB:Change the name of the selected save (F2).
+0xCBC:Delete the selected save file (Delete).
+0xCBD:Find saves by name (/).
+0xCBE:Arrows pick a save, Enter loads it, F2 renames it, Delete removes it, / searches.
+0xCBF:File
+0xCC0:h
+0xCC1:min
+0xCC2:Not saved yet
+0xCC3:The game could not be saved.
+0xCC4:Mod
+0xCC5:Play time counts from this version of Exult on; older saves show a dash.
+# Themed conversations (gumps/Mui_dialogue.cc)
+0xDC0:Continue
+0xDC1:Click, Space or Enter: continue   PgUp: earlier lines
+0xDC2:1-9 or click: answer   Up/Down and Enter: choose   Esc: bye   PgUp: earlier lines
+0xDC3:Conversation so far
+0xDC4:Back to the conversation
+0xDC5:Wheel, PgUp/PgDn: scroll   Esc or H: back to the conversation
+# Themed cheat window
+0xCC6:Player
+0xCC7:World & time
+0xCC8:NPCs
+0xCC9:Teleport
+0xCCA:Global flags
+0xCCB:Usecode
+0xCCC:Map editor
+0xCCD:Cheats can break your save. Keep a separate save before experimenting.
+0xCCE:God mode
+0xCCF:The Avatar and the party cannot lose health or die.
+0xCD0:Archwizard mode
+0xCD1:Every spell is in the spellbook and casting costs no reagents or mana.
+0xCD2:Infravision
+0xCD3:See in the dark as if every place were lit.
+0xCD4:Hack mover
+0xCD5:Move any object anywhere, with no weight, reach or room checks.
+0xCD6:Eggs visible
+0xCD7:Show the hidden eggs that start events, monsters and music.
+0xCD8:Paperdolls
+0xCD9:Show characters as paperdolls in their inventory.
+0xCDA:Pickpocket
+0xCDB:Open the packs of other characters and take from them.
+0xCDC:Grab NPC for the NPC tool
+0xCDD:While on, clicking a character picks it for the NPC tool.
+0xCDE:Party
+0xCDF:Heal party
+0xCE0:Raises the fallen and restores health, mana and food; cures poison, curses and paralysis.
+0xCE1:Level up party
+0xCE2:Raises everyone in the party by one level, up to level 10.
+0xCE3:Cheat toggles
+0xCE4:Current time
+0xCE5:Day
+0xCE6:Hour
+0xCE7:Minute
+0xCE8:Set time
+0xCE9:Sets the game clock to this day, hour and minute.
+0xCEA:Time rate
+0xCEB:How fast game time passes; 1 is normal.
+0xCEC:Next time period
+0xCED:Moves the clock on to the next part of the day.
+0xCEE:Position
+0xCEF:Find NPCs by name or number
+0xCF0:Pick an NPC; Enter opens the NPC tools.
+0xCF1:No NPCs match the search.
+0xCF2:Teleport to NPC
+0xCF3:Open NPC tools...
+0xCF4:Edits this NPC in the text-mode NPC tool: stats, flags, shape, schedule, business and more.
+0xCF5:Not on the map
+0xCF6:Location
+0xCF7:Health
+0xCF8:shape
+0xCF9:Tile X
+0xCFA:Tile Y
+0xCFB:Lift (Z)
+0xCFC:Map
+0xCFD:Go to map
+0xCFE:Moves the party to these tile coordinates on the current map.
+0xCFF:Moves the party to the same spot on another map.
+0xD00:More teleport options...
+0xD01:Teleport by latitude and longitude or to an NPC in the text-mode menu.
+0xD02:Map teleport
+0xD03:Pick a place on the world map to teleport to.
+0xD04:Find flags by number or name
+0xD05:No flags match the search.
+0xD06:Set
+0xD07:Call usecode functions on objects in the text-mode usecode menu.
+0xD08:Advanced...
+0xD09:Opens this flag in the text-mode global flag editor.
+0xD0A:Sets or clears the selected global flag; Enter on a row does the same.
+0xD0B:flags
+0xD0C:The usecode menu calls any usecode function on an object, reloads the usecode and edits global flags. Calling usecode out of order is dangerous: use with care.
+0xD0D:Open usecode menu...
+0xD0E:Reload usecode
+0xD0F:Reads the usecode again, e.g. after compiling a change.
+0xD10:Map editor mode
+0xD11:Stops time for editing the map; Exult Studio connects when it runs.
+0xD12:Tile grid
+0xD13:Draws the tile grid over the map in map editor mode.
+0xD14:Shape browser
+0xD15:Browse every shape and frame of the game.
+0xD16:Sound tester
+0xD17:Play the music, sound effects and voices.
+0xD18:Create last shape
+0xD19:Places the shape last picked in the shape browser next to the Avatar.
+0xD1A:Open classic cheat screen
+0xD1B:The full text-mode cheat screen with every tool.
+0xD1C:Pick a section on the left. Changes apply at once. Esc closes.
+0xD1D:Done:
+0xD1F:Tools
+0xD20:Game
+0xD21:setting found
+0xD22:Menu style
+0xD23:Look of the game menu, Options, Journey Log and cheat window.
+0xD24:Classic: Exult's original menu gumps; takes effect when the menu next opens.
+0xD25:Ultima: these menus in the brown gump look of Exult's original menus.
+0xD26:Modern: dark, flat panels with a blue accent and sans-serif type.
+0xD27:A menu style supplied by the game or mod.
+0xD28:Menu size
+0xD29:Size of these menus; 100% is a comfortable part of the screen, whatever its width.
+0xD2A:Confirm
+0xD2B:How many?

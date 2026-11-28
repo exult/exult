@@ -32,6 +32,7 @@ class VideoOptions_gump : public Modal_gump {
 	static VideoOptions_gump* video_options_gump;
 
 private:
+	friend class Mui_options_model;
 	uint32                 resolution;
 	int                    scaling;
 	int                    scaler;
