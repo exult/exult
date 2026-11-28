@@ -298,4 +298,4 @@ Two gumps with the same shape number have independent text state. The `text` and
 
 ### Gump Lookup for Intrinsics
 
-All text intrinsics use `find_gump(item)` to locate the open gump for the given container. If the container is a world-placed object (no owner), a fallback scan of the open gumps list finds it. If the gump is not open, the intrinsic silently returns 0.
+All text intrinsics use `find_gump(item)` to locate the open gump for the given container. If the container is a world-placed object (no owner), a fallback scan of the open gumps list finds it. They then try the gump showing the item's owner, then the gump whose container is `item` (a dynamic gump on a bag inside another container, such as the [shop kit](shop_kit.md)'s counter in an NPC); a gump without the text field passes the search on to the next. If no gump has it, the intrinsic silently returns 0.

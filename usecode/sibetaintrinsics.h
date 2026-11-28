@@ -255,13 +255,13 @@ USECODE_INTRINSIC_PTR(get_random),                               // 0x00
 		USECODE_INTRINSIC_PTR(get_slider_value),          // 0xe2 (Exult)
 		USECODE_INTRINSIC_PTR(set_gump_text_font),        // 0xe3 (Exult)
 		USECODE_INTRINSIC_PTR(get_shape_flag),            // 0xe4 (Exult)
-		USECODE_INTRINSIC_PTR(UNKNOWN),                   // 0xe5
-		USECODE_INTRINSIC_PTR(UNKNOWN),                   // 0xe6
-		USECODE_INTRINSIC_PTR(UNKNOWN),                   // 0xe7
-		USECODE_INTRINSIC_PTR(UNKNOWN),                   // 0xe8
-		USECODE_INTRINSIC_PTR(UNKNOWN),                   // 0xe9
-		USECODE_INTRINSIC_PTR(UNKNOWN),                   // 0xea
-		USECODE_INTRINSIC_PTR(UNKNOWN),                   // 0xeb
+		USECODE_INTRINSIC_PTR(set_list_rows),             // 0xe5 (Exult, provisional)
+		USECODE_INTRINSIC_PTR(set_list_row),              // 0xe6 (Exult, provisional)
+		USECODE_INTRINSIC_PTR(get_list_selection),        // 0xe7 (Exult, provisional)
+		USECODE_INTRINSIC_PTR(set_list_selection),        // 0xe8 (Exult, provisional)
+		USECODE_INTRINSIC_PTR(get_list_count),            // 0xe9 (Exult, provisional)
+		USECODE_INTRINSIC_PTR(get_list_object),           // 0xea (Exult, provisional)
+		USECODE_INTRINSIC_PTR(open_gump),                 // 0xeb (Exult, provisional)
 		USECODE_INTRINSIC_PTR(UNKNOWN),                   // 0xec
 		USECODE_INTRINSIC_PTR(UNKNOWN),                   // 0xed
 		USECODE_INTRINSIC_PTR(UNKNOWN),                   // 0xee

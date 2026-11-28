@@ -89,6 +89,7 @@ Dragging_info::Dragging_info(
 	if (gump) {
 		to_drag = gump->find_object(gx, gy);
 		if (to_drag) {
+			gump->object_pressed(to_drag);
 			// Save location info.
 			gump->get_shape_location(to_drag, paintx, painty);
 			old_pos = Tile_coord(to_drag->get_tx(), to_drag->get_ty(), 0);

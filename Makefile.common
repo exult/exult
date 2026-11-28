@@ -150,11 +150,13 @@ GUMPS_OBJS:= \
 	gumps/Book_gump.o \
 	gumps/GameEngineOptions_gump.o \
 	gumps/CombatStats_gump.o \
+	gumps/Container_list_gump.o \
 	gumps/Dynamic_container_gump.o \
 	gumps/Dynamic_button.o \
 	gumps/Dynamic_text_widget.o \
 	gumps/Dynamic_shape_widget.o \
 	gumps/Dynamic_slider.o \
+	gumps/Dynamic_list_widget.o \
 	gumps/Enabled_button.o \
 	gumps/Face_button.o \
 	gumps/Face_stats.o \
@@ -574,7 +576,11 @@ audio/Midi.o : audio/Midi.cc $(EXULT_FLX)
 
 gumps/AudioOptions_gump.o : gumps/AudioOptions_gump.cc $(EXULT_FLX)
 
+gumps/Container_list_gump.o : gumps/Container_list_gump.cc $(EXULT_FLX)
+
 gumps/GameEngineOptions_gump.o : gumps/GameEngineOptions_gump.cc $(EXULT_FLX)
+
+gumps/Dynamic_list_widget.o : gumps/Dynamic_list_widget.cc $(EXULT_FLX)
 
 gumps/Face_stats.o : gumps/Face_stats.cc $(EXULT_FLX)
 

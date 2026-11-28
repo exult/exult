@@ -227,6 +227,18 @@ public:
 	static auto Serif() {
 		return get_text_msg(0x5DA - msg_file_start);
 	}
+
+	static auto Containers_() {
+		return get_text_msg(0x5DC - msg_file_start);
+	}
+
+	static auto Picture() {
+		return get_text_msg(0x5DD - msg_file_start);
+	}
+
+	static auto List() {
+		return get_text_msg(0x5DE - msg_file_start);
+	}
 };
 
 using GameDisplayOptions_button = CallbackTextButton<GameDisplayOptions_gump>;
@@ -349,6 +361,11 @@ void GameDisplayOptions_gump::build_buttons() {
 			this, &GameDisplayOptions_gump::toggle_fonts, fonts_txt, fonts, get_button_pos_for_label(Strings::Fonts_()),
 			yForRow(++y_index), large_size);
 
+	auto container_view_txt    = std::vector<std::string>{Strings::Picture(), Strings::List()};
+	buttons[id_container_view] = std::make_unique<GameDisplayTextToggle>(
+			this, &GameDisplayOptions_gump::toggle_container_view, container_view_txt, container_view,
+			get_button_pos_for_label(Strings::Containers_()), yForRow(++y_index), small_size);
+
 	// Risize to fit all
 	ResizeWidthToFitWidgets(tcb::span(buttons.data() + id_first, id_count));
 
@@ -405,10 +422,12 @@ void GameDisplayOptions_gump::load_settings() {
 	} else {
 		fonts = 0;    // original
 	}
+
+	container_view = gumpman->get_container_list_view() ? 1 : 0;
 }
 
 GameDisplayOptions_gump::GameDisplayOptions_gump() : Modal_gump(nullptr, -1) {
-	SetProceduralBackground(TileRect(0, 0, 100, yForRow(13)), -1);
+	SetProceduralBackground(TileRect(0, 0, 100, yForRow(14)), -1);
 
 	for (auto& btn : buttons) {
 		btn.reset();
@@ -416,13 +435,13 @@ GameDisplayOptions_gump::GameDisplayOptions_gump() : Modal_gump(nullptr, -1) {
 
 	// Ok
 	buttons[id_ok] = std::make_unique<GameDisplayOptions_button>(
-			this, &GameDisplayOptions_gump::close, Strings::OK(), 15, yForRow(12), 50);
+			this, &GameDisplayOptions_gump::close, Strings::OK(), 15, yForRow(13), 50);
 	// Help
 	buttons[id_help] = std::make_unique<GameDisplayOptions_button>(
-			this, &GameDisplayOptions_gump::help, Strings::HELP(), 50, yForRow(12), 50);
+			this, &GameDisplayOptions_gump::help, Strings::HELP(), 50, yForRow(13), 50);
 	// Cancel
 	buttons[id_cancel] = std::make_unique<GameDisplayOptions_button>(
-			this, &GameDisplayOptions_gump::cancel, Strings::CANCEL(), 75, yForRow(12), 50);
+			this, &GameDisplayOptions_gump::cancel, Strings::CANCEL(), 75, yForRow(13), 50);
 
 	load_settings();
 	build_buttons();
@@ -490,6 +509,9 @@ void GameDisplayOptions_gump::save_settings() {
 		Game::setup_text();
 	}
 
+	gumpman->set_container_list_view(container_view == 1);
+	config->set("config/gameplay/container_view", container_view == 1 ? "list" : "picture", false);
+
 	config->write_back();
 }
 
@@ -527,6 +549,9 @@ void GameDisplayOptions_gump::paint() {
 	}
 	if (buttons[id_fonts]) {
 		font->paint_text(iwin->get_ib8(), Strings::Fonts_(), x + label_margin, y + yForRow(++y_index) + 1);
+	}
+	if (buttons[id_container_view]) {
+		font->paint_text(iwin->get_ib8(), Strings::Containers_(), x + label_margin, y + yForRow(++y_index) + 1);
 	}
 	gwin->set_painted();
 }
