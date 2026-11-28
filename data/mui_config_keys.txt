@@ -1,0 +1,197 @@
+# Exult configuration keys, as shown by the Advanced tab of the themed
+# Options window (gumps/Mui_config_meta.cc and gumps/Mui_config_editor.cc).
+#
+# One row per key:
+#   path|type|default|range-or-choices|apply|description
+#
+#   path         full key path in exult.cfg. '*' stands for one dynamic part
+#                of the path: a whole segment (config/disk/game/*/path) or
+#                the end of one (config/audio/midi/volume_*). An exact path
+#                wins over a pattern; of two patterns the longer one wins.
+#   type         bool | enum | int | float | path | string. bool keys hold
+#                yes or no.
+#   default      the value Exult uses when the key is missing, exactly as
+#                the code has it (empty: no fixed default, e.g. it depends on
+#                the platform or on another key; the description says so).
+#   range-or-choices
+#                enum: comma-separated choices, matched without regard to
+#                case. int and float: min..max (optional).
+#   apply        now     = the Advanced tab applies the change at once
+#                restart = only read at startup (or when that part of the
+#                          engine starts again); takes effect after a
+#                          restart.
+#   description  one line in Australian English.
+#                A description starting with "Old " marks a legacy key that
+#                Exult converts at startup; the editor lists it only when
+#                it is present.
+#
+# Kept in step with the code by tools/mui/scan_config_keys.py: --update adds
+# keys found in the code with a TODO description, --check fails while a key
+# in the code has no row or a row is still TODO. Descriptions are written by
+# hand from the code that uses each key. Keys with no row (mods, Exult
+# Studio, typing errors) are shown under "Other" and kept as they are.
+
+# --- Disk and game folders ---------------------------------------------------
+config/disk/data_path|path|||restart|Folder with Exult's own data files (exult.flx and friends). Empty means the folder chosen when Exult was built or installed.
+config/disk/music_path|path|||restart|Folder with the digital music (OGG) files. Empty means the music folder inside the data folder.
+config/disk/no_crc|bool|no||restart|Skip the checksum test of exult.flx, exult_bg.flx and exult_si.flx at startup (as the --nocrc option does).
+config/disk/save_compression_level|int|1|0..2|restart|Compression of saved games: 0 none, 1 normal, 2 best. Other values are reset to 1.
+config/disk/u7path|path|./blackgate||restart|Old single-game data folder. Converted to config/disk/game/blackgate/path at startup and then removed.
+config/disk/game/*/path|path|||restart|Folder holding this game's original data. Default: a folder named after the game in Exult's game home folder.
+config/disk/game/*/static_path|path|||restart|Folder with this game's STATIC files. Empty means the static folder inside the game folder.
+config/disk/game/*/gamedat_path|path|||restart|Folder for this game's working GAMEDAT files. Empty means a gamedat folder in the user's save folder.
+config/disk/game/*/savegame_path|path|||restart|Folder where this game's saved games are kept. Empty means the user's Exult save folder.
+config/disk/game/*/mods|path|||restart|Folder searched for this game's mods. Empty means the mods folder inside the game folder.
+config/disk/game/*/patch|path|||restart|Folder whose files override this game's data (the PATCH folder). Empty means the patch folder inside the game folder.
+config/disk/game/*/source|path|||restart|Folder with this game's source files for Exult Studio. Empty means the source folder inside the game folder.
+config/disk/game/*/codepage|string|ASCII||restart|Character set of this game's text. ASCII is the original 7-bit set.
+config/disk/game/*/editing|bool|no||restart|Mark this game as being edited in Exult Studio.
+config/disk/game/*/keys|path|(default)||restart|Key bindings file for this game. (default) uses Exult's built-in bindings.
+config/disk/game/*/autonotes|path|(default)||restart|Automatic notes text file for this game's notebook. (default) uses the built-in notes.
+config/disk/game/*/waves|string|---||restart|Digital sound effects pack for this game (a file in the data folder). --- lets Exult pick one that is installed.
+config/disk/game/*/language|enum||en,fr,de,es,|restart|Language of this game's text when config/gameplay/language is not set. Empty keeps the game's own language.
+
+# --- Video: window and game area ---------------------------------------------
+config/video/fullscreen|bool|no||restart|Start Exult full screen instead of in a window. Alt+Enter switches while playing.
+config/video/share_video_settings|bool|yes||restart|Use the same display and scaling settings in a window as full screen. When off, the window has its own settings under config/video/window.
+config/video/display/width|int||320..16384|restart|Display (window or screen) width in pixels. Default: at least 1024, or the desktop size on phones and tablets.
+config/video/display/height|int||200..16384|restart|Display (window or screen) height in pixels. Default: at least 768, or the desktop size on phones and tablets.
+config/video/game/width|int|320|0..16384|restart|Width of the game area in game pixels. 0 together with height 0 fits the area to the display.
+config/video/game/height|int|200|0..16384|restart|Height of the game area in game pixels. 0 together with width 0 fits the area to the display.
+config/video/scale|int||1..8|restart|Scaling factor of the game area. Default: 2 (1 on phones and tablets). Hq3x and 3xBR force 3; Hq4x and 4xBR force 4; other smoothing scalers force 2.
+config/video/scale_method|enum|point|Point,Interlaced,Bilinear,BilinearPlus,2xSaI,SuperEagle,Super2xSaI,Scale2X,Hq2x,Hq3x,Hq4x,2xBR,3xBR,4xBR|restart|Scaler used to enlarge the game area. An unknown name falls back to Point.
+config/video/fill_mode|string|Fit||restart|How the game area fills the display: Fill, Fit, Aspect Correct Fit, Centre, Aspect Correct Centre, or Centre WxH. Phones and tablets default to Fill.
+config/video/fill_scaler|enum|point|Point,Interlaced,Bilinear,BilinearPlus,2xSaI,SuperEagle,Super2xSaI,Scale2X,Hq2x,Hq3x,Hq4x,2xBR,3xBR,4xBR|restart|Scaler used for the last stretch from the scaled game area to the display. An unknown name falls back to Bilinear.
+config/video/window/display/width|int||320..16384|restart|Window width when share_video_settings is off.
+config/video/window/display/height|int||200..16384|restart|Window height when share_video_settings is off.
+config/video/window/game/width|int|320|0..16384|restart|Game area width in a window when share_video_settings is off.
+config/video/window/game/height|int|200|0..16384|restart|Game area height in a window when share_video_settings is off.
+config/video/window/scale|int||1..8|restart|Scaling factor in a window when share_video_settings is off.
+config/video/window/scale_method|enum|point|Point,Interlaced,Bilinear,BilinearPlus,2xSaI,SuperEagle,Super2xSaI,Scale2X,Hq2x,Hq3x,Hq4x,2xBR,3xBR,4xBR|restart|Scaler in a window when share_video_settings is off.
+config/video/window/fill_mode|string|Fit||restart|Fill mode in a window when share_video_settings is off (same values as config/video/fill_mode).
+config/video/window/fill_scaler|enum|point|Point,Interlaced,Bilinear,BilinearPlus,2xSaI,SuperEagle,Super2xSaI,Scale2X,Hq2x,Hq3x,Hq4x,2xBR,3xBR,4xBR|restart|Fill scaler in a window when share_video_settings is off.
+config/video/width|int|||restart|Old display width setting. Converted to config/video/display/width at startup and then removed.
+config/video/height|int|||restart|Old display height setting. Converted to config/video/display/height at startup and then removed.
+config/video/force_bpp|int|||restart|Old colour depth setting. Exult always uses 32-bit colour now and ignores it.
+config/video/vsync|int|1|0..1|restart|Wait for the display's vertical refresh before showing a frame (1 on, 0 off). Avoids tearing.
+config/video/fps|int|5|1..100|now|Game speed in animation frames per second. 5 is the original speed; 0 or less is treated as 5.
+config/video/disable_fades|bool|no||restart|Turn off the palette fades between scenes.
+config/video/gamma/red|float|1.0|0.1..5|restart|Gamma correction of the red channel. 1.0 leaves colours unchanged.
+config/video/gamma/green|float|1.0|0.1..5|restart|Gamma correction of the green channel. 1.0 leaves colours unchanged.
+config/video/gamma/blue|float|1.0|0.1..5|restart|Gamma correction of the blue channel. 1.0 leaves colours unchanged.
+config/video/game/border/red|int|0|0..255|restart|Red part of the colour around the game area.
+config/video/game/border/green|int|0|0..255|restart|Green part of the colour around the game area.
+config/video/game/border/blue|int|0|0..255|restart|Blue part of the colour around the game area.
+
+# --- Video: UI layers (gumps, text, mouse pointer) ---------------------------
+config/video/ui/universal|bool|yes||restart|Use the settings below for every UI layer. When off, each layer (gumps, conversations, mouse pointer...) has its own settings.
+config/video/ui/width|int|420|0..16384|restart|Width in pixels of the area the UI layers are drawn in before scaling. 0 with height 0 matches the display.
+config/video/ui/height|int|263|0..16384|restart|Height in pixels of the area the UI layers are drawn in before scaling. 0 with width 0 matches the display.
+config/video/ui/scale_method|enum|Point|Point,Interlaced,Bilinear,BilinearPlus,2xSaI,SuperEagle,Super2xSaI,Scale2X,Hq2x,Hq3x,Hq4x,2xBR,3xBR,4xBR|restart|Scaler used to enlarge the UI layers.
+config/video/ui/fill_mode|string|Fit||restart|How the UI layers fill the display (same values as config/video/fill_mode).
+config/video/ui/fill_scaler|enum|Point|Point,Interlaced,Bilinear,BilinearPlus,2xSaI,SuperEagle,Super2xSaI,Scale2X,Hq2x,Hq3x,Hq4x,2xBR,3xBR,4xBR|restart|Scaler used for the last stretch of the UI layers to the display.
+config/video/ui/palette|enum|disabled|disabled,day,dusk,invisible,overcast,fog,spell,candle,red,lightning,single_light,many_lights|restart|Palette the UI layers use. disabled follows the game's current palette (night, spells and so on).
+config/video/ui/*/width|int|420|0..16384|restart|Width of this UI layer's drawing area when ui/universal is off. Defaults to config/video/ui/width.
+config/video/ui/*/height|int|263|0..16384|restart|Height of this UI layer's drawing area when ui/universal is off. Defaults to config/video/ui/height.
+config/video/ui/*/scale_method|enum|Point|Point,Interlaced,Bilinear,BilinearPlus,2xSaI,SuperEagle,Super2xSaI,Scale2X,Hq2x,Hq3x,Hq4x,2xBR,3xBR,4xBR|restart|Scaler for this UI layer when ui/universal is off.
+config/video/ui/*/fill_mode|string|Fit||restart|Fill mode for this UI layer when ui/universal is off.
+config/video/ui/*/fill_scaler|enum|Point|Point,Interlaced,Bilinear,BilinearPlus,2xSaI,SuperEagle,Super2xSaI,Scale2X,Hq2x,Hq3x,Hq4x,2xBR,3xBR,4xBR|restart|Fill scaler for this UI layer when ui/universal is off.
+config/video/ui/*/palette|enum|disabled|disabled,day,dusk,invisible,overcast,fog,spell,candle,red,lightning,single_light,many_lights|restart|Palette for this UI layer when ui/universal is off.
+
+# --- Audio -------------------------------------------------------------------
+config/audio/enabled|bool|yes||restart|Turn all sound on or off. Anything other than no counts as on.
+config/audio/sample_rate|int|44100|8000..192000|restart|Mixer sample rate in Hz.
+config/audio/stereo|bool|yes||restart|Mix in stereo (yes) or mono (no).
+config/audio/disablepause|bool|no||now|Keep sound playing while the game is paused.
+config/audio/effects/enabled|bool|yes||restart|Play sound effects. Anything other than no counts as on.
+config/audio/effects/sfx_volume|int|100|0..100|restart|Sound effects volume in per cent.
+config/audio/effects/midi|bool|no||now|Play sound effects as MIDI (from the midisfx file) instead of digital samples. Needs a build with MIDI sound effects.
+config/audio/effects/convert|enum|gs|gs,mt32,gs127,none|restart|How MIDI sound effects are converted for the device: gs, or mt32 (none and gs127 also play them unconverted).
+config/audio/speech/enabled|bool|yes||restart|Play spoken lines (Serpent Isle, and Black Gate with the speech pack). Anything other than no counts as on.
+config/audio/speech/with_subs|bool|no||restart|Show the text of spoken lines as subtitles.
+config/audio/speech/speech_volume|int|100|0..100|restart|Speech volume in per cent.
+config/audio/midi/enabled|bool|yes||restart|Play music. Anything other than no counts as on.
+config/audio/midi/driver|enum|default|default,Disabled,FMOpl,MT32Emu,Timidity,FluidSynth,CoreAudio,CoreMidi,Alsa,UnixSeq,Windows|restart|MIDI device for music. default picks the best one this platform has; not every device exists on every platform.
+config/audio/midi/use_oggs|bool|no||restart|Play the digital (OGG) music instead of MIDI where it is installed.
+config/audio/midi/looping|enum|auto|auto,never,limited,endless|restart|How music repeats: auto as the original game, never, limited or endless. no is read as never.
+config/audio/midi/convert|enum|gm|gm,gs,gs127,fakemt32,mt32,none|restart|Old setting for how music is converted for the device. Now the default for convert_ of each device.
+config/audio/midi/convert_*|enum|gm|gm,gs,gs127,gs127drum,fakemt32,mt32,none|restart|How music is converted for this MIDI device: General MIDI, GS, GS127, fake MT-32 or real MT-32 (only for devices with a hardware port).
+config/audio/midi/volume_*|int||0..255|restart|Music volume of this MIDI device. Default: the device's own volume.
+config/audio/midi/volume_ogg|int|100|0..255|restart|Volume of the digital (OGG) music.
+config/audio/midi/volume_curve|float|1.0000|0.1..5|restart|Gamma of the MIDI volume curve. 1.0 is linear.
+config/audio/midi/gamma|float|1|0.1..5|restart|Old name of volume_curve, read when volume_curve is missing.
+config/audio/midi/reverb/enabled|bool|no||restart|Default for the reverb effect of MIDI devices.
+config/audio/midi/reverb/enabled_*|bool|no||restart|Add reverb to music on this MIDI device.
+config/audio/midi/reverb/level|int||0..127|restart|Default reverb level of MIDI devices (64 when missing).
+config/audio/midi/reverb/level_*|int|64|0..127|restart|Reverb level for this MIDI device.
+config/audio/midi/reverb|int|64|0..127|restart|Old reverb level setting, read when reverb/level is missing.
+config/audio/midi/chorus/enabled|bool|no||restart|Default for the chorus effect of MIDI devices.
+config/audio/midi/chorus/enabled_*|bool|no||restart|Add chorus to music on this MIDI device.
+config/audio/midi/chorus/level|int||0..127|restart|Default chorus level of MIDI devices (16 when missing).
+config/audio/midi/chorus/level_*|int|16|0..127|restart|Chorus level for this MIDI device.
+config/audio/midi/chorus|int|16|0..127|restart|Old chorus level setting, read when chorus/level is missing.
+config/audio/midi/precacheTimbers/onStartup|bool|no||restart|Load all MT-32 timbres when the device starts (slower start, smoother music).
+config/audio/midi/precacheTimbers/onPlay|bool|yes||restart|Load the MT-32 timbres a piece needs when it starts playing.
+config/audio/midi/timiditycfg|path|timidity.cfg||restart|Timidity configuration file for the built-in Timidity device.
+config/audio/midi/fluidsynth_soundfont|path|default.sf2||restart|SoundFont for the FluidSynth device (a full path, or a file in the bundle or data folder).
+config/audio/midi/fluidsynth_soundfont*|path|||restart|Extra SoundFonts for FluidSynth (fluidsynth_soundfont0 to fluidsynth_soundfont9), layered over the first.
+config/audio/midi/coreaudio_soundfont|path|gs_instruments.dls||restart|SoundFont or DLS file for the macOS and iOS CoreAudio device.
+config/audio/midi/coremidi_device|string|||restart|CoreMIDI output to use (macOS). Empty uses the first one.
+config/audio/midi/alsa_port|string|65:0||restart|ALSA sequencer port for the Alsa device (Linux), as client:port.
+config/audio/midi/unixseqdevice|path|/dev/sequencer||restart|OSS sequencer device for the UnixSeq device.
+config/audio/midi/win32_device|int|-1|-1..64|restart|Windows MIDI output device number. -1 is the MIDI mapper.
+config/audio/midi/*|string|||restart|A setting of one MIDI device (see the MIDI settings in Audio options).
+
+# --- Gameplay ----------------------------------------------------------------
+config/gameplay/menu_style|enum|classic|classic,ultima,modern|now|Look of the game menu, Options, Journey Log and cheat screens: classic gumps or a themed window (Menu style on the UI page of Options). A mod theme name also works.
+config/gameplay/menu_scale|int|100|50..200|now|Size of the themed menus in percent. 100 grows with the shorter side of the screen, so a wide screen gets the same size as a 16:9 one of the same height.
+config/gameplay/menu_journey_view|enum|grid|grid,list|now|How the themed Journey Log shows the saves: as cards with screenshots (grid) or as a list.
+config/gameplay/menu_journey_sort|enum|newest|newest,oldest,name,day|now|Order of the saves in the themed Journey Log: newest first, oldest first, by name, or furthest in-game day first.
+config/gameplay/dialogue_style|enum|follow|follow,classic,ultima,modern|now|Look of conversations: follow the menu style, the classic faces and text, or a themed screen. A mod theme name also works.
+config/gameplay/dialogue_text_size|enum|normal|small,normal,large|now|Text size on the themed conversation screen.
+config/gameplay/dialogue_auto_advance|enum|off|off,slow,normal,fast|now|Turn the pages of the themed conversation screen by themselves after a reading time; answers always wait for you.
+config/gameplay/cheat|bool|no||now|Allow cheats (cheat keys and the cheat screen).
+config/gameplay/feeding|enum|manual|manual,automatic,disabled|now|How the party eats when cheats are on: manual, automatic, or not at all (disabled).
+config/gameplay/skip_splash|bool|no||restart|Skip the Origin and Exult splash screens and go straight to the menu.
+config/gameplay/skip_intro|bool|no||restart|Black Gate: skip the opening scene with Iolo and Petre in a new game.
+config/gameplay/container_view|enum|picture|picture,list|now|How a container's contents are shown: as the picture of the container (picture) or as a list of its items (list).
+config/gameplay/extended_intro|bool|yes||now|Serpent Isle: play the longer opening of the Exult version.
+config/gameplay/fonts|enum|original|original,serif,disabled|restart|Fonts for game text: the original fonts, Exult's serif fonts, or none (disabled; plain ASCII text).
+config/gameplay/language|enum||en,fr,de,es,|restart|Language of Exult's own messages and of translated game text. Empty uses the game's language.
+config/gameplay/bg_paperdolls|bool|yes||restart|Black Gate: use Serpent Isle style paperdolls (needs Serpent Isle installed).
+config/gameplay/facestats|int|-1|-1..3|now|Party portraits with status bars: -1 off, 0 left, 1 middle, 2 right, 3 vertical.
+config/gameplay/textbackground|int|-1|-1..16|now|Background behind game text: -1 none, 0 to 16 one of the colours offered in Display options.
+config/gameplay/smooth_scrolling|int|0|0..100|now|Smooth scrolling of the view in per cent (0, 25, 50, 75 or 100). 0 scrolls in whole tiles.
+config/gameplay/step_tile_delta|int|8|1..64|restart|Step size used while the Avatar walks with the mouse button held. 1 re-aims every frame for the most responsive movement; below 1 is read as 1.
+config/gameplay/formation|bool|yes||restart|The party walks in formation behind the Avatar. Anything other than no counts as on.
+config/gameplay/alternate_drop|bool|no||now|Drag and drop: drop a single item from a stack unless Ctrl is held (the opposite of the original).
+config/gameplay/allow_autonotes|bool|no||now|Write automatic notes in the notebook as the story goes on.
+config/gameplay/enhancements|bool|yes||now|Allow engine enhancements from the game data, such as the extra light sources in shape_info.txt.
+config/gameplay/gumps_dont_pause_game|bool|no||now|Keep the game running while gumps (backpacks, books) are open.
+config/gameplay/modal_gump_dragging|enum|offscreen|always,never,offscreen|now|When dialogue windows can be dragged: always, never, or only when they do not fit on screen (offscreen).
+config/gameplay/double_click_closes_gumps|bool|no||now|Double-clicking a gump closes it.
+config/gameplay/right_click_closes_gumps|bool|yes||now|Right-clicking a gump closes it.
+config/gameplay/allow_right_pathfind|enum|double|no,single,double|now|Walk to a spot by right-clicking it: no, on a single click or on a double click.
+config/gameplay/allow_double_right_move|bool|yes||restart|Old setting. no is converted to allow_right_pathfind no at startup and the key is then removed.
+config/gameplay/scroll_with_mouse|bool|yes||now|Scroll the view when the mouse reaches the edge of the screen. Phones and tablets default to no.
+config/gameplay/mouse3rd|bool|no||now|The middle mouse button brings up the targeting cross-hairs.
+config/gameplay/fastmouse|bool|no||now|In full screen, map the mouse in display pixels instead of game pixels for faster pointer movement.
+config/gameplay/combat/difficulty|int|0|-3..3|now|Combat difficulty: 0 normal, below 0 easier, above 0 harder.
+config/gameplay/combat/charmDifficulty|enum|normal|normal,hard|now|How hard it is to resist charm spells: normal or hard.
+config/gameplay/combat/mode|enum|original|original,keypause|now|Combat pauses: original, or keypause (space pauses combat).
+config/gameplay/combat/show_hits|bool|no||now|Show the damage numbers of hits in combat.
+
+# --- Shortcut bar and touch screens ------------------------------------------
+config/shortcutbar/use_shortcutbar|enum|no|no,translucent,transparent,yes|restart|Show the shortcut bar at the top of the screen: no, translucent or yes. Phones and tablets default to translucent.
+config/shortcutbar/use_outline_color|enum|no|no,green,white,yellow,blue,red,purple,black|restart|Outline colour of the shortcut bar icons, or no. Phones and tablets default to black.
+config/shortcutbar/hide_missing_items|bool|yes||now|Hide shortcut bar icons for items the party does not have.
+config/touch/item_menu|bool|no||now|Show a menu of actions when an item is tapped. Phones and tablets default to yes.
+config/touch/dpad_location|enum|no|no,left,right|restart|Where the on-screen direction pad is: no, left or right. Phones and tablets default to right.
+config/touch/touch_pathfind|bool|no||now|Walk to a spot by tapping and holding it. Phones and tablets default to yes.
+
+# --- Debugging ---------------------------------------------------------------
+config/debug/trace/intrinsics|bool|no||restart|Log every intrinsic call made by usecode (for debugging).
+config/debug/trace/usecode|enum|no|no,yes,verbose|restart|Log the usecode functions that run: no, yes, or verbose (every instruction).
+config/debug/trace/combat|bool|no||restart|Log combat decisions (for debugging).
+config/debug/debugger/enable|bool|no||restart|Turn on the usecode debugger (only in builds with the debugger).
+config/debugging/windows/minidumptype|enum|normal|normal,full|restart|Windows: size of the crash dump written when Exult crashes. full includes all memory (large).

@@ -717,7 +717,12 @@ void Usecode_internal::show_npc_face(
 		init_conversation();    // jsf-Added 4/20/01 for SI-Lydia.
 	}
 	gwin->paint_dirty();
-	conv->show_face(shape, frame, slot);
+	// Who speaks (for the themed view's name label).
+	Actor* speaker = npc;
+	if (!speaker && arg1.is_int() && (std::abs(arg1.get_int_value()) == 356 || arg1.get_int_value() == 0)) {
+		speaker = gwin->get_main_actor();
+	}
+	conv->show_face(shape, frame, slot, speaker);
 	//	user_choice = 0;     // Seems like a good idea.
 	// Also seems to create a conversation bug in Test of Love :-(
 }
@@ -1630,11 +1635,16 @@ Usecode_value Usecode_internal::call_intrinsic(
 
 void Usecode_internal::click_to_continue() {
 	if (!gwin->get_pal()->is_faded_out()) {    // If black screen, skip!
-		int  xx;
-		int  yy;
-		char c;
-		gwin->paint();    // Repaint scenery.
-		Get_click(xx, yy, Mouse::hand, &c, false, conv, true);
+		if (conv->is_themed()) {
+			gwin->paint();
+			conv->themed_continue();
+		} else {
+			int  xx;
+			int  yy;
+			char c;
+			gwin->paint();    // Repaint scenery.
+			Get_click(xx, yy, Mouse::hand, &c, false, conv, true);
+		}
 	}
 	conv->clear_text_pending();
 	//  user_choice = 0;        // Clear it.
@@ -1693,6 +1703,13 @@ int Usecode_internal::get_user_choice_num() {
 	int y;    // Get click.
 	int choice_num;
 	do {
+		if (conv->is_themed()) {
+			choice_num = conv->themed_choose();
+			if (choice_num == -2) {    // Escape: 'bye' if possible.
+				choice_num = conv->locate_answer("bye");
+			}
+			continue;
+		}
 		char chr;         // Allow '1', '2', etc.
 		gwin->paint();    // Paint scenery.
 		const bool result = Get_click(x, y, Mouse::hand, &chr, false, conv, true);
@@ -1715,6 +1732,7 @@ int Usecode_internal::get_user_choice_num() {
 	// Wait for valid choice.
 	while (choice_num < 0 || choice_num >= conv->get_num_answers());
 
+	conv->note_choice(choice_num);
 	conv->clear_avatar_choices();
 	// Store ->answer string.
 	user_choice = newstrdup(conv->get_answer(choice_num));
@@ -3008,11 +3026,13 @@ int Usecode_internal::call_usecode(
 	conv->clear_answers();
 
 	int ret;
+	conv->enter_usecode();
 	if (call_function(id, event, item, true)) {
 		ret = run();
 	} else {
 		ret = -1;    // failed to call the function
 	}
+	conv->leave_usecode();
 
 	set_book(nullptr);
 

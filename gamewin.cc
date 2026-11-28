@@ -2871,6 +2871,7 @@ void Game_window::setup_game(bool map_editing) {
 	}
 	// Init. current 'tick'.
 	Game::set_ticks(SDL_GetTicks());
+	read_play_time();
 	Face_stats::RemoveGump();    // it tries to update when reading actors so
 								 // delete it until finished loading
 	init_actors();               // Set up actors if not already done.

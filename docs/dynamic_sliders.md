@@ -507,3 +507,17 @@ Two gumps with the same shape number have independent slider state. The `val`, `
 ### Gump Lookup for Intrinsics
 
 Both slider intrinsics use `find_gump(item)` to locate the open gump for the given container. If the container is a world-placed object (no owner), a fallback scan of the open gumps list finds it. If the gump is not open, the intrinsic silently returns 0.
+
+### Reuse by Dynamic Lists
+
+`Dynamic_list_widget` uses a `Dynamic_slider` as its scroll controls instead of a scroll bar of its own (see [dynamic_lists.md](dynamic_lists.md)). For that, `Dynamic_slider_def` has fields that the `dynamic_sliders` parser does not read and the writer does not write, so the section format and existing sliders are unchanged:
+
+| Field | Default | Use |
+|-------|---------|-----|
+| `shapefile` | `SF_GUMPS_VGA` | File of the arrow and thumb shapes (the list's built-in controls use `exult.flx`) |
+| `track_pad` | 0 | Gap between each arrow and the track |
+| `thumb_inset` | 0 | Thumb offset across the track |
+| `top_left` | false | Arrows and thumb are placed by their frame's top-left instead of the hotspot |
+| `hide_idle_thumb` | false | No thumb, and no track clicks, while `max_val <= min_val` |
+
+`Dynamic_slider` also has `set_on_change()`, a C++ hook called instead of the usecode callback, `set_range()`, and `hit_part()`, which tells the owner whether a point is on an arrow, the thumb, or the track before or after the thumb (the list pages on track clicks). Its parent may be any `Gump_Base`, so a widget can own it. With every new field at its default, layout, paint and hit-testing are as before.

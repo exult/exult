@@ -48,6 +48,7 @@ public:
 	Gump_button* on_button(int mx, int my) override;
 
 private:
+	friend class Mui_options_model;
 	enum button_ids {
 		id_first = 0,
 		id_apply = id_first,

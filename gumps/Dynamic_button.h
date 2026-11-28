@@ -21,6 +21,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "Gump_button.h"
 
+class Gump_skin;
 struct Dynamic_button_def;
 
 /*
@@ -43,6 +44,9 @@ public:
 
 	bool activate(MouseButton button) override;
 	void paint() override;
+	// Themed: a plate behind the button's art (the art is painted by
+	// paint() in the gump's art pass).
+	void paint_skin(Gump_skin& skin);
 
 	// Visibility check based on global usecode flag
 	bool is_visible() const;

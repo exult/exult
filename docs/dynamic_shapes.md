@@ -68,8 +68,10 @@ Shape displays are defined in the `dynamic_shapes` section:
 
 ```
 dynamic_shapes
-:gump_shape/field_id/pos_x/pos_y/shape_num/frame_num/shapefile
+:gump_shape/field_id/pos_x/pos_y/shape_num/frame_num/shapefile[/list_id[/box_w/box_h]]
 ```
+
+The last three fields are optional. Existing entries without them behave as before, and Exult Studio writes them back only when they are used.
 
 ### Field Reference
 
@@ -81,6 +83,8 @@ dynamic_shapes
 | `shape_num` | Initial shape number to display (0 or negative = nothing) |
 | `frame_num` | Initial frame number |
 | `shapefile` | Source file: 0 = `shapes.vga` (world shapes), 1 = `gumps.vga` (gump shapes) |
+| `list_id` | Optional. Show the selection of the dynamic list with this `field_id` on the same gump: the selected object (source 0) or the selected row's icon (source 1); the display's own shape when nothing is selected. -1 = not bound (default) |
+| `box_w` / `box_h` | Optional. When both are > 0, `pos_x`/`pos_y` is a box's top-left and the shape is drawn centred in it, enlarged by the largest factor up to 4 that fits, with transparent and translucent pixels blended with what is under it. 0 = off (default) |
 
 ### Example Configuration
 
@@ -105,11 +109,20 @@ In this example:
 - Item preview slots (20-24) start with shape 0 (nothing displayed) and are populated by usecode when the gump opens
 - Currency icons (40-43) are statically configured to show gump shapes 140-143 at frame 0 — these never change at runtime
 
+A preview of a list's selection, enlarged in a 91 x 50 box (list field 1, see [dynamic_lists.md](dynamic_lists.md)):
+
+```
+dynamic_shapes
+:200/30/198/43/0/0/0/1/91/50
+```
+
 ---
 
 ## Paint Behaviour
 
 `paint()` calls `displayed.paint_shape(sx, sy)` after converting widget-local coordinates to screen coordinates. When `shape_num <= 0`, painting is skipped — no blank space is rendered.
+
+A bound display (`list_id >= 0`) asks the list for its selection when it paints and shows that instead, falling back to `displayed`. A boxed display (`box_w`, `box_h > 0`) paints the shape into two scratch buffers and copies it enlarged into the box.
 
 This means shape displays configured with `shape_num=0` appear empty until usecode sets a shape via `UI_set_gump_shape()`. Static icons should be configured with their desired shape/frame in `gump_info.txt` and need no usecode interaction.
 

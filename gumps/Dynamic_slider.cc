@@ -24,6 +24,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "Gump.h"
 #include "Gump_button.h"
+#include "Gump_skin.h"
 #include "contain.h"
 #include "game.h"
 #include "gamewin.h"
@@ -43,6 +44,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #	pragma GCC diagnostic pop
 #endif    // __GNUC__
 
+#include <algorithm>
 #include <climits>
 #include <iostream>
 
@@ -53,8 +55,8 @@ class DynSlider_button : public Gump_button {
 	bool is_dec;
 
 public:
-	DynSlider_button(Dynamic_slider* par, int px, int py, int shnum, bool dec)
-			: Gump_button(par, shnum, px, py, SF_GUMPS_VGA), is_dec(dec) {}
+	DynSlider_button(Dynamic_slider* par, int px, int py, int shnum, bool dec, ShapeFile shfile)
+			: Gump_button(par, shnum, px, py, shfile), is_dec(dec) {}
 
 	bool activate(MouseButton button) override {
 		if (button != MouseButton::Left) {
@@ -70,11 +72,13 @@ public:
 	}
 };
 
-Dynamic_slider::Dynamic_slider(Gump* par, const Dynamic_slider_def& def)
+Dynamic_slider::Dynamic_slider(Gump_Base* par, const Dynamic_slider_def& def)
 		: Gump_widget(par, -1, def.pos_x, def.pos_y, 0, SF_GUMPS_VGA), field_id(def.field_id), vertical(def.orientation == 0),
 		  min_val(def.min_val), max_val(def.max_val), step_val(def.step > 0 ? def.step : 1), val(def.default_val),
-		  usecode_fn(def.usecode_fn), thumb_pos(0), track_extent(def.extent >= 0 ? def.extent : 60), thumb_travel(0),
-		  prev_drag(INT32_MIN), arrow_clicked(0), thumb(def.thumb_shape, 0, SF_GUMPS_VGA) {
+		  usecode_fn(def.usecode_fn), shapefile(def.shapefile), track_pad(def.track_pad), thumb_inset(def.thumb_inset),
+		  top_left(def.top_left), hide_idle_thumb(def.hide_idle_thumb), thumb_pos(0),
+		  track_extent(def.extent >= 0 ? def.extent : 60), thumb_travel(0), prev_drag(INT32_MIN), arrow_clicked(0),
+		  thumb(def.thumb_shape, 0, def.shapefile) {
 	if (val < min_val) {
 		val = min_val;
 	} else if (val > max_val) {
@@ -97,7 +101,7 @@ Dynamic_slider::Dynamic_slider(Gump* par, const Dynamic_slider_def& def)
 
 void Dynamic_slider::compute_layout(const Dynamic_slider_def& def) {
 	// Get shape frames for sizing
-	ShapeID dec_sid(def.dec_shape, 0, SF_GUMPS_VGA);
+	ShapeID dec_sid(def.dec_shape, 0, def.shapefile);
 	auto*   dec_frame = dec_sid.get_shape();
 
 	if (vertical) {
@@ -105,23 +109,36 @@ void Dynamic_slider::compute_layout(const Dynamic_slider_def& def) {
 		dec_bx      = 0;
 		dec_by      = 0;
 		int dec_h   = dec_frame ? dec_frame->get_height() : 8;
-		track_start = dec_h;
+		track_start = dec_h + track_pad;
 		inc_bx      = 0;
-		inc_by      = dec_h + track_extent;
+		inc_by      = dec_h + track_extent + 2 * track_pad;
 	} else {
 		// Horizontal: dec (left) at left, track after, inc (right) at right
 		dec_bx      = 0;
 		dec_by      = 0;
 		int dec_w   = dec_frame ? dec_frame->get_width() : 8;
-		track_start = dec_w;
-		inc_bx      = dec_w + track_extent;
+		track_start = dec_w + track_pad;
+		inc_bx      = dec_w + track_extent + 2 * track_pad;
 		inc_by      = 0;
+	}
+	// Positions are hotspots; with top_left they are the frames' top-left.
+	if (top_left) {
+		const ShapeID inc_sid(def.inc_shape, 0, def.shapefile);
+		auto*         inc_frame = inc_sid.get_shape();
+		if (dec_frame) {
+			dec_bx += dec_frame->get_xleft();
+			dec_by += dec_frame->get_yabove();
+		}
+		if (inc_frame) {
+			inc_bx += inc_frame->get_xleft();
+			inc_by += inc_frame->get_yabove();
+		}
 	}
 
 	// Adjust button positions: Gump_button coordinates are relative to parent widget
 	// But for a widget that is itself inside a Gump, we need the buttons relative to us
-	dec_btn = std::make_unique<DynSlider_button>(this, dec_bx, dec_by, def.dec_shape, true);
-	inc_btn = std::make_unique<DynSlider_button>(this, inc_bx, inc_by, def.inc_shape, false);
+	dec_btn = std::make_unique<DynSlider_button>(this, dec_bx, dec_by, def.dec_shape, true, def.shapefile);
+	inc_btn = std::make_unique<DynSlider_button>(this, inc_bx, inc_by, def.inc_shape, false, def.shapefile);
 
 	if (parent && (parent->get_debug_flags() & GUMP_DEBUG_CONSOLE)) {
 		auto check_frames = [](Gump_button* btn, const char* name) {
@@ -163,6 +180,161 @@ int Dynamic_slider::hit_arrow(int mx, int my) const {
 	return 0;
 }
 
+// Is the thumb painted and hit-tested?
+bool Dynamic_slider::thumb_shown() const {
+	return thumb.get_shape() && !(hide_idle_thumb && max_val <= min_val);
+}
+
+// Hotspot of the thumb, relative to the slider.
+void Dynamic_slider::thumb_origin(int& tx, int& ty) const {
+	if (vertical) {
+		tx = thumb_inset;
+		ty = track_start + thumb_pos;
+	} else {
+		tx = track_start + thumb_pos;
+		ty = thumb_inset;
+	}
+	Shape_frame* tf = thumb.get_shape();
+	if (top_left && tf) {
+		tx += tf->get_xleft();
+		ty += tf->get_yabove();
+	}
+}
+
+// Size across the travel axis: the thumb's, else the arrows'.
+int Dynamic_slider::cross_extent() const {
+	int   size = 0;
+	auto* tf   = thumb.get_shape();
+	if (tf) {
+		size = vertical ? tf->get_width() : tf->get_height();
+	}
+	int arrow = 0;
+	if (dec_btn) {
+		auto* sf = dec_btn->get_shape();
+		if (sf) {
+			arrow = vertical ? sf->get_width() : sf->get_height();
+		}
+	}
+	if (top_left || thumb_inset != 0) {
+		// The thumb sits inside the arrows' column.
+		return std::max(size + thumb_inset, arrow);
+	}
+	// Fall back to arrow sizes when no thumb (e.g. spinner).
+	if (size <= 0) {
+		size = arrow > 0 ? arrow : 16;
+	}
+	return size;
+}
+
+/*
+ *  Which part of the slider is under screen coordinates (mx, my).
+ *  The track counts as before or after the thumb only while the thumb
+ *  is shown.
+ */
+Dynamic_slider::Part Dynamic_slider::hit_part(int mx, int my) const {
+	const int arrow = hit_arrow(mx, my);
+	if (arrow < 0) {
+		return Part::dec;
+	}
+	if (arrow > 0) {
+		return Part::inc;
+	}
+	if (!thumb_shown()) {
+		return Part::none;
+	}
+	int lx = mx, ly = my;
+	screen_to_local(lx, ly);
+	const int along  = vertical ? ly : lx;
+	const int across = vertical ? lx : ly;
+	if (across < 0 || across >= cross_extent() || along < track_start || along >= track_start + track_extent) {
+		return Part::none;
+	}
+	Shape_frame* tf = thumb.get_shape();
+	int          tx, ty;
+	thumb_origin(tx, ty);
+	// Thumb's extent along the track.
+	const int top  = vertical ? ty - tf->get_yabove() : tx - tf->get_xleft();
+	const int size = vertical ? tf->get_height() : tf->get_width();
+	if (along < top) {
+		return Part::before;
+	}
+	if (along >= top + size) {
+		return Part::after;
+	}
+	return Part::thumb;
+}
+
+/*
+ *  Screen rectangle of a part, from the same layout as hit_part().
+ */
+TileRect Dynamic_slider::part_rect(Part p) const {
+	// A frame's rect with its hotspot at (hx, hy), slider-local.
+	auto frame_rect = [](const Shape_frame* sf, int hx, int hy) {
+		return sf ? TileRect(hx - sf->get_xleft(), hy - sf->get_yabove(), sf->get_width(), sf->get_height()) : TileRect(0, 0, 0, 0);
+	};
+	const Shape_frame* tf = thumb.get_shape();
+	const Shape_frame* df = dec_btn ? dec_btn->get_shape() : nullptr;
+	int                tx;
+	int                ty;
+	thumb_origin(tx, ty);
+	const TileRect thumb_r = frame_rect(tf, tx, ty);
+	TileRect       r(0, 0, 0, 0);
+	switch (p) {
+	case Part::dec:
+		r = frame_rect(df, dec_bx, dec_by);
+		break;
+	case Part::inc:
+		r = frame_rect(inc_btn ? inc_btn->get_shape() : nullptr, inc_bx, inc_by);
+		break;
+	case Part::thumb:
+		if (thumb_shown()) {
+			r = thumb_r;
+		}
+		break;
+	case Part::none:
+	case Part::before:
+	case Part::after: {
+		// Across the travel axis: the thumb's span, else the arrows'.
+		int a0 = 0;
+		int a1 = cross_extent();
+		if (tf) {
+			a0 = vertical ? thumb_r.x : thumb_r.y;
+			a1 = a0 + (vertical ? thumb_r.w : thumb_r.h);
+		} else if (df) {
+			const TileRect d = frame_rect(df, dec_bx, dec_by);
+			a0               = vertical ? d.x : d.y;
+			a1               = a0 + (vertical ? d.w : d.h);
+		}
+		int b0 = track_start;
+		int b1 = track_start + track_extent;
+		if (p != Part::none && thumb_shown()) {
+			const int t0 = vertical ? thumb_r.y : thumb_r.x;
+			const int t1 = t0 + (vertical ? thumb_r.h : thumb_r.w);
+			if (p == Part::before) {
+				b1 = std::max(b0, t0);
+			} else {
+				b0 = std::min(b1, t1);
+			}
+		} else if (p == Part::after) {
+			b1 = b0;
+		}
+		r = vertical ? TileRect(a0, b0, a1 - a0, b1 - b0) : TileRect(b0, a0, b1 - b0, a1 - a0);
+		break;
+	}
+	}
+	if (r.w <= 0 || r.h <= 0) {
+		return TileRect(0, 0, 0, 0);
+	}
+	local_to_screen(r.x, r.y);
+	return r;
+}
+
+void Dynamic_slider::set_range(int newmin, int newmax) {
+	min_val = newmin;
+	max_val = newmax < newmin ? newmin : newmax;
+	set_val(val);
+}
+
 void Dynamic_slider::update_thumb_from_val() {
 	if (max_val <= min_val) {
 		thumb_pos = 0;
@@ -187,6 +359,10 @@ int Dynamic_slider::val_from_thumb() const {
 }
 
 bool Dynamic_slider::call_usecode_callback() {
+	if (on_change) {
+		on_change(val);
+		return false;    // The host does not destroy the slider.
+	}
 	if (usecode_fn < 0) {
 		return false;
 	}
@@ -228,6 +404,12 @@ Gump_widget* Dynamic_slider::clone(Gump* par) {
 	def.extent      = track_extent;
 	def.usecode_fn  = usecode_fn;
 	def.orientation = vertical ? 0 : 1;
+	// C++-only fields.
+	def.shapefile       = shapefile;
+	def.track_pad       = track_pad;
+	def.thumb_inset     = thumb_inset;
+	def.top_left        = top_left;
+	def.hide_idle_thumb = hide_idle_thumb;
 	return new Dynamic_slider(par, def);
 }
 
@@ -294,19 +476,24 @@ void Dynamic_slider::paint() {
 	}
 
 	// Paint thumb
-	int tx, ty;
-	if (vertical) {
-		tx = x;
-		ty = y + track_start + thumb_pos;
-	} else {
-		tx = x + track_start + thumb_pos;
-		ty = y;
-	}
-	if (parent) {
-		parent->local_to_screen(tx, ty);
-	}
-	if (thumb.get_shape()) {
+	if (thumb_shown()) {
+		int tx, ty;
+		thumb_origin(tx, ty);
+		local_to_screen(tx, ty);
 		thumb.paint_shape(tx, ty);
+	}
+}
+
+/*
+ *  Themed: the arrows as plates with arrow icons; the groove and the
+ *  knob while the thumb is shown.
+ */
+void Dynamic_slider::paint_skin(Gump_skin& skin) {
+	skin.arrow(part_rect(Part::dec), vertical ? Mui_icon::arrow_up : Mui_icon::arrow_left, arrow_clicked == -1);
+	skin.arrow(part_rect(Part::inc), vertical ? Mui_icon::arrow_down : Mui_icon::arrow_right, arrow_clicked == 1);
+	if (thumb_shown()) {
+		skin.groove(part_rect(Part::none), vertical);
+		skin.knob(part_rect(Part::thumb));
 	}
 }
 
@@ -352,7 +539,10 @@ TileRect Dynamic_slider::get_rect() const {
 				w = 16;
 			}
 		}
-		r = TileRect(0, 0, w, track_start + track_extent + inc_h);
+		if (top_left || thumb_inset != 0) {
+			w = cross_extent();
+		}
+		r = TileRect(0, 0, w, track_start + track_extent + track_pad + inc_h);
 	} else {
 		int inc_w = 8;
 		if (inc_btn) {
@@ -378,7 +568,10 @@ TileRect Dynamic_slider::get_rect() const {
 				h = 16;
 			}
 		}
-		r = TileRect(0, 0, track_start + track_extent + inc_w, h);
+		if (top_left || thumb_inset != 0) {
+			h = cross_extent();
+		}
+		r = TileRect(0, 0, track_start + track_extent + track_pad + inc_w, h);
 	}
 	local_to_screen(r.x, r.y);
 	return r;
@@ -408,19 +601,15 @@ bool Dynamic_slider::mouse_down(int mx, int my, MouseButton button) {
 	screen_to_local(lx, ly);
 
 	Shape_frame* tf = thumb.get_shape();
-	if (tf) {
+	if (tf && thumb_shown()) {
 		int tx, ty;
-		if (vertical) {
-			tx = 0;
-			ty = track_start + thumb_pos;
-		} else {
-			tx = track_start + thumb_pos;
-			ty = 0;
-		}
+		thumb_origin(tx, ty);
 		if (tf->has_point(lx - tx, ly - ty)) {
 			prev_drag = vertical ? my : mx;
 			return true;
 		}
+	} else if (tf && hide_idle_thumb) {
+		return Gump_widget::mouse_down(mx, my, button);    // Nothing to scroll.
 	}
 
 	// Check if click is on the track — jump thumb to position

@@ -37,6 +37,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #	pragma GCC diagnostic pop
 #endif    // __GNUC__
 
+#include <memory>
 #include <vector>
 
 class Checkmark_button;
@@ -45,6 +46,7 @@ class Game_object;
 class Game_window;
 class Gump_button;
 class Gump_manager;
+class Gump_skin;
 class Gump_widget;
 
 // Base Class shared by Gumps and Widgetss
@@ -152,6 +154,12 @@ protected:
 	}
 
 	void center_rect_on_screen(const TileRect& rect);
+	// Paint the objects in object_area, placing unplaced ones.
+	void paint_objects();
+	// Put obj's hotspot at a screen point, kept inside object_area.
+	void place_object(Game_object* obj, int sx, int sy);
+	// Apply gump_info.txt's container area and checkmark, if any.
+	static void read_gump_info(int shnum, TileRect& area, int& checkx, int& checky);
 
 public:
 	const Gump_elems& get_elems() const {
@@ -208,12 +216,21 @@ public:
 		return get_container();
 	}
 
+	// Subclasses that don't draw objects at their stored tx/ty (the list
+	// view) report where they actually draw them.
 	// Get screen rect. of obj. in here.
-	TileRect get_shape_rect(const Game_object* obj) const;
+	virtual TileRect get_shape_rect(const Game_object* obj) const;
 	// Get screen loc. of object.
-	void get_shape_location(const Game_object* obj, int& ox, int& oy) const;
+	virtual void get_shape_location(const Game_object* obj, int& ox, int& oy) const;
 	// Find obj. containing mouse point.
 	virtual Game_object* find_object(int mx, int my);
+
+	// Mouse pressed on one of this gump's objects (before any drag).
+	// List-style gumps select a row here.
+	virtual void object_pressed(Game_object* obj) {
+		ignore_unused_variable_warning(obj);
+	}
+
 	virtual TileRect     get_dirty();    // Get dirty rect. for gump+contents.
 	virtual Game_object* get_owner();    // Get object this belongs to.
 	// Is a given point on a button?
@@ -262,6 +279,25 @@ public:
 		return true;
 	}
 
+	// Gumps that paint into their own display-resolution layer (themed menus)
+	// want mouse coordinates in display pixels mapped by display_to_local()
+	// instead of game coordinates.
+	virtual bool wants_display_coords() const {
+		return false;
+	}
+
+	virtual bool display_to_local(int sx, int sy, int& lx, int& ly) const {
+		lx = sx;
+		ly = sy;
+		return true;
+	}
+
+	// Composite order the gump manager would give a layer-backed gump at this
+	// position, passed to gumps that manage their own layers.
+	virtual void set_layer_z_hint(int z) {
+		ignore_unused_variable_warning(z);
+	}
+
 	virtual bool     has_point(int x, int y) const;
 	virtual TileRect get_rect() const;
 
@@ -275,6 +311,23 @@ public:
 	// here; Gump_manager owns the create/render/destroy lifecycle.
 	int      render_layer = -1;
 	TileRect layer_bounds{0, 0, 0, 0};
+
+	// Themed gumps (see Gump_skin.h): while skin_pass is set, paint() draws
+	// only the gump's art into the layer; the skin is the display-resolution
+	// layer with the themed panel and controls, composited over it. Both
+	// are owned by Gump_manager's render code; no skin when classic.
+	bool                       skin_pass = false;
+	std::unique_ptr<Gump_skin> skin;
+
+	// Drawn with the menu theme when a themed menu style is chosen?
+	virtual bool themable() const {
+		return false;
+	}
+
+	// Paint the themed panel, texts and controls (game coordinates).
+	virtual void paint_skin(Gump_skin& sk) {
+		ignore_unused_variable_warning(sk);
+	}
 
 	// Optional SECOND overlay layer + bounds, for HUD gumps that render as two
 	// independently anchored parts (Face_stats mode 3: portraits split to the
@@ -367,6 +420,9 @@ public:
 	Gump* clone(Container_game_object* cont, int initx, int inity) override {
 		return new Container_gump(cont, initx, inity, this);
 	}
+
+	// Built-in object area and checkmark position for a gump shape.
+	static void get_layout(int shnum, TileRect& area, int& checkx, int& checky);
 };
 
 #endif

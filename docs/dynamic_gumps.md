@@ -22,16 +22,19 @@ This document describes the dynamic gump system added in the `gumpUpdates` branc
    - `UI_set_gump_shape(item, field_id, shape, frame)` — BG: 0xe0, SI: 0xe1
    - `UI_set_slider_value(item, field_id, value)` — BG: 0xe1, SI: 0xe2
    - `UI_get_slider_value(item, field_id)` — BG: 0xe2, SI: 0xe3
+   - Dynamic list intrinsics and `UI_open_gump` — BG: 0xe5–0xeb, SI: 0xe6–0xec (provisional)
 3. [Dynamic Container Gump System](#dynamic-container-gump-system)
    - Overview & Class Hierarchy
    - Bounding-Box Hit Testing
    - Snap Zones Feature
    - Debug Visualization
+   - Themes
 4. [Dynamic Widget System](#dynamic-widget-system)
    - Dynamic Buttons
    - Dynamic Text Fields
    - Dynamic Shape Displays
    - Dynamic Sliders
+   - Dynamic Lists
 5. [Integration with Exult](#integration-with-exult)
    - Automatic Gump Selection
    - On-Open Usecode Invocation
@@ -279,6 +282,15 @@ Seven new usecode intrinsic functions were added to enable programmatic control 
 | `UI_set_slider_value` | 0xe1 | 0xe2 | Set value on a Dynamic_slider |
 | `UI_get_slider_value` | 0xe2 | 0xe3 | Read current value of a Dynamic_slider |
 | `UI_set_gump_text_font` | 0xe3 | 0xe4 | Change font of a Dynamic_text_widget |
+| `UI_set_list_rows` | 0xe5 | 0xe6 | Replace the rows of a source-1 Dynamic_list_widget (provisional) |
+| `UI_set_list_row` | 0xe6 | 0xe7 | Set or append one row (provisional) |
+| `UI_get_list_selection` | 0xe7 | 0xe8 | Selected row, 1-based (provisional) |
+| `UI_set_list_selection` | 0xe8 | 0xe9 | Select a row, no callback (provisional) |
+| `UI_get_list_count` | 0xe9 | 0xea | Number of rows (provisional) |
+| `UI_get_list_object` | 0xea | 0xeb | Object in a source-0 row (provisional) |
+| `UI_open_gump` | 0xeb | 0xec | Open a container's gump as a double-click would (provisional) |
+
+The list intrinsics' slots are **provisional**: they are the next free slots after `UI_get_shape_flag` (BG 0xe4, SI 0xe5) and may move before being merged upstream. SI beta uses the BG numbers. See [dynamic_lists.md](dynamic_lists.md#intrinsics) for their parameters and return values.
 
 ### `UI_get_item_gump_position(item)`
 
@@ -351,6 +363,7 @@ UI_set_gump_text_font(item, 31, 2);
 - **Black Gate:** `usecode/bgintrinsics.h` — slots 0xdd–0xe3
 - **Serpent Isle:** `usecode/siintrinsics.h` — slots 0xde–0xe4
 - **Serpent Isle Beta:** `usecode/sibetaintrinsics.h` — slot 0xe4 for `set_gump_text_font`
+- **Dynamic lists (provisional):** BG and SI beta 0xe5–0xeb, SI 0xe6–0xec
 - **Declarations:** `usecode/ucinternal.h`
 - **Implementations:** `usecode/intrinsics.cc`
 
@@ -364,7 +377,7 @@ UI_set_gump_text_font(item, 31, 2);
 1. **Bounding-box hit testing** for gumps with non-zero shape origins
 2. **Debug visualization** for container area boundaries and snap zones
 3. **Snap zone support** for guided item placement in ritual containers
-4. **Dynamic widget hosting** — buttons, text fields, shape displays, and sliders are created automatically from `gump_info.txt` configuration
+4. **Dynamic widget hosting** — buttons, text fields, shape displays, sliders and lists are created automatically from `gump_info.txt` configuration; object queries (`find_object`, `get_shape_location`, `add`, `remove`, `object_pressed`) are routed to source-0 lists, so their rows drag in and out
 5. **Custom click name** — `get_click_name()` returns the `gump_name` from config for status bar display
 6. **Screen centering** — gumps are positioned at the center of the game window using `get_rect()` bounding box
 7. **Keyboard input** — `handle_kbd_event()` translates SDL key events and forwards `key_down()` to child widgets (sliders respond to arrow keys)
@@ -380,7 +393,8 @@ Gump_Base
               └── Dynamic_container_gump
   └── Gump_widget
         ├── Gump_button
-        │     └── Dynamic_button
+        │     ├── Dynamic_button
+        │     └── Dynamic_list_widget  (owns a Dynamic_slider)
         ├── Dynamic_text_widget
         ├── Dynamic_shape_widget
         └── Dynamic_slider
@@ -392,6 +406,7 @@ Gump_Base
 - `gumps/Dynamic_text_widget.h` / `.cc`
 - `gumps/Dynamic_shape_widget.h` / `.cc`
 - `gumps/Dynamic_slider.h` / `.cc`
+- `gumps/Dynamic_list_widget.h` / `.cc`, `gumps/Dynamic_list_layout.h`
 
 ### Bounding-Box Hit Testing
 
@@ -443,6 +458,17 @@ When `GUMP_DEBUG_CONSOLE` is active, detailed logging is emitted from:
 - `Gump::on_button()` (widget iteration for button hit-testing)
 - `Gump_widget::on_widget()` (screen-to-local conversion, shape origins, hit/miss)
 - All dynamic widget `paint()` methods (screen positions, field IDs)
+
+### Themes
+
+When `config/gameplay/menu_style` is a themed style (Ultima, Modern or a theme file), a dynamic container gump with dynamic widgets is drawn with the menu theme at display resolution; in classic style it draws exactly as before. The full description is in [modern_ui.md](modern_ui.md#themed-dynamic-gumps); in short:
+
+- `Dynamic_container_gump::themable()` returns `Gump_theme::wants(info, false)`: the `gump_theme` entry of the gump's shape if there is one, else themed when the gump has a dynamic widget and no snap zones (see [gump_theme](#gump_theme)).
+- In a skin pass (`skin_pass` set by `Gump_manager::render_gump_part_to_layer`), `paint()` draws only the art into the game layer: contained objects, button art, `Dynamic_shape_widget`s, list row icons (`Dynamic_list_widget::paint_art()`), the debug grid and snap-zone overlays and the selection outlines. There is no background, tab, text, slider or checkmark in that pass.
+- `paint_skin(Gump_skin&)` then draws the themed panel over the art's opaque bounding box (with the Ultima close tab), a well for a container area with a size, and each widget's own `paint_skin()`; the `Checkmark_button` becomes the theme's close control. The art is composited on top.
+- Layout, hit-testing, dragging, drops and the usecode interface do not change: every position in `gump_info.txt` is scaled to the skin, and the game layer stays (transparent) for input.
+
+Snap-zone gumps stay classic by default, because their art is part of the ritual the player works with; set `gump_theme` mode 1 to theme one anyway.
 
 ---
 
@@ -532,7 +558,7 @@ Displays a shape/frame at a fixed position. The displayed shape can be changed a
 
 **`shapefile` config:** 0 = `SF_SHAPES_VGA` (world shapes), 1 = `SF_GUMPS_VGA` (gump shapes).
 
-**`paint()`:** Calls `displayed.paint_shape(sx, sy)`. Skips painting when `shape_num <= 0`.
+**`paint()`:** Calls `displayed.paint_shape(sx, sy)`. Skips painting when `shape_num <= 0`. With the optional `list_id` it shows the selection of that `Dynamic_list_widget` instead, and with `box_w`/`box_h` it draws centred and enlarged in a box (see [dynamic_lists.md](dynamic_lists.md#selection-bound-shape-display)).
 
 ---
 
@@ -614,6 +640,25 @@ For vertical sliders, this subtracts `thumb.get_height()`. For horizontal, it su
 ```
 (Same format — only the last field changes: 0=vertical, 1=horizontal)
 
+**Reuse by lists:** `Dynamic_list_widget` owns a `Dynamic_slider` as its scroll controls, configured through C++-only fields of `Dynamic_slider_def` and a C++ change hook (see [dynamic_sliders.md](dynamic_sliders.md#reuse-by-dynamic-lists)).
+
+---
+
+### Dynamic Lists (`Dynamic_list_widget`)
+
+- **Header:** `gumps/Dynamic_list_widget.h`
+- **Implementation:** `gumps/Dynamic_list_widget.cc`
+- **Inherits:** `Gump_button`
+
+A scrolling list of rows with a selection. Rows come from the gump's container (source 0: icon, name, quantity; the rows are the objects, so they drag in and out) or from usecode (source 1). Rows can have a right-aligned column, a font and a disabled state. Scrolling is a `Dynamic_slider` owned by the list (Exult's own scroll controls or gump shapes); keyboard (Up/Down, Page Up/Down, Home/End, Enter) and mouse wheel work on dynamic container gumps. Usecode is called on a selection change (`select_fn`), on activation (`activate_fn`) and after source-0 rows changed (`rows_fn`), never from paint.
+
+**gump_info.txt example (contents with Exult's controls, count line and "Empty"):**
+```
+:200/1/20/30/123/8/12/2/0/-1/-1/-1/-1/-1/-1/3
+```
+
+Full documentation: [dynamic_lists.md](dynamic_lists.md).
+
 ---
 
 ## Integration with Exult
@@ -625,10 +670,14 @@ For vertical sliders, this subtracts `thumb.get_height()`. For horizontal, it su
 ```cpp
 if (Dynamic_container_gump::has_config(shapenum)) {
     new_gump = new Dynamic_container_gump(obj->as_container(), x, y, shapenum);
+} else if (container_list_view && !npc && Container_list_gump::is_available(shapenum)) {
+    new_gump = new Container_list_gump(obj->as_container(), x, y, shapenum);
 } else {
     new_gump = new Container_gump(obj->as_container(), x, y, shapenum);
 }
 ```
+
+The middle branch is the container list view: only when the player chose Containers: List, and only after the dynamic-gump check, so a `list_layout` entry never makes a container a dynamic gump. `is_available()` is false when the gump's effective `list_layout` is `off` or the background frame is not the size the layout gives. After opening, the layout's `usecode` part (`open_fn`) runs like a dynamic gump's on-open function. See [dynamic_lists.md](dynamic_lists.md#container-list-view-list_layout).
 
 This ensures backward compatibility — containers without `gump_info.txt` entries continue using the standard `Container_gump`.
 
@@ -657,17 +706,20 @@ void shopOpen shape#(119)() {
 
 ### Widget Creation
 
-When `Dynamic_container_gump` is constructed, it reads the `Gump_info` for its shape number. The `Gump_manager` creates dynamic widgets from the `dynamic_buttons`, `dynamic_texts`, `dynamic_shapes`, and `dynamic_sliders` vectors stored in `Gump_info`, adding them as child elements (`elems`) of the gump.
+When `Dynamic_container_gump` is constructed, it reads the `Gump_info` for its shape number. `Gump::set_object_area()` creates dynamic widgets from the `dynamic_buttons`, `dynamic_texts`, `dynamic_shapes`, `dynamic_sliders` and `dynamic_lists` vectors stored in `Gump_info`, adding them as child elements (`elems`) of the gump in that order.
 
 Each widget type has a corresponding `_def` struct (in `gumpinf.h`) that holds the parsed configuration values:
 - `Dynamic_button_def` → `Dynamic_button`
 - `Dynamic_text_def` → `Dynamic_text_widget`
 - `Dynamic_shape_def` → `Dynamic_shape_widget`
 - `Dynamic_slider_def` → `Dynamic_slider`
+- `Dynamic_list_def` → `Dynamic_list_widget`
+
+Each widget class also has a `paint_skin(Gump_skin&)` method for the themed look (see [Themes](#themes)); the classic `paint()` bodies are unchanged. `Dynamic_slider::part_rect(Part)` gives the gump-local rectangles of its parts (decrement, increment, thumb, the whole track, the track before and after the thumb) for it, and `Dynamic_list_widget::paint_art()` paints only the row icons. A new widget type that should look themed paints its art in `paint()` during a skin pass and its controls in `paint_skin()`; one without `paint_skin()` simply shows its art on the themed panel.
 
 ### Configuration System Integration
 
-All configuration is stored in `gump_info.txt`, reusing the existing file and `ReadInt()`-based parser infrastructure. Nine sections are supported:
+All configuration is stored in `gump_info.txt`, reusing the existing file and `ReadInt()`-based parser infrastructure. Twelve gump sections are supported (plus the shortcut bar's own):
 
 | Section | Purpose |
 |---------|---------|
@@ -679,7 +731,10 @@ All configuration is stored in `gump_info.txt`, reusing the existing file and `R
 | `dynamic_texts` | Text fields set by usecode |
 | `dynamic_shapes` | Shape displays set by usecode |
 | `dynamic_sliders` | Slider controls read/set by usecode |
+| `dynamic_lists` | Scrolling lists of the contents or of usecode rows |
+| `list_layout` | Layout of the container list view (Containers: List); key -1 = every container gump |
 | `gump_name` | Custom status bar name for gump clicks |
+| `gump_theme` | Whether a gump is drawn with the menu theme in a themed style (optional) |
 
 ---
 
@@ -732,15 +787,34 @@ All configuration is stored in `gump_info.txt`, reusing the existing file and `R
 
 ### dynamic_shapes
 ```
-:gump_shape/field_id/pos_x/pos_y/shape_num/frame_num/shapefile
+:gump_shape/field_id/pos_x/pos_y/shape_num/frame_num/shapefile[/list_id[/box_w/box_h]]
 ```
 `shapefile`: 0 = shapes.vga, 1 = gumps.vga
+`list_id` (optional): show the selection of the dynamic list with this `field_id` (-1 = none, default)
+`box_w`/`box_h` (optional): `pos_x/pos_y` is a box's top-left; the shape is centred and enlarged up to 4x (0 = off, default)
 
 ### dynamic_sliders
 ```
 :gump_shape/field_id/pos_x/pos_y/dec_shape/inc_shape/thumb_shape/min_val/max_val/step/default_val/extent/usecode_fn/orientation
 ```
 `orientation`: 0 = vertical, 1 = horizontal
+
+### dynamic_lists
+```
+:gump_shape/field_id/x/y/width/rows/row_height/font/source/up_shape/down_shape/thumb_shape/select_fn/activate_fn/rows_fn/flags
+```
+`source`: 0 = the container's contents, 1 = usecode rows
+`up_shape`: -1 = Exult's own scroll controls (then `down_shape`/`thumb_shape` are ignored); `thumb_shape` -1 = spinner
+`select_fn`, `activate_fn`, `rows_fn`: usecode shape functions (-1 = none)
+`flags`: 0x01 = "N-M of T" count line, 0x02 = "Empty" text
+All 16 fields are required. See [dynamic_lists.md](dynamic_lists.md#field-reference).
+
+### list_layout
+```
+:gump_shape/part/fields...
+```
+One line per part: `off`, `background/shape/width/height/strip_x0/strip_x1/extra_w`, `list/<the 15 dynamic_lists fields>`, `title/x/y/width/font`, `divider/x/y0/y1`, `panel/x/y/width/font/small_font`, `preview/x/y/box_w/box_h`, `picture/right/top`, `nav/left_x/right_x/y`, `usecode/open_fn`.
+`gump_shape` -1 is the default for every container gump; a shape's parts replace those of the default; `off` on either gives the picture view. Read by its own reader (`List_layout_reader`), as `Functor_multidata_reader` skips ids below 0, into `Gump_info::list_layout_map`; Exult Studio writes the parts read from the patch file. See [dynamic_lists.md](dynamic_lists.md#container-list-view-list_layout).
 
 ### gump_name
 ```
@@ -751,6 +825,26 @@ Sets a custom name displayed in the status bar when the player clicks inside the
 **Runtime behavior:** `Dynamic_container_gump::get_click_name()` returns the configured name. `Game_window::show_items()` checks this override before falling back to `Get_object_name(obj)`.
 
 **Writer support:** `shapewrite.cc` serializes `gump_name` back to `gump_info.txt` when dirty (for Exult Studio round-trip).
+
+### gump_theme
+```
+:gump_shape/mode
+```
+Whether the gump is drawn with the menu theme when a themed `menu_style` (Ultima, Modern or a theme file) is chosen. Optional; Exult's own `gump_info.txt` files have no entries.
+
+| `mode` | Effect |
+|--------|--------|
+| `0` | Always classic: the gump's art as it is, in every style |
+| `1` | Themed whenever a themed style is chosen |
+| no entry (default) | A dynamic container gump is themed when it has at least one dynamic button, text, shape, slider or list **and no `snap_zones`**; the container list view is themed unless the shown container's gump shape has mode 0 |
+
+Classic style never themes. Other values are reported on `stderr` (`gump_theme: invalid mode N, using the default`) and treated as no entry. Stored as `Gump_info::theme_mode` (-1 = no entry) with `gumptheme_from_patch`/`gumptheme_modified` flags like `gump_name`; read by `Gump_theme_functor` in `shapevga.cc` and written by `shapewrite.cc` after `gump_name` when dirty (Exult Studio round-trip).
+
+```
+%%section gump_theme
+:49/0
+%%endsection
+```
 
 ---
 
@@ -810,7 +904,12 @@ Sets a custom name displayed in the status bar when the player clicks inside the
 | `gumps/Dynamic_shape_widget.cc` | Data-driven shape display implementation |
 | `gumps/Dynamic_slider.h` | Data-driven slider header |
 | `gumps/Dynamic_slider.cc` | Data-driven slider implementation |
+| `gumps/Dynamic_list_widget.h` | Data-driven list header |
+| `gumps/Dynamic_list_widget.cc` | Data-driven list implementation |
+| `gumps/Dynamic_list_layout.h` | List row arithmetic (engine-free) |
+| `gumps/Gump_skin.h` / `.cc` | (Themes) `Gump_theme::current()`/`wants()` and `Gump_skin`, the display-resolution skin layer of a themed gump with its drawing helpers |
 | `docs/dynamic_gumps.md` | This document |
+| `docs/dynamic_lists.md` | Dynamic lists |
 
 ### Modified Files
 
@@ -839,8 +938,29 @@ Sets a custom name displayed in the status bar when the player clicks inside the
 | `drag.h` | Added `mouse_widget`, `widget_gump` members to `Dragging_info` for widget-level mouse forwarding |
 | `drag.cc` | Widget mouse event routing in constructor, `moved()`, and `drop()`; debug logging for button click chain |
 | `gamewin.cc` | `show_items()` checks `gump->get_click_name()` for custom status bar text when clicking empty gump area |
-| `data/bg/gump_info.txt` | Documentation for all nine sections |
-| `data/si/gump_info.txt` | Documentation for all nine sections |
+| `data/bg/gump_info.txt` | Documentation for all sections, including `dynamic_lists` |
+| `data/si/gump_info.txt` | Documentation for all sections, including `dynamic_lists` |
+| `gumps/Gump.h`, `drag.cc` | (Lists) `get_shape_rect()`/`get_shape_location()` virtual; `object_pressed()` hook called on a press on a gump object |
+| `gumps/Gump.cc` | (Lists) creates `Dynamic_list_widget`s in `set_object_area()` |
+| `gumps/Dynamic_container_gump.h` / `.cc` | (Lists) `has_config()` counts `dynamic_lists`; object queries routed to source-0 lists |
+| `gumps/Dynamic_slider.h` / `.cc` | (Lists) C++-only def fields, change hook, `set_range()`, `hit_part()`, `Gump_Base` parent |
+| `gumps/Dynamic_shape_widget.h` / `.cc` | (Lists) optional list binding and boxed, enlarged paint |
+| `shapes/shapevga.cc`, `shapes/shapewrite.cc` | (Lists) `dynamic_lists` reader and writer; optional `dynamic_shapes` fields |
+| `shapes/shapeinf/gumpinf.h` / `.cc` | (Lists) `Dynamic_list_def`, `Dynamic_list_flags`, `dynamic_lists` with dirty tracking; `Dynamic_shape_def` and `Dynamic_slider_def` additions |
+| `usecode/intrinsics.cc`, `ucinternal.h`, `bgintrinsics.h`, `siintrinsics.h`, `sibetaintrinsics.h` | (Lists) seven intrinsics at provisional slots |
+| `data/exultmsg.txt` | (Lists) strings 0x6D2 "of" and 0x6D3 "Empty" |
+| `gumps/Container_list_gump.h` / `.cc`, `gumps/Container_list_layout.h` | (List view) laid out from `list_layout`; rows are a `Dynamic_list_widget`, the preview a bound `Dynamic_shape_widget` |
+| `gumps/Gump_manager.cc` | (List view) `Container_list_gump::is_available(shapenum)`; the layout's `open_fn` after opening |
+| `shapes/shapeinf/gumpinf.h` / `.cc`, `shapes/shapevga.cc`, `shapes/shapewrite.cc` | (List view) `List_layout`, `list_layout_map`, `get_list_layout()`; `list_layout` reader and writer |
+| `data/bg/gump_info.txt`, `data/si/gump_info.txt` | (List view) `list_layout` section with the default entry |
+| `gumps/Gump.h` / `.cc` | (Themes) `themable()` and `paint_skin()` virtuals, `skin_pass` and the owned `skin`, reset with the render layer |
+| `gumps/Gump_manager.cc` | (Themes) `render_gump_part_to_layer()`: art pass, skin layer, compositing, the game layer left transparent; the skin hidden with the layer |
+| `gumps/Dynamic_container_gump.h` / `.cc` | (Themes) `themable()`, the art-only skin pass in `paint()`, `paint_skin()` |
+| `gumps/Dynamic_text_widget.*`, `Dynamic_button.*`, `Dynamic_slider.*`, `Dynamic_list_widget.*` | (Themes) `paint_skin()`; `Dynamic_slider::part_rect()`; `Dynamic_list_widget::paint_art()` |
+| `gumps/Container_list_gump.h` / `.cc` | (Themes) themed list view: art pass and `paint_skin()` |
+| `shapes/shapeinf/gumpinf.h` / `.cc`, `shapes/shapevga.cc`, `shapes/shapewrite.cc` | (Themes) `theme_mode` with patch/modified flags; `gump_theme` reader and writer |
+| `data/bg/gump_info.txt`, `data/si/gump_info.txt` | (Themes) header comments describing `gump_theme` (no entries) |
+| `gumps/Makefile.am`, `Makefile.common`, `msvcstuff/vs2019/Exult.vcxproj(.filters)`, `ios/Exult.xcodeproj/project.pbxproj` | (Themes) `Gump_skin.cc`/`.h` |
 
 ---
 
@@ -865,7 +985,7 @@ The `[Drag::drop]` logging for button release HIT/MISS is always active (not gat
 
 #### 2. Intrinsic Indices
 
-New intrinsics occupy slots 0xdd–0xe2 (BG) and 0xde–0xe3 (SI). If upstream Exult adds intrinsics at these indices, a conflict would occur.
+New intrinsics occupy slots 0xdd–0xe2 (BG) and 0xde–0xe3 (SI). If upstream Exult adds intrinsics at these indices, a conflict would occur. The dynamic list intrinsics at BG 0xe5–0xeb and SI 0xe6–0xec are provisional for the same reason.
 
 #### 3. Gump_info Memory Lifetime
 
@@ -887,4 +1007,6 @@ The frame management fix assumes that `default_frame` (frame 0) has the correct 
 | 2026-03-20 | theGreyWanderer-uc | Arrow click reworked (hit_arrow bypasses 3-level parent chain — Bug 6), thumb_travel orientation fix for horizontal sliders (Bug 7), orientation documentation corrected (0=vertical, 1=horizontal), horizontal slider fully documented |
 | 2026-03-26 | theGreyWanderer-uc | Slider track hit area upper-bound fix (Bug 8) — prevents clicks outside track from registering, text alignment support (halign/valign) in Dynamic_text_widget |
 | 2026-04-04 | theGreyWanderer-uc | Keyboard input, mousewheel dispatch, and auto-repeat for `Dynamic_container_gump` — enables `handle_kbd_event()`, `mousewheel_up/down()`, `update_gump()` overrides; added `Gump_manager::handle_mouse_wheel()` and `exult.cc` event routing; mousewheel forwards to all child widgets without per-widget hit test |
-
+| 2026-11-13 | lucky-git-repo | Dynamic lists (`dynamic_lists` section, `Dynamic_list_widget` reusing `Dynamic_slider`), selection-bound and boxed `dynamic_shapes`, list intrinsics and `UI_open_gump` at provisional slots |
+| 2026-11-13 | lucky-git-repo | Container list view rebuilt on `Dynamic_list_widget`, laid out by the new `list_layout` section (per-gump overrides, `off`, on-open/select/row-text hooks) |
+| 2026-11-14 | lucky-git-repo | Themed dynamic gumps and list view in the Ultima/Modern menu styles (skin layer, widget `paint_skin()`), `gump_theme` section |
