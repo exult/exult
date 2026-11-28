@@ -419,7 +419,10 @@ enum Silver_Seed_flags {
 
 enum SI_Fixes_flags {
 	SHAMINO_SAW_HIS_CASTLE = 810,
-	HOUND_HINT_BATLIN = 811
+	HOUND_HINT_BATLIN = 811,
+	// Set when Unlock Magic frees the prisoner in Vasculio's cell, so the
+	// egg no longer brings him back:
+	VASCULIO_PRISONER_FREED = 812
 };
 
 enum Batlin_visions {
