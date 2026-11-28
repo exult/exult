@@ -718,6 +718,8 @@ public:
 	// Add npc to 'nearby' list.
 	void add_nearby_npc(Npc_actor* npc);
 	void remove_nearby_npc(Npc_actor* npc);
+	// Drop every 'nearby' queue entry for npc, whatever its flag says.
+	void purge_nearby_npc(Npc_actor* npc);
 	// Get all nearby NPC's.
 	void get_nearby_npcs(std::vector<Actor*>& list) const;
 	// Update NPCs' schedules.
