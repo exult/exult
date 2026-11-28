@@ -498,6 +498,7 @@ bool Gump_manager::close_gump(Gump* gump) {
  */
 
 bool Gump_manager::remove_gump(Gump* gump) {
+	chain_changes++;
 	if (gump == kbd_focus) {
 		set_kbd_focus(nullptr);
 	}
@@ -696,6 +697,7 @@ void Gump_manager::add_gump(
  */
 
 void Gump_manager::close_all_gumps(bool pers) {
+	chain_changes++;
 	bool removed = false;
 
 	Gump_list* prev = nullptr;
@@ -820,8 +822,15 @@ bool Gump_manager::handle_mouse_wheel(float y, float x, int mx, int my) {
  *  Update the gumps
  */
 void Gump_manager::update_gumps() {
+	const unsigned changes = chain_changes;
 	for (Gump_list* gmp = open_gumps; gmp; gmp = gmp->next) {
 		gmp->gump->update_gump();
+		// Usecode run from an update (a dynamic slider's auto-repeat
+		// callback, say) may have closed gumps, so gmp may be gone: stop
+		// here, the rest update next frame.
+		if (chain_changes != changes) {
+			break;
+		}
 	}
 }
 
